@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.DS_Store
+.env*
+!.env.example
+# Local working instructions are retained on disk, as in Artifact.
+assistant/

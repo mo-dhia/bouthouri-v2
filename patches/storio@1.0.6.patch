@@ -1,0 +1,74 @@
+diff --git a/index.d.ts b/index.d.ts
+index 0fda37b22becf22bf023b8f7ba5bcd1db1503a38..2c7a55fc81ee629a03f06ab0736ded22b42f8723 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
+ 
+ type State = Record<string, any>;
+ 
+-type SetState<T extends State> = (updater: (state: T) => T | Partial<T>) => void;
++type SetState<T extends State> = (updater: Partial<T> | ((state: T) => T | Partial<T>)) => void;
+ 
+ type GetState<T extends State> = () => T;
+ 
+diff --git a/index.js b/index.js
+index f26d8a5795f6b3bfe6e2544f79a14a7fa0103064..0eb005f9eecec7bc12b6fd84ac5618f6f5d5d9cf 100644
+--- a/index.js
++++ b/index.js
+@@ -7,10 +7,10 @@ class StoreManager {
+   }
+ 
+   // Subscribe mechanism
+-  subscribe(listener) {
++  subscribe = (listener) => {
+     this.listeners.add(listener);
+     return () => this.listeners.delete(listener);
+-  }
++  };
+ 
+   // Get current state
+   getState = () => {
+@@ -19,11 +19,12 @@ class StoreManager {
+ 
+   // Create a hook for selecting specific state slice
+   createHook() {
++    const initialState = this.state;
+     const useStoreHook = (selector = state => state) => {
+       const state = useSyncExternalStore(
+-        this.subscribe.bind(this),
++        this.subscribe,
+         () => selector(this.state),
+-        () => selector(this.state)
++        () => selector(initialState)
+       );
+ 
+       return state;
+@@ -38,9 +39,8 @@ class StoreManager {
+   // Update state with flexible options
+   createSetter() {
+     return (updater) => {
+-      const nextState = typeof updater === 'function'
+-        ? updater(this.state)
+-        : { ...this.state, ...updater };
++      const patch = typeof updater === 'function' ? updater(this.state) : updater;
++      const nextState = { ...this.state, ...patch };
+ 
+       // Only update if state actually changes
+       if (!this.isEqual(this.state, nextState)) {
+@@ -101,6 +101,7 @@ class StoreManager {
+     if (keys1.length !== keys2.length) return false;
+ 
+     for (let key of keys1) {
++      if (!Object.prototype.hasOwnProperty.call(obj2, key)) return false;
+       if (!this.isEqual(obj1[key], obj2[key], visited)) return false;
+     }
+ 
+@@ -135,7 +136,7 @@ export function create(storeCreator) {
+ 
+   // Add methods to the hook
+   useStore.setState = storeManager.createSetter();
+-  useStore.subscribe = storeManager.subscribe.bind(storeManager);
++  useStore.subscribe = storeManager.subscribe;
+ 
+   return useStore;
+ }
