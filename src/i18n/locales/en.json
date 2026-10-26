@@ -1,0 +1,8 @@
+{
+  "metadata": { "title": "Beyond What You See | Mohamed Elgazzar", "description": "Mohamed Elgazzar’s portfolio, from interactive experiences and product decisions to the engineering and systems that make them work." },
+  "navigation": { "label": "Main navigation", "home": "Home", "vision": "VISION", "language": "ع", "languageLabel": "Switch to Arabic", "skip": "Skip to introduction" },
+  "motion": { "quiet": "Quiet view", "full": "Enable motion" },
+  "hero": { "eyebrow": "Engineering & Creative Development", "title": "Mohamed Elgazzar", "description": "Building digital products from the systems behind them to the interactions people experience.", "explore": "A shift in perspective", "marquee": "Perspective reveals the whole, clarity turns complexity into understanding, and direction shapes systems, interfaces, and interactions with purpose and creativity.", "portraitAlt": "Mohamed Elgazzar in black, wearing a backward cap and dark sunglasses." },
+  "vision": { "eyebrow": "BEYOND THE INTERFACE", "title": "BUILT ON LOGIC. MADE TO FEEL SIMPLE.", "description": "Structure beneath the surface. Purpose in every interaction." },
+  "footer": { "top": "Back to top", "copyright": "Mohamed Elgazzar" }
+}

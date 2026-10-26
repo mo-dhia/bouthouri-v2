@@ -1,0 +1,39 @@
+.hero { position: relative; isolation: isolate; block-size: 100svh; overflow: clip }
+.marquee { position: absolute; inset: 17.5% 0 auto; z-index: -1; direction: ltr; pointer-events: none; user-select: none }
+.marquee > div { display: flex; inline-size: max-content; will-change: transform }
+.marquee span { display: flex; flex: none; align-items: center; white-space: nowrap; font-size: clamp(130px, 20.4vw, 390px); font-weight: 400; letter-spacing: -0.075em; line-height: 1.1; color: #242424 }
+.marquee i { font-size: 0.47em; font-style: normal; letter-spacing: 0; margin-inline: 0.6em }
+.portrait { position: absolute; z-index: 0; pointer-events: none; user-select: none; inline-size: max(100vw, 150svh); max-inline-size: none; block-size: auto; inset-block-start: 50%; left: 50%; transform: translate(-50%, -50%) }
+.information { position: absolute; z-index: 1; inline-size: max-content; max-inline-size: calc(100% - 40px); inset-block-end: clamp(32px, 4.5svh, 72px); right: clamp(20px, 2.2vw, 64px) }
+.information h1 { margin: 0 0 3px; font-size: clamp(30px, 3.65vw, 108px); font-weight: 400; letter-spacing: -0.05em; line-height: 1.05; white-space: nowrap }
+.information p { inline-size: 0; min-inline-size: 100%; font-size: clamp(12px, 0.95vw, 24px); letter-spacing: -0.017em; line-height: 1.48; color: #aaa8a1 }
+.bottom { position: absolute; z-index: 1; inset: auto 3.4vw 32px; display: flex; align-items: center }
+.bottom a { display: flex; align-items: center; gap: 20px; color: #aaa8a1; font-size: 9px; letter-spacing: 0.035em; min-block-size: 44px }
+:global([dir='rtl']) .information { text-align: right; inline-size: clamp(310px, 30vw, 560px); max-inline-size: calc(100vw - 40px) }
+:global([dir='rtl']) .information h1 { font-size: clamp(38px, 4.3vw, 90px); letter-spacing: 0; line-height: 1.32; font-weight: 500 }
+:global([dir='rtl']) .information p { inline-size: 100%; min-inline-size: 0; font-size: clamp(14px, 1.2vw, 21px); letter-spacing: 0; line-height: 1.85 }
+:global([dir='rtl']) .marquee span { direction: rtl; letter-spacing: 0; line-height: 1.5; font-weight: 500 }
+@media (min-width: 901px) {
+  :global([dir='rtl']) .information { inline-size: clamp(350px, 39vw, 720px) }
+  :global([dir='rtl']) .information p { text-wrap: balance }
+}
+@media (max-aspect-ratio: 6/5) and (min-width: 701px) {
+  .portrait { inline-size: 130svh; inset-block-start: 45%; left: calc(50% + 65px) }
+  .marquee { inset-block-start: 34% }
+  .information { inset-block-end: 8% }
+  .information h1 { font-size: 4.8vw }
+  .information p { font-size: 14px }
+}
+@media (max-width: 700px) {
+  .portrait { inline-size: max(164vw, 104svh); inset-block-start: 44%; left: calc(50% + 65px); mask-image: linear-gradient(#000 77%, #0000 100%) }
+  .marquee { inset-block-start: 29% }
+  .marquee span { font-size: clamp(130px, 31vw, 230px) }
+  .information { inset-block-end: 12%; right: 20px }
+  .information h1 { font-size: clamp(26px, 6.8vw, 46px) }
+  .information p { font-size: 12px; line-height: 1.5; color: #b3b0a7 }
+  .bottom { inset: auto 7% 24px }
+  .bottom a { font-size: 8px; gap: 13px }
+  :global([dir='rtl']) .information { inline-size: calc(100% - 40px) }
+  :global([dir='rtl']) .information h1 { font-size: clamp(38px, 10vw, 58px); line-height: 1.6 }
+  :global([dir='rtl']) .information p { max-inline-size: 18em; font-size: 14px }
+}

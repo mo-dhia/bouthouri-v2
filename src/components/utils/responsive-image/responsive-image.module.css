@@ -1,0 +1,2 @@
+.frame { position: relative; overflow: hidden }
+.image { object-fit: cover; border-radius: inherit }

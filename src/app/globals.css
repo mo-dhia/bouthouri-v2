@@ -1,0 +1,36 @@
+@font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
+@font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
+:root { --background: #0a0a0a; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
+* { box-sizing: border-box }
+html, body { margin: 0; min-block-size: 100%; background: var(--background); color: var(--foreground) }
+html { scroll-padding-block-start: 5.21vw }
+body { font-family: 'Questrial', Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip }
+html[lang='ar'] body { font-family: 'Cairo', Arial, sans-serif }
+button, input, textarea { font: inherit }
+button, a { -webkit-tap-highlight-color: transparent }
+a { color: inherit; text-decoration: none }
+button { color: inherit; background: transparent; border: 0; cursor: pointer }
+button:focus-visible, a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px }
+button[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 0.3em }
+p, h1, h2 { margin: 0 }
+::selection { color: var(--background); background: var(--foreground) }
+.skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
+.skip-link:focus { transform: translateY(0) }
+.not-found { min-block-size: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
+.not-found h1 { font-size: 4.17vw; font-weight: 400 }
+.not-found a { text-decoration: underline }
+@media (max-width: 1024px) {
+  html { scroll-padding-block-start: 8.33vw }
+  .skip-link { inset-block-start: 2.08vw; inset-inline-start: 2.08vw; padding: 2.08vw 3.13vw }
+  .not-found { gap: 3.13vw; padding: 8.33vw }
+  .not-found h1 { font-size: 7.29vw }
+}
+@media (max-width: 600px) {
+  html { scroll-padding-block-start: 14.56vw }
+  .skip-link { inset-block-start: 3.88vw; inset-inline-start: 3.88vw; padding: 3.88vw 5.83vw }
+  .not-found { gap: 5.83vw; padding: 5.83vw }
+  .not-found h1 { font-size: 10.68vw }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important }
+}

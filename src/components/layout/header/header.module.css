@@ -1,0 +1,18 @@
+.header { position: absolute; inset-block-start: 0; inset-inline: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 2.08vw 4.17vw }
+.wordmark { display: block; inline-size: 5.5vw; min-inline-size: 80px }
+.wordmark img { display: block; inline-size: 100%; block-size: auto }
+.header nav { display: flex; align-items: center; gap: 2.08vw; font-size: 0.83vw }
+.header nav button { padding: 0.52vw 0; font-size: inherit }
+@media (max-width: 1024px) {
+  .header { padding: 4.17vw }
+  .wordmark { inline-size: 10.42vw }
+  .header nav { gap: 3.13vw; font-size: 1.82vw }
+  .header nav button { padding: 1.3vw 0 }
+}
+@media (max-width: 600px) {
+  .header { padding: 5.83vw }
+  .wordmark { inline-size: 17vw; min-inline-size: 64px }
+  .header nav { gap: 4.37vw; font-size: 2.91vw }
+  .header nav button { padding: 2.43vw 0 }
+  .header nav > a:first-child { display: none }
+}
