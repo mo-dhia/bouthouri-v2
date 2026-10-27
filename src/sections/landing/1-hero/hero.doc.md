@@ -7,8 +7,49 @@ signature SVG paths arrive in HTML. The entry layer is `hidden` in that HTML.
 The null gate imports the controller immediately after hydration when optional
 motion is eligible. It deliberately does not wait for hero intersection: a deep
 history/locale restore still needs to establish the fixed layer’s exit pose.
-Without JS, a failed enhancement, reduced motion, or quiet reading, the complete
-static hero stays visible and the scene is absolute rather than fixed.
+Without JS the complete static hero stays visible and the scene is absolute
+rather than fixed. With JS, quiet reading, OS reduced motion, scene failure and
+a failed optional hero-controller import use the small `hero-reading.ts`
+controller. This is directly imported by the gate: it loads no portrait/audio,
+entry runtime or further chunk, and starts no RAF or timer.
+
+## Reading body and world contract (R11 follow-up)
+
+The recovered source `2gz902oulp4x8.js.pretty:505–509` has separate world and
+body lifetimes. Reduced `tq` normalizes native scroll by the hero's own height,
+without the enhanced 22-unit input range, remapping or 100ms scrub. Its precise
+pose updates navigation/background independently of the body. Source `tm` sets
+the same reduced prop for `systemReduced || quietToggle || sceneFailure`.
+The live measurement was quiet reading; OS and scene-failure equivalence is
+confirmed from those source branches, not a fresh physical OS/browser failure.
+
+Completed reduced `tU` removes itself from the ticker after a sample. Scroll
+`tz`, resize/locale measurement, and visibility return wake it again. It does
+not continuously animate the body. The lightweight controller samples on those
+events, resize/font measurement and local navigation restoration. It publishes
+`gazzar:hero-world` and `readHeroWorldPose` at full precision; the four-decimal
+`data-hero-world` remains diagnostic. Hidden documents continue world updates
+but postpone body writes until visible. Menu-open pauses the pose; closing
+refreshes it and only consumes a body wake if one was pending.
+
+The source hidden branch writes scene visibility/opacity/inert and returns
+before writing or caching the body. Thus the last visible opacity is retained,
+not recomputed from the now-hidden world. At native 2544×1392, the source sequence
+348 → 696 → 1044 publishes .25 → .5 → .75. Copy opacity is .784 → .104 → .104,
+bottom is .0429688 → 0 → 0, and the scene is hidden with opacity 0 at .75.
+Reverse to 348 restores scene opacity 1 and copy .784. A direct deep mount has
+no invented earlier visible body pose. Reduced transforms remain cleared; the
+pause control stays present and disabled, matching the source.
+
+The temporary read-only source trace was removed and source restored to quiet
+1044. Evidence: `/tmp/gazzar-continuous-r10/reading-hero-source-contract.json`;
+the original reproduction remains `reading-hero-before.json` alongside it.
+`hero-reading.test.ts` runs the real controller/publisher against an event/DOM
+surface and tests the gate's reduced/failure/cancellation decisions. These
+checks do not validate rendered production frames or full-HOME acceptance.
+Root owns the final rebuild, SSR audit and continuous source/local review.
+Scoped validation: all 31 hero tests pass; ESLint passes for the gate, reading
+controller and its tests; plain `tsc --noEmit --incremental false` passes.
 
 ## Geometry and typography
 

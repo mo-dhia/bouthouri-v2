@@ -113,6 +113,7 @@
 .portrait, .portraitEntrance { pointer-events: none }
 .pause { padding: 0; text-decoration: none !important }
 .hero:not([data-enhanced='true']) .pause { display: none }
+.hero[data-hero-reading='true'] .pause { display: grid }
 @media (max-width: 700px) { .hero { --ar-hero-size: clamp(38px, 10vw, 58px) } }
 @media (prefers-reduced-motion: reduce) { .scene { position: absolute } .track { will-change: auto } .hero * { transition: none !important } }
 .hero[data-locale='ar'] { font-weight: var(--weight-400, 450) }
