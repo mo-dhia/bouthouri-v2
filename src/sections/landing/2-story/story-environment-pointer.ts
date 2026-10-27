@@ -13,9 +13,12 @@ export function createEnvironmentPointer(wake: () => void) {
   const protection = createMaterialProtection();
   let active = true, grabbed = false, lastScroll = scrollY;
   let down: { x: number; y: number; id: number } | null = null;
-  const reset = () => {
+  const resetInput = () => {
     state.hovering = state.pressed = false; state.pressHold = 0;
     state.targetX = state.targetY = 0; state.contextTarget = 1; down = null; wake();
+  };
+  const reset = () => {
+    resetInput();
     protection.clear(); state.pressureScale = 1; state.footerInfluence = 0;
   };
   const begin = (x: number, y: number) => {
@@ -65,6 +68,7 @@ export function createEnvironmentPointer(wake: () => void) {
   window.addEventListener("gazzar:material-protection", protect);
   return {
     state,
+    resetInput,
     setActive(value: boolean) { active = value; if (!value) reset(); },
     setGrabbed(value: boolean) { grabbed = value; if (value) { state.pressed = false; state.pressHold = 0; } },
     advance(dt: number, menuOpen: boolean) {

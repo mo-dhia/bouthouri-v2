@@ -5,6 +5,7 @@ import { useSceneActivation } from "@/lib/scene/sceneActivation";
 import { useSceneBootSlot } from "@/lib/scene/sceneBootGate";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { uiStore, useUIStore } from "@/store/uiStore";
+import type { StoryEnvironmentController } from "./story-environment.animate";
 import type { StorySceneController } from "./story-scene.animate";
 
 const loadScene = () => import("./story-scene.animate");
@@ -37,21 +38,27 @@ function StorySceneMount({ staticMode, onFailure }: { staticMode: boolean; onFai
   const target = useRef<HTMLElement | null>(null);
   const [settled, setSettled] = useState(false);
   const controller = useRef<StorySceneController | null>(null);
+  const environment = useRef<StoryEnvironmentController | null>(null);
   const mode = useRef(staticMode);
   useEffect(() => {
     mode.current = staticMode;
     controller.current?.setStaticMode(staticMode);
+    environment.current?.setReducedMode(staticMode);
   }, [staticMode]);
   useEffect(() => { target.current = document.getElementById("top"); }, []);
   const { shouldMount } = useSceneActivation({ targetRef: target, prewarmMargin: "300px" });
   const boot = useSceneBootSlot(shouldMount, settled, target);
   useEffect(() => {
     let cancelled = false;
-    let cleanup: (() => void) | undefined;
+    let owned: StoryEnvironmentController | undefined;
     const start = () => {
-      void loadEnvironment().then(({ mountStoryEnvironment }) => {
+      if (cancelled) return;
+      void loadEnvironment().then(({ createStoryEnvironment }) => {
         const stage = target.current;
-        if (!cancelled && stage) cleanup = mountStoryEnvironment(stage, { reduced: staticMode });
+        if (!cancelled && stage) {
+          owned = createStoryEnvironment(stage, { reduced: mode.current });
+          environment.current = owned;
+        }
       }).catch((error: unknown) => console.error("Optional home material could not load.", error));
     };
     const supportsIdle = typeof window.requestIdleCallback === "function";
@@ -59,9 +66,10 @@ function StorySceneMount({ staticMode, onFailure }: { staticMode: boolean; onFai
     return () => {
       cancelled = true;
       if (supportsIdle) window.cancelIdleCallback(idle); else window.clearTimeout(idle);
-      cleanup?.();
+      owned?.dispose();
+      if (environment.current === owned) environment.current = null;
     };
-  }, [staticMode]);
+  }, []);
   useEffect(() => {
     const stage = target.current;
     if (!shouldMount || !boot || !stage) return;
