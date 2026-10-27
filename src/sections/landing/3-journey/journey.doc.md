@@ -44,6 +44,12 @@ The scalar scrub continues settling beneath an open menu, as in the reference.
 The object/material renderers independently pause GPU activity under the modal;
 closing the menu reveals the settled score without starting a delayed journey.
 
+Reading navigation captures measured content bands. Restoring a semantic intent
+uses the source's separate reduced-layout rule: work selects the nearest authored
+project moment and lands 100px above that project; hero/opening/perspective map
+to the chapter start, with hero retaining its fraction; other sections use
+`#beyond`. It does not interpolate a work fraction across the reading track.
+
 Mode changes preserve the native offset, clamped to the newly measured document,
 then snap target/displayed score through the shared render path. This mirrors
 the source's native-position behavior rather than seeking the previous semantic

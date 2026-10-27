@@ -1,4 +1,9 @@
-import type { HomePosition } from "@/lib/navigation/home-position";
+import {
+  HOME_WORK_MOMENTS,
+  type HomePosition,
+} from "@/lib/navigation/home-position";
+
+const workMoments = Object.values(HOME_WORK_MOMENTS);
 
 /** Measure the actual unpinned reading layout instead of inventing pin pixels. */
 export function readingNavigation(root: HTMLElement) {
@@ -57,17 +62,28 @@ export function readingNavigation(root: HTMLElement) {
     },
     getTarget(position: HomePosition): number | null {
       if (root.hasAttribute("data-enhanced")) return null;
-      const row = bands().find(
-        (row) =>
-          row.section === position.section ||
-          (position.section === "perspective" && row.section === "opening"),
-      );
-      return row
-        ? Math.min(
-            document.documentElement.scrollHeight - innerHeight,
-            row.top + (row.end - row.top) * position.progress,
-          )
-        : null;
+      if (["hero", "opening", "perspective"].includes(position.section)) {
+        // Source uses its chapter.offsetTop. Our SSR hero is a sibling of the
+        // journey's positioned wrapper, so use the equivalent document offset.
+        const chapter = root.querySelector<HTMLElement>(".glasses-chapter");
+        const start = (chapter?.getBoundingClientRect().top ?? 0) + scrollY;
+        return position.section === "hero" ? position.progress * start : start;
+      }
+      if (position.section === "work") {
+        const score = 306 + 142 * position.progress;
+        const index = workMoments.reduce(
+          (nearest, moment, index) =>
+            Math.abs(moment - score) < Math.abs(workMoments[nearest] - score)
+              ? index
+              : nearest,
+          0,
+        );
+        const project = root.querySelector<HTMLElement>(
+          `[data-work-index="${index}"]`,
+        );
+        if (project) return project.getBoundingClientRect().top + scrollY - 100;
+      }
+      return (root.querySelector("#beyond")?.getBoundingClientRect().top ?? 0) + scrollY;
     },
   };
 }
