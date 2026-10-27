@@ -13,8 +13,12 @@ for (const locale of ["en", "ar"]) {
   const markup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
   assert.match(markup, new RegExp(`<html[^>]*lang="${locale}"[^>]*dir="${locale === "ar" ? "rtl" : "ltr"}"`));
   assert.match(markup, /<main\b/);
-  assert.match(markup, /<h1[^>]*>[^<]+<\/h1>/);
-  assert.match(markup, /id="perspective"/);
+  assert.match(markup, /<h1[^>]*id="hero-name"/);
+  assert.match(markup, /id="beyond"/);
+  assert.match(markup, /id="work-wujhat-title"/);
+  assert.match(markup, /id="work-8returns-title"/);
+  assert.match(markup, /systems-human-copy/);
+  assert.match(markup, /systems-ending/);
   assert.doesNotMatch(markup, /Create Next App|To get started|Deploy Now/);
   assert.doesNotMatch(markup, /Bouthouri|البوثوري/);
   assert.match(markup, /<img[^>]*src="\/assets\/images\/hero-portrait\.webp"/);
