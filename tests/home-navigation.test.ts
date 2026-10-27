@@ -9,7 +9,7 @@ import {
   HOME_POSITIONS_KEY, HOME_WORK_MAX_AGE, HOME_WORK_RETURN_KEY,
   HOME_RETURN_KEY, HOME_RETURN_MAX_AGE, HOME_HANDOFF_KEY, HOME_HANDOFF_MAX_AGE,
   homeCheckpointFromState, homeLinkIntent, parseHomeLocaleReturn, parseHomeWorkReturn, parseHomeReturn, parseHomeHandoff,
-  homeDocumentStartsFresh,
+  homeDocumentStartsFresh, homeHistoryId,
   resolveHomeRestoreIntent, serializeHomeCheckpoints,
   type HomeCheckpoint, type HomeRestoreContext,
 } from "../src/lib/navigation/home-navigation-state";
@@ -217,6 +217,32 @@ describe("HOME handoff expiry and entry selection", () => {
     expect(entries["entry-0"]).toBeUndefined();
     expect(entries["entry-46"].id).toBe("entry-46");
   });
+
+  test("external checkpoints own timestamp ties while invalid newer records cannot displace a valid entry", () => {
+    const inline = checkpoint({ created: now - 10, scrollY: 100 });
+    const state = { [HOME_HISTORY_STATE_KEY]: inline };
+    const tied = checkpoint({ created: inline.created, scrollY: 19000, position: { section: "people", progress: 0.7 } });
+    expect(homeCheckpointFromState(state, JSON.stringify({ [inline.id]: tied }), "/en", now)).toEqual(tied);
+    const memory = checkpoint({ created: tied.created, scrollY: 21000, position: { section: "footer", progress: 0.5 } });
+    expect(homeCheckpointFromState(state, JSON.stringify({ [inline.id]: tied }), "/en", now, memory)).toEqual(memory);
+    const newer = checkpoint({ scrollY: 20000 });
+    const raw = JSON.stringify({ [newer.id]: newer });
+    expect(homeCheckpointFromState(state, raw, "/en", now, tied)).toEqual(newer);
+    for (const invalid of [
+      { ...newer, id: "another-entry" }, { ...newer, path: "/ar" }, { ...newer, path: "/en?another=entry" },
+      { ...newer, created: now + 1 }, { ...newer, created: -Infinity },
+      { ...newer, scrollY: -1 }, { ...newer, position: { section: "work", progress: 2 } },
+      { ...newer, workQuery: "unknown" },
+    ]) {
+      expect(homeCheckpointFromState(state, JSON.stringify({ [inline.id]: invalid }), "/en", now)).toEqual(inline);
+      expect(homeCheckpointFromState(state, raw, "/en", now, invalid as HomeCheckpoint)).toEqual(newer);
+    }
+    expect(homeCheckpointFromState({ [HOME_HISTORY_STATE_KEY]: { version: 1, id: inline.id } }, raw, "/en", now)).toEqual(newer);
+    expect(homeCheckpointFromState(state, JSON.stringify({ [inline.id]: { ...tied, created: inline.created - 1 } }), "/en", now)).toEqual(inline);
+    expect(resolveHomeRestoreIntent(context({ navigationType: "back_forward", historyState: state, positions: raw, historyTarget: 0 })))
+      .toMatchObject({ kind: "history", scrollY: 0, position: newer.position });
+    expect(resolveHomeRestoreIntent(context({ navigationType: "back_forward", historyState: state, positions: raw, homeReturn: homeRecord() }))?.kind).toBe("home-return");
+  });
 });
 
 describe("native link guards", () => {
@@ -294,12 +320,14 @@ function browser(href = "https://local.test/en") {
     disconnect() { observers.delete(this.callback); }
   }
   let serial = 0, geometry: HomeGeometry | null = desktop;
-  const scrolls: number[] = [], details: HomeRestoreDetail[] = [];
+  const scrolls: number[] = [], details: HomeRestoreDetail[] = [], historyWrites: Record<string, unknown>[] = [];
   const runtime = Object.assign(new Events(), {
     document, location: new URL(href), scrollY: 0, innerWidth: 1400, innerHeight: 850,
     crypto, Element: ElementStub, CustomEvent, ResizeObserver: LayoutObserver, MutationObserver: LayoutObserver,
     performance: { getEntriesByType: () => [{ type: "navigate" }] },
-    history: { state: { __NA: true, tree: { retained: true } } as Record<string, unknown>, scrollRestoration: "auto", replaceState(next: Record<string, unknown>) { this.state = next; } },
+    history: { state: { __NA: true, tree: { retained: true } } as Record<string, unknown>, scrollRestoration: "auto", replaceState(next: Record<string, unknown>) {
+      this.state = structuredClone(next); historyWrites.push(structuredClone(next));
+    } },
     sessionStorage: { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => { storage.set(key, value); }, removeItem: (key: string) => { storage.delete(key); } },
     requestAnimationFrame: (fn: FrameRequestCallback) => { frames.set(++serial, fn); return serial; },
     cancelAnimationFrame: (id: number) => { frames.delete(id); },
@@ -321,6 +349,9 @@ function browser(href = "https://local.test/en") {
     cleanups.push(cleanup); return cleanup;
   };
   const capture = () => runtime.dispatchEvent(new Event("scrollend"));
+  const flushCaptures = () => { const pending = [...timers.values()]; timers.clear(); pending.forEach((capture) => capture()); };
+  const latestCheckpoint = () => homeCheckpointFromState(runtime.history.state, storage.get(HOME_POSITIONS_KEY) ?? null,
+    runtime.location.pathname + runtime.location.search, Date.now());
   // Browser restoration is distinct from an explicit user/engine scroll. Its
   // replay may arrive after load; manual policy must suppress that late replay.
   const restoreNative = (y: number) => {
@@ -330,7 +361,7 @@ function browser(href = "https://local.test/en") {
     storage.set(HOME_LOCALE_RETURN_KEY, raw);
     storage.set(HOME_HANDOFF_KEY, handoffRecord({ to: JSON.parse(raw).to, created: Date.now() }));
   };
-  return { runtime, win, root, document, storage, frames, timers, scrolls, details, settle, mount, capture,
+  return { runtime, win, root, document, storage, frames, timers, scrolls, details, settle, mount, capture, flushCaptures, latestCheckpoint, historyWrites,
     setLocaleReturn, restoreNative,
     notifyLayout: () => { for (const callback of observers) callback(); }, observers,
     setGeometry: (value: HomeGeometry | null) => { geometry = value; } };
@@ -767,7 +798,7 @@ describe("HOME browser lifecycle", () => {
     b.mount(); b.settle();
     expect(b.scrolls[0]).toBeCloseTo(16361.625, 2);
     b.runtime.scrollY = wide.start + wide.distance; b.capture();
-    expect((b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint).position.section).toBe("footer");
+    expect(b.latestCheckpoint()?.position.section).toBe("footer");
     expect(getHomeRestoreIntent(b.win)?.position).toEqual(original);
     b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
     b.runtime.dispatchEvent(new Event("resize")); b.settle();
@@ -952,6 +983,212 @@ describe("HOME browser lifecycle", () => {
     expect(b.scrolls).toEqual([3916]);
     expect(b.details[0].pinProgress).toBeNull();
     expect(b.details[0].frame).toBeNull();
+  });
+
+  test("70 instant scroll inputs, repeated native scrollend and 160ms captures do no ongoing native history writes", () => {
+    const b = browser(), replaceState = b.runtime.history.replaceState;
+    let frame = frameFromProgress(0);
+    b.mount({ getFrame: () => frame });
+    const identity = structuredClone(b.runtime.history.state);
+    expect(homeHistoryId(identity)).toBeTruthy(); // Before any layout frame.
+    expect(b.historyWrites).toHaveLength(1);
+    b.settle();
+    for (let i = 1; i <= 70; i++) {
+      b.runtime.scrollY = i * 209.4167;
+      frame = frameFromProgress(i / 100);
+      b.runtime.dispatchEvent(new Event("scroll"));
+      b.capture(); b.capture(); // Native instant-scroll macros can emit each time.
+      b.flushCaptures();
+    }
+    expect(b.historyWrites).toHaveLength(1);
+    expect(b.runtime.history.replaceState).toBe(replaceState);
+    expect(b.runtime.history.state).toEqual(identity);
+    const latest = b.latestCheckpoint()!;
+    expect(latest.id).toBe(homeHistoryId(identity)!);
+    expect(latest.scrollY).toBe(b.runtime.scrollY);
+    expect(latest.position).toEqual(captureHomePosition(b.runtime.scrollY, desktop, frame)!);
+    expect(b.runtime.history.state.tree).toEqual({ retained: true });
+    // Select another entry, then return using the original, deliberately stale
+    // inline identity, just as the browser does before dispatching popstate.
+    b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: checkpoint({
+      id: "other-entry", created: Date.now(), position: { section: "hero", progress: 0 }, scrollY: 0,
+    }) };
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    b.runtime.history.state = identity;
+    b.runtime.dispatchEvent(new Event("popstate"));
+    expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "history", position: latest.position, scrollY: latest.scrollY });
+    b.settle();
+    expect(b.runtime.scrollY).toBe(latest.scrollY);
+  });
+
+  test("periodic captures retain exact changed pixels even inside the same reading semantic fraction", () => {
+    const b = browser(); b.setGeometry(null);
+    b.mount({ getPosition: () => position }); b.settle();
+    const initialWrites = b.historyWrites.length;
+    for (const y of [1000, 1000.125, 1000.25]) {
+      b.runtime.scrollY = y;
+      b.runtime.dispatchEvent(new Event("scroll")); b.flushCaptures();
+      expect(b.latestCheckpoint()).toMatchObject({ scrollY: y, position });
+    }
+    expect(b.historyWrites).toHaveLength(initialWrites);
+  });
+
+  test("Next's earlier capture teardown retains the uncaptured outgoing entry for Forward with working or denied storage", () => {
+    for (const storageMode of ["available", "denied", "write-denied"] as const) {
+      const b = browser("https://local.test/en?visit=english");
+      if (storageMode === "denied") Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+      const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
+      const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
+      b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
+      let dispose: () => void;
+      const decisions: ReturnType<typeof getHomeRestoreIntent>[] = [];
+      const next = () => {
+        const selected = structuredClone(b.runtime.history.state), writes = b.historyWrites.length;
+        dispose();
+        expect(b.runtime.history.state).toEqual(selected);
+        expect(b.historyWrites).toHaveLength(writes); // Cleanup cannot write into destination state.
+        decisions.push(getHomeRestoreIntent(b.win)); dispose = b.mount();
+      };
+      b.runtime.addEventListener("popstate", next, true);
+      dispose = b.mount(); b.settle();
+      const english = structuredClone(b.runtime.history.state);
+      b.runtime.scrollY = 16000; b.capture();
+      if (storageMode === "write-denied") b.runtime.sessionStorage.setItem = () => { throw new Error("quota"); };
+      b.runtime.scrollY = 16362; // No scroll/scrollend/timer before early cleanup.
+      b.runtime.location = new URL("https://local.test/ar?visit=arabic"); b.runtime.history.state = { __NA: true };
+      dispose(); dispose = b.mount(); b.settle();
+      b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
+      b.runtime.dispatchEvent(new Event("resize")); b.settle();
+      const arabic = structuredClone(b.runtime.history.state);
+      expect(homeHistoryId(arabic)).not.toBe(homeHistoryId(english));
+      b.runtime.scrollY = 21000; b.capture();
+      b.runtime.scrollY = 21772;
+      b.runtime.location = new URL("https://local.test/en?visit=english"); b.runtime.history.state = english;
+      b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+      expect(decisions[0]).toMatchObject({ kind: "history", scrollY: 16362 });
+      expect(b.runtime.scrollY).toBe(16362);
+      expect(b.runtime.location.href).toBe("https://local.test/en?visit=english");
+      b.runtime.location = new URL("https://local.test/ar?visit=arabic"); b.runtime.history.state = arabic;
+      b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+      expect(decisions[1]).toMatchObject({ kind: "history", scrollY: 21772, position: { section: "footer", progress: 1 } });
+      expect(b.runtime.scrollY).toBe(21772);
+      expect(b.runtime.location.href).toBe("https://local.test/ar?visit=arabic");
+      expect(homeHistoryId(b.runtime.history.state)).toBe(homeHistoryId(arabic));
+      dispose!(); b.runtime.removeEventListener("popstate", next, true);
+    }
+  });
+
+  test("pagehide flushes denied-storage pixels/query consumption across a new Document and BFCache", () => {
+    for (const suffix of ["", "?work=wujhat"]) {
+      const href = `https://local.test/en${suffix}`, b = browser(href);
+      Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+      b.mount(); b.settle();
+      const id = homeHistoryId(b.runtime.history.state), writes = b.historyWrites.length;
+      b.runtime.scrollY = 22000; b.runtime.dispatchEvent(new Event("scroll"));
+      b.notifyLayout();
+      b.runtime.dispatchEvent(Object.assign(new Event("pagehide"), { persisted: true }));
+      expect(b.historyWrites).toHaveLength(writes + 1);
+      expect(b.runtime.history.state[HOME_HISTORY_STATE_KEY]).toMatchObject({ id, scrollY: 22000 });
+      if (suffix) expect(b.runtime.history.state[HOME_HISTORY_STATE_KEY]).toHaveProperty("workQuery", "wujhat");
+      expect(b.timers.size).toBe(0); expect(b.frames.size).toBe(0);
+      b.runtime.scrollY = 10; b.capture(); b.notifyLayout(); b.flushCaptures();
+      expect(b.historyWrites).toHaveLength(writes + 1);
+      const fresh = browser(href);
+      fresh.runtime.performance.getEntriesByType = () => [{ type: suffix ? "reload" : "back_forward" }];
+      fresh.runtime.history.state = structuredClone(b.runtime.history.state);
+      Object.defineProperty(fresh.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+      expect(getHomeRestoreIntent(fresh.win)?.kind).toBe(suffix ? "reload" : "history");
+      fresh.mount(); fresh.settle();
+      expect(fresh.runtime.scrollY).toBeCloseTo(22000, 8);
+      b.setGeometry(mobile); b.runtime.innerWidth = 392; b.runtime.innerHeight = 932;
+      b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true })); b.settle();
+      expect(b.runtime.scrollY).toBe(22000);
+      expect(b.details.at(-1)?.intent.kind).toBe("history");
+      expect(homeHistoryId(b.runtime.history.state)).toBe(id);
+    }
+  });
+
+  test("hidden visibility flushes only its own selected entry and preserves unrelated Next fields", () => {
+    const b = browser(); b.mount(); b.settle();
+    const id = homeHistoryId(b.runtime.history.state);
+    b.runtime.history.state.__PRIVATE_NEXTJS_INTERNALS_TREE = { retained: "router-tree" };
+    b.runtime.history.state.otherApp = { retained: "custom-state" };
+    b.runtime.scrollY = 14000;
+    b.document.hidden = true; b.document.dispatchEvent(new Event("visibilitychange"));
+    expect(b.runtime.history.state).toMatchObject({
+      __NA: true, __PRIVATE_NEXTJS_INTERNALS_TREE: { retained: "router-tree" }, otherApp: { retained: "custom-state" },
+      [HOME_HISTORY_STATE_KEY]: { id, scrollY: 14000 },
+    });
+    const other = { __NA: true, [HOME_HISTORY_STATE_KEY]: checkpoint({ id: "same-url-destination", created: Date.now(), scrollY: 0 }) };
+    b.runtime.history.state = structuredClone(other);
+    const writes = b.historyWrites.length;
+    b.runtime.scrollY = 20000;
+    b.document.dispatchEvent(new Event("visibilitychange"));
+    b.runtime.dispatchEvent(new Event("pagehide"));
+    expect(b.runtime.history.state).toEqual(other);
+    expect(b.historyWrites).toHaveLength(writes);
+  });
+
+  test("rapid same-owner motion/reading remounts retain identity and pixels without native checkpoints", () => {
+    const b = browser(); let reading = false;
+    const options = { getPosition: () => reading ? position : null };
+    let dispose = b.mount(options); b.settle();
+    const id = homeHistoryId(b.runtime.history.state), writes = b.historyWrites.length;
+    for (let i = 0; i < 16; i++) {
+      b.runtime.scrollY = 1000 + i * 500;
+      b.runtime.dispatchEvent(new Event("scroll"));
+      dispose();
+      reading = !reading; b.setGeometry(reading ? null : desktop);
+      dispose = b.mount(options); b.settle(); b.flushCaptures();
+      expect(homeHistoryId(b.runtime.history.state)).toBe(id);
+      expect(b.latestCheckpoint()?.scrollY).toBe(1000 + i * 500);
+      expect(getHomeRestoreIntent(b.win)).toBeNull();
+    }
+    expect(b.historyWrites).toHaveLength(writes);
+    expect(b.scrolls).toHaveLength(0);
+    dispose(); dispose();
+    expect(b.runtime.count()).toBe(0); expect(b.document.count()).toBe(0);
+    expect(b.timers.size).toBe(0); expect(b.frames.size).toBe(0); expect(b.observers.size).toBe(0);
+  });
+
+  test("identity is synchronous before unavailable geometry/fonts and late font completion after cleanup does no work", async () => {
+    const b = browser(); let fontsReady!: () => void;
+    Object.assign(b.document, { fonts: { ready: new Promise<void>((resolve) => { fontsReady = resolve; }) } });
+    b.setGeometry(null);
+    const dispose = b.mount(), id = homeHistoryId(b.runtime.history.state);
+    expect(id).toBeTruthy(); expect(b.historyWrites).toHaveLength(1);
+    dispose();
+    fontsReady(); await Promise.resolve();
+    expect(b.historyWrites).toHaveLength(1);
+    expect(b.frames.size).toBe(0); expect(b.timers.size).toBe(0); expect(b.runtime.count()).toBe(0);
+    b.mount(); expect(homeHistoryId(b.runtime.history.state)).toBe(id);
+    expect(b.historyWrites).toHaveLength(1);
+  });
+
+  test("denied-storage document retention is bounded to 40 entries and cannot leak into a new Document", () => {
+    const b = browser();
+    Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+    const entries: { href: string; state: Record<string, unknown>; y: number }[] = [];
+    let dispose = () => {};
+    for (let i = 0; i < HOME_HISTORY_LIMIT + 2; i++) {
+      dispose();
+      b.runtime.location = new URL(`https://local.test/en?entry=${i}`); b.runtime.history.state = { __NA: true };
+      b.runtime.scrollY = 0;
+      dispose = b.mount(); b.settle();
+      entries.push({ href: b.runtime.location.href, state: structuredClone(b.runtime.history.state), y: 1000 + i * 100 });
+      b.runtime.scrollY = entries[i].y; b.capture();
+    }
+    const oldest = entries[0], recent = entries.at(-1)!;
+    dispose();
+    b.runtime.location = new URL(oldest.href); b.runtime.history.state = oldest.state;
+    expect(getHomeRestoreIntent(b.win)?.kind).toBe("native"); // Identity alone is not a position.
+    b.runtime.location = new URL(recent.href); b.runtime.history.state = recent.state;
+    expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "history", scrollY: recent.y });
+    const fresh = browser(recent.href);
+    fresh.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
+    fresh.runtime.history.state = structuredClone(recent.state);
+    Object.defineProperty(fresh.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+    expect(getHomeRestoreIntent(fresh.win)?.kind).toBe("native");
   });
 
   test("unavailable session storage does not block query or native navigation", () => {

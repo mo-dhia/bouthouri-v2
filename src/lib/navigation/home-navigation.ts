@@ -49,11 +49,20 @@ const mounts = new WeakMap<Document, () => void>();
 const homeOwners = new WeakMap<Document, { root: HTMLElement; path: string }>();
 const entryPrepared = new WeakSet<Document>();
 const visitedEntries = new WeakMap<Document, Map<string, string>>();
+const retainedCheckpoints = new WeakMap<Document, Map<string, HomeCheckpoint>>();
 const documentBoots = new WeakMap<Document, { fresh: boolean }>();
 const safeRead = (win: BrowserWindow, key: string) => { try { return win.sessionStorage.getItem(key); } catch { return null; } };
 const safeWrite = (win: BrowserWindow, key: string, value: string) => { try { win.sessionStorage.setItem(key, value); } catch { /* Native navigation still works. */ } };
 const safeRemove = (win: BrowserWindow, key: string) => { try { win.sessionStorage.removeItem(key); } catch { /* Optional storage. */ } };
 const currentKey = (win: BrowserWindow) => `${win.location.href}|${homeHistoryId(win.history.state) ?? ""}`;
+const retainedCheckpoint = (win: BrowserWindow) => retainedCheckpoints.get(win.document)?.get(homeHistoryId(win.history.state) ?? "");
+
+function rememberEntry(doc: Document, id: string, path: string) {
+  const visited = visitedEntries.get(doc) ?? new Map<string, string>();
+  visited.delete(id); visited.set(id, path);
+  if (visited.size > HOME_HISTORY_LIMIT) visited.delete(visited.keys().next().value!);
+  visitedEntries.set(doc, visited);
+}
 
 function browserWindow(): BrowserWindow | undefined {
   return typeof window === "undefined" ? undefined : window;
@@ -92,6 +101,7 @@ function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = fal
     href: win.location.href, navigationType: type ?? navigationType(win), historyState: win.history.state,
     localeReturn: safeRead(win, HOME_LOCALE_RETURN_KEY), workReturn: safeRead(win, HOME_WORK_RETURN_KEY),
     positions: safeRead(win, HOME_POSITIONS_KEY), homeReturn: safeRead(win, HOME_RETURN_KEY),
+    retainedCheckpoint: retainedCheckpoint(win),
     nativeScrollY: boot.fresh && !previous ? 0 : win.scrollY, now: Date.now(), historyTarget,
   };
   // Next may commit/unmount HOME in its own earlier popstate capture listener.
@@ -166,7 +176,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   let state = restoreState(win, undefined, options.historyTarget !== undefined, options.historyTarget), disposed = false, suspended = false;
   let path = win.location.pathname + win.location.search;
   let entryId = homeHistoryId(win.history.state) ?? win.crypto.randomUUID();
-  let checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now());
+  let checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now(), retainedCheckpoint(win));
   let raf: number | null = null, captureTimer: number | null = null;
   let signature = "", stable = 0, fontsReady = !doc.fonts;
   let previousRestoration: ScrollRestoration | null = null;
@@ -219,12 +229,30 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
       previousRestoration = null;
     }
   };
-  const save = (force = false, restored?: HomePosition, storageOnly = false) => {
-    if (disposed || suspended || !root()?.isConnected || (!storageOnly && !isCurrentHome()) || (state.intent && !state.applied && !restored)) return;
+  const writeHistory = (value: { version: 1; id: string }) => {
+    // On popstate the URL/state already belong to the destination, even while
+    // Next's earlier listener is still tearing down this outgoing owner.
+    if (disposed || suspended || !isCurrentHome() || (homeHistoryId(win.history.state) ?? entryId) !== entryId) return;
+    const old = win.history.state;
+    try {
+      win.history.replaceState({ ...(old && typeof old === "object" ? old : {}), [HOME_HISTORY_STATE_KEY]: value }, "");
+      state.key = currentKey(win);
+    } catch { /* Document memory/session storage remain usable. */ }
+  };
+  const prepareEntry = () => {
+    if (!isCurrentHome()) return;
+    // Identity precedes fonts/layout and any Next teardown. Normal captures
+    // never rewrite it or call the patched native History API.
+    if (!homeHistoryId(win.history.state)) writeHistory({ version: 1, id: entryId });
+    rememberEntry(doc, entryId, path);
+  };
+  const flushHistory = () => { if (checkpoint) writeHistory(checkpoint); };
+  const save = (force = false, restored?: HomePosition, outgoing = false) => {
+    if (disposed || suspended || !root()?.isConnected || (!outgoing && !isCurrentHome()) || (state.intent && !state.applied && !restored)) return;
     const current = restored ?? position();
     if (!current) return;
     if (!force && checkpoint && checkpoint.position.section === current.section &&
-      Math.abs(checkpoint.position.progress - current.progress) < 0.002) return;
+      Math.abs(checkpoint.position.progress - current.progress) < 0.002 && checkpoint.scrollY === Math.max(0, win.scrollY)) return;
     const next: HomeCheckpoint = {
       version: 1, id: entryId, path, created: Date.now(), position: current,
       scrollY: Math.max(0, win.scrollY),
@@ -232,17 +260,12 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
       ...(restored && state.intent?.kind === "work-query" ? { workQuery: state.intent.slug } : {}),
     };
     checkpoint = next;
-    const visited = visitedEntries.get(doc) ?? new Map<string, string>();
-    visited.delete(next.id); visited.set(next.id, next.path);
-    if (visited.size > HOME_HISTORY_LIMIT) visited.delete(visited.keys().next().value!);
-    visitedEntries.set(doc, visited);
+    rememberEntry(doc, next.id, next.path);
+    const retained = retainedCheckpoints.get(doc) ?? new Map<string, HomeCheckpoint>();
+    retained.delete(next.id); retained.set(next.id, next);
+    if (retained.size > HOME_HISTORY_LIMIT) retained.delete(retained.keys().next().value!);
+    retainedCheckpoints.set(doc, retained);
     safeWrite(win, HOME_POSITIONS_KEY, serializeHomeCheckpoints(safeRead(win, HOME_POSITIONS_KEY), next));
-    if (!storageOnly) {
-      const old = win.history.state;
-      // Preserve all app/Next fields; only our namespaced checkpoint changes.
-      try { win.history.replaceState({ ...(old && typeof old === "object" ? old : {}), [HOME_HISTORY_STATE_KEY]: next }, ""); } catch { /* Storage/native fallback remains. */ }
-      state.key = currentKey(win);
-    }
   };
   const queueCapture = () => {
     if (disposed || suspended || captureTimer !== null) return;
@@ -321,6 +344,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
       win.dispatchEvent(new win.CustomEvent<HomeRestoreDetail>(HOME_NAVIGATION_RESTORE_EVENT, { detail }));
       consume();
       save(true, appliedIntent.position ?? undefined);
+      flushHistory();
     } else save(true);
   };
   const wake = () => {
@@ -333,8 +357,9 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     state = restoreState(win, type, true);
     path = win.location.pathname + win.location.search;
     entryId = homeHistoryId(win.history.state) ?? win.crypto.randomUUID();
-    checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now());
+    checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now(), retainedCheckpoint(win));
     signature = ""; stable = 0;
+    prepareEntry();
     claimHistory();
     status(state.intent ? "pending" : "ready");
     wake();
@@ -352,6 +377,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     const current = position();
     if (!current) return;
     save(true, current);
+    flushHistory();
     // Without the source pin, locale departure uses identity height and beyond,
     // not the reading adapter's extended section bands (which include gaps).
     // Preserve checkpoint/within-HOME capture; only this departure is different.
@@ -378,9 +404,10 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   };
   const onScroll = () => { if (state.applied || !state.intent) queueCapture(); else wake(); };
   const onScrollEnd = () => save(true);
-  const onHidden = () => { if (doc.hidden) save(true); };
+  const onHidden = () => { if (doc.hidden) { save(true); flushHistory(); } };
   const onPageHide = () => {
     save(true);
+    flushHistory();
     suspended = true;
     if (raf !== null) win.cancelAnimationFrame(raf);
     if (captureTimer !== null) win.clearTimeout(captureTimer);
@@ -420,12 +447,16 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   doc.addEventListener("visibilitychange", onHidden);
   doc.addEventListener("readystatechange", wake);
   if (doc.fonts) void doc.fonts.ready.then(() => { fontsReady = true; wake(); }, () => { fontsReady = true; wake(); });
+  prepareEntry();
   claimHistory();
   status(state.intent && !state.applied ? "pending" : "ready");
 
   const cleanup = () => {
     if (disposed) return;
-    save(true);
+    // Next can select another URL/entry before removing this owner. Keep the
+    // outgoing capture under its own ID, without touching destination history.
+    // Mode/Strict Mode remounts need no native checkpoint either.
+    save(true, undefined, true);
     disposed = true;
     if (raf !== null) win.cancelAnimationFrame(raf);
     if (captureTimer !== null) win.clearTimeout(captureTimer);

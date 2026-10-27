@@ -92,12 +92,19 @@ export function homeHistoryId(state: unknown): string | null {
   return entry?.version === 1 && typeof entry.id === "string" && entry.id.length > 0 && entry.id.length <= 128 ? entry.id : null;
 }
 
-export function homeCheckpointFromState(state: unknown, raw: string | null, path: string, now: number): HomeCheckpoint | null {
+export function homeCheckpointFromState(state: unknown, raw: string | null, path: string, now: number, retained?: HomeCheckpoint | null): HomeCheckpoint | null {
   const direct = parseHomeCheckpoint(object(state)?.[HOME_HISTORY_STATE_KEY], path, now);
   const id = homeHistoryId(state);
   const saved = id ? parseHomeCheckpoint(object(parse(raw))?.[id], path, now) : null;
-  if (saved?.id === id && (!direct || saved.created > direct.created)) return saved;
-  return direct;
+  const memory = parseHomeCheckpoint(retained, path, now);
+  let latest = direct;
+  // Captures can share Date.now()'s millisecond with an older inline snapshot.
+  // External records own ties; document memory is the last capture even if a
+  // storage write was denied. All candidates need this ID, path and valid age.
+  for (const candidate of [saved, memory]) {
+    if (candidate && candidate.id === id && (!latest || candidate.created >= latest.created)) latest = candidate;
+  }
+  return latest;
 }
 
 export function serializeHomeCheckpoints(raw: string | null, checkpoint: HomeCheckpoint): string {
@@ -114,6 +121,8 @@ export type HomeRestoreContext = {
   localeReturn: string | null; workReturn: string | null; positions: string | null;
   nativeScrollY: number; now: number;
   homeReturn?: string | null;
+  /** Bounded per-Document fallback; never carried into an ordinary new document. */
+  retainedCheckpoint?: HomeCheckpoint | null;
   /** Only a router-owned explicit target, not an inferred history checkpoint. */
   historyTarget?: number | null;
 };
@@ -125,7 +134,7 @@ export function resolveHomeRestoreIntent(context: HomeRestoreContext): HomeResto
   const nativeY = Math.max(0, Number.isFinite(context.nativeScrollY) ? context.nativeScrollY : 0);
   const intent = (kind: HomeRestoreIntent["kind"], position: HomePosition | null, scrollY = nativeY): HomeRestoreIntent =>
     ({ kind, position, scrollY, skipEntry: true });
-  const checkpoint = homeCheckpointFromState(context.historyState, context.positions, url.pathname + url.search, context.now);
+  const checkpoint = homeCheckpointFromState(context.historyState, context.positions, url.pathname + url.search, context.now, context.retainedCheckpoint);
   if (typeof context.historyTarget === "number" && Number.isFinite(context.historyTarget) && context.historyTarget >= 0) {
     return intent("history", checkpoint?.position ?? { section: "hero", progress: 0 }, context.historyTarget);
   }

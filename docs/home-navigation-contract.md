@@ -396,3 +396,80 @@ do not claim production or broad browser/GPU parity.
 The parent owns full check/build/typegen and production SSR audit. No server was
 stopped, restarted or otherwise managed by this pass. No commit is requested or
 created by this implementer.
+
+## Native history persistence performance contract (R19 correction)
+
+The R19 parent-owned count probes at
+`/tmp/gazzar-native-r19/source-history-write-counts.json` and
+`/tmp/gazzar-native-r19/local-history-write-counts.json` established extra native
+history work: under the same70 instant inputs, source made0 `replaceState` calls
+and local made146, all carrying `gazzarHomeNavigation`. Native `scrollend` can
+fire for each instant input; it is not an inactivity boundary. These counts
+justify removing routine native history checkpoints. They do not establish a
+presented-frame improvement, a SessionHistory IPC cause, or a stutter cure.
+
+`mountHomeNavigation` now writes a missing namespaced `{ version: 1, id }`
+identity synchronously, before fonts, geometry frames, or destination-owner
+callbacks. That stable ID remains in the selected browser entry. A namespaced
+inline record can therefore be an identity alone or an older full checkpoint;
+consumers must not assume its pixels/semantic position are current. No
+`pushState`/`replaceState` method is wrapped, replaced or globally suppressed.
+Every native write still merges unrelated app and Next fields, without changing
+the URL. The installed Next native-history integration guide was read at
+`node_modules/next/dist/docs/01-app/01-getting-started/04-linking-and-navigating.md`.
+
+Routine scroll capture remains throttled at160ms, and `scrollend` still captures
+immediately. Both save exact native pixels and the displayed semantic position
+to the existing session-storage table and a bounded document-local map. Changed
+pixels are retained even when their semantic fraction has not changed. Neither
+path calls native history. Cleanup captures under the outgoing owner's ID even
+when Next has already selected another URL/state, provided its root is still
+connected; it never writes that outgoing record into destination history.
+Same-owner quiet/motion and Strict Mode remounts need no native checkpoint.
+
+Native full-checkpoint writes are limited to successful restore/query/layout
+transactions, eligible native-link departures, hidden visibility and pagehide.
+They require a connected current HOME root, the exact owned pathname/search and
+the owned selected entry ID. In particular, a same-URL destination with a
+different ID cannot receive an outgoing lifecycle flush. Pagehide captures and
+flushes before suspending timers/frames; persisted pageshow resumes using the
+existing Back/Forward intent policy. This inline boundary fallback preserves a
+hard-document history visit or consumed-query reload when storage is denied.
+
+`homeCheckpointFromState` accepts an optional fifth `HomeCheckpoint | null`
+argument for document retention; `HomeRestoreContext.retainedCheckpoint` is the
+matching optional pure-selector input. No consumer integration change is needed.
+Selection chooses the newest valid record for the selected ID and exact
+pathname/search. Equal timestamps prefer document memory, then session storage,
+then inline state, because multiple captures can share a millisecond. Every
+candidate still passes the existing version, ID, path, nonfuture timestamp,
+semantic fraction, finite nonnegative pixel and known-query validation. A
+newer malformed, wrong-ID, wrong-path/search or future external record cannot
+displace a valid inline checkpoint. The explicit router target and existing
+HOME/query/work/locale/hash/history source precedence remain intact.
+
+Document retention and visited-entry recognition each keep at most40 entries in
+WeakMap-owned maps. They survive controller remounts and an earlier Next capture
+listener's synchronous teardown, so destination intent can be selected before
+the new HOME mounts even while performance timing still says `navigate`.
+They are not copied to a new Document. With denied storage, an evicted entry or
+an abrupt document loss before a lifecycle flush has only its last inline
+boundary fallback; a missing position uses the existing native fallback. No
+unbounded document cache or permanent document listener is added.
+
+Fresh-document/reload zero and manual browser-restoration policy, the generic
+HOME30-minute return, locale capture/lifetime and quiet-reset ordering, retained
+semantic resize/mode anchors, per-entry history pixels, explicit overrides,
+query consumption and native hash behavior keep their existing contracts.
+
+Offline validation passes **59 focused navigation/reading tests /920 assertions**
+(the original50 tests remain), owned-file ESLint, plain
+`tsc --noEmit --incremental false` and `git diff --check`. New regressions count
+native writes for70 instant inputs with repeated scrollend/timer captures;
+exercise actual capture/bubble listener removal with Next teardown first under
+available, denied and write-denied storage; verify latest external selection and
+invalid-record rejection; cover pagehide into a new Document and BFCache,
+selected-entry lifecycle isolation, rapid mode/remount cleanup, pending fonts,
+and the40-entry document-memory bound. Browser/OS/server/build/typegen, native
+cost analysis, production review and commits remain parent-owned. No live
+performance or full HOME parity acceptance is claimed by this offline change.
