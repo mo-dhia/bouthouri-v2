@@ -22,7 +22,7 @@ import {
 
 1. **Hero owner:** call `prepareHomeFreshEntry()` and then
    `getHomeRestoreIntent()` synchronously before choosing entry/loading mode.
-   The former returns true for the first ordinary fresh reload entry decision
+   The former returns true for the first ordinary fresh document entry decision
    in this document and resets native/Lenis scroll to zero. Use
    `(freshReloadEntry || scrollY < 20)` in `shouldEnter`, retaining the existing
    entry-phase/hash/restore guards. The reset never repeats on a quiet/motion or
@@ -133,20 +133,21 @@ match the recovered public source exactly:
 
 These differ from chapter/whisper labels and visual overlap ranges. Semantic
 fraction is mapped through the destination clock/geometry, including the
-nonlinear opening and the input compression after score 100. Locale/work/query
-restoration uses semantic position. The current implementation's **initial
-history visit uses that entry's saved pixels**, clamped to the current extent.
-This matched the accumulated R5 source history, where Back to an EN entry
-captured at desktop y16362 restored y16362/score489.35 at the narrow viewport.
-It is not established as a universal source rule: R6's pristine control instead
-returns source EN y12091/312 while local returns16362/489.35. This remains open
-for source lifecycle diagnosis and a further correction.
-After this first history application, the actual restored frame supplies that
+nonlinear opening and the input compression after score 100. HOME/work/locale
+return and query intents use semantic positions. A history visit with no stronger
+pending return uses that entry's saved pixels, clamped to the current extent.
+The R6 correction adds the previously missing generic HOME return, so a pristine
+EN312→AR→footer→Back selects EN312 in the new viewport. An intervening fresh
+navigation clears that return and preserves the separately observed pixel
+fallback. This implementation awaits live and independent acceptance.
+After a pixel history application, the actual restored frame supplies that
 visit's semantic annotation for subsequent in-mount layout changes. Later
 captures update the history checkpoint without replacing that active anchor.
 
-Locale handoff expires after **2 minutes**; a pending project return expires
-after **30 minutes**. Future timestamps, malformed versions/positions, unknown
+Locale handoff expires after **2 minutes**; generic HOME and pending project
+returns expire after **30 minutes**. A generic HOME record belongs to its exact
+HOME locale path. Visiting the other locale leaves it stored; successful matching
+restoration removes it. Future timestamps, malformed versions/positions, unknown
 slugs, wrong target paths and out-of-range fractions are rejected. History
 checkpoints live for the tab session, with at most 40 storage entries. They are
 keyed by an entry ID plus exact pathname/search, never merely by locale.
@@ -163,27 +164,43 @@ push creates a distinct ID and continues to use the pending locale intent.
 This avoids consuming the outgoing locale's position as the destination and
 preserves its saved footer for Forward even when route teardown runs first.
 
-Intent precedence: valid locale handoff; an unconsumed explicit `?work=slug`;
-native hash; matching history checkpoint on Back/Forward; pending project
-return; matching reload checkpoint **only with a valid consumed work query**;
-native Back/Forward/scroll restoration. An ordinary HOME reload without those
-explicit intents is fresh, even when the browser restores a previous scroll
-offset or retains a history checkpoint. It awaits the authored entry choice at
-zero instead of treating those pixels as restore intent (R5-01).
+Intent precedence: an actual explicit router `historyTarget`; generic HOME
+return; an unconsumed explicit `?work=slug`; pending project return; locale return;
+native hash; matching history checkpoint on Back/Forward; matching reload
+checkpoint **only with a valid consumed work query**; native fallback. Optional
+`mountHomeNavigation({ historyTarget })` represents a real router transaction;
+it must never be inferred from every checkpoint.
+
+The document boot guard runs once per `Document`, using the original navigation
+timing URL to distinguish a new document from a later Next route remount. A fresh
+HOME navigation/reload clears generic HOME, project and locale pending returns
+unless an exact-target route handoff is younger than30s. Locale departure writes
+that short marker alongside its outgoing HOME and incoming locale records. A
+same-document incoming locale consumes the marker without repeating fresh
+clearing. No visited-entry state crosses into a new document. The source head
+guard itself ignores query/hash; the clone retains its existing explicit URL
+intent API after clearing pending records, without claiming a new cold source
+query/hash comparison.
+
+An ordinary HOME reload without explicit intents awaits the authored entry at
+zero even if the browser restores pixels or retains a checkpoint (R5-01).
 A direct fresh visit does not restore an unrelated old history position.
 Successful query application marks that history entry, retaining its original
 URL; query reload/Back then restore the latest checkpoint instead of repeatedly
-seeking the query's nominal project moment. Locale/project records are consumed
-only after successful application. A BFCache `pageshow.persisted` starts a new
-history visit without entry replay; its initial selection follows the saved-pixel
-history rule. Handoff expiry is checked on intake, not used to discard an active
+seeking the query's nominal project moment. Matching HOME/locale/project records
+are consumed only after successful application; the synchronous getter remains
+non-consuming while geometry is pending. A BFCache `pageshow.persisted` starts a
+history visit without entry replay and follows the same intent precedence.
+Handoff expiry is checked on intake, not used to discard an active
 mount's restoration anchor later. Storage/security failures leave native
 navigation functional; the current history state can still retain a checkpoint.
 
 ## Links and scope
 
-The controller observes eligible same-origin HOME EN↔AR anchors and these exact
-case destinations. It does not prevent the click, replace its href, force a
+The controller observes eligible same-origin HOME departures to EN↔AR,
+vision/services/projects/contact, and the exact case destinations below. They
+save the displayed generic HOME position; locale and case links also save their
+specific handoff. It does not prevent the click, replace its href, force a
 router, synthesize a page or point to the public site's case pages:
 
 | Slug | HOME return score | Preserved href |
@@ -209,8 +226,12 @@ evidence that case-page parity or a case router has been implemented.
 ## Validation and handoff status
 
 Implemented in `home-position.ts`, `home-navigation-state.ts` and
-`home-navigation.ts`. R5 targeted validation: **35 navigation tests / 427 assertions
-pass** (with the parent's reading-adapter regression: **36 tests / 439 assertions**).
+`home-navigation.ts`. R6 correction's implementer reports **45 targeted tests /
+536 assertions**, including the parent's reading-adapter regression, plus owned
+lint and scoped strict TypeScript. These cover the generic return/boot guard and
+both clean and extra-fresh-navigation history branches. Live validation is
+waiting for the shared browser slot; parent build and fresh review remain pending.
+Previous R5 validation was35 navigation tests/427 assertions (36/439 with reading).
 ESLint passes for the owned TypeScript files, tests and minimal hero integration;
 plain `tsc --noEmit --incremental false` passes (no Next build/typegen).
 
