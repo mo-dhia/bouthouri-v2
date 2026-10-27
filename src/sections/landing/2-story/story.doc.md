@@ -15,6 +15,12 @@ An object failure latches the shared HOME reading fallback until route unmount.
 `story-camera-history.ts` adds only the source's future-camera-start initialization
 on its 200ms resize refresh and restored first frame; it does not alter the pure
 sampler. Shared frames are recorded before models/fonts/GPU boot completes.
+`story-optical-history.ts` preserves the separate 74..82 veil tween's initialized
+FROM and reverse plateau. Parent clock events sample both histories immediately;
+the scene's sole demand RAF owns GPU draws, coalescing scroll/resize/idle/pointer
+requests. No alternate-native-frame frequency is promised: callback ordering and
+ongoing interaction affect which shared frame a draw consumes. The direct CPU
+work-origin handoff after306 and finite warm/static draws remain separate.
 `story-glasses.ts`, `story-shadow.ts`, `story-logo.ts` and `story-type.ts` own
 their specific visual responsibilities. `story-assets.ts` caches network bytes
 only, parses a fresh model graph per mount and clones materials before mutation.
@@ -51,15 +57,14 @@ are owned/cancelled separately from the 200ms camera-history refresh.
 The softbox `DataTexture` must stay explicitly **sRGB**, matching source
 R3F's automatic material-map conversion. Linear decoding and independent PMREM
 generators were the two causes of R4-01. Lens constants remain unchanged.
-The scene contract records exact sampled GPU fields and optical crops, the R6
-event-order traces, and remaining validation boundaries. Current focused checks
-pass 8 tests/420 assertions. The dev missing-C symptom at CLARITY 174 remains
-OPEN even after motion remount; atlas equality does not certify its text. Root
-owns the fresh production/R7 check. Root added the already-active studio guard
-in a315984 after the scene handoff; the full check passes84 tests/3172 assertions.
-Root production cold/remount samples at174 show complete CLARITY; repeated source
-captures separately show intermittent letter omissions. R7 must use stable
-capture controls and independently repeat the complete-title check.
+The scene contract records exact sampled GPU fields and optical crops, R6/R7
+event-order traces, preserved failed attempts and remaining validation boundaries.
+Focused checks pass9 tests/446 assertions. R7 independently passes the R6 reload
+and complete-CLARITY cold/remount controls. The new R7 capture/veil/demand correction
+has two measured dev repeats; root owns production build and fresh R8 acceptance.
+Static motion40→reading currently exposes a separate opening/chrome and retained
+environment mismatch. Zero settled static draws do not certify pixel parity;
+fresh reading versus retained motion cache require separate controls.
 
 Original assets are local at `/assets/models/` and `/assets/textures/`:
 

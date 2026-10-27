@@ -5,6 +5,7 @@ import { createSculptures } from "./story-logo";
 import { createStoryPointer } from "./story-pointer";
 import { createStoryCameraHistory } from "./story-camera-history";
 import { createStoryEnvironmentLifecycle } from "./story-environment-lifecycle";
+import { createStoryOpticalHistory } from "./story-optical-history";
 import { uiStore } from "@/store/uiStore";
 import { sampleStoryScore, type StoryFrame } from "./story-score";
 import { createSpatialType } from "./story-type";
@@ -83,10 +84,11 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   }
   const pointer = createStoryPointer(canvas, camera, requestRender);
   const cameraHistory = createStoryCameraHistory();
-  if (!staticMode) cameraHistory.sample(frame, width < 701);
+  const opticalHistory = createStoryOpticalHistory();
+  if (!staticMode) opticalHistory.sample(cameraHistory.sample(frame, width < 701));
   if (staticMode) pointer.setActive(false);
   const currentScore = () => {
-    const score = staticMode ? sampleStoryScore({ time: 0, openingTime: 26, progress: 26 / 740 }, width < 701) : cameraHistory.sample(frame, width < 701);
+    const score = staticMode ? sampleStoryScore({ time: 0, openingTime: 26, progress: 26 / 740 }, width < 701) : opticalHistory.sample(cameraHistory.sample(frame, width < 701));
     if (staticMode) score.idle = 0;
     return score;
   };
@@ -116,6 +118,8 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     canvas.dataset.visualTime = score.time.toFixed(3); canvas.dataset.emergence = score.emergence.toFixed(3);
     canvas.dataset.camera = [camera.position.x, camera.position.y, camera.position.z].map((n) => n.toFixed(5)).join(",");
     canvas.dataset.environmentVersion = String(environments?.glasses.texture.pmremVersion ?? 0);
+    canvas.dataset.opticalVeil = score.opticalVeil.toFixed(6);
+    canvas.dataset.glassesVisible = String(glasses.root.visible);
     if (!ready) { ready = true; stage.dataset.storyBoot = "ready"; stage.dataset.storyScene = "ready"; options.onReady?.(); }
     if (!warm && !staticMode && (pointerMoving || glassMoving || logoMoving)) requestRender();
   }
@@ -123,7 +127,11 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     width = Math.max(1, host.clientWidth || stage.clientWidth);
     height = Math.max(1, host.clientHeight || stage.clientHeight);
     const rect = stage.getBoundingClientRect(); visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
-    if (sceneReady && !document.hidden && !menuOpen && visible) environmentLifecycle?.measure(bounds());
+    // Source react-use-measure routes ResizeObserver through its 50ms scroll
+    // debounce too. Coalesce capture with that existing full-bounds measure:
+    // an immediate scroll must update the shared frame before cube invalidation
+    // can cause a resize-owned draw of the previous glasses pose.
+    if (sceneReady) scrollMeasure();
     renderer.setPixelRatio(Math.min(Math.max(1, devicePixelRatio), width < 701 ? 1.5 : 2));
     renderer.setSize(width, height, false);
     camera.aspect = width / height; camera.updateProjectionMatrix();
@@ -136,13 +144,14 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     const next = (event as CustomEvent<StoryFrame>).detail;
     if (!next || !Number.isFinite(next.time) || !Number.isFinite(next.openingTime)) return;
     frame = next;
-    // The source clock exists before optional GPU assets. Retain that camera
-    // history even when render() cannot draw yet or the stage is offscreen.
-    cameraHistory.sample(frame, width < 701);
+    // The source clock exists before optional GPU assets. Retain both property
+    // histories even when render() cannot draw yet or the stage is offscreen.
+    opticalHistory.sample(cameraHistory.sample(frame, width < 701));
     stage.dataset.storyActivity = visible ? document.hidden ? "hidden" : menuOpen ? "menu" : "visible" : "offscreen";
-    // The parent dispatches inside its scroll-engine RAF. Render synchronously in
-    // that owner; the local RAF is exclusively for idle/pointer settling.
-    if (frameId) { cancelAnimationFrame(frameId); frameId = 0; }
+    // The parent owns time, not GPU draws. Coalesce clock/resize/pointer demand
+    // into the scene's existing RAF, like the source demand-rendered Canvas.
+    // Drawing here skips that invalidation boundary and can initialize native
+    // CubeUV work in a different transmission clear state.
     if (frame.time >= 306) {
       canvas.style.opacity = "0"; stopFrame();
       // Restores can skip Ideas entirely. Its settled pen origin is a CPU
@@ -152,7 +161,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
         camera.updateMatrixWorld(); typography.update(frame.time);
       }
     }
-    else render(performance.now());
+    else requestRender();
   }
   const visibility = () => {
     if (document.hidden) { pointer.setActive(false); stopFrame(); }
@@ -180,7 +189,10 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   let cameraRefreshTimer = 0;
   const cameraRefresh = () => {
     clearTimeout(cameraRefreshTimer);
-    cameraRefreshTimer = window.setTimeout(() => { cameraRefreshTimer = 0; if (!staticMode && !disposed) cameraHistory.refresh(); }, 200);
+    cameraRefreshTimer = window.setTimeout(() => {
+      cameraRefreshTimer = 0;
+      if (!staticMode && !disposed) { cameraHistory.refresh(); opticalHistory.refresh(); }
+    }, 200);
   };
   window.addEventListener("resize", cameraRefresh, { passive: true });
   function measureEnvironment() {

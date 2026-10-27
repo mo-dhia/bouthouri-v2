@@ -3,6 +3,7 @@ import { Color, Matrix4, Mesh, MeshBasicMaterial, PerspectiveCamera, SRGBColorSp
 import { createStoryEnvironments } from "../src/sections/landing/2-story/story-assets";
 import { createStoryCameraHistory } from "../src/sections/landing/2-story/story-camera-history";
 import { createStoryEnvironmentLifecycle } from "../src/sections/landing/2-story/story-environment-lifecycle";
+import { createStoryOpticalHistory } from "../src/sections/landing/2-story/story-optical-history";
 import { sampleStoryScore } from "../src/sections/landing/2-story/story-score";
 import { createMaterialProtection } from "../src/sections/landing/2-story/story-material-protection";
 import { projectTerminalGlyph, terminalGlyph } from "../src/sections/landing/2-story/story-text-metrics";
@@ -103,6 +104,34 @@ test("camera refresh preserves source future-start history without changing auth
   expect(restored.sample(frame(59.997161), false).distance).toBeCloseTo(close.distance, 12);
   const remounted = createStoryCameraHistory(); remounted.sample(frame(0), false);
   expect(remounted.sample(frame(59.997161), false).distance).toBeCloseTo(sampleStoryScore(frame(59.997161)).distance, 12);
+});
+
+test("veil refresh preserves the source 74-tween FROM and reverse plateau without changing authored scores", () => {
+  const score = (time: number) => sampleStoryScore({ time, openingTime: 26, progress: (26 + time) / 740 });
+  const normal = createStoryOpticalHistory(); normal.sample(score(0));
+  for (const time of [40, 60, 67, 71, 72.502511, 74.353582, 78.434104, 174.007279, 72.502511, 70.491004, 40]) {
+    expect(normal.sample(score(time)).opticalVeil).toBeCloseTo(score(time).opticalVeil, 12);
+  }
+  const refreshed = createStoryOpticalHistory(); refreshed.sample(score(0)); refreshed.sample(score(40.000852)); refreshed.refresh();
+  refreshed.sample(score(174.007279));
+  // Live source after40 refresh ->174 ->72.502511: veil0, darkness1, visible root.
+  const reverse = refreshed.sample(score(72.502511));
+  expect(reverse.opticalVeil).toBe(0); expect(reverse.opacity).toBe(1);
+  expect(reverse.darkness).toBe(1); expect(reverse.distance).toBe(score(72.502511).distance);
+  // Repeated/hidden same-frame sampling does not erase the held FROM value.
+  expect(refreshed.sample(score(72.502511)).opticalVeil).toBe(0);
+  refreshed.refresh(); expect(refreshed.sample(score(72.502511)).opticalVeil).toBe(0);
+  expect(refreshed.sample(score(70.491004)).opticalVeil).toBeCloseTo(0.979274, 6);
+  expect(refreshed.sample(score(72.502511)).opticalVeil).toBe(1);
+  expect(refreshed.sample(score(74.353582)).opticalVeil).toBe(0);
+  expect(refreshed.sample(score(78.434104)).opticalVeil).toBe(0);
+  expect(refreshed.sample(score(72.502511)).opticalVeil).toBe(0);
+  expect(refreshed.sample(score(69)).opticalVeil).toBeCloseTo(score(69).opticalVeil, 12);
+  const restored = createStoryOpticalHistory(); restored.sample(score(40.000852)); restored.sample(score(174));
+  expect(restored.sample(score(72.502511)).opticalVeil).toBe(0);
+  const remounted = createStoryOpticalHistory(); remounted.sample(score(0)); remounted.sample(score(174));
+  expect(remounted.sample(score(72.502511)).opticalVeil).toBe(1);
+  expect(score(72.502511).opticalVeil).toBe(1);
 });
 
 describe("shared material protection", () => {

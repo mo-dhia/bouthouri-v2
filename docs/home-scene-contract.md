@@ -11,6 +11,13 @@ all SSR content, stage pinning, and the central clock under `3-journey/`.
 - The scene reads `stage.dataset.storyTime`, `openingTime`, and `progress` at
   startup, and listens on **the stage** for `journey-frame`, whose detail is
   `{ time, openingTime, progress }`. No second scroll mapping or DOM animation.
+- Clock/history sampling is synchronous in that event, including before GPU
+  readiness. GPU draws are coalesced into the scene's one demand RAF alongside
+  idle/pointer work; they are not synchronous child draws in the parent RAF.
+  The scene consumes the latest available shared frame without changing scrub
+  duration or authored camera sampling. Scores >=306 still project the settled
+  Ideas origin directly on the CPU and cancel object GPU demand. Finite warm
+  and static boot draws retain their existing readiness/failure gates.
 - Integrate the default `StorySceneGate` from
   `src/sections/landing/2-story/story-scene-gate.tsx` once in the server journey.
   It defers both renderers. Its motion mode mounts the fixed visible environment
@@ -367,6 +374,123 @@ from implementation and fresh documents. `release.json` records EN/y0,
 explicitly released to navigation with no pending calls. No later browser calls
 belong to this scene pass.
 
+## R7-01 capture, veil history and GPU demand correction
+
+Independent R7 found a distinct branch: hidden entry tail →40 sharp →same-size
+resize →actual canvas width1912→1910 plus immediate native174 →restore1912 at174
+→reverse40. Production's darker field remained after settling, with MAE3.39/3.63.
+The camera at60/67 already matched; lens constants were not changed.
+
+Three separate source behaviors matter here:
+
+1. Source react-use-measure connects ResizeObserver to its scroll-debounced
+   callback (`glasses-runtime-formatted.js`,1923), not an immediate capture.
+   Our existing50ms full-bounds measure now owns both notifications. This avoids
+   recapturing/converting256 on a stale40 pose before the next shared frame.
+   A geometry-only change still flushes and invalidates without another scroll
+   or clock event; identical bounds remain a capture no-op.
+2. The public extension adds a second opticalVeil tween74..82 to0, sine.inOut
+   (`11dg_viff64mz.js`,687). The200ms refresh can initialize its FROM from the
+   displayed veil0 at40. Reversing below74 restores that FROM; the completed
+   66..71 tween does not write again until its own time changes below71.
+   `story-optical-history.ts` preserves only this property history, alongside
+   the separate camera adapter. The authored sampler, camera and parent scrub
+   remain unchanged. Each shared frame is recorded synchronously before GPU
+   readiness; new motion/HOME mounts reset the adapter and cancel its refresh
+   timer/listener on disposal.
+3. Source R3F demand invalidation queues GPU work. `journey-frame` now requests
+   our existing Three RAF instead of cancelling it and drawing synchronously
+   in the parent callback. CPU/history sampling and the direct >=306 origin
+   handoff remain synchronous. Idle/pointer/resize use the same draw owner.
+   Finite warm/static draws and hidden/menu/failure gates remain unchanged.
+
+This is not an alternate-native-frame rate limiter. Bounded request/draw traces
+show both source and local can queue/draw on consecutive native RAFs; callback
+order and ongoing interaction determine which shared frame is consumed. In the
+changed local trace the queued scene draw precedes the next parent clock event,
+consuming the last available frame. No fixed frame interval, synthetic target
+score, parent clock change or forced hidden256 conversion was added. The
+scene.environment-forces-hidden-conversion hypothesis was falsified.
+
+Native r180 PMREM consumes the current renderer clear state. A transmission
+prepass changes that clear to white/alpha.5. At the very near return pose a
+transmissive nose pad can be culled, leaving the dark/alpha0 clear instead; that
+state affects unused mixed-resolution scratch texels. Probes identified the
+native CubemapToCubeUV target and verified it was exactly
+`renderer.properties.get(Lens_L.material).envMap`, not an arbitrary bound
+texture. Probes observed natural captures/conversions without requesting any.
+
+| Trace | First return256 score | Camera Z | Clear/alpha | Lens atlas hash |
+| --- | ---: | ---: | --- | ---: |
+| Earlier coalescing+veil attempt1 |73.5771|1.14839|white/.5|1639153093|
+| Earlier coalescing+veil attempt2, **failed** |73.9648|.77013|dark/0|3618864581|
+| Changed GPU demand repeat1 |73.4808|1.24230|white/.5|1639153093|
+| Changed GPU demand repeat2 |73.3849|1.33596|white/.5|1639153093|
+| Source repeat1 |72.67|2.03017|white/.5|1639153093|
+| Source repeat2 |73.15|1.56908|white/.5|1639153093|
+
+Both changed local native Lens_L fields match source mean.1720630727537961.
+The private512 field remains2799271365/mean.010923630587058142. Exact first-visible
+scores differ with scheduling; the evidence does not certify an identical RAF
+phase or immunity to every performance history. Earlier failed attempts are
+retained; the veil correction alone was insufficient.
+
+Actual1912×1009/DPR1 dev3000 crops (200,180)–(1500,800),8-bit RGB:
+
+| Controlled image | MAE | p99 |
+| --- | ---: | ---: |
+| Exact-trigger repeat1 return40 |.5383|9|
+| Exact-trigger repeat2 return40 |.5231|11|
+| Continuing60 /67 |.3144 /.0144|3 /1|
+| Foreground fresh /completed40 reload |.3150 /.2520|7 /5|
+| Hidden-entry sharp /geometry-only2px broad |.6066 /.5584|13 /13|
+| Neutral complete CLARITY remount174 |.0784|1|
+| Neutral128 repeated pointer control |.1153|1|
+
+The first source40/60 captureVisibleTab PNGs had stale1036px image height despite
+the measured1009px DOM. They are preserved and excluded. Matching1009px CDP
+captures are graded; repeat1's usable source40 capture is a later reverse40 in
+the same mount/atlas after60/67, explicitly indexed. Repeat2 has the direct
+exact-trigger return capture. Initial sculpture captures had unlike residual
+pointer or partial source caption glyphs; actual200,150→0,0 input after the
+object is visible and2.5s settling gives the neutral128/174 controls above.
+Those earlier images also remain in the evidence index.
+
+### Separate reading-mode boundary remains open
+
+Motion40→Reduce motion was checked separately, without changing its implementation.
+Both documents retain nativeY5263,1912×1009/DPR1, and document height12446. The
+actual `#top.stage` has client dimensions1912×11437, rect top−4254 and height
+11436.828125. Source's main score owner becomes time0/opening0/progress0 and its
+canvas draws0. Local parent stage attributes retain40.0008/26/.08919 while its
+new static canvas draws0 at camera[0,.12,9.8],envVersion2. The settled static
+object has one canvas and zero draws during500ms, which is a readiness/demand
+check, **not static pixel acceptance**.
+
+At subsequent nativeY1009, source has a fitted headline/PERSPECTIVE00 and broad
+static lens field; local has a clipped larger headline/LOOKCLOSER09 and sharp
+field. Source may retain the motion renderer/cache whereas local mounts a new
+glasses-only renderer. Direct fresh-reading startup was not tested in this pass;
+it must not be conflated with this retained-history transition. Parent owns the
+opening/chrome correction; static renderer/cache behavior is a separate focused
+task. No parent journey, shell, navigation or root files changed here.
+
+Canonical evidence: `/tmp/gazzar-scene-r7/demand-evidence.json`,
+`demand-metrics.json`, `demand-{source-,}trace-{1,2}.json`, and
+`reading-transition.json`. The latter includes exact fields, all8canvas bounds
+and original static PNG paths; copied images are under `screenshots/`.
+Scoped lint/plain TypeScript and9 focused tests/446 assertions pass. Root owns
+production build and independent R8 acceptance; R7-01 is a measured dev correction,
+not a declaration of full HOME or reading-mode parity.
+
+The original source5/local11 pair was explicitly RELEASED after fresh assignment
+and QUIET entry atEN/y0,1912×1009/DPR1, motion enabled, menus closed and audio off.
+All method wrappers/listeners/RAF probes were restored; fresh documents clear the
+research module cache. Probe globals/width overrides/iframes are absent. Local
+heroPhase/root heroBoot are complete, entry buttons hidden and scroll lock empty.
+`/tmp/gazzar-scene-r7/release.json` records the final state. No later scene browser
+calls are authorized without a new slot; root owns subsequent changes/review.
+
 ## Verification and remaining scope
 
 Verified on 2026-10-27 using the explicitly loaned Vaelix pair. Earlier pass-2
@@ -374,7 +498,7 @@ checks used 1400x950/DPR1; R4/R6 lifecycle measurements above used 1912x1009/DPR
 
 - Original asset SHA-256 values match the independent home audit.
 - Scoped ESLint, `tsc --noEmit --incremental false`, and
-  `bun test tests/story-scene.test.ts` pass (8 tests, 420 assertions). The
+  `bun test tests/story-scene.test.ts` pass (9 tests, 446 assertions). The
   parent also reports its full check after the active guard:84 tests/3172 assertions.
   Full build/typegen and production SSR auditing remain parent-owned, as requested.
 - Compared 205,800 route/sample values against the actual public source at
@@ -418,10 +542,10 @@ Live source fixture values (stage sizes, not necessarily viewport sizes):
 | 844x600 | EN | .8749433619431227 | .7087184771846298 | 6.562339747950105 |
 | 844x600 | AR | .149323879595268 | .7474329737969402 | 4.664220211789373 |
 
-R6-01's bounds/cache ordering correction is implemented and measured in dev;
-fresh production acceptance remains parent/R7-owned. Missing C in CLARITY and
-fresh independent acceptance remain explicit coverage items. The root production
-text samples above pass; R7 still must repeat them. Physical
+R6-01 and complete CLARITY cold/remount controls independently pass in R7.
+The additional R7-01 correction above still needs root production/R8 acceptance.
+Reading opening/chrome and retained static environment remain explicit open
+boundaries. Physical
 coarse-touch hardware, other GPU/browser combinations
 and a comprehensive DPR/breakpoint screenshot sweep remain unverified coverage.
 The previous raster-text, missing idle drift, missing shell-pressure bridge and
