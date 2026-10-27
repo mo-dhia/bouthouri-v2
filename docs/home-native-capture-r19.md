@@ -31,11 +31,12 @@ end markers must still determine analysis boundaries.
 | Source optical | Graphics-derived named threads, 16 MiB, 1ms | Fast-run receipt export unavailable | `source-optical.json.gz` |
 | Local optical | Same 16 MiB/1ms configuration | 70; 3801ms; 181 observed RAF callbacks, all focused/visible | `local-optical.json.gz`, `local-optical-driver.json` |
 | Source footer | `pid:2,pid:18913`, 64 MiB, 1ms | 450; 18401ms; 1103 observed callbacks, all focused/visible | `source-footer.json.gz`, `source-footer-driver.json` |
-| Local footer | `pid:2,pid:52983`, 64 MiB, 1ms | 450; 18420ms; 1086 observed callbacks, all focused/visible | `local-footer.json.gz`, `local-footer-driver.json` |
+| Local footer, excluded stale filter | `pid:2,pid:52983`, 64 MiB, 1ms | 450; 18420ms; 1086 observed callbacks, all focused/visible | `local-footer.json.gz`, `local-footer-driver.json` |
+| Local footer replacement | `pid:2,pid:53900`, 64 MiB, 1ms | 450; 18411ms; 1083 observed callbacks, all focused/visible | `local-footer-replacement.json.gz`, `local-footer-replacement-driver.json` |
 
 Paths in the table are under `/tmp/gazzar-native-r19/`. The capture manifest
-records file sizes, SHA-256 hashes and run metadata. Optical uses70 targets over
-3.8s; footer450 over 18.4s. Observed RAF callback counts are not presented FPS.
+records file sizes, SHA-256 hashes and run metadata. Optical uses 70 targets over
+3.8s; footer 450 over 18.4s. Observed RAF callback counts are not presented FPS.
 The two footer filters select the parent and respective content process;
 PID 2 is the actual Flatpak PID namespace parent, not host OS PID 2. Source footer
 contains 127 parent threads and 33 content threads. This collection has overhead.
@@ -55,10 +56,10 @@ source samples. Its fast-run driver export was lost; the older
 not** be substituted as receipt evidence for this file.
 
 Local optical lost its start marker and approximately 298ms of idle lead-in.
-Its first actual input arrives at+506ms; retained local samples begin 207.47ms
+Its first actual input arrives at +506ms; retained local samples begin 207.47ms
 before that input. Source footer likewise lost its start marker and roughly
 440ms of idle lead-in; retained source samples begin 61.38ms before its first
-actual receipt at+501ms. Thus these two files can support a separately verified
+actual receipt at +501ms. Thus these two files can support a separately verified
 active-input interval; they cannot establish complete idle-lead coverage.
 
 Alignment for those intervals uses the retained native end marker and the
@@ -72,6 +73,21 @@ The first 12-second source attempt aged the test out of its 16 MiB buffer. It is
 preserved as `source-optical-range-incomplete.json.gz` and excluded from causal
 comparison. An earlier shortcut attempt preceded enabling the official profiler
 menu feature; its driver-only file is also excluded.
+
+The original local footer file is excluded for a different reason: reopening
+the application after using its tab for profiler settings moved it out of
+PID 52983. That filter captured only parent PID 2; the file has no local page
+identity or task markers. Observed input receipts cannot repair absent native
+target-process collection. It must not be used as a zero-cost local sample.
+
+Root took a replacement with the local document retained throughout setup.
+Native `about:processes` showed the newer localhost process 53900; an authorized
+temporary settings tab was used and closed before capture, preserving the
+source/local documents. The replacement viewer exposed tracks for 53900.
+The local `timeOrigin` remained 1793130235552, and input/observer completion is
+recorded separately above. Native end-marker identity and retained active
+coverage still require analyst verification. The replacement is 13,600,305 bytes;
+the earlier 9,503,016-byte parent-only file remains preserved and excluded.
 
 ## Additional bounded checks
 
@@ -105,7 +121,7 @@ must remain explicit.
 The original source37/local36 tabs are retained, reset to EN/y0, entry complete,
 menus closed and audio off. All native drivers and WebGL probes are removed;
 all temporary viewers are closed. The profiler is stopped. Its temporary
-configuration remains 64 MiB/1ms with the last local PID filters pending the end
+configuration remains 64 MiB/1ms with the last local PID 2/53900 filters pending the end
 of this investigation; the original settings were Web Developer/1 GiB/1ms with
 the profiler toolbar feature disabled. Whole-page smoothness and full parity
 remain open.
