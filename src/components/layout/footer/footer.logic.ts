@@ -18,8 +18,10 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   let material: import("./footer-material").FooterMaterial | undefined;
   let loading = false;
   let visible = false;
+  const motion = matchMedia("(prefers-reduced-motion: reduce)");
+  const standard = root.dataset.footerVariant === "standard" || root.classList.contains("standard-footer");
   const reduced = () =>
-    matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    motion.matches ||
     uiStore.getState().quietMode ||
     uiStore.getState().homeSceneFailed;
   const originalWordStyle = word.getAttribute("style");
@@ -32,7 +34,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   };
   const updateClock = () => {
     clearTimeout(clockTimer);
-    if (disposed || document.hidden || !visible) return;
+    if (disposed || document.hidden) return;
     const now = new Date();
     if (clock) {
       clock.textContent = new Intl.DateTimeFormat("en-GB", {
@@ -43,8 +45,11 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
       }).format(now);
       clock.dateTime = now.toISOString();
     }
-    clockTimer = setTimeout(updateClock, 60000 - (Date.now() % 60000) + 15);
+    clockTimer = setTimeout(updateClock, 60000 - (Date.now() % 60000) + 20);
   };
+  // HOME's source material reveal remains zero in the unpinned reading layout.
+  // A standard footer has its own scroll reveal and retains reduced interaction.
+  const syncMaterial = () => material?.setActive(visible && !root.inert && (standard || !reduced()));
   const ensureMaterial = () => {
     if (material || loading || disposed) return;
     loading = true;
@@ -52,7 +57,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
       .then(({ mountFooterMaterial }) => {
         if (!disposed) {
           material = mountFooterMaterial(root, reduced);
-          material.setActive(visible && !root.inert);
+          syncMaterial();
         }
       })
       .catch(() => {
@@ -64,7 +69,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
       visible = entries.some((entry) => entry.isIntersecting);
       updateClock();
       if (visible) ensureMaterial();
-      material?.setActive(visible && !root.inert);
+      syncMaterial();
     },
     { rootMargin: "200px" },
   );
@@ -84,13 +89,21 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
         ensureMaterial();
       }
     }
-    material?.setActive(footerVisible && !root.inert);
+    syncMaterial();
   };
   stage?.addEventListener("journey-frame", onJourney);
-  const unsubscribe = uiStore.subscribe(() => {
+  let previousReduced = reduced();
+  const syncMode = () => {
+    const next = reduced();
+    if (next !== previousReduced) {
+      previousReduced = next;
+      updateClock();
+    }
     if (uiStore.getState().menuOpen) material?.reset();
-    else material?.setActive(visible && !root.inert);
-  });
+    syncMaterial();
+  };
+  const unsubscribe = uiStore.subscribe(syncMode);
+  motion.addEventListener("change", syncMode);
   const onIntent = () => ensureMaterial();
   mask.addEventListener("pointerenter", onIntent, { passive: true });
   mask.addEventListener("focus", onIntent);
@@ -100,12 +113,14 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   void document.fonts.ready.then(() => {
     if (!disposed) measureWord();
   });
+  updateClock();
   measureWord();
   return () => {
     disposed = true;
     observer.disconnect();
     resize.disconnect();
     unsubscribe();
+    motion.removeEventListener("change", syncMode);
     material?.dispose();
     clearTimeout(clockTimer);
     document.removeEventListener("visibilitychange", updateClock);

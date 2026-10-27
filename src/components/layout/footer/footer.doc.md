@@ -17,6 +17,16 @@ Mobile side-menu centers in the source 44px navigation row, giving bottom 60px
 plus 20px clearance rather than the former 82px. It listens to parent `journey-frame` for visibility;
 material data/controller load near the footer or on focus/pointer intent.
 
+R11 exposed a stale clock after work→reading when the mask stayed intersecting.
+Cairo time now follows the source foreground-document minute timer (+20ms),
+updates immediately on mount/effective reading changes and document resumption,
+and releases its timer/listeners on cleanup. Material reveal has separate
+eligibility: HOME reading keeps the source reveal at zero; a standard footer
+retains its own reduced reveal. Inactive material rejects keyboard and pointer
+activation, resets held/grabbable state, and resumes normal HOME interaction
+when motion exposes the footer. Real-controller/event regressions exercise the
+previous stale-IO sequence and prevent Enter from reactivating a disabled field.
+
 The material canvas is separate from content and owns one demand RAF. Original
 normalized Questrial and identity contour data are local JSON in this directory;
 no original application/React/GSAP bundle is shipped. `FooterPaths` morphs six

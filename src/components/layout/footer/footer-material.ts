@@ -128,6 +128,7 @@ export function mountFooterMaterial(
     silkY = 0;
   const partMap = [0, 1, 1, 1, 1, 2];
   const canInteract = () =>
+    enabled &&
     !root.inert &&
     root.getAttribute("aria-hidden") !== "true" &&
     !document.hidden &&
@@ -652,6 +653,8 @@ export function mountFooterMaterial(
     cancelAnimationFrame(frame);
     frame = 0;
     mask.dataset.held = "false";
+    mask.dataset.grabbable = "false";
+    delete mask.dataset.thresholdReady;
     mask.dataset.mode = "word";
     mask.setAttribute("aria-pressed", "false");
     restore();
@@ -922,9 +925,8 @@ export function mountFooterMaterial(
   window.addEventListener("resize", reset);
   document.addEventListener("visibilitychange", visibility);
   window.addEventListener("portfolio-route-start", reset);
-  mask.dataset.grabbable = "true";
   measure();
-  restore();
+  reset();
   return {
     measure,
     reset,
