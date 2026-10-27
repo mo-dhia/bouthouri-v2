@@ -5,6 +5,35 @@ Storio, custom scroll engine, and deferred plain Three. No redesign or substitut
 brand/assets/effects. Original application bundles are research material only;
 they are not shipped with the clone.
 
+## Active acceptance: reopened for continuous experience
+
+The user rejected the R9 result during normal scrolling. R1–R9 remain evidence
+for their individual checks; they do not accept the home page. The acceptance
+criterion is the same appearance, motion, timing and interactions during use.
+Full source/local forward, stop and reverse videos are now the primary review
+material, including wheel handling and the hero's wheel-driven snapping.
+
+R10 identified actual pipeline differences: an extra Lenis wheel smoother,
+stale-frame scrub retargeting, nonlinear hero mapping applied before smoothing,
+glasses emergence on a different clock from opening text, refresh retaining
+scrub lag, and reading toggles discarding the material field. Native scrolling
+is restored in aa5b460 and the journey clock/refresh transaction in8537b36.
+Hero/scene correction cae92d0 and material-lifetime correction d4ea3d1 are
+integrated in the production preview. Full checks pass122 tests/4,041 assertions,
+the production build and both-locale SSR/14-asset audit. Source/local recordings
+now include entry, the complete forward journey and reverse back through270,
+the lenses and hero. `comparison-en.mp4` aligns their replay starts with a fixed
+timestamp offset; it does not time-warp the animation. Fresh R11 is comparing
+the complete moving experience, Arabic/narrow layouts and interactions. No
+acceptance is claimed from passing tests or earlier settled-frame comparisons.
+
+Vawzen now drives the existing Firefox/Zen source/local pair (tabs37/36).
+Recordings are in `/tmp/gazzar-continuous-r10/`. The first scrollBy baseline
+bypasses wheel handling and had temporary tool-cadence drift; it is not wheel
+acceptance. The subsequent fixed replay dispatches synthetic wheel events and
+emulates browser default scrolling only when unblocked. It exercises the page's
+handlers but must not be described as physical-wheel hardware coverage.
+
 ## Acceptance matrix
 
 - Entry: original loader/logo, silent/sound choice, keyboard and repeat entry.
@@ -39,9 +68,9 @@ and allow its score to settle before capture. Compare cold entry, first scene
 activation, and warmed traversal separately. Do not present passing type/build
 checks or matching content as proof that all animation frames match.
 
-Current implementation: `41da321`, running in production at `http://localhost:3000`.
-Full check passes: ESLint, TypeScript, 93 tests / 3,365 assertions. Production
-build and the HTTP SSR audit pass for both prerendered locales, metadata,
+Previous R9 freeze: `41da321`. Its full check passed ESLint, TypeScript,
+93 tests / 3,365 assertions. Its production build and HTTP SSR audit passed
+for both prerendered locales, metadata,
 redirects, 404s and 14 static assets. It includes the R7 demand/capture correction,
 reading opening/chrome and scroll-cue fixes, and retained reading renderer with
 independent glasses readiness and explicit private-atlas disposal. Round8 gives
@@ -58,9 +87,9 @@ hardware parity is not asserted. R8's accumulated Arabic lighting observation
 remains untraced; fresh/remount controls pass, and no source invariant or material
 correction is inferred from the unlike accumulated pair.
 
-The extra development3000 and review3100 servers were stopped after R9. One
-production preview now serves the same built code on3000; the both-locale SSR
-audit passes there too. No new browser surfaces were created; the original one
+The extra development3000 and review3100 servers were stopped after R9. The
+single production preview on3000 is rebuilt during R10 integration; the active
+review records identify the exact candidate. No new browser surfaces were created; the original one
 window/four tabs remain, with local EN preview active.
 
 Round6 is not accepted: ordinary reload from a completed journey produces a
