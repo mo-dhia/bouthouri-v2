@@ -62,8 +62,9 @@ function print(node: AnyNode, depth = 0): string {
     : node.type === "atrule" ? `@${node.name}${node.params ? ` ${tokens(node.params)}` : ""}` : "";
   if (node.type === "atrule" && !node.nodes) return `${indent}${label};`;
   const children = node.nodes ?? [];
-  if (children.every((child) => child.type === "decl")) {
-    return `${indent}${label} { ${children.map((child) => print(child)).join("; ")} }`;
+  if (children.every((child) => child.type === "decl" || child.type === "comment")) {
+    const body = children.map((child, index) => print(child) + (child.type === "decl" && index < children.length - 1 ? ";" : "")).join(" ");
+    return `${indent}${label} { ${body} }`;
   }
   return `${indent}${label} {\n${children.map((child) => print(child, depth + 1)).join("\n")}\n${indent}}`;
 }

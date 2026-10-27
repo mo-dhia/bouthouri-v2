@@ -29,3 +29,11 @@ test("selector list cleanup leaves specificity and separate override rules intac
   postcss.parse(result).walkRules((rule) => { selectors.push(rule.selector); });
   expect(selectors).toEqual([".a", ".a", ":is(.b, .c)[data-copy='a,b']"]);
 });
+
+test("inline comments cannot remove declaration separators during formatting", () => {
+  const result = formatStylesheet('.a{color:red;/* preserve: commas,a */opacity:1}', "comments.css");
+  const declarations: string[] = [];
+  postcss.parse(result).walkDecls((decl) => { declarations.push(`${decl.prop}:${decl.value}`); });
+  expect(declarations).toEqual(["color:red", "opacity:1"]);
+  expect(result).toBe(".a { color: red; /* preserve: commas,a */ opacity: 1 }\n");
+});
