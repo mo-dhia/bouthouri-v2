@@ -19,7 +19,8 @@
     "react-dom": "19.3.0",
     "server-only": "0.0.1",
     "storio": "1.0.6",
-    "three": "0.180.0"
+    "three": "0.180.0",
+    "troika-three-text": "0.52.4"
   },
   "devDependencies": {
     "@types/bun": "1.4.4",
