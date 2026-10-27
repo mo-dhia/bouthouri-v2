@@ -357,14 +357,45 @@ function browser(href = "https://local.test/en") {
   const restoreNative = (y: number) => {
     if (runtime.history.scrollRestoration === "auto") runtime.scrollY = y;
   };
+  // Layout shrink clamps native pixels even under manual history restoration.
+  // It is neither a user scroll nor a controller's scrollTo call.
+  const setExtent = (height: number) => {
+    document.documentElement.scrollHeight = document.body.scrollHeight = height;
+    const y = Math.min(runtime.scrollY, Math.max(0, height - runtime.innerHeight));
+    if (y !== runtime.scrollY) { runtime.scrollY = y; runtime.dispatchEvent(new Event("scroll")); }
+  };
   const setLocaleReturn = (raw: string) => {
     storage.set(HOME_LOCALE_RETURN_KEY, raw);
     storage.set(HOME_HANDOFF_KEY, handoffRecord({ to: JSON.parse(raw).to, created: Date.now() }));
   };
   return { runtime, win, root, document, storage, frames, timers, scrolls, details, settle, mount, capture, flushCaptures, latestCheckpoint, historyWrites,
-    setLocaleReturn, restoreNative,
+    setLocaleReturn, restoreNative, setExtent,
     notifyLayout: () => { for (const callback of observers) callback(); }, observers,
     setGeometry: (value: HomeGeometry | null) => { geometry = value; } };
+}
+
+function freshArabicHistory(denied = false) {
+  const b = browser("https://local.test/ar");
+  b.runtime.performance.getEntriesByType = () => [{ type: "reload", name: "https://local.test/ar" }];
+  b.runtime.innerWidth = 538; b.runtime.innerHeight = 825;
+  const geometry = { start: 825, distance: 19940, heroInput: 100 / 5.8 };
+  b.setGeometry(geometry); b.setExtent(21590);
+  const english = checkpoint({ id: "prior-document-english", created: Date.now() - 1000, scrollY: 22572.19921875,
+    position: { section: "work", progress: 6 / 142 } });
+  b.storage.set(HOME_POSITIONS_KEY, serializeHomeCheckpoints(null, english));
+  b.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now() }));
+  if (denied) Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+  expect(prepareHomeFreshEntry(b.win)).toBe(true);
+  b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
+  const dispose = b.mount(); b.settle();
+  b.runtime.scrollY = 20765; b.capture();
+  const arabic = structuredClone(b.runtime.history.state);
+  const select = (saved: HomeCheckpoint, hash = "") => {
+    b.runtime.location = new URL(`https://local.test${saved.path}${hash}`);
+    b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: structuredClone(saved) };
+    b.runtime.dispatchEvent(new Event("popstate"));
+  };
+  return { ...b, geometry, english, arabic, dispose, select };
 }
 
 describe("HOME browser lifecycle", () => {
@@ -530,6 +561,7 @@ describe("HOME browser lifecycle", () => {
     b.setGeometry(null); b.runtime.dispatchEvent(new Event("popstate")); b.settle();
     expect(getHomeRestoreIntent(b.win)?.kind).toBe("home-return");
     expect(b.storage.get(HOME_RETURN_KEY)).toBe(raw); // Getter/geometry wait are non-consuming.
+    b.mount(); // Destination HOME commits; the connected outgoing AR cannot apply EN.
     b.setGeometry(mobile); b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
     expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
     expect(b.details.at(-1)?.frame?.time).toBeCloseTo(308, 8);
@@ -593,6 +625,189 @@ describe("HOME browser lifecycle", () => {
     expect(back.details[0].intent.kind).toBe("history");
     expect(back.runtime.scrollY).toBe(16362);
     expect(back.details[0].frame?.time).toBeCloseTo(489.3488, 3);
+  });
+
+  test("delayed locale DOM commit applies history only on EN after the short-document clamps, with available or denied storage", () => {
+    for (const denied of [false, true]) {
+      const b = freshArabicHistory(denied), roots: ElementStub[] = [];
+      let activeRoot = b.root;
+      const restored = () => roots.push(activeRoot);
+      b.runtime.addEventListener(HOME_NAVIGATION_RESTORE_EVENT, restored);
+      cleanups.push(() => b.runtime.removeEventListener(HOME_NAVIGATION_RESTORE_EVENT, restored));
+      const arabicId = homeHistoryId(b.arabic)!, writes = b.historyWrites.length;
+      if (!denied) expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
+      b.select(b.english);
+      expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "history", scrollY: 22572.19921875 });
+      b.settle(); // Outgoing AR remains connected beyond all three restore RAFs.
+      b.capture(); b.runtime.dispatchEvent(new Event("scroll")); b.flushCaptures();
+      b.notifyLayout(); b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+      expect(b.root.isConnected).toBe(true);
+      expect(b.details).toHaveLength(0); expect(roots).toHaveLength(0);
+      expect(b.historyWrites).toHaveLength(writes);
+      expect(b.runtime.history.state[HOME_HISTORY_STATE_KEY]).toEqual(b.english);
+      if (!denied) {
+        const records = JSON.parse(b.storage.get(HOME_POSITIONS_KEY)!);
+        expect(records[b.english.id]).toEqual(b.english);
+        expect(records[arabicId]).toMatchObject({ path: "/ar", scrollY: 20765, position: { section: "footer", progress: 1 } });
+      }
+      // Next commits unenhanced EN, then enables motion. Neither natural clamp
+      // is a controller scroll; final pin geometry matches outgoing AR exactly.
+      b.root.isConnected = false;
+      activeRoot = new ElementStub(); b.setGeometry(null);
+      b.setExtent(9462.2); expect(b.runtime.scrollY).toBeCloseTo(8637.2, 8);
+      b.dispose();
+      b.mount({ root: activeRoot as unknown as HTMLElement }); b.settle();
+      expect(b.details).toHaveLength(0);
+      b.setExtent(1650); expect(b.runtime.scrollY).toBe(825);
+      b.setGeometry(b.geometry); b.setExtent(21590);
+      b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+      expect(roots).toEqual([activeRoot]);
+      expect(b.details).toHaveLength(1);
+      expect(b.details[0]).toMatchObject({ intent: { kind: "history", scrollY: 22572.19921875 }, scrollY: 20765,
+        position: { section: "footer", progress: 1 } });
+      expect(b.details[0].frame?.time).toBeCloseTo(714, 8);
+      expect(b.runtime.scrollY).toBe(20765);
+      expect(homeHistoryId(b.runtime.history.state)).toBe(b.english.id);
+      expect(b.runtime.location.href).toBe("https://local.test/en");
+      const restoredWrites = b.historyWrites.length;
+      for (let i = 1; i <= 70; i++) {
+        b.runtime.scrollY = 825 + i * 100;
+        b.runtime.dispatchEvent(new Event("scroll")); b.capture(); b.flushCaptures();
+      }
+      b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.notifyLayout(); b.settle();
+      expect(b.runtime.scrollY).toBe(7825);
+      expect(b.details).toHaveLength(1); expect(b.historyWrites).toHaveLength(restoredWrites);
+      // The old AR capture is still available for Forward, including memory-only
+      // retention; no outgoing AR geometry was ever captured as the EN entry.
+      b.runtime.location = new URL("https://local.test/ar"); b.runtime.history.state = b.arabic;
+      b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+      expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "history", scrollY: 20765 });
+      expect(b.details).toHaveLength(1);
+      activeRoot.isConnected = false; activeRoot = new ElementStub();
+      b.mount({ root: activeRoot as unknown as HTMLElement }); b.settle();
+      expect(b.runtime.scrollY).toBe(20765);
+      expect(roots).toEqual([roots[0], activeRoot]);
+      expect(homeHistoryId(b.runtime.history.state)).toBe(arabicId);
+    }
+  });
+
+  test("earlier Next capture teardown selects an unvisited saved EN entry synchronously after fresh AR reload", () => {
+    for (const denied of [false, true]) {
+      const b = freshArabicHistory(denied);
+      b.dispose();
+      let dispose = () => {};
+      const decisions: ReturnType<typeof getHomeRestoreIntent>[] = [];
+      const next = () => {
+        dispose(); // Removes our later capture listener before it can select EN.
+        decisions.push(getHomeRestoreIntent(b.win));
+        b.root.isConnected = false; b.setGeometry(null); b.setExtent(1650);
+        dispose = b.mount({ root: new ElementStub() as unknown as HTMLElement });
+      };
+      b.runtime.addEventListener("popstate", next, true);
+      cleanups.push(() => b.runtime.removeEventListener("popstate", next, true));
+      dispose = b.mount(); b.settle();
+      b.select(b.english);
+      expect(decisions).toHaveLength(1);
+      expect(decisions[0]).toMatchObject({ kind: "history", scrollY: 22572.19921875, position: b.english.position });
+      b.settle(); expect(b.details).toHaveLength(0);
+      b.setGeometry(b.geometry); b.setExtent(21590);
+      b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+      expect(b.runtime.scrollY).toBe(20765);
+      expect(b.details[0].intent.kind).toBe("history");
+      expect(b.details[0].frame?.time).toBeCloseTo(714, 8);
+    }
+  });
+
+  test("rapid cross-locale traversals keep the outgoing entry intact and apply only the final destination", () => {
+    const b = freshArabicHistory();
+    const second = checkpoint({ id: "second-english", path: "/en?visit=second", created: Date.now(), scrollY: 10000 });
+    b.select(b.english); b.select(second); b.settle();
+    expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "history", scrollY: 10000 });
+    expect(b.details).toHaveLength(0);
+    // Cancel the transition by returning to the still-connected AR owner.
+    b.runtime.location = new URL("https://local.test/ar"); b.runtime.history.state = b.arabic;
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(b.details).toHaveLength(1);
+    expect(b.details[0].scrollY).toBe(20765);
+    expect(b.runtime.scrollY).toBe(20765);
+    b.select(b.english); b.select(second); b.settle();
+    b.root.isConnected = false; b.setGeometry(null); b.setExtent(1650);
+    b.mount({ root: new ElementStub() as unknown as HTMLElement }); b.settle();
+    b.setGeometry(b.geometry); b.setExtent(21590);
+    b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.details).toHaveLength(2);
+    expect(b.details[1].intent).toMatchObject({ kind: "history", scrollY: 10000 });
+    expect(b.runtime.scrollY).toBe(10000);
+    expect(homeHistoryId(b.runtime.history.state)).toBe(second.id);
+    const records = JSON.parse(b.storage.get(HOME_POSITIONS_KEY)!);
+    expect(records[b.english.id]).toEqual(b.english);
+    expect(records[homeHistoryId(b.arabic)!]).toMatchObject({ path: "/ar", scrollY: 20765 });
+  });
+
+  test("unvisited-entry recognition rejects missing, wrong-path, future and malformed checkpoints", () => {
+    for (const invalid of [null, { version: 1, id: "unknown-entry" },
+      checkpoint({ id: "unknown-entry", path: "/ar", created: Date.now() }),
+      checkpoint({ id: "unknown-entry", path: "/en?other=query", created: Date.now() }),
+      checkpoint({ id: "unknown-entry", created: Date.now() + 60000 }),
+      checkpoint({ id: "unknown-entry", created: Date.now(), scrollY: -1 }),
+    ]) {
+      const b = freshArabicHistory();
+      b.dispose(); // Earlier Next capture teardown precedes destination selection.
+      b.runtime.location = new URL("https://local.test/en");
+      b.runtime.history.state = { __NA: true, ...(invalid ? { [HOME_HISTORY_STATE_KEY]: invalid } : {}) };
+      expect(getHomeRestoreIntent(b.win)).toBeNull();
+      expect(prepareHomeFreshEntry(b.win)).toBe(false); // No second document reset.
+    }
+  });
+
+  test("pending HOME/query/hash intents wait for their locale owner and retain existing precedence", () => {
+    for (const kind of ["home-return", "work-query", "native", "history"] as const) {
+      const b = freshArabicHistory();
+      const saved = checkpoint({ ...b.english, path: kind === "work-query" || kind === "history" ? "/en?work=wujhat" : "/en",
+        ...(kind === "history" ? { workQuery: "wujhat" } : {}) });
+      const raw = homeRecord({ created: Date.now() });
+      if (kind === "home-return") b.storage.set(HOME_RETURN_KEY, raw);
+      b.select(saved, kind === "native" ? "#beyond" : ""); b.settle();
+      expect(getHomeRestoreIntent(b.win)?.kind).toBe(kind);
+      expect(b.details).toHaveLength(0);
+      if (kind === "home-return") expect(b.storage.get(HOME_RETURN_KEY)).toBe(raw);
+      b.root.isConnected = false;
+      b.runtime.scrollY = kind === "native" ? 3000 : 825; // Browser hash remains native.
+      const root = new ElementStub();
+      b.mount({ root: root as unknown as HTMLElement }); b.settle();
+      expect(b.details).toHaveLength(1);
+      expect(b.details[0].intent.kind).toBe(kind);
+      if (kind === "home-return") {
+        expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
+        expect(b.details[0].position).toEqual(position);
+      } else if (kind === "work-query") expect(b.details[0].frame?.time).toBeCloseTo(308, 8);
+      else if (kind === "history") expect(b.runtime.scrollY).toBe(20765);
+      else { expect(b.runtime.scrollY).toBe(3000); expect(b.scrolls).toEqual([0, 0]); }
+    }
+  });
+
+  test("replacement HOME reapplies an explicit intent at identical geometry while same-root remounts remain no-ops", () => {
+    const b = browser("https://local.test/en?work=wujhat");
+    b.mount(); b.settle();
+    const restored = b.runtime.scrollY;
+    b.runtime.scrollY = desktop.start + desktop.distance; b.capture();
+    b.root.isConnected = false; b.setExtent(1700);
+    const next = new ElementStub();
+    b.mount({ root: next as unknown as HTMLElement }); b.settle();
+    b.setExtent(50000); b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.runtime.scrollY).toBe(restored);
+    expect(b.details).toHaveLength(2);
+    b.runtime.scrollY = 22000; b.capture();
+    const stale = new ElementStub(); stale.isConnected = false;
+    b.mount({ root: stale as unknown as HTMLElement }); b.settle();
+    const dispose = b.mount({ root: next as unknown as HTMLElement }); b.settle();
+    b.notifyLayout(); b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.runtime.scrollY).toBe(22000); expect(b.details).toHaveLength(2);
+    b.runtime.dispatchEvent(new Event("pagehide"));
+    b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true })); b.settle();
+    expect(b.details.at(-1)?.intent.kind).toBe("history");
+    expect(b.runtime.scrollY).toBe(22000);
+    dispose();
   });
 
   test("route-remount guard does not run a late document clear, and explicit router target remains stronger than HOME return", () => {

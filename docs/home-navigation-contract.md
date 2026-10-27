@@ -473,3 +473,75 @@ selected-entry lifecycle isolation, rapid mode/remount cleanup, pending fonts,
 and the40-entry document-memory bound. Browser/OS/server/build/typegen, native
 cost analysis, production review and commits remain parent-owned. No live
 performance or full HOME parity acceptance is claimed by this offline change.
+
+## Destination HOME owner contract (R20 correction)
+
+Parent-owned positive identity evidence is retained at
+`/tmp/gazzar-native-r20/root-held-route-identity-trace.json`. After a fresh AR
+reload cleared the generic EN return, one native Back selected the correct EN
+entry and saved22572.199px/work312. At trace time52700 the URL was EN while the
+connected HOME root1 and hero were still Arabic. At52741 the old controller
+applied/emitted HISTORY target20765/footer714 against that same AR root1. AR
+root1 was removed at52774; the new EN root4 was initially unenhanced/reading and
+native pixels clamped to8637.2. EN later enhanced at identical825/19940 pin
+geometry, but ended at825/opening0 without another restore. Thus successful
+selection/application alone did not establish restoration on the destination.
+
+This was a natural failing transition. The prospective350ms EN fetch-response
+delay wrapper matched **zero requests** (`network.records=[]`), so it delayed
+no response. The identity observer performed no geometry reads or native scroll
+method wrapping. Its identity/mutation evidence establishes the outgoing-owner
+application; it does not attribute every subsequent native adjustment to a
+particular writer or browser anchoring mechanism.
+
+The controller now retains the canonical HOME locale it mounted for. On a
+cross-locale popstate it first captures the outgoing entry under its own ID,
+then publishes the destination intent synchronously. It cancels its pending
+capture/frame work and marks the outgoing root pending, without adopting the
+destination entry's capture metadata. That departed owner cannot apply, emit,
+consume returns, capture positions or flush native checkpoints for the selected
+destination. Cleanup cannot replace the saved outgoing footer with later
+destination/layout pixels. A rapid traversal back to the still-connected
+original locale can resume a new entry cycle on that owner; further traversals
+while it is departed only update the selected destination intent.
+
+Application/consumption belongs to a connected destination HOME mount and its
+stable geometry transaction. Completion also records the physical HOME owner.
+A replacement connected root with a retained semantic intent gets its own
+application even if its final geometry signature equals its predecessor's.
+Same-root mode/Strict Mode remounts preserve their completed intent and no-op
+behavior. A detached stale mount cannot invalidate that completion or claim
+manual restoration. Native/hash intents without semantic positions retain
+their browser-owned scrolling behavior; fresh mounts acquire no artificial
+restore anchor. Existing adapters, readiness notifications and integration API
+are unchanged. There is no delayed retry, old-pixel lock, global anchoring
+change, router-internals mutation or new runtime dependency.
+
+Earlier Next capture teardown can remove this controller's listener before
+destination hero selection. Recognition therefore also accepts a valid saved
+checkpoint whose selected entry ID differs from the document's previous ID,
+even if that entry was visited only in an earlier Document. This covers EN
+after a fresh AR reload while performance timing still says `reload`. Selection
+retains exact path/search, ID, time and position validation, and the existing
+source precedence. A first-document reload has no previous selection; a normal
+new push has no matching full checkpoint. Identity alone, wrong paths/search,
+future timestamps and malformed checkpoints cannot infer history restoration.
+
+The delayed-DOM regression keeps outgoing AR connected beyond three restore
+RAFs, models native layout clamps through the short EN document, then installs
+identical final pin geometry. Available- and denied-storage cases require no
+outgoing restore, one EN20765/footer714 application, intact AR Forward pixels
+and zero native writes during a subsequent70 scroll/scrollend/timer inputs.
+Additional regressions cover earlier Next capture teardown with unvisited EN,
+rapid traversal/cancellation, invalid checkpoint recognition, pending generic
+HOME/query/hash/consumed-query precedence, replacement-root application,
+same-root remount/READY, detached stale ownership and BFCache. The earlier
+cross-locale handoff test now explicitly mounts its destination before expecting
+application; a connected outgoing root is no longer sufficient.
+
+Offline validation passes **65 focused navigation/reading tests /1105 assertions**,
+owned-file ESLint, plain `tsc --noEmit --incremental false` and `git diff --check`.
+
+Browser/OS/server/build/typegen, full integration and fresh production review
+remain parent-owned. This correction makes no moving-cadence, stutter-cure or
+full HOME parity acceptance claim.

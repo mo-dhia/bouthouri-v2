@@ -41,6 +41,8 @@ export type HomeNavigationOptions = {
 
 type RestoreState = {
   key: string; intent: HomeRestoreIntent | null; applied: boolean;
+  entryId: string | null;
+  appliedOwner: HTMLElement | null;
   freshEntry: boolean; layoutKey: string | null;
   localeRaw: string | null; workRaw: string | null; homeRaw: string | null;
 };
@@ -106,15 +108,20 @@ function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = fal
   };
   // Next may commit/unmount HOME in its own earlier popstate capture listener.
   // Destination hero/effects then run before our per-mount listener can run.
-  // A previously visited entry ID + exact URL identifies that soft traversal
-  // synchronously; PerformanceNavigationTiming still describes the first load.
+  // A visited ID, or a valid selected checkpoint after the document changed
+  // entries, identifies that soft traversal synchronously. After a fresh AR
+  // reload the earlier EN entry need not have been visited in this Document.
+  // Ordinary new pushes have no matching checkpoint; first-document reloads
+  // have no previous state. Neither becomes an inferred history transaction.
   const id = homeHistoryId(context.historyState);
-  if (!type && previous && id && visitedEntries.get(win.document)?.get(id) === win.location.pathname + win.location.search) {
+  const path = win.location.pathname + win.location.search;
+  if (!type && previous && id && (visitedEntries.get(win.document)?.get(id) === path ||
+    (id !== previous.entryId && homeCheckpointFromState(context.historyState, context.positions, path, context.now, context.retainedCheckpoint)))) {
     context.navigationType = "back_forward";
   }
   const intent = resolveHomeRestoreIntent(context);
   const state: RestoreState = {
-    key, intent, applied: false, layoutKey: null,
+    key, intent, entryId: id, applied: false, appliedOwner: null, layoutKey: null,
     freshEntry: boot.fresh && !previous && !intent,
     localeRaw: context.localeReturn, workRaw: context.workReturn, homeRaw: context.homeReturn ?? null,
   };
@@ -173,7 +180,8 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   if (!win || !homePath(win.location.pathname)) return () => {};
   const doc = win.document;
   mounts.get(doc)?.();
-  let state = restoreState(win, undefined, options.historyTarget !== undefined, options.historyTarget), disposed = false, suspended = false;
+  let state = restoreState(win, undefined, options.historyTarget !== undefined, options.historyTarget), disposed = false, suspended = false, departed = false;
+  const ownerHome = homePath(win.location.pathname)!;
   let path = win.location.pathname + win.location.search;
   let entryId = homeHistoryId(win.history.state) ?? win.crypto.randomUUID();
   let checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now(), retainedCheckpoint(win));
@@ -186,6 +194,14 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     const element = root();
     return element?.matches("[data-journey-root]") ? element : element?.querySelector<HTMLElement>("[data-journey-root]");
   };
+  const owner = journey() ?? root();
+  // Completion belongs to the physical HOME owner too. A replacement root
+  // needs its pending intent even when its final pin geometry is identical.
+  // Same-root mode/Strict Mode remounts keep their successful anchor/no-op.
+  if (owner?.isConnected && state.applied && state.intent?.position && state.appliedOwner !== owner) {
+    state.applied = false;
+    state.layoutKey = null;
+  }
   const geometry = (): HomeGeometry | null => {
     if (options.getGeometry) {
       const value = options.getGeometry();
@@ -214,11 +230,11 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     const measured = geometry();
     return measured ? captureHomePosition(win.scrollY, measured, displayedFrame()) : null;
   };
-  const isCurrentHome = () => homePath(win.location.pathname) !== null &&
+  const isCurrentHome = () => !departed && homePath(win.location.pathname) === ownerHome &&
     win.location.pathname + win.location.search === path && !!root()?.isConnected;
   const status = (value: "pending" | "ready") => { const element = root(); if (element) element.dataset.homeNavigation = value; };
   const claimHistory = () => {
-    if (previousRestoration === null && state.intent?.position && !state.applied) {
+    if (isCurrentHome() && previousRestoration === null && state.intent?.position && !state.applied) {
       previousRestoration = win.history.scrollRestoration;
       win.history.scrollRestoration = "manual";
     }
@@ -237,6 +253,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     try {
       win.history.replaceState({ ...(old && typeof old === "object" ? old : {}), [HOME_HISTORY_STATE_KEY]: value }, "");
       state.key = currentKey(win);
+      state.entryId = value.id;
     } catch { /* Document memory/session storage remain usable. */ }
   };
   const prepareEntry = () => {
@@ -248,7 +265,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   };
   const flushHistory = () => { if (checkpoint) writeHistory(checkpoint); };
   const save = (force = false, restored?: HomePosition, outgoing = false) => {
-    if (disposed || suspended || !root()?.isConnected || (!outgoing && !isCurrentHome()) || (state.intent && !state.applied && !restored)) return;
+    if (disposed || suspended || departed || !root()?.isConnected || (!outgoing && !isCurrentHome()) || (state.intent && !state.applied && !restored)) return;
     const current = restored ?? position();
     if (!current) return;
     if (!force && checkpoint && checkpoint.position.section === current.section &&
@@ -268,7 +285,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     safeWrite(win, HOME_POSITIONS_KEY, serializeHomeCheckpoints(safeRead(win, HOME_POSITIONS_KEY), next));
   };
   const queueCapture = () => {
-    if (disposed || suspended || captureTimer !== null) return;
+    if (disposed || suspended || departed || captureTimer !== null) return;
     captureTimer = win.setTimeout(() => { captureTimer = null; save(); }, 160);
   };
   const scrollInstantly = (y: number) => {
@@ -321,6 +338,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     signature = nextSignature;
     if (stable < 2) { raf = win.requestAnimationFrame(checkLayout); return; }
     state.applied = true;
+    state.appliedOwner = owner;
     state.layoutKey = nextSignature;
     status("ready");
     if (intent) {
@@ -348,13 +366,25 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     } else save(true);
   };
   const wake = () => {
-    if (disposed || suspended) return;
+    if (disposed || suspended || departed) return;
     if (state.applied && !state.intent?.position) { queueCapture(); return; }
     if (raf === null) raf = win.requestAnimationFrame(checkLayout);
   };
   const resetCycle = (type: HomeNavigationType) => {
     if (!homePath(win.location.pathname)) return;
-    state = restoreState(win, type, true);
+    const destination = restoreState(win, type, true);
+    departed = homePath(win.location.pathname) !== ownerHome;
+    if (raf !== null) win.cancelAnimationFrame(raf);
+    if (captureTimer !== null) win.clearTimeout(captureTimer);
+    raf = captureTimer = null;
+    if (departed) {
+      // The URL/state precede Next's DOM commit. Publish destination intent,
+      // but leave this outgoing owner's entry/capture metadata intact. It must
+      // not restore, consume returns or save its geometry into that entry.
+      status("pending");
+      return;
+    }
+    state = destination;
     path = win.location.pathname + win.location.search;
     entryId = homeHistoryId(win.history.state) ?? win.crypto.randomUUID();
     checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now(), retainedCheckpoint(win));
@@ -476,7 +506,6 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     if (mounts.get(doc) === cleanup) mounts.delete(doc);
   };
   mounts.set(doc, cleanup);
-  const owner = journey() ?? root();
   if (owner?.isConnected) {
     const previous = homeOwners.get(doc);
     const next = { root: owner, path: homePath(win.location.pathname)! };
