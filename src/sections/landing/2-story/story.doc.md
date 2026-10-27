@@ -1,0 +1,57 @@
+# Home visual layer
+
+The integration, measured clock/camera, startup states, resource ownership,
+validation evidence and remaining fidelity gaps are maintained in
+[`docs/home-scene-contract.md`](../../../../docs/home-scene-contract.md).
+
+`story-scene-gate.tsx` is a null-content client boundary. The server section
+continues to own all text, routes, SVGs and fallback markup. The gate imports
+the fixed background during idle time and the object scene near its viewport;
+the shared boot slot serializes the object startup. Quiet/reduced mode renders
+one initial glasses pose without sculptures, SDF text or an object idle loop.
+An object failure latches the shared HOME reading fallback until route unmount.
+
+`story-score.ts` and `story-paths.ts` contain the recovered numerical data.
+`story-glasses.ts`, `story-shadow.ts`, `story-logo.ts` and `story-type.ts` own
+their specific visual responsibilities. `story-assets.ts` caches network bytes
+only, parses a fresh model graph per mount and clones materials before mutation.
+Geometry, materials, embedded image bitmaps, environment render targets,
+silhouette targets, LTC data textures, per-mount SDF geometry/materials, renderers,
+pointer capture, listeners, observers and scheduled work are released by cleanup.
+Troika owns its shared font/atlas/worker cache; scene mounts do not mutate it.
+
+`story-text.ts` uses the approved focused `troika-three-text` 0.52.4 renderer for
+source-equivalent shaping and glyph-bound fits. Original WOFF files and coverage
+tables are local; all scene characters are checked before optional worker layout.
+Blocked text boot falls back to server copy. `story-origin.ts` is a separate
+numeric-only API so the parent can start its work path before any GPU/font boot.
+`story-origin.generate.mjs` regenerates its four metric rows offline, and the
+focused tests compare six EN/AR desktop/mobile/short-stage source fixtures.
+
+`story-environment-shaders.ts` contains the pressure-field and neutral studio
+surface shaders ported from the public reference; the field and native input
+controllers are separate from the story object's render loop. The background
+continues through all 714 story units without taking over native systems paths
+or the shell-owned footer material. Visible ambient drift continues at its
+intentional source cadence; hidden/offscreen/menu states stop all scheduled work.
+`story-material-protection.ts` combines independent portrait/footer protection
+publishers using the explicit window event documented in the scene contract.
+
+Original assets are local at `/assets/models/` and `/assets/textures/`:
+
+- `glasses-folded.glb`: 431,196 bytes.
+- `logo-finished-components.glb`: 573,944 bytes, embedded microroughness PNG.
+- `logo-lighting-r180.bin`: 196,608 bytes, four r180 area-light lookup tables.
+- `questrial-studio.woff`: 52,240 bytes.
+- `cairo-studio.woff`: 42,688 bytes.
+
+Source rendering references:
+
+- [Glasses and camera renderer](https://www.thisisgazzar.com/_next/static/immutable/chunks/2kidhwora8ehx.js).
+- [Sculpture paths, lights and foreground type](https://www.thisisgazzar.com/_next/static/immutable/chunks/369vzr25ag57n.js).
+- [Visible global pressure-field material](https://www.thisisgazzar.com/_next/static/immutable/chunks/1nvdbh89vm0tk.js).
+- [Opening/input clock and story data](https://www.thisisgazzar.com/_next/static/immutable/chunks/0or6--g23od4n.js).
+- [Story light/meaning score extension](https://www.thisisgazzar.com/_next/static/immutable/chunks/11dg_viff64mz.js).
+
+No GSAP, R3F, Drei or original application bundle is shipped. The optional graph
+uses plain Three r180, its native GLTF loader and focused Troika SDF text only.

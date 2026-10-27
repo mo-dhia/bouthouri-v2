@@ -1,0 +1,3 @@
+.canvas { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; opacity: 0; pointer-events: auto }
+.environment { z-index: 0; pointer-events: none; position: fixed; inset: 0 }
+.environmentCanvas { display: block; inline-size: 100%; block-size: 100% }
