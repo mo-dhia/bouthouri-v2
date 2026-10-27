@@ -19,7 +19,7 @@ export type HomeWorkReturn = { version: 1; home: HomePath; slug: HomeWorkSlug; c
 export type HomeRestoreIntent = {
   kind: "locale" | "work-query" | "work-return" | "history" | "reload" | "native";
   position: HomePosition | null;
-  /** Diagnostics/native fallback only; a semantic restore recalculates its target. */
+  /** History visits use saved native pixels; locale/work restoration uses semantics. */
   scrollY: number;
   skipEntry: true;
   slug?: HomeWorkSlug;
@@ -106,7 +106,12 @@ export function resolveHomeRestoreIntent(context: HomeRestoreContext): HomeResto
   if (context.navigationType === "back_forward" && checkpoint) return intent("history", checkpoint.position, checkpoint.scrollY);
   const work = parseHomeWorkReturn(context.workReturn, path, context.now);
   if (work) return { ...intent("work-return", work.position), slug: work.slug };
-  if (context.navigationType === "reload" && checkpoint) return intent("reload", checkpoint.position, checkpoint.scrollY);
+  // A plain HOME reload starts the authored entry again. Browser-restored pixels
+  // and a checkpoint alone are not return intent (R5-01). A valid work query
+  // retains its existing once-per-entry semantics, including later reloads.
+  if (context.navigationType === "reload") {
+    return isHomeWorkSlug(slug) && checkpoint ? intent("reload", checkpoint.position, checkpoint.scrollY) : null;
+  }
   if (nativeY > 32 || context.navigationType === "back_forward") return intent("native", null);
   return null;
 }

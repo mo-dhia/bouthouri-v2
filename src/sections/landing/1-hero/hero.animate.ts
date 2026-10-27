@@ -6,6 +6,7 @@ import { uiStore } from "@/store/uiStore";
 import { setAudioEnabled } from "@/lib/audio/material-audio";
 import {
   getHomeRestoreIntent,
+  prepareHomeFreshEntry,
   HOME_NAVIGATION_RESTORE_EVENT,
 } from "@/lib/navigation/home-navigation";
 import {
@@ -35,6 +36,7 @@ const easeInOut = (t: number) =>
 
 /** Single RAF owner for entry, marquee, scroll departure, and the local portrait. */
 export function mountHeroMotion(root: HTMLElement): () => void {
+  const freshReloadEntry = prepareHomeFreshEntry();
   // Read synchronously and without consuming: the journey owns restore geometry.
   const restoreIntent = getHomeRestoreIntent();
   const scene = root.querySelector<HTMLElement>("[data-identity-hero]")!;
@@ -730,7 +732,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const shouldEnter =
     !restoreIntent?.skipEntry &&
     uiStore.getState().entryPhase !== "complete" &&
-    scrollY < 20 &&
+    (freshReloadEntry || scrollY < 20) &&
     !location.hash;
   if (shouldEnter) {
     setPhase("loading");

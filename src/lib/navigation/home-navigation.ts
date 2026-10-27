@@ -4,7 +4,7 @@ import {
   isHomeGeometry, isHomePosition, type HomeGeometry, type HomePosition,
 } from "./home-position";
 import {
-  HOME_HISTORY_STATE_KEY, HOME_LOCALE_RETURN_KEY, HOME_POSITIONS_KEY, HOME_WORK_RETURN_KEY,
+  HOME_HISTORY_STATE_KEY, HOME_HISTORY_LIMIT, HOME_LOCALE_RETURN_KEY, HOME_POSITIONS_KEY, HOME_WORK_RETURN_KEY,
   homeCheckpointFromState, homeHistoryId, homeLinkIntent, homePath,
   parseHomeLocaleReturn, parseHomeWorkReturn, resolveHomeRestoreIntent, serializeHomeCheckpoints,
   type HomeCheckpoint, type HomeNavigationType, type HomeRestoreContext, type HomeRestoreIntent,
@@ -36,10 +36,13 @@ export type HomeNavigationOptions = {
 
 type RestoreState = {
   key: string; intent: HomeRestoreIntent | null; applied: boolean;
+  freshReload: boolean; layoutKey: string | null;
   localeRaw: string | null; workRaw: string | null;
 };
 const states = new WeakMap<Document, RestoreState>();
 const mounts = new WeakMap<Document, () => void>();
+const entryPrepared = new WeakSet<Document>();
+const visitedEntries = new WeakMap<Document, Map<string, string>>();
 const safeRead = (win: BrowserWindow, key: string) => { try { return win.sessionStorage.getItem(key); } catch { return null; } };
 const safeWrite = (win: BrowserWindow, key: string, value: string) => { try { win.sessionStorage.setItem(key, value); } catch { /* Native navigation still works. */ } };
 const safeRemove = (win: BrowserWindow, key: string) => { try { win.sessionStorage.removeItem(key); } catch { /* Optional storage. */ } };
@@ -62,8 +65,18 @@ function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = fal
     localeReturn: safeRead(win, HOME_LOCALE_RETURN_KEY), workReturn: safeRead(win, HOME_WORK_RETURN_KEY),
     positions: safeRead(win, HOME_POSITIONS_KEY), nativeScrollY: win.scrollY, now: Date.now(),
   };
+  // Next may commit/unmount HOME in its own earlier popstate capture listener.
+  // Destination hero/effects then run before our per-mount listener can run.
+  // A previously visited entry ID + exact URL identifies that soft traversal
+  // synchronously; PerformanceNavigationTiming still describes the first load.
+  const id = homeHistoryId(context.historyState);
+  if (!type && previous && id && visitedEntries.get(win.document)?.get(id) === win.location.pathname + win.location.search) {
+    context.navigationType = "back_forward";
+  }
+  const intent = resolveHomeRestoreIntent(context);
   const state: RestoreState = {
-    key, intent: resolveHomeRestoreIntent(context), applied: false,
+    key, intent, applied: false, layoutKey: null,
+    freshReload: !!homePath(win.location.pathname) && context.navigationType === "reload" && !intent,
     localeRaw: context.localeReturn, workRaw: context.workReturn,
   };
   states.set(win.document, state);
@@ -73,6 +86,38 @@ function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = fal
 /** Synchronous, SSR-safe and non-consuming. Hero must call this before entry selection. */
 export function getHomeRestoreIntent(win = browserWindow()): HomeRestoreIntent | null {
   return win ? restoreState(win).intent : null;
+}
+
+function scrollHomeImmediately(win: BrowserWindow, y: number) {
+  const smooth = (win as BrowserWindow & {
+    __bouthouriLenis?: { scrollTo(target: number, options: { immediate: true; force: true }): void };
+  }).__bouthouriLenis;
+  smooth?.scrollTo(y, { immediate: true, force: true });
+  win.scrollTo({ top: y, behavior: "instant" });
+}
+
+/**
+ * Hero's first entry selection in this document owns the fresh reload reset.
+ * Remounts (quiet/motion, Strict Mode) never reset the reader's later position.
+ * Returns true only for that first fresh reload selection, even if native scroll
+ * restoration had already put the browser below the hero before hydration.
+ */
+export function prepareHomeFreshEntry(win = browserWindow()): boolean {
+  if (!win || entryPrepared.has(win.document)) return false;
+  entryPrepared.add(win.document);
+  if (!restoreState(win).freshReload) return false;
+  const previous = win.history.scrollRestoration;
+  win.history.scrollRestoration = "manual";
+  scrollHomeImmediately(win, 0);
+  const release = () => {
+    win.removeEventListener("load", release);
+    if (win.history.scrollRestoration === "manual") win.history.scrollRestoration = previous;
+  };
+  // When hydration precedes load, suppress the browser's late native replay.
+  // This document-boot listener removes itself; it never resets scroll on load.
+  if (win.document.readyState === "complete") release();
+  else win.addEventListener("load", release, { once: true });
+  return true;
 }
 
 /** One HOME/document mount; cleanup is safe to call repeatedly. No content is rendered or hidden. */
@@ -150,6 +195,10 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
       ...(restored && state.intent?.kind === "work-query" ? { workQuery: state.intent.slug } : {}),
     };
     checkpoint = next;
+    const visited = visitedEntries.get(doc) ?? new Map<string, string>();
+    visited.delete(next.id); visited.set(next.id, next.path);
+    if (visited.size > HOME_HISTORY_LIMIT) visited.delete(visited.keys().next().value!);
+    visitedEntries.set(doc, visited);
     safeWrite(win, HOME_POSITIONS_KEY, serializeHomeCheckpoints(safeRead(win, HOME_POSITIONS_KEY), next));
     if (!storageOnly) {
       const old = win.history.state;
@@ -164,11 +213,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   };
   const scrollInstantly = (y: number) => {
     if (options.scrollTo) { options.scrollTo(y); return; }
-    const smooth = (win as BrowserWindow & {
-      __bouthouriLenis?: { scrollTo(target: number, options: { immediate: true; force: true }): void };
-    }).__bouthouriLenis;
-    smooth?.scrollTo(y, { immediate: true, force: true });
-    win.scrollTo({ top: y, behavior: "instant" });
+    scrollHomeImmediately(win, y);
   };
   const consume = () => {
     const destination = homePath(win.location.pathname)!;
@@ -178,44 +223,69 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
       parseHomeWorkReturn(state.workRaw, destination, Date.now())) safeRemove(win, HOME_WORK_RETURN_KEY);
   };
 
+  const layoutKey = (measured: HomeGeometry | null, target: number, extent: number) => {
+    // DOMRect.top + scrollY can differ by floating-point dust after a seek.
+    const number = (value: number | undefined) => value === undefined ? "" : Math.round(value * 64) / 64;
+    return [measured ? "pin" : "reading", number(measured?.start), number(measured?.distance),
+      number(measured?.heroInput), number(target), number(extent), win.innerWidth, win.innerHeight].join(":");
+  };
   const checkLayout = () => {
     raf = null;
-    if (disposed || suspended || state.applied || !isCurrentHome() || !fontsReady || doc.readyState !== "complete") return;
+    if (disposed || suspended || !isCurrentHome() || !fontsReady || doc.readyState !== "complete") return;
     const measured = geometry(), intent = state.intent;
+    if (state.applied && !intent?.position) return;
     const readingTarget = intent?.position && options.getTarget ? options.getTarget(intent.position) : null;
     if (intent?.position && !measured && (readingTarget === null || !Number.isFinite(readingTarget))) return;
     if (!intent && !measured && !options.getPosition) return;
-    const target = intent?.position
+    const extent = Math.max(0, Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight ?? 0) - win.innerHeight);
+    const initialHistory = intent?.kind === "history" && state.layoutKey === null;
+    // Source history visits select saved pixels, including after viewport changes.
+    // This differs from reapplying a locale anchor within its restored mount.
+    const target = initialHistory ? Math.min(intent.scrollY, extent) : intent?.position
       ? readingTarget ?? (measured ? homeScrollTarget(intent.position, measured) : null)
       : win.scrollY;
     if (target === null || !Number.isFinite(target)) return;
     // Wait for the actual document extent. Never silently clamp a footer restore
     // into an SSR/reduced layout whose long pin has not been installed yet.
-    const extent = Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight ?? 0) - win.innerHeight;
     if (target < 0 || target > extent + 1) return;
-    const nextSignature = [measured?.start, measured?.distance, measured?.heroInput, target, extent, win.innerWidth, win.innerHeight].join(":");
+    // Keep the successful semantic intent across subsequent geometry/reading
+    // changes. Captures below update history checkpoints, never this anchor.
+    // No current scroll, display progress, frame styles or transform is a key.
+    const nextSignature = layoutKey(measured, target, extent);
+    if (state.applied && state.layoutKey === nextSignature) return;
+    if (state.applied) { state.applied = false; status("pending"); }
     stable = nextSignature === signature ? stable + 1 : 0;
     signature = nextSignature;
     if (stable < 2) { raf = win.requestAnimationFrame(checkLayout); return; }
     state.applied = true;
+    state.layoutKey = nextSignature;
     status("ready");
     if (intent) {
       if (intent.position) scrollInstantly(target);
+      // Anchor the history visit to the frame it actually restored, rather than
+      // its old viewport annotation. Later scrolling cannot replace this anchor.
+      const historyPosition = initialHistory ? (measured ? captureHomePosition(target, measured) : options.getPosition?.()) : null;
+      if (isHomePosition(historyPosition)) {
+        state.intent = { ...intent, position: historyPosition };
+        const semanticTarget = options.getTarget?.(historyPosition) ?? (measured ? homeScrollTarget(historyPosition, measured) : null);
+        state.layoutKey = layoutKey(measured, semanticTarget ?? target, extent);
+      }
+      const appliedIntent = state.intent!;
       const pinProgress = measured ? Math.max(0, Math.min(1, (target - measured.start) / measured.distance)) : null;
       const detail: HomeRestoreDetail = {
-        intent, position: intent.position, scrollY: target, pinProgress,
+        intent: appliedIntent, position: appliedIntent.position, scrollY: target, pinProgress,
         frame: pinProgress === null ? null : frameFromProgress(pinProgress, measured?.heroInput),
       };
       // Mark complete before notifying; synchronous scroll/events cannot reapply.
       options.onRestore?.(detail);
       win.dispatchEvent(new win.CustomEvent<HomeRestoreDetail>(HOME_NAVIGATION_RESTORE_EVENT, { detail }));
       consume();
-      save(true, intent.position ?? undefined);
+      save(true, appliedIntent.position ?? undefined);
     } else save(true);
   };
   const wake = () => {
     if (disposed || suspended) return;
-    if (state.applied) { queueCapture(); return; }
+    if (state.applied && !state.intent?.position) { queueCapture(); return; }
     if (raf === null) raf = win.requestAnimationFrame(checkLayout);
   };
   const resetCycle = (type: HomeNavigationType) => {
@@ -287,7 +357,9 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   win.addEventListener("scrollend", onScrollEnd);
   win.addEventListener("resize", onLayoutChange, { passive: true });
   win.addEventListener(HOME_NAVIGATION_READY_EVENT, onLayoutChange);
-  win.addEventListener("popstate", onPopState);
+  // Next's earlier bubble listener can synchronously unmount this HOME root.
+  // Select the destination before that teardown can remove our listener.
+  win.addEventListener("popstate", onPopState, true);
   win.addEventListener("pagehide", onPageHide);
   win.addEventListener("pageshow", onPageShow);
   doc.addEventListener("visibilitychange", onHidden);
@@ -309,7 +381,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     win.removeEventListener("scrollend", onScrollEnd);
     win.removeEventListener("resize", onLayoutChange);
     win.removeEventListener(HOME_NAVIGATION_READY_EVENT, onLayoutChange);
-    win.removeEventListener("popstate", onPopState);
+    win.removeEventListener("popstate", onPopState, true);
     win.removeEventListener("pagehide", onPageHide);
     win.removeEventListener("pageshow", onPageShow);
     doc.removeEventListener("visibilitychange", onHidden);

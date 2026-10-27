@@ -13,7 +13,7 @@ import {
 } from "../src/lib/navigation/home-navigation-state";
 import {
   HOME_NAVIGATION_READY_EVENT, HOME_NAVIGATION_RESTORE_EVENT,
-  getHomeRestoreIntent, mountHomeNavigation, type HomeNavigationOptions, type HomeRestoreDetail,
+  getHomeRestoreIntent, prepareHomeFreshEntry, mountHomeNavigation, type HomeNavigationOptions, type HomeRestoreDetail,
 } from "../src/lib/navigation/home-navigation";
 import { frameFromProgress, journeyDistance, progressFromStoryTime } from "../src/sections/landing/3-journey/journey-clock";
 
@@ -115,15 +115,23 @@ describe("HOME handoff expiry and entry selection", () => {
     ]) expect(parseHomeWorkReturn(record, "/en", now)).toBeNull();
   });
 
-  test("a fresh HOME visit ignores unrelated history, while Back/Forward and reload restore its exact entry", () => {
+  test("ordinary HOME reload is fresh even with a checkpoint and native pixels; Back/Forward restores its entry", () => {
     const saved = checkpoint();
     const historyState = { __NA: true, [HOME_HISTORY_STATE_KEY]: saved };
     expect(resolveHomeRestoreIntent(context({ historyState }))).toBeNull();
     expect(resolveHomeRestoreIntent(context({ historyState, navigationType: "back_forward" }))?.kind).toBe("history");
-    expect(resolveHomeRestoreIntent(context({ historyState, navigationType: "reload" }))?.position).toEqual(position);
+    expect(resolveHomeRestoreIntent(context({ historyState, navigationType: "reload", nativeScrollY: 5263 }))).toBeNull();
+    expect(resolveHomeRestoreIntent(context({ navigationType: "reload", nativeScrollY: 5263 }))).toBeNull();
     expect(resolveHomeRestoreIntent(context({ href: "https://local.test/ar", historyState, navigationType: "reload" }))).toBeNull();
     expect(resolveHomeRestoreIntent(context({ href: "https://local.test/en?audit=another", historyState, navigationType: "reload" }))).toBeNull();
     expect(resolveHomeRestoreIntent(context({ navigationType: "back_forward" }))).toMatchObject({ kind: "native", skipEntry: true, scrollY: 0 });
+  });
+
+  test("reload freshness does not override an explicit locale, pending work, work query or native hash", () => {
+    expect(resolveHomeRestoreIntent(context({ navigationType: "reload", href: "https://local.test/ar", localeReturn: localeRecord(), nativeScrollY: 5263 }))?.kind).toBe("locale");
+    expect(resolveHomeRestoreIntent(context({ navigationType: "reload", workReturn: workRecord(), nativeScrollY: 5263 }))?.kind).toBe("work-return");
+    expect(resolveHomeRestoreIntent(context({ navigationType: "reload", href: "https://local.test/en?work=wujhat" }))?.kind).toBe("work-query");
+    expect(resolveHomeRestoreIntent(context({ navigationType: "reload", href: "https://local.test/en#beyond", nativeScrollY: 100 }))?.kind).toBe("native");
   });
 
   test("locale semantics win over native pixels and query return supports each exact slug", () => {
@@ -198,13 +206,19 @@ describe("native link guards", () => {
 // layout readiness without importing a DOM/React runtime or starting Next.
 class Events {
   listeners = new Map<string, Set<(event: Event) => void>>();
-  addEventListener(type: string, listener: (event: Event) => void) {
-    if (!this.listeners.has(type)) this.listeners.set(type, new Set());
-    this.listeners.get(type)!.add(listener);
+  captures = new Map<string, Set<(event: Event) => void>>();
+  addEventListener(type: string, listener: (event: Event) => void, options: boolean | AddEventListenerOptions = false) {
+    const group = (typeof options === "boolean" ? options : options.capture) ? this.captures : this.listeners;
+    if (!group.has(type)) group.set(type, new Set());
+    group.get(type)!.add(listener);
   }
-  removeEventListener(type: string, listener: (event: Event) => void) { this.listeners.get(type)?.delete(listener); }
-  dispatchEvent(event: Event) { for (const listener of [...this.listeners.get(event.type) ?? []]) listener(event); return !event.defaultPrevented; }
-  count() { return [...this.listeners.values()].reduce((sum, entries) => sum + entries.size, 0); }
+  removeEventListener(type: string, listener: (event: Event) => void, capture = false) { (capture ? this.captures : this.listeners).get(type)?.delete(listener); }
+  dispatchEvent(event: Event) {
+    const snapshot = [this.captures, this.listeners].flatMap((group) => [...group.get(event.type) ?? []].map((listener) => ({ group, listener })));
+    for (const { group, listener } of snapshot) if (group.get(event.type)?.has(listener)) listener(event);
+    return !event.defaultPrevented;
+  }
+  count() { return [...this.captures.values(), ...this.listeners.values()].reduce((sum, entries) => sum + entries.size, 0); }
 }
 class ElementStub extends Events {
   isConnected = true;
@@ -231,11 +245,17 @@ function browser(href = "https://local.test/en") {
     querySelector: (selector: string) => selector === "[data-journey-root]" ? root : null, getElementById: () => null,
   });
   const storage = new Map<string, string>(), frames = new Map<number, FrameRequestCallback>(), timers = new Map<number, () => void>();
+  const observers = new Set<() => void>();
+  class LayoutObserver {
+    constructor(private callback: () => void) { observers.add(callback); }
+    observe() {}
+    disconnect() { observers.delete(this.callback); }
+  }
   let serial = 0, geometry: HomeGeometry | null = desktop;
   const scrolls: number[] = [], details: HomeRestoreDetail[] = [];
   const runtime = Object.assign(new Events(), {
     document, location: new URL(href), scrollY: 0, innerWidth: 1400, innerHeight: 850,
-    crypto, Element: ElementStub, CustomEvent,
+    crypto, Element: ElementStub, CustomEvent, ResizeObserver: LayoutObserver, MutationObserver: LayoutObserver,
     performance: { getEntriesByType: () => [{ type: "navigate" }] },
     history: { state: { __NA: true, tree: { retained: true } } as Record<string, unknown>, scrollRestoration: "auto", replaceState(next: Record<string, unknown>) { this.state = next; } },
     sessionStorage: { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => { storage.set(key, value); }, removeItem: (key: string) => { storage.delete(key); } },
@@ -258,10 +278,58 @@ function browser(href = "https://local.test/en") {
       getGeometry: () => geometry, onRestore: (detail) => { details.push(detail); }, ...extra });
     cleanups.push(cleanup); return cleanup;
   };
-  return { runtime, win, root, document, storage, frames, timers, scrolls, details, settle, mount, setGeometry: (value: HomeGeometry | null) => { geometry = value; } };
+  const capture = () => runtime.dispatchEvent(new Event("scrollend"));
+  return { runtime, win, root, document, storage, frames, timers, scrolls, details, settle, mount, capture,
+    notifyLayout: () => { for (const callback of observers) callback(); }, observers,
+    setGeometry: (value: HomeGeometry | null) => { geometry = value; } };
 }
 
 describe("HOME browser lifecycle", () => {
+  test("fresh reload reset precedes hero entry selection and runs only once per document", () => {
+    const b = browser();
+    b.runtime.performance.getEntriesByType = () => [{ type: "reload" }];
+    b.runtime.scrollY = 5263;
+    b.runtime.history.state[HOME_HISTORY_STATE_KEY] = checkpoint({ created: Date.now(), position: { section: "perspective", progress: 40 / 70 }, scrollY: 5263 });
+    expect(getHomeRestoreIntent(b.win)).toBeNull();
+    expect(prepareHomeFreshEntry(b.win)).toBe(true);
+    expect(b.scrolls).toEqual([0]);
+    expect(b.runtime.history.scrollRestoration).toBe("auto");
+    b.mount(); b.settle();
+    expect(b.details).toHaveLength(0); // Never dispatch restore to finish the loader.
+    b.runtime.scrollY = 8541; b.capture();
+    expect(prepareHomeFreshEntry(b.win)).toBe(false);
+    expect(b.runtime.scrollY).toBe(8541);
+    expect(getHomeRestoreIntent(b.win)).toBeNull();
+    expect(b.scrolls).toEqual([0]);
+  });
+
+  test("fresh reload before load suppresses native replay, then releases without a second reset", () => {
+    const b = browser();
+    b.runtime.performance.getEntriesByType = () => [{ type: "reload" }];
+    b.document.readyState = "interactive"; b.runtime.scrollY = 5263;
+    expect(prepareHomeFreshEntry(b.win)).toBe(true);
+    expect(b.runtime.history.scrollRestoration).toBe("manual");
+    b.runtime.scrollY = 30; // A later user/owner position must not be reset on load.
+    b.runtime.dispatchEvent(new Event("load"));
+    expect(b.runtime.history.scrollRestoration).toBe("auto");
+    expect(b.runtime.scrollY).toBe(30);
+    expect(b.runtime.count()).toBe(0);
+    expect(prepareHomeFreshEntry(b.win)).toBe(false);
+  });
+
+  test("fresh reset integration leaves locale/history/work/query/hash boot positions alone", () => {
+    for (const href of ["https://local.test/en?work=wujhat", "https://local.test/en#beyond", "https://local.test/ar"]) {
+      const b = browser(href);
+      b.runtime.performance.getEntriesByType = () => [{ type: "reload" }]; b.runtime.scrollY = 5263;
+      if (href.endsWith("/ar")) b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ created: Date.now() }));
+      expect(prepareHomeFreshEntry(b.win)).toBe(false);
+      expect(b.scrolls).toHaveLength(0);
+    }
+    const history = browser(); history.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
+    expect(prepareHomeFreshEntry(history.win)).toBe(false);
+    expect(history.scrolls).toHaveLength(0);
+  });
+
   test("document-level native clicks save the actual work fraction and leave modified/new-tab links untouched", () => {
     const b = browser();
     const actual = { section: "work", progress: 0.61 } as const;
@@ -336,6 +404,7 @@ describe("HOME browser lifecycle", () => {
     first(); first();
     expect(b.frames.size).toBe(0); expect(b.timers.size).toBe(0);
     expect(b.document.count()).toBe(0);
+    expect(b.observers.size).toBe(0);
     const second = b.mount(); b.settle();
     expect(events).toBe(1); expect(b.scrolls).toHaveLength(1);
     second();
@@ -344,7 +413,126 @@ describe("HOME browser lifecycle", () => {
     expect(b.runtime.history.scrollRestoration).toBe("auto");
   });
 
-  test("BFCache return remaps the saved semantic score after a viewport change", () => {
+  test("locale-restored Wujhat312 reprojects desktop/mobile and reverse without replacing its intent", () => {
+    const b = browser("https://local.test/ar");
+    const original: HomePosition = { section: "work", progress: 6 / 142 };
+    const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
+    const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
+    b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
+    b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ position: original, created: Date.now() }));
+    b.mount(); b.settle();
+    expect(b.scrolls[0]).toBeCloseTo(16361.625, 2);
+    b.runtime.scrollY = wide.start + wide.distance; b.capture();
+    expect((b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint).position.section).toBe("footer");
+    expect(getHomeRestoreIntent(b.win)?.position).toEqual(original);
+    b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
+    b.runtime.dispatchEvent(new Event("resize")); b.settle();
+    expect(b.scrolls[1]).toBeCloseTo(12091.124, 2);
+    expect(b.details[1].frame?.time).toBeCloseTo(312, 8);
+    b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
+    b.notifyLayout(); b.settle();
+    expect(b.scrolls[2]).toBeCloseTo(16361.625, 2);
+    expect(b.details[2].frame?.time).toBeCloseTo(312, 8);
+    expect(getHomeRestoreIntent(b.win)?.position).toEqual(original);
+  });
+
+  test("restored footer→reading→motion keeps the original work anchor through later captures", () => {
+    const b = browser("https://local.test/ar");
+    const original: HomePosition = { section: "work", progress: 6 / 142 };
+    const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
+    let reading = false;
+    b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
+    b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ position: original, created: Date.now() }));
+    b.mount({ getPosition: () => reading ? { section: "footer", progress: 0.9 } : null,
+      // Source adapter: nearest project's absolute top minus 100px.
+      getTarget: (saved) => reading && saved.section === "work" ? 3927 - 100 : null });
+    b.settle();
+    b.runtime.scrollY = narrow.start + narrow.distance; b.capture();
+    reading = true; b.setGeometry(null); b.document.documentElement.scrollHeight = b.document.body.scrollHeight = 9406;
+    b.runtime.scrollY = 8541; // Parent's initial native clamp before layout settles.
+    b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.scrolls.at(-1)).toBe(3827);
+    expect(b.details.at(-1)?.pinProgress).toBeNull();
+    b.runtime.scrollY = 8541; b.capture();
+    expect(getHomeRestoreIntent(b.win)?.position).toEqual(original);
+    reading = false; b.setGeometry(narrow); b.document.documentElement.scrollHeight = 22637;
+    b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.scrolls.at(-1)).toBeCloseTo(12091.124, 2);
+    expect(b.details.at(-1)?.frame?.time).toBeCloseTo(312, 8);
+  });
+
+  test("history, project return and consumed query reload also retain their own semantic anchors on resize", () => {
+    for (const kind of ["history", "work-return", "reload"] as const) {
+      const b = browser(kind === "reload" ? "https://local.test/en?work=wujhat" : "https://local.test/en");
+      const original: HomePosition = { section: "work", progress: 6 / 142 };
+      if (kind === "work-return") {
+        b.storage.set(HOME_WORK_RETURN_KEY, workRecord({ position: original, created: Date.now() }));
+      } else {
+        b.runtime.performance.getEntriesByType = () => [{ type: kind === "history" ? "back_forward" : "reload" }];
+        b.runtime.history.state[HOME_HISTORY_STATE_KEY] = checkpoint({
+          created: Date.now(), position: original, path: kind === "reload" ? "/en?work=wujhat" : "/en",
+          scrollY: homeScrollTarget(original, desktop)!,
+          ...(kind === "reload" ? { workQuery: "wujhat" } : {}),
+        });
+      }
+      b.mount(); b.settle();
+      expect(b.details[0].intent.kind).toBe(kind);
+      b.runtime.scrollY = desktop.start + desktop.distance; b.capture();
+      b.setGeometry(mobile); b.runtime.innerWidth = 392; b.runtime.innerHeight = 932;
+      b.runtime.dispatchEvent(new Event("resize")); b.settle();
+      expect(b.details).toHaveLength(2);
+      expect(b.details[1].frame?.time).toBeCloseTo(312, 8);
+      expect(getHomeRestoreIntent(b.win)?.position?.section).toBe(original.section);
+      expect(getHomeRestoreIntent(b.win)?.position?.progress).toBeCloseTo(original.progress, 8);
+    }
+    const native = browser();
+    native.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
+    native.runtime.scrollY = 1200; native.mount(); native.settle();
+    native.setGeometry(mobile); native.runtime.dispatchEvent(new Event("resize")); native.settle();
+    expect(native.details).toHaveLength(1); // Native/hash has no semantic anchor to retain.
+    expect(native.scrolls).toHaveLength(0);
+    expect(native.runtime.scrollY).toBe(1200);
+  });
+
+  test("ordinary fresh mode toggles retain the parent's clamped pixels and do not acquire a semantic anchor", () => {
+    const b = browser();
+    const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
+    let reading = false;
+    b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
+    b.mount({ getPosition: () => reading ? { section: "footer", progress: 0.9 } : null,
+      getTarget: () => reading ? 3827 : null }); b.settle();
+    b.runtime.scrollY = homeScrollTarget({ section: "people", progress: (580 - 547) / 80 }, wide)!; b.capture();
+    reading = true; b.setGeometry(null); b.document.documentElement.scrollHeight = b.document.body.scrollHeight = 12446;
+    b.runtime.scrollY = 11437;
+    b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.runtime.scrollY).toBe(11437);
+    reading = false; b.setGeometry(wide); b.document.documentElement.scrollHeight = 30610;
+    b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.runtime.scrollY).toBe(11437);
+    expect(b.scrolls).toHaveLength(0); expect(b.details).toHaveLength(0);
+    expect(getHomeRestoreIntent(b.win)).toBeNull();
+  });
+
+  test("same geometry, frame/data/style updates and repeated READY never seek a restored mount", () => {
+    const b = browser("https://local.test/en?work=wujhat");
+    b.mount(); b.settle();
+    b.runtime.scrollY = desktop.start + desktop.distance; b.capture();
+    for (let i = 0; i < 8; i++) {
+      b.root.dataset.progress = String(i / 8);
+      b.setGeometry({ ...desktop, start: desktop.start + (i % 2 ? 1e-9 : -1e-9) });
+      b.notifyLayout();
+      b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    }
+    expect(b.scrolls).toHaveLength(1); expect(b.details).toHaveLength(1);
+    expect(b.runtime.scrollY).toBe(desktop.start + desktop.distance);
+    // A real measured pin change is meaningful even at identical viewport size.
+    b.setGeometry({ ...desktop, distance: desktop.distance + 100 }); b.notifyLayout(); b.settle();
+    expect(b.scrolls).toHaveLength(2);
+    expect(b.details[1].frame?.time).toBeCloseTo(308, 8);
+    b.notifyLayout(); b.settle(); expect(b.scrolls).toHaveLength(2);
+  });
+
+  test("BFCache history visit restores saved pixels after a viewport change, matching source history policy", () => {
     const b = browser("https://local.test/en?work=remoteplatz");
     b.mount(); b.settle();
     b.runtime.dispatchEvent(new Event("pagehide"));
@@ -352,8 +540,47 @@ describe("HOME browser lifecycle", () => {
     b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true })); b.settle();
     expect(b.details).toHaveLength(2);
     expect(b.details[1].intent.kind).toBe("history");
-    expect(b.details[1].frame?.time).toBeCloseTo(381, 8);
-    expect(b.scrolls[1]).toBeCloseTo(homeScrollTarget(homeWorkPosition("remoteplatz"), mobile)!, 8);
+    expect(b.scrolls[1]).toBe(b.scrolls[0]);
+    expect(b.details[1].frame?.time).toBeCloseTo(frameFromProgress((b.scrolls[0] - mobile.start) / mobile.distance, mobile.heroInput).time, 8);
+  });
+
+  test("soft popstate selects history before Next teardown and preserves the outgoing footer for Forward", () => {
+    const b = browser("https://local.test/en");
+    const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
+    const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
+    b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
+    const original: HomePosition = { section: "work", progress: 6 / 142 };
+    const decisions: ReturnType<typeof getHomeRestoreIntent>[] = [];
+    let dispose: () => void;
+    // Next can tear down HOME before even our capture listener gets its turn.
+    // First visit/capture EN, then a normal locale push creates a distinct AR ID.
+    const next = () => { dispose(); decisions.push(getHomeRestoreIntent(b.win)); dispose = b.mount(); };
+    b.runtime.addEventListener("popstate", next, true);
+    b.runtime.scrollY = 16362;
+    dispose = b.mount(); b.settle();
+    const english = b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint;
+    b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ created: Date.now(), position: original }));
+    b.runtime.location = new URL("https://local.test/ar"); b.runtime.history.state = { __NA: true };
+    dispose(); dispose = b.mount(); b.settle();
+    b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
+    b.runtime.dispatchEvent(new Event("resize")); b.settle();
+    b.runtime.scrollY = narrow.start + narrow.distance; b.capture();
+    const outgoing = b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint;
+    b.runtime.location = new URL("https://local.test/en");
+    b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: english };
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(decisions[0]?.kind).toBe("history");
+    expect(b.details.at(-1)?.intent.kind).toBe("history");
+    expect(b.runtime.scrollY).toBe(16362); // Source EN history keeps desktop pixels.
+    expect(b.details.at(-1)?.frame?.time).toBeCloseTo(489.3488, 3);
+    expect(JSON.parse(b.storage.get(HOME_POSITIONS_KEY)!)[outgoing.id].scrollY).toBe(21772);
+    b.runtime.location = new URL("https://local.test/ar");
+    b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: outgoing };
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(decisions[1]?.kind).toBe("history");
+    expect(b.runtime.scrollY).toBe(21772);
+    expect(b.details.at(-1)?.frame?.time).toBeCloseTo(714, 8);
+    dispose!(); b.runtime.removeEventListener("popstate", next, true);
   });
 
   test("popstate selects the destination entry without overwriting its checkpoint with outgoing pixels", () => {
