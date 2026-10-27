@@ -7,6 +7,52 @@ they are not shipped with the clone.
 
 ## Active acceptance: reopened for continuous experience
 
+Current R22 integration remains **unaccepted**. R20 reviewed five new complete
+EN/AR wide/narrow and native-wheel comparison pairs:1,628 paired4fps samples
+and149 contiguous encoded frames. No additional repeatable visual P1/P2 was
+established in that finite coverage. Two fresh-AR-reload Back runs nevertheless
+lost a correctly restored footer destination, ending at825px. The user's
+whole-page stutter complaint remains open; these videos do not certify every
+presented frame. See `home-continuous-review-r20.md`.
+
+A later root identity-only failing trace caught restoration on the outgoing
+Arabic root before English committed. The new English document then passed
+through short layouts and skipped restoration at identical final geometry.
+The R21 correction binds apply/consume/capture to the destination owner and
+allows a replacement root to restore independently. Root integration passes
+205 tests/5,857 assertions, lint/TypeScript, production build
+`8IWMqyVNqrFD9xtvSt9UL`, and both-locale SSR/14-asset checks. The first unhooked
+production trigger stays at EN20765/footer714; Forward returns AR20765/714.
+A subsequent retained-entry identity trace emits restoration only on new EN,
+after the observed825px clamp. These are root checks; independent production
+acceptance remains pending. Source and local owner mechanism differences and
+the zero-matched-request provenance remain in `home-navigation-contract.md`.
+
+The first independent code review then found a replacement-after-resize P2:
+clearing its geometry key also restarts history's original saved-pixel phase,
+changing work312 into systems489.333. The correction must invalidate physical
+owner completion while retaining the successful semantic history phase. See
+`home-restoration-owner-review-r21.md`; the first root smoke does not close this
+additional finding. Follow-up6b05b8c preserves that layout key and semantic
+phase while clearing only physical completion. Its added regression reproduced
+the failure before the fix and now preserves312 through replacement; a genuinely
+new history entry still applies saved pixels. Root validation passes206 tests
+/5,909 assertions, lint/TypeScript, build `s5jyyxGrVmNylG8NP1W-C` and both-locale
+SSR/14-asset checks. A new independent code review and Vawzen production review
+are active; this snapshot does not claim their acceptance.
+
+R21 offline smoothness triage finds that the recurring213–217ms maxima are
+late timer-driven input issuance while13 observer callbacks continue, rather
+than one continuous scene block. Native story metadata often corresponds to
+the preceding observer sample's nativeY; publication-callback ordering must be
+measured before calling that presented lag. No storage culprit, FPS result or
+stutter cure is established. See `home-smoothness-evidence-r21.md`.
+
+Native profiling is stopped. Its temporary viewer/settings tabs are closed;
+the original Web Developer/1GiB/1ms preset and disabled profiler toolbar feature
+were restored after the R21 root smoke. Only the original source/local tabs
+remain. Local-only profiles and evidence have not been uploaded.
+
 The user's later R13 review reports visible/experienced stutter across the
 whole scroll/animation experience relative to the original. The hero
 language/menu row's near-flickering upward departure is explicitly only an
@@ -313,7 +359,7 @@ margins then closed the reading-extent difference: at EN 1400×850, document
 equal the reference. Removing the nonexistent footer ancestor requirement also
 matched information clearance at102.34375px relative to the footer.
 
-Latest completed root check: ESLint, TypeScript, 93 tests / 3,365 assertions,
+Early-round completed root check: ESLint, TypeScript, 93 tests / 3,365 assertions,
 production build with deferred Troika, and production HTTP SSR audit pass.
 The production scene boots with local fonts and no cross-origin requests. At
 EN 1400×950/DPR1, score312, its incoming connector and project symbol path strings
