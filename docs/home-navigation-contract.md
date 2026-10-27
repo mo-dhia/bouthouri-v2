@@ -24,7 +24,7 @@ import {
 1. **Hero owner:** call `prepareHomeFreshEntry()` and then
    `getHomeRestoreIntent()` synchronously before choosing entry/loading mode.
    The former returns true for the first ordinary fresh document entry decision
-   in this document and resets native/Lenis scroll to zero. Use
+   in this document and resets native scroll to zero. Use
    `(freshReloadEntry || scrollY < 20)` in `shouldEnter`, retaining the existing
    entry-phase/hash/restore guards. The reset never repeats on a quiet/motion or
    Strict Mode remount. Fresh HOME keeps manual browser scroll restoration as
@@ -108,9 +108,9 @@ progress and is never used as physical pin progress.
 
 `HomeRestoreDetail` includes `intent`, semantic `position`, absolute `scrollY`,
 `pinProgress` and `frame` (the latter two can be null in an unpinned/native path).
-The controller synchronizes an existing `__bouthouriLenis` with immediate/forced
-scroll, then uses native instant scrolling. `scrollTo(y)` can override that
-adapter. It never imports or starts Lenis. Position capture is throttled on
+The controller uses native instant scrolling. `scrollTo(y)` can override that
+adapter. No wheel smoother or external scrolling runtime is installed. Position
+capture is throttled on
 scroll, with immediate checkpoints on valid navigation, scroll end, page hide,
 hidden visibility and cleanup. It does not subscribe React to frames.
 

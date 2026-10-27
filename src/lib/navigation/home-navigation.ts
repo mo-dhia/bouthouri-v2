@@ -135,10 +135,6 @@ export function getHomeRestoreIntent(win = browserWindow()): HomeRestoreIntent |
 }
 
 function scrollHomeImmediately(win: BrowserWindow, y: number) {
-  const smooth = (win as BrowserWindow & {
-    __bouthouriLenis?: { scrollTo(target: number, options: { immediate: true; force: true }): void };
-  }).__bouthouriLenis;
-  smooth?.scrollTo(y, { immediate: true, force: true });
   win.scrollTo({ top: y, behavior: "instant" });
 }
 

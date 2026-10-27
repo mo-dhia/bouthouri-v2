@@ -238,7 +238,7 @@ Default world input follows the source's independent hero trigger: desktop unit
 `100/6.8`, mobile `100/5.8`; input length 22 with its nonlinear six-unit hold.
 The custom scroll engine registers `identity-world` with `useRAF:false`; it only
 feeds the hero’s RAF. A native passive scroll listener also reads position so
-large immediate Lenis/native seeks cannot miss the trigger’s active interval.
+large immediate native seeks cannot miss the trigger’s active interval.
 `heroInputProgressFromScroll` normalizes the native trigger's whole hero+22-unit
 span. `createHeroWorldClock` retains/smooths that **raw input**, then applies
 `worldProgressFromInput` and computes the displayed pose. Changed targets use the

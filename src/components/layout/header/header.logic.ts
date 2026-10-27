@@ -305,7 +305,6 @@ export function mountHeader(root: HTMLElement): () => void {
     delete document.documentElement.dataset.menuOpen;
     uiStore.getState().setMenuOpen(false);
     if (uiStore.getState().entryPhase === "complete")
-      globalThis.__bouthouriLenis?.start();
     buttons().forEach((button) => {
       if (!button.hasAttribute("data-menu-close"))
         button.setAttribute("aria-expanded", "false");
@@ -341,7 +340,6 @@ export function mountHeader(root: HTMLElement): () => void {
       document.documentElement.style.overflow = "hidden";
       document.documentElement.dataset.menuOpen = "true";
       uiStore.getState().setMenuOpen(true);
-      globalThis.__bouthouriLenis?.stop();
       buttons().forEach((control) =>
         control.setAttribute("aria-expanded", "true"),
       );

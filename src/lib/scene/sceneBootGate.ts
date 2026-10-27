@@ -64,9 +64,9 @@ function sampleBootWindow(): void {
     return;
   }
 
-  // Exact stillness only: Lenis's exponential ease tail crawls ~1px per
-  // sample for seconds, and any tolerance here classifies that visible
-  // motion as quiet.
+  // Exact stillness only: native smooth scrolling and touchpad inertia can
+  // continue moving between samples. A tolerance would classify visible
+  // movement as quiet.
   const currentScrollY = Math.round(window.scrollY);
   const isStable =
     lastSampledScrollY !== null && currentScrollY === lastSampledScrollY;

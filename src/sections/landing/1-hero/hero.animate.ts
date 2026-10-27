@@ -203,7 +203,6 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     document.documentElement.style.scrollbarGutter = oldGutter;
     if (next) next.inert = oldNextInert;
     if (utilities) utilities.inert = false;
-    globalThis.__bouthouriLenis?.start();
     if (keyboardEntry) identity.focus({ preventScroll: true });
   };
   const preventScroll = (event: Event) => {
@@ -651,10 +650,6 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const magnet = createHeroScrollMagnet({
     read: () => scrollY,
     write: (position) => {
-      globalThis.__bouthouriLenis?.scrollTo(position, {
-        immediate: true,
-        force: true,
-      });
       window.scrollTo({ top: position, behavior: "instant" });
       kickScroll();
       updateScroll();
@@ -754,7 +749,6 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       utilities.inert = true;
       utilities.style.visibility = "hidden";
     }
-    globalThis.__bouthouriLenis?.stop();
     [world, identity, bottom].forEach(
       (element) => (element.style.visibility = "hidden"),
     );

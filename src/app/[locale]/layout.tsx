@@ -5,7 +5,6 @@ import SiteSchema from "@/components/seo/site-schema";
 import { site } from "@/config/site";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localeDirection, locales } from "@/i18n/routing";
-import "lenis/dist/lenis.css";
 import "../globals.css";
 
 export const dynamicParams = false;

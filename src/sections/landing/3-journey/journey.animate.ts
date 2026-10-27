@@ -49,8 +49,6 @@ export function mountJourney(root: HTMLElement) {
     const preservePosition = () => {
       if (!changedMode) return;
       const destination = Math.min(previousScroll, Math.max(0, document.documentElement.scrollHeight - innerHeight));
-      globalThis.__bouthouriLenis?.resize();
-      globalThis.__bouthouriLenis?.scrollTo(destination, { immediate: true, force: true });
       window.scrollTo({ top: destination, behavior: "instant" });
       settleModePosition?.();
       kickScroll();
@@ -258,8 +256,6 @@ export function mountJourney(root: HTMLElement) {
         chapter.getBoundingClientRect().top +
         scrollY +
         pinDistance * progressFromStoryTime(102);
-      if (globalThis.__bouthouriLenis)
-        globalThis.__bouthouriLenis.scrollTo(y, { immediate: true, force: true });
       window.scrollTo({ top: y, behavior: "instant" });
       snap(progressFromStoryTime(102));
       kickScroll();
@@ -273,8 +269,7 @@ export function mountJourney(root: HTMLElement) {
       const y = atEnd
         ? (hero?.offsetHeight ?? innerHeight) * (1 + (innerWidth <= 700 ? 5.8 : 6.8) * 22 / 100)
         : scrollY + 0.9 * innerHeight;
-      if (globalThis.__bouthouriLenis) globalThis.__bouthouriLenis.scrollTo(y);
-      else window.scrollTo({ top: y, behavior: "smooth" });
+      window.scrollTo({ top: y, behavior: "smooth" });
     };
     const visibility = () => {
       pauseOrResume();

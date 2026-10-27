@@ -30,7 +30,7 @@ language, synchronized sound button, email/COPY feedback, LinkedIn, Cairo clock,
 role and year. Surface opens 0..360ms; content unclips 360..480; links start
 400ms with 45ms stagger; secondary content starts 540ms with 45ms stagger;
 footer begins 650ms. Closing restores the invoking control. Native dialog focus
-containment, Escape handling, document/Lenis lock, and scroll-position correction
+containment, Escape handling, native document scroll lock, and scroll-position correction
 keep the background still, including programmatic scrolling. Internal menu scroll
 is native. All menu content is in initial HTML; no-JS navigation is provided.
 Cairo time updates on minute boundaries and changing menu digits roll over 360ms.
@@ -70,7 +70,7 @@ start540ms with45ms stagger/power3.out; footer650..900 uses power2.out. The
 HOME’s four links/five secondary groups finish at1020ms. Close reverses this
 same position at1.55x (logical658.0645ms from full open), rather than starting a
 new wipe/fade. Reopen during closing changes direction from the last painted
-frame. Only final reverse completion closes the modal/releases the native/Lenis
+frame. Only final reverse completion closes the modal/releases the native
 lock and restores the original opener. Content is inert during closing; the
 close/toggle stays available. Reduced motion takes the existing immediate path.
 `data-phase` exposes closed/opening/open/closing. Teardown cancels the sole RAF,

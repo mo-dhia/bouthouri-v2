@@ -13,7 +13,6 @@
     "test:ssr": "bun scripts/audit-ssr.ts"
   },
   "dependencies": {
-    "lenis": "1.3.27",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
