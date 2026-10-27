@@ -39,17 +39,18 @@ and allow its score to settle before capture. Compare cold entry, first scene
 activation, and warmed traversal separately. Do not present passing type/build
 checks or matching content as proof that all animation frames match.
 
-Current state: HOME implementation is integrated and committed. Full review
-round4 is active against the frozen production build. Its confirmed lens
-reflection mismatch (R4-01) is back with the scene owner for correction.
-Full parity is not yet asserted.
+Current state: HOME implementation is integrated and committed. The scene owner
+has corrected R4-01 and the associated camera-refresh history, with source-matched
+cold/refreshed atlases and optical image samples. The corrected production build
+passes and fresh independent round5 is active. Full parity is not yet asserted.
 
 | Round | Result |
 | --- | --- |
 | 1 | Reference inventory and acceptance checklist; see `home-parity-review-r1.md` |
 | 2 | Four integration findings; see `home-parity-review-r2.md`. Short-stage, skip, chapter, return-cue and menu-pause fixes independently rechecked. |
 | 3 | All four R2 triggers pass independently. Two P2 findings (quiet paragraph margins and footer selector clearance) are fixed and cold-retested by the parent; fresh visual review remains required. |
-| 4 | Full integrated visual/interaction review in progress. R4-01 finds a visible lens reflection/material mismatch at score40; the scene owner is investigating from saved evidence. |
+| 4 | Stopped after confirmed R4-01 to transfer the sole permitted tab pair. Scene fix now matches cold/remeasured reflection atlases and refreshed optical camera samples; independent retest remains required. |
+| 5 | Active against corrected frozen revision `8540377`, using only the existing source/local tabs. Includes controlled reload-flow and footer temporal checks. |
 
 Parent live comparisons on 2026-10-27 sampled EN at 1400×950/DPR1, scores
 87/312/500/580/658, and AR at 392×865/DPR1, scores 308/580. Systems and closing
@@ -73,7 +74,7 @@ margins then closed the reading-extent difference: at EN 1400×850, document
 equal the reference. Removing the nonexistent footer ancestor requirement also
 matched information clearance at102.34375px relative to the footer.
 
-Latest completed root check: ESLint, TypeScript, 57 tests / 2,894 assertions,
+Latest completed root check: ESLint, TypeScript, 59 tests / 2,926 assertions,
 production build with deferred Troika, and production HTTP SSR audit pass.
 The production scene boots with local fonts and no cross-origin requests. At
 EN 1400×950/DPR1, score312, its incoming connector and project symbol path strings
@@ -81,9 +82,12 @@ exactly equal the source after scene readiness. The integrated score128 sculptur
 and text were also compared without hiding any hero layers.
 Frozen implementation revision for round4: `b279deb` (shell `07e3acc`, scene
 `c61bccf`). It includes the deterministic pre-GPU connector origin, source480ms
-Expo.out shared scrub, and source five-stop portrait fallback. Future lens fixes
-require a new production build and independent retest.
-Repeat production validation after the owners finish. Trusted SOUND entry was
+Expo.out shared scrub, and source five-stop portrait fallback. The subsequent
+environment/camera correction is revision `8540377`; it requires a new production
+build and independent retest. Round5 must also control the open reload-flow
+observation: source restarted entry at0 while local restored40 in one unmatched
+boot-history comparison.
+Trusted SOUND entry was
 also exercised via Vaelix's CDP double-click path: the recorded click was trusted,
 audio entered `playing`, and muting entered `muted`. Trusted COPY activation
 returned `COPIED` after the clipboard write resolved. Audible balance, physical
