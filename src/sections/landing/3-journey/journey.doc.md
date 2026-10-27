@@ -62,7 +62,16 @@ lens environment is a separate scene-lifetime concern and is not certified here.
 The reading scroll cue now uses the source `#beyond.scrollIntoView({
 behavior: 'auto', block: 'start' })` action. Its listener is removed on mode
 change and HOME disposal. An independent offline review found this previously
-inert control; live EN/AR activation remains on the next production review list.
+inert control; R8 independently verified three EN/AR activations across modes
+at desktop/narrow widths, each invoking the source action once.
+
+R8-01: the navigation mount calls `setQuietMode(false)` only for a new connected
+HOME owner or canonical locale. Outgoing reading capture and destination-intent
+selection precede this callback; geometry restoration follows it. Same-HOME
+mode/Strict remounts and early reading choices retain their preference. Source
+locale capture uses hero height and `#beyond`, independently of reading band gaps
+and checkpoint capture. The actual1009px hero/104px opening gap restores the new
+motion HOME to1009, not915. See the navigation contract for records and evidence.
 
 Mode changes preserve the native offset, clamped to the newly measured document,
 then snap target/displayed score through the shared render path. This mirrors

@@ -39,8 +39,8 @@ and allow its score to settle before capture. Compare cold entry, first scene
 activation, and warmed traversal separately. Do not present passing type/build
 checks or matching content as proof that all animation frames match.
 
-Current candidate: `f155d0c`, running in production at `http://localhost:3100`.
-Full check passes: ESLint, TypeScript, 89 tests / 3,286 assertions. Production
+Current candidate: `41da321`, running in production at `http://localhost:3100`.
+Full check passes: ESLint, TypeScript, 93 tests / 3,365 assertions. Production
 build and the HTTP SSR audit pass for both prerendered locales, metadata,
 redirects, 404s and 14 static assets. It includes the R7 demand/capture correction,
 reading opening/chrome and scroll-cue fixes, and retained reading renderer with
@@ -48,7 +48,11 @@ independent glasses readiness and explicit private-atlas disposal. Round8 gives
 those optical/reading changes bounded production acceptance, but requests changes
 for reading preference surviving locale navigation and persistent MENU metrics.
 The MENU correction is committed in0a98f59 with exact EN-wide/AR-narrow dev
-geometry; navigation lifetime is in implementation. Full parity is not asserted.
+geometry. Navigation41da321 resets the explicit reading preference on a new HOME
+and captures source locale anchors independently of ordinary reading checkpoints;
+the actual104px opening gap is covered. Source/dev y1009, Back/Forward, retained
+work intent and reload controls pass. Fresh production round9 remains pending.
+Full parity is not asserted.
 
 Round6 is not accepted: ordinary reload from a completed journey produces a
 broad source reflection while local retains the dark field. Fresh navigation,
@@ -166,7 +170,7 @@ margins then closed the reading-extent difference: at EN 1400×850, document
 equal the reference. Removing the nonexistent footer ancestor requirement also
 matched information clearance at102.34375px relative to the footer.
 
-Latest completed root check: ESLint, TypeScript, 89 tests / 3,286 assertions,
+Latest completed root check: ESLint, TypeScript, 93 tests / 3,365 assertions,
 production build with deferred Troika, and production HTTP SSR audit pass.
 The production scene boots with local fonts and no cross-origin requests. At
 EN 1400×950/DPR1, score312, its incoming connector and project symbol path strings

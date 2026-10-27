@@ -555,8 +555,9 @@ R6-01 and complete CLARITY cold/remount controls independently pass in R7.
 The additional R7-01 correction above still needs root production/R8 acceptance.
 Reading opening/chrome fixes are inff4d360/f167ba7; retained renderer, private-atlas
 disposal and independent reading readiness are inf155d0c. Root full check now
-passes89tests/3286assertions, production build and SSR audit pass; fresh R8 must
-accept the sampled visual/flow changes independently. Physical
+passes93tests/3365assertions, production build and SSR audit pass. R8 independently
+accepts the sampled optical/reading corrections; its locale/MENU findings now
+await R9 after their fixes. Physical
 coarse-touch hardware, other GPU/browser combinations
 and a comprehensive DPR/breakpoint screenshot sweep remain unverified coverage.
 The previous raster-text, missing idle drift, missing shell-pressure bridge and

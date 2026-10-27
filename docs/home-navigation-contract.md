@@ -3,6 +3,7 @@
 Navigation owns only `src/lib/navigation/**` and `tests/home-navigation.test.ts`.
 The R5-01 integration also adds a fresh-entry reset call and decision flag in
 `1-hero/hero.animate.ts`; it does not change the entry animation/lifecycle.
+R8-01 adds one approved `onHomeChange` callback line in `journey.animate.ts`.
 This module renders no content, imports no React, Three, Storio or Lenis runtime,
 and installs nothing at import time. HOME copy, hrefs and locale markup remain
 server-rendered. The pure `journey-clock.ts` is the sole score/input clock.
@@ -42,6 +43,17 @@ import {
    `root` can be the HOME main or `[data-journey-root]`; all link observation is on
    `document`, so a server Header outside main is covered. Omitting root selects
    `[data-journey-root]`. No content boundary needs to become a Client Component.
+   The journey supplies `onHomeChange: () => uiStore.getState().setQuietMode(false)`
+   for a new HOME lifetime (R8-01). This callback runs after outgoing controller
+   cleanup and synchronous destination-intent selection, before destination
+   geometry restoration. It runs only when a previously registered, connected
+   HOME owner is replaced or its canonical `/en`/`/ar` path changes on mount.
+   The first owner preserves an explicit reading choice made before this
+   deferred controller loaded. Cleanup retains the last owner identity, so a
+   same-root mode/Strict Mode remount, hash/query change, BFCache resumption,
+   resize/ready notification or unrelated store update does not clear reading.
+   A detached stale root cannot claim ownership. The callback never runs from
+   an outgoing click, teardown or popstate listener.
 3. **Journey owner:** expose final measured pin geometry using `getGeometry`
    below, or keep the default attributes/style contract. Install a synchronous
    `onRestore(detail)` callback **or** a window listener for
@@ -68,6 +80,7 @@ import {
 ```ts
 const disposeNavigation = mountHomeNavigation({
   root,
+  onHomeChange: () => uiStore.getState().setQuietMode(false),
   getGeometry: () => pinReady ? {
     start: chapter.getBoundingClientRect().top + scrollY,
     distance: measuredPinDistance,
@@ -113,6 +126,63 @@ chapter start; work at the nearest source project moment's article top minus
 document start is used because the local sibling hero/wrapper differs from the
 source's combined main element. Reading capture and restore targeting have
 different responsibilities.
+
+## HOME reading-mode lifetime (R8-01)
+
+The cached source HOME component in `2gz902oulp4x8.js.pretty` owns its explicit
+reading toggle in local `useState(false)` (`P`); effective reading is OS reduced
+motion, that toggle or its local failure state (`F = N || P || k`). Its effect
+publishes the explicit/failure mode to the environment and clears that mode on
+HOME unmount. The clone's Storio singleton survives a Next locale transition,
+so the incoming HOME callback clears only `quietMode`. Audio choice/state, OS
+reduced motion and the existing scene failure/unmount owner are independent.
+No renderer is recreated or failure latch cleared by this callback, and no
+store subscription is added to navigation.
+
+The outgoing reading layout must remain intact until native click capture has
+written the locale and generic HOME returns. The real reading opening starts
+at1113,104px after the1009px hero. The ordinary reading adapter extends the hero
+band across that gap, so its checkpoint at native1009 is hero1009/1113. That
+checkpoint policy remains intact. For an unpinned **locale departure**, the
+source instead uses the identity's actual height: below it, hero fraction;
+between it and absolute #beyond, opening0; from #beyond onward, philosophy0.
+Its generic HOME record separately clamps the hero fraction to1. Thus the R8
+trigger writes locale opening0 and generic HOME hero1 before resetting quiet.
+The new Arabic HOME resets its explicit reading choice, then maps that intent
+through motion geometry to native1009/story0/opening0 (hero world≈.479).
+Clearing quiet on click or in old cleanup would measure the wrong layout and
+can corrupt that semantic handoff. The generic HOME30-minute lifetime, existing
+precedence, manual document restoration and history capture are unchanged.
+Other accepted within-HOME mode/offset/retained-intent policies are unchanged.
+
+Offline R8 regression coverage uses the actual reading adapter, Storio action
+and shared hero/clock helpers to verify this ordering and destination. It also
+covers first-owner early reading choice, same-root remount/hash/query/no-op UI
+updates, a new same-path owner, same-document locale reuse, detached stale
+mounts and the independence of audio/failure state. Final targeted validation
+passes **50 tests /671 assertions**, scoped ESLint and plain TypeScript.
+
+Bounded source/development live evidence is retained in43 records at
+`/tmp/gazzar-home-navigation-r8/evidence.json`. The corrected fresh healthy
+reading1009→visible Arabic sequence reaches motion(false), document30610,
+native1009 and story/opening0 in both; rounded hero world is .4790 source/.4789
+local. The immediate local pretransition sample preserves quiet=true and the
+old checkpoint while showing the distinct locale opening0/HOME hero1 records.
+Single Back consumes HOME and reaches EN1009; Forward reaches AR1009 in both.
+Source uses new-document `back_forward`; local keeps its initial document and
+`navigate` timing. The initial local915 result and the rejected offscreen source
+toggle setup remain explicitly excluded failures, not accepted destinations.
+
+Development regression controls also retain fresh580's clamped11437 offset,
+work312 through narrow resize and footer→reading3827→motion12091/312, no-op
+footer714, work Back312/Forward714 and completed40/650ms ordinary reload to
+ready0/manual after load. Both original browser tabs were explicitly released
+at plain EN/y0, entry complete, motion enabled, audio muted, menus closed,
+1912×1009/DPR1, without pending calls or probes. Resize remains emulation-first.
+The parent subsequently reports full check **93 tests /3365 assertions**,
+production build and both-locale SSR/14-asset audit passing. Those are parent
+evidence; fresh independent production R8-01 acceptance remains R9-owned.
+No new GPU, OS preference-change or full HOME parity certification is implied.
 
 ## Semantics and record lifetime
 
@@ -203,8 +273,9 @@ navigation functional; the current history state can still retain a checkpoint.
 
 The controller observes eligible same-origin HOME departures to EN↔AR,
 vision/services/projects/contact, and the exact case destinations below. They
-save the displayed generic HOME position; locale and case links also save their
-specific handoff. It does not prevent the click, replace its href, force a
+save the displayed generic HOME position in motion; unpinned locale departures
+use the distinct source fallbacks described above. Locale and case links also
+save their specific handoff. It does not prevent the click, replace its href, force a
 router, synthesize a page or point to the public site's case pages:
 
 | Slug | HOME return score | Preserved href |
