@@ -238,7 +238,7 @@ Default world input follows the source's independent hero trigger: desktop unit
 `100/6.8`, mobile `100/5.8`; input length 22 with its nonlinear six-unit hold.
 The custom scroll engine registers `identity-world` with `useRAF:false`; it only
 feeds the hero’s RAF. A native passive scroll listener also reads position so
-large immediate native seeks cannot miss the trigger’s active interval.
+large immediate native seeks cannot miss the controller's active interval.
 `heroInputProgressFromScroll` normalizes the native trigger's whole hero+22-unit
 span. `createHeroWorldClock` retains/smooths that **raw input**, then applies
 `worldProgressFromInput` and computes the displayed pose. Changed targets use the
@@ -351,3 +351,12 @@ journey stays active, scrollY 8000 hides the scene while retaining 950px height,
 and reversing to 850 restores the same mask. Context recovery removes the mask at unchanged world .4285; switching to
 reading mode clears the inline mask and returns the scene to absolute positioning. This closes the last concrete pass2
 fallback defect; the parent owns final build and reviewer r4’s broad QA.
+
+## Scroll ownership
+
+Raw native scroll input now uses `scrollManager.createInstance('identity-world',
+updateScroll, { useRAF: false })`. The hero already owns measurement, nonlinear
+remapping and its presentation RAF; it needs no interpolated range values.
+This replaces the redundant range callback plus separate native listener.
+It still samples large/restored seeks outside the visible hero, and cleanup
+removes only its own key. Source clock/easing, shared pose and magnet are unchanged.

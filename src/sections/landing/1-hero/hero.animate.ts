@@ -1,7 +1,5 @@
-import {
-  getScrollTrigger,
-  kickScroll,
-} from "@/lib/scrollInteraction/scrollTrigger";
+import { kickScroll } from "@/lib/scrollInteraction/scrollTrigger";
+import scrollManager from "@/lib/scrollInteraction/scrollManager";
 import { uiStore } from "@/store/uiStore";
 import { setAudioEnabled } from "@/lib/audio/material-audio";
 import {
@@ -106,7 +104,6 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const navLogo = utilities?.querySelector<SVGElement>(
     '[data-nav-context="hero"] [data-home-link] svg',
   );
-  const trigger = getScrollTrigger();
   const touched = [
     scene,
     world,
@@ -703,7 +700,6 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   loading.addEventListener("keydown", trap);
   document.addEventListener("visibilitychange", sync);
   window.addEventListener("resize", onResize, { passive: true });
-  window.addEventListener("scroll", updateScroll, { passive: true });
   window.addEventListener("wheel", preventScroll, {
     passive: false,
     capture: true,
@@ -716,13 +712,10 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   root.addEventListener("hero-portrait-wake", wake);
   window.addEventListener("gazzar:hero-world-input", onWorldInput);
   window.addEventListener(HOME_NAVIGATION_RESTORE_EVENT, onNavigationRestore);
-  trigger?.createInstance("identity-world", root, {
-    values: [[0, 1]],
-    startPoint: [1],
-    endPoint: [-2],
-    useRAF: false,
-    callback: updateScroll,
-  });
+  // This controller measures and remaps raw native input itself. Subscribe once
+  // through the shared engine, including outside the hero's visible range;
+  // its existing RAF remains the only owner of entry and departure presentation.
+  scrollManager.createInstance("identity-world", updateScroll, { useRAF: false });
   const resize =
     typeof ResizeObserver === "undefined"
       ? undefined
@@ -802,14 +795,13 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     cancelAnimationFrame(frame);
     unsubscribe();
     resize?.disconnect();
-    trigger?.removeInstance("identity-world");
+    scrollManager.removeInstance("identity-world");
     portrait?.dispose();
     worldPublisher.dispose();
     magnet.dispose();
     if (main) delete main.dataset.worldMagnet;
     document.removeEventListener("visibilitychange", sync);
     window.removeEventListener("resize", onResize);
-    window.removeEventListener("scroll", updateScroll);
     window.removeEventListener("wheel", preventScroll, true);
     window.removeEventListener("touchmove", preventScroll, true);
     window.removeEventListener("keydown", stopScrollKeys, true);

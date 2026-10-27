@@ -125,6 +125,29 @@ describe("scroll lifecycle", () => {
     expect(progress).toBe(0.5);
   });
 
+  test("a direct raw-input owner shares one listener, receives out-of-range seeks once, and cleans up independently", () => {
+    const positions: number[] = [];
+    getScrollTrigger()!.createInstance("ranged-section", element(), {
+      values: [[0, 1]], startPoint: [0, 0, 100], endPoint: [0, 0, 200],
+    });
+    settle();
+    scrollManager.createInstance("identity-world", () => positions.push(viewport.scrollY), { useRAF: false });
+    expect(listeners.get("scroll")?.size).toBe(1);
+    for (const y of [50, 150, 5000, 20]) {
+      viewport.scrollY = y;
+      for (const listener of listeners.get("scroll") ?? []) listener(new Event("scroll"));
+    }
+    expect(positions).toEqual([50, 150, 5000, 20]);
+    scrollManager.removeInstance("identity-world");
+    viewport.scrollY = 180;
+    scrollManager.requestUpdate();
+    settle();
+    expect(positions).toHaveLength(4);
+    expect(listeners.get("scroll")?.size).toBe(1);
+    getScrollTrigger()!.removeInstance("ranged-section");
+    expect(listeners.get("scroll")?.size).toBe(0);
+  });
+
   test("re-registering a key replaces the observed element", () => {
     const trigger = getScrollTrigger()!;
     const replacement = element();
