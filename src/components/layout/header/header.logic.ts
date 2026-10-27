@@ -10,6 +10,7 @@ import { createMenuTimeline } from "./menu-timeline";
 import {
   heroWorldEvent,
   heroWorldPose,
+  readHeroWorldPose,
   type HeroWorldPose,
 } from "@/sections/landing/1-hero/hero-world";
 
@@ -35,6 +36,7 @@ export function mountHeader(root: HTMLElement): () => void {
   if (!dialog || !utilities || !hero || !persistent) return () => {};
   const detachAudio = attachAudioLifecycle();
   const stage = document.querySelector<HTMLElement>("#top");
+  const chapter = document.querySelector<HTMLElement>(".glasses-chapter");
   const detachWhispers = stage
     ? attachSectionWhispers(stage, root.dataset.locale === "ar" ? "ar" : "en")
     : () => {};
@@ -436,6 +438,9 @@ export function mountHeader(root: HTMLElement): () => void {
     persistent.setAttribute("aria-hidden", String(persistent.inert));
     const sideVisible = pose.sideY < 100;
     if (side && sideRoll) {
+      // Source reading CSS makes its peripheral viewport absolute in the chapter.
+      // Keep the shared shell control at that same document-relative position.
+      side.style.translate = reduced() && chapter ? `0 ${chapter.getBoundingClientRect().top}px` : "";
       side.style.visibility = sideVisible ? "visible" : "hidden";
       side.inert = !sideVisible;
       side.setAttribute("aria-hidden", String(!sideVisible));
@@ -469,6 +474,7 @@ export function mountHeader(root: HTMLElement): () => void {
         : "none";
   };
   const onWorld = (event: Event) => {
+    if (reduced()) { onQuietScroll(); return; }
     const detail = (event as CustomEvent<{ progress: number }>).detail;
     if (detail && Number.isFinite(detail.progress))
       applyNavigation(heroWorldPose(detail.progress));
@@ -499,7 +505,7 @@ export function mountHeader(root: HTMLElement): () => void {
     });
   };
   const onResize = () => {
-    applyNavigation(lastPose);
+    onQuietScroll();
     measureInk();
   };
   window.addEventListener("resize", onResize, { passive: true });
@@ -507,8 +513,13 @@ export function mountHeader(root: HTMLElement): () => void {
   const onQuietScroll = () => {
     const identity = document.querySelector<HTMLElement>("#identity");
     const progress = Number(identity?.dataset.heroWorld);
-    if (identity?.hasAttribute("data-enhanced")) {
-      if (Number.isFinite(progress)) applyNavigation(heroWorldPose(progress));
+    if (identity && reduced()) {
+      const top = identity.getBoundingClientRect().top + scrollY;
+      applyNavigation(heroWorldPose((scrollY - top) / Math.max(1, identity.offsetHeight)));
+    } else if (identity?.hasAttribute("data-enhanced")) {
+      const published = readHeroWorldPose(identity);
+      if (published) applyNavigation(published);
+      else if (Number.isFinite(progress)) applyNavigation(heroWorldPose(progress));
     } else {
       const top = identity ? identity.getBoundingClientRect().top + scrollY : 0;
       applyNavigation(
@@ -524,6 +535,7 @@ export function mountHeader(root: HTMLElement): () => void {
   onQuietScroll();
   const unsubscribeNavigation = uiStore.subscribe(onQuietScroll);
   window.addEventListener("scroll", onQuietScroll, { passive: true });
+  query.addEventListener("change", onQuietScroll);
 
   const onHover = (event: PointerEvent) => {
     if (
@@ -605,6 +617,7 @@ export function mountHeader(root: HTMLElement): () => void {
     document.removeEventListener("visibilitychange", syncWave);
     document.removeEventListener("visibilitychange", updateClock);
     query.removeEventListener("change", syncWave);
+    query.removeEventListener("change", onQuietScroll);
     [hero, persistent, ...rolls, side, sideRoll].forEach((element) =>
       element?.removeAttribute("style"),
     );

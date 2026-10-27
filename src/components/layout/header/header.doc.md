@@ -113,3 +113,18 @@ Scoped lint/diff checks pass. R9 independently accepts these metrics in producti
 and also matches EN narrow/AR wide, utility dock placement and the900/901px
 breakpoint. Hero/dialog controls retain their separate metrics; targeted menu
 interruption, reading and resize checks pass. See `docs/home-parity-review-r9.md`.
+
+The R11 reading-footer observation led to a live source geometry check. Reading
+uses raw native hero progress, without the motion remap, and its peripheral
+viewport becomes absolute inside `.glasses-chapter`. The shared shell now follows
+that progress and offsets only the side MENU by the chapter's viewport top;
+the other persistent utilities keep their source fixed placement. At2544×1392,
+source MENU top is75.850006 at native1392, -424.149994 at1892 and -12634.650391
+at the reading footer14102.5. Its width/reservation remain101.733337/102 while
+it scrolls away. The previous fixed substitute stayed at75.850006 throughout.
+At native348/696/1044 source raw progress is.25/.5/.75 and the hero utility row
+has already exited; the former coarse0/1 fallback incorrectly kept it onscreen.
+Mode, resize and OS-preference changes now replay this native pose, and stale
+hero cleanup events cannot overwrite it. Motion continues using the published
+full-precision hero pose. These additional reading corrections require the fresh
+production review alongside the R11 footer fixes.
