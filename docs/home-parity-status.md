@@ -7,6 +7,14 @@ they are not shipped with the clone.
 
 ## Active acceptance: reopened for continuous experience
 
+The user's later R13 review reports visible/experienced stutter across the
+whole scroll/animation experience relative to the original. The hero
+language/menu row's near-flickering upward departure is explicitly only an
+example, not the limit of the issue. This remains an open smoothness
+blocker; the earlier video sampling does not disprove it. The current portrait
+work continues first, followed by a dedicated input/frame-pacing investigation.
+See `home-smoothness-user-review-r13.md` for the exact trigger and evidence limits.
+
 The user rejected the R9 result during normal scrolling. R1–R9 remain evidence
 for their individual checks; they do not accept the home page. The acceptance
 criterion is the same appearance, motion, timing and interactions during use.
