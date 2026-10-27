@@ -61,7 +61,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   const readingFrame: StoryFrame = { time: 0, openingTime: 26, progress: 0, emergence: 1 };
   let frame = readFrame(), refreshFrame = false;
   let guards: SceneGuard[] = [];
-  const active = () => !disposed && !lost && visible && !document.hidden && !menuOpen;
+  const active = () => !disposed && !lost && visible && !document.hidden;
   const park = () => { if (frameId) cancelAnimationFrame(frameId); if (timer) clearTimeout(timer); frameId = timer = 0; };
   const cancel = () => { park(); last = 0; };
   function wake() {
@@ -185,7 +185,9 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   const menu = new MutationObserver(() => {
     menuOpen = document.documentElement.dataset.menuOpen === "true";
     pointer.setActive(!menuOpen && visible && !document.hidden && !lost);
-    if (menuOpen) cancel(); else wake();
+    // The source keeps its menu-quiet field tail and material clock alive.
+    // Input is disabled above; render() supplies uQuiet=1 and no excitation.
+    wake();
   });
   menu.observe(document.documentElement, { attributes: true, attributeFilter: ["data-menu-open"] });
   stage.addEventListener("journey-frame", onFrame); stage.addEventListener("journey-scene-interaction", interaction);

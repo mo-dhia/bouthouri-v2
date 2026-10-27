@@ -388,7 +388,7 @@ test("source allocation keys preserve no-op/same-aspect/DPR history and replace 
   expect(h.stats.rendererDisposals).toBe(1); expect(h.stats.contextLosses).toBe(1);
 });
 
-test("mode, resize and context restore submit no hidden/menu/offscreen GPU work and clean up once", () => {
+test("mode, resize and context restore submit no hidden/offscreen GPU work and clean up once", () => {
   const h = environmentHarness(); h.step();
   const field = h.fields[0], materialTime = Number(h.canvas.dataset.materialTime);
   h.hidden(true); const hiddenRenders = h.stats.renders, hiddenClears = field.clears;
@@ -398,10 +398,12 @@ test("mode, resize and context restore submit no hidden/menu/offscreen GPU work 
   h.hidden(false); h.step();
   expect(Number(h.canvas.dataset.materialTime)).toBeGreaterThan(materialTime);
   expect(h.stats.creations).toBe(1); expect(field.clears).toBe(hiddenClears + 1);
-  h.menu(true); const pausedRenders = h.stats.renders;
+  h.menu(true); const beforeMenuDraw = h.stats.renders;
   h.controller.setReducedMode(false); h.resize(1362, 1000);
-  expect(h.fields.at(-1)!.clears).toBe(0); expect(h.stats.renders).toBe(pausedRenders);
-  expect(h.rafs.size + h.timers.size).toBe(0);
+  expect(h.fields.at(-1)!.clears).toBe(0); expect(h.stats.renders).toBe(beforeMenuDraw);
+  expect(h.rafs.size).toBe(1); h.step();
+  expect(h.fields.at(-1)!.clears).toBe(1);
+  expect(h.fields.at(-1)!.field.uniforms.uQuiet.value).toBe(1);
   h.menu(false); h.step(); h.visible(false); const offscreenRenders = h.stats.renders;
   h.controller.setReducedMode(true); h.resize(1364, 1000);
   expect(h.fields.at(-1)!.clears).toBe(0); expect(h.stats.renders).toBe(offscreenRenders);
@@ -412,6 +414,45 @@ test("mode, resize and context restore submit no hidden/menu/offscreen GPU work 
   expect(h.rafs.size + h.timers.size).toBe(0); expect(h.stage.dataset.storyEnvironment).toBeUndefined();
   expect(h.fields.every((entry) => entry.disposals === 1)).toBe(true);
   expect(h.stats.rendererDisposals).toBe(1); expect(h.stats.contextLosses).toBe(1);
+});
+
+test("MENU retains the source quiet field tail and clock, then returns to normal idle cadence", () => {
+  const h = environmentHarness();
+  h.event("pointermove", { pointerType: "mouse", clientX: 1088, clientY: 300 });
+  h.event("pointerdown", { pointerType: "mouse", clientX: 1088, clientY: 300, pointerId: 1, button: 0 });
+  h.step();
+  const field = h.fields[0], material = h.surfaces[0].material;
+  const before = material.uniforms.uTime.value as number;
+  const advances = field.advances;
+  expect(field.field.uniforms.uPress.value).toBeGreaterThan(0);
+  h.menu(true); h.step(0.05);
+  expect(material.uniforms.uTime.value - before).toBeCloseTo(0.05, 12);
+  expect(field.advances).toBeGreaterThan(advances);
+  expect(field.field.uniforms.uQuiet.value).toBe(1);
+  expect(field.field.uniforms.uMotion.value).toBe(0);
+  expect(field.field.uniforms.uPress.value).toBe(0);
+  expect(field.field.uniforms.uScroll.value).toBe(0);
+  // Let the original six-second tail decay; menu does not restart its budget.
+  const delays = new Set<number>();
+  for (let i = 0; i < 145; i++) {
+    if (!h.rafs.size) { delays.add([...h.timers.values()][0].delay); h.timer(); }
+    h.step(0.05);
+  }
+  expect(delays.has(1000 / 30)).toBe(true);
+  expect([...h.timers.values()][0].delay).toBeCloseTo(1000 / 24, 12);
+  expect(material.uniforms.uTime.value - before).toBeCloseTo(7.3, 10);
+  expect(h.fields).toHaveLength(1); expect(h.stats.creations).toBe(1);
+  const clears = field.clears;
+  h.menu(false); h.step();
+  expect(field.field.uniforms.uQuiet.value).toBe(0);
+  expect(field.clears).toBe(clears);
+  h.menu(true); h.hidden(true);
+  const hiddenTime = material.uniforms.uTime.value, draws = h.stats.renders;
+  expect(h.rafs.size + h.timers.size).toBe(0); h.step(1);
+  expect(material.uniforms.uTime.value).toBe(hiddenTime); expect(h.stats.renders).toBe(draws);
+  h.hidden(false); h.step(); expect(material.uniforms.uTime.value).toBeGreaterThan(hiddenTime);
+  expect(field.field.uniforms.uQuiet.value).toBe(1);
+  h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
 });
 
 test("visible idle changes cadence through one scheduler, and optional failures retain cleanup ownership", () => {

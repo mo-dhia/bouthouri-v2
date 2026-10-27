@@ -53,9 +53,15 @@ Field initialization/clearing waits for the next permitted draw. Context restore
 invalidates field contents but retains the controller, CPU histories and canvas.
 
 There is one existing RAF/timer scheduler. Mode changes wake it without drawing
-synchronously or starting another loop. Hidden, offscreen, lost-context and
-menu-open states submit no background GPU work; resize can prepare CPU resources
-while paused. Disposal is idempotent and releases the field, plane, material,
+synchronously or starting another loop. Hidden, offscreen and lost-context states
+submit no background GPU work; resize can prepare CPU resources while paused.
+An open MENU keeps the source background clock and quiet tail running: pointer
+excitation is disabled, `uQuiet=1`, and the existing remaining tail decays through
+its normal frame/30Hz/24Hz policy. Opening or closing MENU neither resets the
+last draw time nor replenishes the tail. This background policy differs from the
+object/portrait suspension and was confirmed by R16 actual uploaded `uTime`
+advancing on source while the old local field froze. Hidden documents still
+stop all work, including an open menu. Disposal is idempotent and releases the field, plane, material,
 fallback texture, renderer/context, listeners, pointer owner and scheduled work.
 
 R15's native draw trace (`docs/home-residual-cost-r15.md`) found two background
