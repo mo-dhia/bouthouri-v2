@@ -35,9 +35,10 @@ similar controls hydrate as small leaves with stable server markup. Read only
 the required Storio slice. Do not move a whole section into a client module to
 make one button interactive.
 
-Lenis is dynamically imported after hydration only when optional motion is
-allowed. Native scrolling remains available before it initializes and after it
-is destroyed. OS reduced-motion and quiet view override smooth scrolling.
+Keep scrolling native, matching Gazzar. The pinned journey owns its measured
+animation scrub; adding a wheel smoother before that scrub changes input distance,
+response, and stopping behavior. Quiet view and OS reduced motion change the
+journey layout without replacing the browser's scrolling policy.
 
 ## P3 — Section motion
 
