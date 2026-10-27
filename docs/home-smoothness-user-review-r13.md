@@ -104,3 +104,14 @@ DOM caching and exact undeformed-footer contour reuse remove redundant work
 without changing animation curves or quality. These changes still require
 integrated checks and a fresh production moving review. Whole-page smoothness
 and full EN/AR appearance, interactions and animation parity remain open.
+
+The intermediate demand-only candidate removed all duplicate bins but failed
+the source phase contract. R15's actual uniform trace matched final same-bin
+story on source90/90 forward and90/90 reverse, versus local0/89 and0/90. This
+confirms that merely reducing draw count is insufficient. The follow-up adds
+a per-stage render-ownership handoff: background yields its idle/settling RAF
+before the journey requests a tick, draws the current published pose once
+inside that tick, and resumes its standalone scheduler on release. Pending
+ownership, not a second animation clock, prevents competing submissions. The
+intermediate result remains explicitly rejected; new native phase/count and
+whole-route cadence/appearance checks are pending for the follow-up build.

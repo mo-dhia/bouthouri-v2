@@ -199,3 +199,182 @@ No context was lost or mutated. Both original tabs are plain EN/y0, world0,
 story0, entry complete, motion on, audio muted/quiet, menus closed, loaded
 fonts, 2544×1392 CSS/DPR1. Source37 is active; no extra surface exists. Browser
 ownership is returned to the parent. No further browser call follows release.
+
+## Continuation: actual shader phase on frozen 1fa0242
+
+2026-10-27, second explicitly granted browser loan. The parent reports the
+journey DOM cache, footer rest cache and background demand-RAF change integrated
+in **1fa0242**, documentation HEAD682c98b, build
+**DMkSpaWORysMgQzHYeuaQ**. Its reported185 tests /5,317 assertions, lint/type
+check, build and SSR pass are parent validation, not this research's acceptance.
+No application edit, build/restart, test, check, package/process operation,
+recording, screenshot, renderer invocation or commit was performed here.
+Only this appendix and `/tmp/gazzar-residual-r15-phase/` were written.
+
+**The duplicate submission fix passes this bounded control, but a genuine
+source/local background phase mismatch remains.** This conclusion uses actual
+uploaded `uStage` at the native default-framebuffer draw, not merely callback
+order or the DOM score seen by an observer. Full HOME EN/AR moving parity and
+the user's whole-page smoothness concern remain open.
+
+### Document identity was corrected before accepting local results
+
+The first short local probe reproduced the old double-draw behavior. Its tab
+was still the document born at **17:19:29.801Z**, predating the candidate. Those
+rows are saved as `excluded-stale-local-phase.json`, explicitly excluded; the
+initial metadata's configured candidate/build labels were unverified assumptions
+and are not evidence that the stale document ran1fa0242.
+
+Existing local36 was force-loaded at **17:50:20.039Z**, keeping the same tab and
+viewport. Its real Next flight payload contains
+`DMkSpaWORysMgQzHYeuaQ`; the disk BUILD_ID agrees. After real ready QUIET
+activation, the accepted local run starts at native0/world0, entry complete,
+loaded fonts and ready scene/environment/boot. No server operation occurred.
+The source remains the existing cached document. This is a phase/control
+comparison with different document/GPU histories, not a cold or cadence pair.
+
+### Source ownership contract: current published story, one final draw
+
+Cached `11dg_viff64mz.js:615` authors environment as a110-unit `sine.inOut`
+tween starting at story84. Cached `1nvdbh89vm0tk.js` assigns that mutable
+score's environment to `uStage` in its measured R3F frame subscriber; the
+background Canvas uses `frameloop:"demand"`. The expected scalar is:
+
+```js
+p = clamp((storyTime - 84) / 110, 0, 1)
+expectedStage = (1 - Math.cos(Math.PI * p)) / 2
+```
+
+This is also the inspected local authored mapping. The formula was checked
+against actual source uniforms; it was not inferred from local appearance.
+
+At every actual final default-target draw, the probe records native
+`getUniform(program, cachedUStageLocation)`, cached `uTime`, native y, current
+DOM story, document timeline value and callback wall time. Only the existing
+background WebGL2 context is used. Program and uniform locations are cached
+once per existing/naturally activated program. `useProgram` and
+`bindFramebuffer` delegates track the active program and draw target. Field
+passes are excluded from the phase rows. There is no compilation, forced
+render/invalidation, clock manipulation, context loss, shader or uniform write,
+conversion, storage operation, or source asset mutation.
+
+One unwrapped native RAF observer records the matching RAF/timeline stamp.
+A narrowly filtered MutationObserver records only the story node's
+`data-story-time` publication; the last publication in the same timeline bin
+defines its final DOM score. This captures publication later than the draw
+without wrapping GSAP, RAF, all DOM operations or app internals. The actual
+uniform distinguishes a genuinely older shader pose from an older observer
+receipt. Coarse wall-time ties alone are not used to infer ordering.
+
+The13.5s plan uses immutable R14 native positions, including the optical band
+and forward/reverse environment movement with stops. Its planned native-y
+selection initially used a provisional score-to-y conversion; the measured
+forward story range is about100–158 and reverse109–159. The **actual128–159
+subset still contains80 forward /84 reverse draws on each site**, satisfying
+the requested changing-environment control without extrapolating to200.
+Optical0–77 has `uStage=0`, so it controls counting/order but cannot identify
+environment phase by itself. All158 corresponding native post-input positions
+match exactly. Both accepted runs remain focused and visible throughout.
+
+| Changing environment control | Source draws matching final same-bin story | Local draws matching final same-bin story |
+| --- | ---: | ---: |
+| Entire1.5s forward window | **90 /90** | **0 /89** |
+| Entire1.5s reverse window | **90 /90** | **0 /90** |
+| Actual story128–159 forward subset | **80 /80** | **0 /80** |
+| Actual story128–159 reverse subset | **84 /84** | **0 /84** |
+
+All80 /84 selected local uniforms instead match the **preceding timeline
+bin's last story publication**. All selected source uniforms match the current
+bin's final publication and none match its previous bin's publication. This
+establishes the source/live ownership contract in these controls: one final
+background draw consumes the current story update. It does not support treating
+the local background-before-parent ordering as source-equivalent.
+
+For example, in local timeline31829.44, native15211, the draw uploads
+`uStage=0.4144599735736847`, representing story132.98018. The draw-time DOM
+score is132.9802; that bin subsequently publishes136.4753, whose expected
+stage is0.4639786008073706. At timeline31846.52, the actual uploaded stage is
+0.46397864818573, representing the preceding136.4753 publication, while that
+bin ends at139.2368. Source timeline1783310.70 instead uploads
+0.45985400676727295 at draw-time/final DOM136.19, representing136.18562:
+the small difference is within source DOM rounding.
+
+Source DOM story is rounded to two decimals; local uses four. Stage tolerances
+are therefore0.000075 source and0.000001 local, allowing the authored sine
+derivative, GSAP scalar/float32 rounding and DOM quantization. Maximum observed
+source forward/reverse residuals against current story are about0.000068 /
+0.000067. Local residuals against **draw-time** story are below0.000001, but
+against the final story reach0.109909 /0.055516. These are scalar differences,
+not causal milliseconds or visual severity estimates.
+
+Stops converge. Source matches current story on60 /60 draws in each1s stop.
+Local matches final story on35 /60 forward-stop and34 /60 reverse-stop draws;
+the earlier stop frames still carry the preceding publication as the scrub
+settles. This is a continuous-update phase defect, not an unbounded divergence.
+
+**Smallest supported correction:** order the single background submission after
+the current journey publication, while retaining independent settling/idle
+eligibility. The verified1fa0242 demand RAF is commonly queued before the
+parent's next tick and consumes the preceding publication. A single shared
+final flush or equivalent explicit ordering can implement the observed source
+contract. Do not restore the old unconditional synchronous path alongside its
+settling RAF: that reintroduces the proven duplicate work. Preserve authored
+curves, simulation/history/step timing, tail policy, assets, filtering and
+quality. This evidence does not justify merging unrelated clocks or adding
+GSAP. The parent's unserved work after this evidence is outside this review.
+
+### Duplicate bins: corrected on the same24.8s native-target protocol
+
+A separate count-only pair reuses the first R15 plan's exact315 native targets
+and24.8s duration. It performs **no getUniform reads**. Both sites remain
+focused/visible with no new resources. Every corresponding post-input native
+position matches exactly.
+
+| Count-only span | Source default draws / bins | Current local default draws / bins |
+| --- | ---: | ---: |
+| Optical forward1.5s | 81 /81 | 71 /71 |
+| Optical reverse1.3s | 64 /64 | 59 /59 |
+| Footer forward/reversal4s including stop | 240 /240 | 224 /224 |
+| Footer reverse/reversal4s including stop | 239 /239 | 232 /232 |
+| Entire24.8s protocol | **1,402 /1,402** | **1,378 /1,378** |
+
+Neither page has a duplicate default draw bin. Local's old444 duplicate bins
+are absent. Source2,933 /local2,927 field-target native calls are counted
+separately. The accepted short uniform pair also has no duplicate bin
+(source799 /local790 draws, one per bin). Count differences between separate
+sequential runs are **not presented FPS** or a new cadence acceptance claim.
+The footer cache's visual/interaction parity was not re-reviewed in this task.
+
+### Limits, evidence and second explicit release
+
+Native `getUniform` can stall and changes the workload. Its coarse accumulated
+read overhead is261ms source /478ms local across the13.5s protocol; these are
+probe read costs, not shader/GPU execution times or app cost attribution.
+Actual callback delivery and observer counts are preserved in the raw files.
+No presented-frame, GPU-completion, native wheel/APZ or native layout-profiler
+claim follows. The fresh local document received two scripts at replay+24/25ms
+(15/26ms duration, one transfer0); these are not contemporaneous with the
+environment control at+6.5s onward. The source received no new resources.
+Source starts with no hovered DOM nodes; local's fresh QUIET activation leaves
+BODY/MAIN/SECTION hover ancestry at the short run's start, with no held grab.
+The count-only pair reports neutral hover on both. Those histories are recorded
+and not presented as fully controlled simulation histories or FPS conditions.
+
+`/tmp/gazzar-residual-r15-phase/` contains `phase.function.js`,
+`phase-plan.json`, accepted `source-phase.json` /`local-phase.json`,
+`phase-analysis.json`, `phase-version-checks.json`, the explicitly excluded
+stale-document file, `count-plan.json`, `source-count.json` /`local-count.json`,
+`count-analysis.json` and `release.json`. Six delegated native WebGL descriptors
+are restored by identity after each probe. Every probe stops before export;
+its RAF, input timers, story observer and lifecycle listeners are removed and
+its global is disposed. Main-world evaluation succeeded without isolated CSP
+fallback. Native call arguments/results/exceptions are delegated unchanged.
+
+**SECOND EXPLICIT VAWZEN RELEASE: 2026-10-27T17:54:01.136Z.** All browser
+calls/probes, wrappers, observers, listeners, timers and globals from this loan
+are finished/removed. Final descriptor checks show native WebGL/Canvas methods
+and unwrapped RAF; no context was lost or changed. Both original tabs are
+plain EN/native0, world0/story0, entry complete, motion on, audio muted/quiet,
+menus closed, fonts loaded,2544×1392 CSS/DPR1. The current local flight build
+receipt is retained. Source37 is active; no extra surface exists. Ownership
+returns to the parent; no browser call follows this second release.
