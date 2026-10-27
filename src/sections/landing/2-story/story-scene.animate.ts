@@ -194,7 +194,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     if (!document.hidden && !menuOpen) environmentMeasureTimer = window.setTimeout(measureEnvironment, 50);
   };
   function activateStudio() {
-    if (staticMode || !sceneReady || !environmentLifecycle || disposed || lost || document.hidden || menuOpen) return;
+    if (staticMode || !sceneReady || !environmentLifecycle || environmentLifecycle.active || disposed || lost || document.hidden || menuOpen) return;
     clearTimeout(environmentMeasureTimer); environmentMeasureTimer = 0;
     try { environmentLifecycle.activate(bounds()); }
     catch (error) { fail(error); }
