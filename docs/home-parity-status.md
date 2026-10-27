@@ -48,6 +48,23 @@ The integrated check now passes139 tests/4,171 assertions, build and SSR.
 Fresh R12 owns the existing Vawzen pair for the moving experience and reading
 controls. These implementation checks do not close visual findings.
 
+R12 completed another full EN forward/reverse video and four reading sweeps.
+The R11 clock and disabled reading-footer interaction pass real minute-boundary
+and positive-control checks. One P2 remains in that candidate: Arabic reading
+MENU inherited RTL placement after relocation and moved left over the logo.
+Implementation50edb80 explicitly restores the original LTR frame coordinate
+system. Root source/local captures now match wide x2327.9834/y75.85 and narrow
+x431.4667/y16, with unchanged114.2667/74.2667×44 button sizes. Full139-test check,
+production build and SSR audit pass. Fresh independent review remains required.
+
+R12 also recorded a source portrait clearing after a reading resize. Cached
+source analysis identifies a sufficient resize/redraw-starvation branch: the
+canvas dimensions clear its surface, while the completed reduced-mode wake has
+zero delta and its dirty flag cannot bypass the drawing-time gate. Root is
+investigating the precise surface lifecycle and recovery before deciding a
+source-faithful implementation; a generic hide-on-resize patch is not justified
+by the conditional source code. This difference remains explicit in the record.
+
 Vawzen now drives the existing Firefox/Zen source/local pair (tabs37/36).
 Recordings are in `/tmp/gazzar-continuous-r10/` and
 `/tmp/gazzar-continuous-r11/`; the latter includes the complete AR-wide and
