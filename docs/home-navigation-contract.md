@@ -229,8 +229,13 @@ Implemented in `home-position.ts`, `home-navigation-state.ts` and
 `home-navigation.ts`. R6 correction's implementer reports **45 targeted tests /
 536 assertions**, including the parent's reading-adapter regression, plus owned
 lint and scoped strict TypeScript. These cover the generic return/boot guard and
-both clean and extra-fresh-navigation history branches. Live validation is
-waiting for the shared browser slot; parent build and fresh review remain pending.
+both clean and extra-fresh-navigation history branches. Subsequent source/dev
+live checks pass, with22 records at
+`/tmp/gazzar-home-return-r6-implementation/evidence.json`: pristine Back restores
+12091/312 and Forward21772/714; separate fresh AR reload clears the return and
+Back uses16362/489.35. Retained reading3827→motion312, no-op footer hold and fresh
+ordinary11437 offset checks also pass. These are development observations;
+fresh independent production acceptance remains pending.
 Previous R5 validation was35 navigation tests/427 assertions (36/439 with reading).
 ESLint passes for the owned TypeScript files, tests and minimal hero integration;
 plain `tsc --noEmit --incremental false` passes (no Next build/typegen).

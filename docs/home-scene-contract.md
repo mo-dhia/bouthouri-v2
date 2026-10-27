@@ -343,10 +343,18 @@ not dismissed as HMR. R6's frozen production title was complete. Root owns the
 fresh production check and R7 control; no SDF/type implementation was changed
 in this focused material-lifecycle pass.
 
-**Queued root guard:** after scene commit d4b4fe7, offline review found that an
+Root checked fresh production a315984 at1912×1009/DPR1, y11817/story174.0071:
+CLARITY was complete on cold entry and after a quiet→motion remount. The remount
+PNG and states are indexed at `/tmp/gazzar-root-production-check/evidence.json`.
+Repeated source captures at the same settled score separately omitted C and then
+CLA, with partial shell/body text as well. These observations require stable
+capture controls in R7; they do not establish a deterministic clone-only text
+defect or universal text acceptance. No type implementation was changed.
+
+**Root guard a315984:** after scene commit d4b4fe7, offline review found that an
 already-active `activateStudio()` can clear a pending bounds timer before its
-lifecycle returns early. Root will add the early active guard before that clear,
-then check/rebuild after navigation's browser slot. The scene child did not edit
+lifecycle returns early. Root added the early active guard before that clear,
+then ran the full check before rebuilding. The scene child did not edit
 implementation after the freeze.
 
 Evidence and original PNG paths are indexed under `/tmp/gazzar-scene-r6/`:
@@ -367,7 +375,7 @@ checks used 1400x950/DPR1; R4/R6 lifecycle measurements above used 1912x1009/DPR
 - Original asset SHA-256 values match the independent home audit.
 - Scoped ESLint, `tsc --noEmit --incremental false`, and
   `bun test tests/story-scene.test.ts` pass (8 tests, 420 assertions). The
-  parent also reports its full check/build/audit pass before the queued guard.
+  parent also reports its full check after the active guard:84 tests/3172 assertions.
   Full build/typegen and production SSR auditing remain parent-owned, as requested.
 - Compared 205,800 route/sample values against the actual public source at
   aspects .42/.88/1.47/1.85, both directions, all three pieces and score steps
@@ -412,7 +420,8 @@ Live source fixture values (stage sizes, not necessarily viewport sizes):
 
 R6-01's bounds/cache ordering correction is implemented and measured in dev;
 fresh production acceptance remains parent/R7-owned. Missing C in CLARITY and
-the queued active guard above remain explicit open handoff items. Physical
+fresh independent acceptance remain explicit coverage items. The root production
+text samples above pass; R7 still must repeat them. Physical
 coarse-touch hardware, other GPU/browser combinations
 and a comprehensive DPR/breakpoint screenshot sweep remain unverified coverage.
 The previous raster-text, missing idle drift, missing shell-pressure bridge and

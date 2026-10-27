@@ -55,8 +55,11 @@ The scene contract records exact sampled GPU fields and optical crops, the R6
 event-order traces, and remaining validation boundaries. Current focused checks
 pass 8 tests/420 assertions. The dev missing-C symptom at CLARITY 174 remains
 OPEN even after motion remount; atlas equality does not certify its text. Root
-owns a fresh production/R7 check and a queued guard for the already-active studio
-after commit d4b4fe7. No implementation changes followed the scene freeze.
+owns the fresh production/R7 check. Root added the already-active studio guard
+in a315984 after the scene handoff; the full check passes84 tests/3172 assertions.
+Root production cold/remount samples at174 show complete CLARITY; repeated source
+captures separately show intermittent letter omissions. R7 must use stable
+capture controls and independently repeat the complete-title check.
 
 Original assets are local at `/assets/models/` and `/assets/textures/`:
 

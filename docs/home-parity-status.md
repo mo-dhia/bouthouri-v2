@@ -56,6 +56,16 @@ emulation-first `resize_page`, not a verified OS-native window resize. The prior
 source history had accumulated extra navigations; its saved-pixel result does
 not invalidate the fresh review's different source result.
 
+Both R6 corrections now have implementation evidence: bounds/readiness capture
+order reproduces foreground broad and hidden-entry sharp fields, and generic
+HOME return passes pristine and fresh-navigation fallback history in dev.
+The parent applied the active-studio guard in a315984; full check84tests/3172
+assertions, production build and SSR audit pass. Fresh production174 shows
+complete CLARITY on cold entry and motion remount, with source capture instability
+recorded separately. A subsequent production reload from40 exposed a late native
+scroll replay: entry ready at y5263/story40 despite no pending return records.
+Navigation is fixing that startup race before a fresh independent R7 begins.
+
 | Round | Result |
 | --- | --- |
 | 1 | Reference inventory and acceptance checklist; see `home-parity-review-r1.md` |
