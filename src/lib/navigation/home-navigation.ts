@@ -132,17 +132,25 @@ export function prepareHomeFreshEntry(win = browserWindow()): boolean {
   if (!win || entryPrepared.has(win.document)) return false;
   entryPrepared.add(win.document);
   if (!restoreState(win).freshEntry) return false;
-  const previous = win.history.scrollRestoration;
+  // This is document policy, not a temporary enhancement lock. Returning to
+  // auto at load lets Chromium replay the outgoing pixels after hydration.
+  // Keep it through HOME/controller remounts, as the source head does.
   win.history.scrollRestoration = "manual";
   scrollHomeImmediately(win, 0);
-  const release = () => {
-    win.removeEventListener("load", release);
-    if (win.history.scrollRestoration === "manual") win.history.scrollRestoration = previous;
+  const href = win.location.href;
+  const cleanup = () => {
+    win.removeEventListener("pageshow", onPageShow);
+    win.removeEventListener("pagehide", cleanup);
   };
-  // When hydration precedes load, suppress the browser's late native replay.
-  // This document-boot listener removes itself; it never resets scroll on load.
-  if (win.document.readyState === "complete") release();
-  else win.addEventListener("load", release, { once: true });
+  const onPageShow = (event: PageTransitionEvent) => {
+    cleanup();
+    // The source repeats its fresh head reset once at initial pageshow. A late
+    // hydration must not leave a listener that resets a later BFCache visit or
+    // a different route that mounted in this document before load completed.
+    if (!event.persisted && win.location.href === href) scrollHomeImmediately(win, 0);
+  };
+  win.addEventListener("pageshow", onPageShow, { once: true });
+  win.addEventListener("pagehide", cleanup, { once: true });
   return true;
 }
 

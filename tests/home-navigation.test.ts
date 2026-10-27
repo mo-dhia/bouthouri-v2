@@ -318,12 +318,17 @@ function browser(href = "https://local.test/en") {
     cleanups.push(cleanup); return cleanup;
   };
   const capture = () => runtime.dispatchEvent(new Event("scrollend"));
+  // Browser restoration is distinct from an explicit user/engine scroll. Its
+  // replay may arrive after load; manual policy must suppress that late replay.
+  const restoreNative = (y: number) => {
+    if (runtime.history.scrollRestoration === "auto") runtime.scrollY = y;
+  };
   const setLocaleReturn = (raw: string) => {
     storage.set(HOME_LOCALE_RETURN_KEY, raw);
     storage.set(HOME_HANDOFF_KEY, handoffRecord({ to: JSON.parse(raw).to, created: Date.now() }));
   };
   return { runtime, win, root, document, storage, frames, timers, scrolls, details, settle, mount, capture,
-    setLocaleReturn,
+    setLocaleReturn, restoreNative,
     notifyLayout: () => { for (const callback of observers) callback(); }, observers,
     setGeometry: (value: HomeGeometry | null) => { geometry = value; } };
 }
@@ -364,6 +369,8 @@ describe("HOME browser lifecycle", () => {
 
   test("generic HOME return drives pristine EN312→AR/narrow/footer→Back312, while Forward uses the saved AR footer", () => {
     const b = browser();
+    expect(prepareHomeFreshEntry(b.win)).toBe(true);
+    b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
     const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
     const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
     b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
@@ -398,6 +405,7 @@ describe("HOME browser lifecycle", () => {
     b.runtime.location = new URL("https://local.test/ar"); b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: arabic };
     b.runtime.dispatchEvent(new Event("popstate")); b.settle();
     expect(decisions[1]?.kind).toBe("history");
+    expect(b.runtime.history.scrollRestoration).toBe("manual");
     expect(b.runtime.scrollY).toBe(21772);
     expect(b.details.at(-1)?.frame?.time).toBeCloseTo(714, 8);
     dispose!(); b.runtime.removeEventListener("popstate", next, true);
@@ -454,7 +462,7 @@ describe("HOME browser lifecycle", () => {
     expect(getHomeRestoreIntent(b.win)).toBeNull();
     expect(prepareHomeFreshEntry(b.win)).toBe(true);
     expect(b.scrolls).toEqual([0]);
-    expect(b.runtime.history.scrollRestoration).toBe("auto");
+    expect(b.runtime.history.scrollRestoration).toBe("manual");
     b.mount(); b.settle();
     expect(b.details).toHaveLength(0); // Never dispatch restore to finish the loader.
     b.runtime.scrollY = 8541; b.capture();
@@ -464,18 +472,55 @@ describe("HOME browser lifecycle", () => {
     expect(b.scrolls).toEqual([0]);
   });
 
-  test("fresh reload before load suppresses native replay, then releases without a second reset", () => {
-    const b = browser();
-    b.runtime.performance.getEntriesByType = () => [{ type: "reload" }];
-    b.document.readyState = "interactive"; b.runtime.scrollY = 5263;
-    expect(prepareHomeFreshEntry(b.win)).toBe(true);
-    expect(b.runtime.history.scrollRestoration).toBe("manual");
-    b.runtime.scrollY = 30; // A later user/owner position must not be reset on load.
-    b.runtime.dispatchEvent(new Event("load"));
-    expect(b.runtime.history.scrollRestoration).toBe("auto");
-    expect(b.runtime.scrollY).toBe(30);
-    expect(b.runtime.count()).toBe(0);
-    expect(prepareHomeFreshEntry(b.win)).toBe(false);
+  test("fresh document retains manual policy through load, late replay and controller remounts", () => {
+    for (const type of ["navigate", "reload"] as const) {
+      for (const readyState of ["interactive", "complete"]) {
+        const b = browser(); b.runtime.performance.getEntriesByType = () => [{ type }];
+        b.document.readyState = readyState; b.runtime.scrollY = 5263;
+        expect(prepareHomeFreshEntry(b.win)).toBe(true);
+        b.document.readyState = "complete"; b.runtime.dispatchEvent(new Event("load"));
+        b.restoreNative(5263); // The production race arrived after load/hydration.
+        expect(b.runtime.scrollY).toBe(0);
+        expect(b.runtime.history.scrollRestoration).toBe("manual");
+        b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
+        expect(b.scrolls).toEqual([0, 0]);
+        expect(b.runtime.count()).toBe(0);
+        b.restoreNative(5263); expect(b.runtime.scrollY).toBe(0);
+        const first = b.mount(); b.settle(); first();
+        b.runtime.scrollY = 8541; // A later user scroll survives quiet/motion remount.
+        b.mount(); b.settle();
+        expect(prepareHomeFreshEntry(b.win)).toBe(false);
+        b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
+        expect(b.runtime.scrollY).toBe(8541);
+        expect(b.scrolls).toEqual([0, 0]);
+        expect(b.runtime.history.scrollRestoration).toBe("manual");
+      }
+    }
+  });
+
+  test("fresh pageshow resets once and its document listener cannot reset a later route or BFCache visit", () => {
+    const initial = browser(); prepareHomeFreshEntry(initial.win);
+    initial.runtime.scrollY = 5263;
+    initial.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
+    expect(initial.runtime.scrollY).toBe(0);
+    expect(initial.runtime.count()).toBe(0);
+    for (const route of ["/ar", "/en/vision"]) {
+      const b = browser(); prepareHomeFreshEntry(b.win);
+      b.runtime.location = new URL(route, b.runtime.location); b.runtime.scrollY = 8541;
+      b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: false }));
+      expect(b.runtime.scrollY).toBe(8541); expect(b.runtime.count()).toBe(0);
+    }
+    const cached = browser(); prepareHomeFreshEntry(cached.win);
+    cached.runtime.scrollY = 8541;
+    cached.runtime.dispatchEvent(new Event("pagehide"));
+    expect(cached.runtime.count()).toBe(0);
+    cached.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true }));
+    expect(cached.runtime.scrollY).toBe(8541);
+    expect(prepareHomeFreshEntry(cached.win)).toBe(false);
+    const other = browser("https://local.test/en/vision");
+    expect(prepareHomeFreshEntry(other.win)).toBe(false);
+    expect(other.runtime.history.scrollRestoration).toBe("auto");
+    expect(other.runtime.count()).toBe(0);
   });
 
   test("fresh reset integration leaves locale/history/work/query/hash boot positions alone", () => {
