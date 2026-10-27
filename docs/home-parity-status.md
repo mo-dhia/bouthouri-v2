@@ -73,6 +73,23 @@ investigating the precise surface lifecycle and recovery before deciding a
 source-faithful implementation; a generic hide-on-resize patch is not justified
 by the conditional source code. This difference remains explicit in the record.
 
+Implementation31f4beb now defers the existing portrait shader in reading mode,
+retaining source pre-ready samples, initializer draw,1/60 draw budget, actual
+surface invalidation and the positive-budget frozen partial-alpha case. It adds
+abort/canvas ownership protection while keeping the normal shader/render branch.
+The integrated151-test/4,233-assertion check, build and SSR audit pass. Fresh R13
+has confirmed the spent-budget resize pixels and the controlled positive-budget
+shader state, but found a next-native-wake context-loss fallback mask P2 and a
+separate resize native-position history mismatch. Those findings remain open;
+production is frozen for the remaining review controls.
+
+The independent smoothness audit identifies an additional source clock-start
+contract difference beyond the earlier explicit-FROM fix, plus per-frame layout
+reads/redundant writes and whole-route scheduling priorities. See
+`home-smoothness-audit-r13.md`. Actual matched frame/input profiling and causal
+diagnosis are still pending; the user's whole-experience smoothness blocker is
+not closed by the reading shader checks or numerical clock fixtures.
+
 Vawzen now drives the existing Firefox/Zen source/local pair (tabs37/36).
 Recordings are in `/tmp/gazzar-continuous-r10/` and
 `/tmp/gazzar-continuous-r11/`; the latter includes the complete AR-wide and
