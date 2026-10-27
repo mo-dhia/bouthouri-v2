@@ -42,7 +42,8 @@ checks or matching content as proof that all animation frames match.
 Current state: HOME implementation is integrated and committed. The scene owner
 has corrected R4-01 and the associated camera-refresh history, with source-matched
 cold/refreshed atlases and optical image samples. Round5 passed those corrections
-and found four remaining P2 flow/timing differences, now in implementation.
+and found four P2 flow/timing differences. The fixes are now built in production
+at revision `d8509fc`, awaiting fresh independent round6 acceptance.
 Full parity is not yet asserted.
 
 | Round | Result |
@@ -52,6 +53,25 @@ Full parity is not yet asserted.
 | 3 | All four R2 triggers pass independently. Two P2 findings (quiet paragraph margins and footer selector clearance) are fixed and cold-retested by the parent; fresh visual review remains required. |
 | 4 | Stopped after confirmed R4-01 to transfer the sole permitted tab pair. Scene fix now matches cold/remeasured reflection atlases and refreshed optical camera samples; independent retest remains required. |
 | 5 | Corrected lens/camera/sculpture/Ideas and sampled reading layouts pass bounded checks. Open P2s: ordinary reload entry, restored-mount layout lifetime, footer keyboard resolve220ms, and source-reversed menu close. |
+| 6 | Pending fresh production review of `d8509fc`, including all R5 triggers and the same-document Back/Forward correction. |
+
+R5 implementation responses: ordinary reload now explicitly starts fresh once
+per document; locale-restored mounts retain their initial semantic intent across
+real geometry/mode changes. The reading adapter selects the nearest authored
+project and lands100px above it. Frame/style updates and no-op geometry do not
+reapply. Browser history visits use source saved-pixel semantics; a bounded
+per-document visited-ID/exact-URL map recognizes Next's same-document history
+before route teardown can discard the popstate listener. In the implementer's
+clean sequence, EN312 wide→AR312 narrow→ARfooter→Back EN489.35/y16362→Forward
+AR714/y21772 now matches source.
+
+Footer Enter resolves/captures current geometry for220ms before the original
+2.24s morph; pointer pull release remains direct. The menu now reverses all
+authored tracks from their current pose at1.55x and retains lock/focus until
+completion. The shared scalar scrub settles beneath the modal while GPU owners
+pause separately. Implementer live timings and interruptions pass focused
+checks; footer reverse wall-time jitter remains an observation for production
+review, not a new proven source difference.
 
 Parent live comparisons on 2026-10-27 sampled EN at 1400×950/DPR1, scores
 87/312/500/580/658, and AR at 392×865/DPR1, scores 308/580. Systems and closing
@@ -75,7 +95,7 @@ margins then closed the reading-extent difference: at EN 1400×850, document
 equal the reference. Removing the nonexistent footer ancestor requirement also
 matched information clearance at102.34375px relative to the footer.
 
-Latest completed root check: ESLint, TypeScript, 59 tests / 2,926 assertions,
+Latest completed root check: ESLint, TypeScript, 74 tests / 3,068 assertions,
 production build with deferred Troika, and production HTTP SSR audit pass.
 The production scene boots with local fonts and no cross-origin requests. At
 EN 1400×950/DPR1, score312, its incoming connector and project symbol path strings
@@ -84,10 +104,10 @@ and text were also compared without hiding any hero layers.
 Frozen implementation revision for round4: `b279deb` (shell `07e3acc`, scene
 `c61bccf`). It includes the deterministic pre-GPU connector origin, source480ms
 Expo.out shared scrub, and source five-stop portrait fallback. The subsequent
-environment/camera correction is revision `8540377`; it requires a new production
-build and independent retest. Round5 must also control the open reload-flow
-observation: source restarted entry at0 while local restored40 in one unmatched
-boot-history comparison.
+environment/camera correction is revision `8540377`; production round5 passed
+its bounded independent comparisons and confirmed the ordinary reload mismatch.
+The subsequent flow/timing fixes are revision `d8509fc`, with a fresh production
+build and SSR audit passing; independent round6 is still required.
 Trusted SOUND entry was
 also exercised via Vaelix's CDP double-click path: the recorded click was trusted,
 audio entered `playing`, and muting entered `muted`. Trusted COPY activation
