@@ -78,3 +78,29 @@ It passes176 tests/4,460 assertions, lint, TypeScript, production build and SSR.
 Fresh R14 must repeat whole-route measurements and moving review before any
 smoothness acceptance. Numeric fixtures or a better hero alone do not close
 the broader early-story/footer or physical-use concerns.
+
+## R14 outcome and R15 submission correction
+
+Fresh foreground R14 on5b921d7 confirms the hero stall correction: local holds
+1/357 moving hero poses versus source9/360. Both R13 reading findings pass
+EN/AR wide/narrow controls. Full parity remains unaccepted: pre270 had39 local
+versus21 source callback gaps over25ms, and footer12 versus1. These are callback
+measurements, not presented FPS. The new paired full EN-wide video is
+`/tmp/gazzar-continuous-r14/comparison-en-wide.mp4`.
+
+R15 then traced actual native WebGL submissions in matched optical/footer spans.
+Local issued two background default-framebuffer draws in444 document-timeline
+bins; source had none. The earlier local draw used the prior pose, followed by
+a synchronous journey-event draw at the same native position. Field-target
+passes were counted separately. This proves redundant background submissions;
+it does not assign GPU or layout milliseconds to the residual cadence tail.
+Source also uses Canvas for the partial footer; local's fewer moving paints
+do not justify replacing that material with DOM ink. See
+`home-residual-cost-r15.md` and `/tmp/gazzar-residual-r15/`.
+
+The new candidate keeps the latest precise journey score/travel and invalidates
+the background's existing demand RAF, coalescing its two update paths. Journey
+DOM caching and exact undeformed-footer contour reuse remove redundant work
+without changing animation curves or quality. These changes still require
+integrated checks and a fresh production moving review. Whole-page smoothness
+and full EN/AR appearance, interactions and animation parity remain open.
