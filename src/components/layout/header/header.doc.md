@@ -95,3 +95,18 @@ without RAF/style leaks. Focused shell lint and scoped TypeScript pass. Browser
 pair ownership is RELEASED; both tabs remain ordinary EN/y0/entry complete,
 menus closed, original1912×1009/DPR1; local is latest dev3000. No tabs/windows
 were created and all temporary observers/globals were removed.
+
+R8-02: the replacement persistent side MENU now owns the source chapter-side
+typography: type scale1.04/tracking.8, zero letter spacing, 11px Latin /14px
+Arabic bases, width `4em +56px` on desktop and auto/min64px below900px. Its label
+stays4em wide. These rules apply only to the side control; hero and dialog retain
+their own menu styles. Font-ready/resize measurement also sets the source
+`--nav-right-label` from the side's rounded offsetWidth and removes it on cleanup,
+so the adjacent utility dock follows the actual control instead of fallback116px.
+
+Root active-tab dev comparisons match source: EN1912×1009 at312 has font11.44px,
+width101.75px, left1733.78125/top49.625 and label reserve102px; AR392×865 footer714
+has font14.56px, width74.234375px, left294.25/top16. Both inherit1.04/.8 and zero
+tracking. Hero controls remain9.225px/12.24px respectively. Evidence and excluded
+initial hidden/navigation reads: `/tmp/gazzar-r8-menu-root/evidence.json`.
+Scoped lint/diff checks pass; fresh production/R9 acceptance remains pending.

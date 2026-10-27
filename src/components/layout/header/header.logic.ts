@@ -476,6 +476,7 @@ export function mountHeader(root: HTMLElement): () => void {
   window.addEventListener(heroWorldEvent, onWorld);
   const measureInk = () => {
     if (disposed) return;
+    utilities.style.setProperty("--nav-right-label", `${side?.offsetWidth ?? 116}px`);
     const context = document.createElement("canvas").getContext("2d");
     if (!context) return;
     root.querySelectorAll<HTMLElement>("[data-nav-ink]").forEach((ink) => {
@@ -619,6 +620,7 @@ export function mountHeader(root: HTMLElement): () => void {
     });
     delete utilities.dataset.navMode;
     delete utilities.dataset.navContext;
+    utilities.style.removeProperty("--nav-right-label");
     persistent.inert = true;
     persistent.setAttribute("aria-hidden", "true");
     hero.inert = false;
