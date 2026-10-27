@@ -32,6 +32,16 @@ Scope: cold entry, forward/reverse motion and handoffs, object/text chapters, pr
 
 **Acceptance:** compare the actual lens/frame reflection field at the matched score40 and during60..71 after correction, with the frozen build. Matching original GLB/material constants alone does not close this visible mismatch.
 
+**Implementation investigation, not yet independent acceptance:** a controlled
+cold source reload at1912×1009/DPR1 showed the sharp left rectangle too
+(cubeVersion6). Reducing only `.canvas-layer` width by2px and restoring it
+produced the previously captured broad-charcoal atlas (cubeVersion10); a
+synthetic window resize with unchanged geometry did not. The scene implementer
+traced the difference to the shared mixed-resolution PMREM refresh sequence,
+not the authored lens constants. The correction must preserve the clean cold
+state and match the real remeasure transition. Fresh review must record matching
+geometry history, viewport and capture state, not compare unlike PMREM states.
+
 ### Excluded observation — initial hero capture before a fresh foreground paint
 
 The first local hero PNG lacked copy/signature despite complete entry and matching DOM metrics. A second activated capture shows the correct name, support and signature with exact source rectangles. The first PNG is excluded as settled-state evidence; no hero-copy defect is claimed.
