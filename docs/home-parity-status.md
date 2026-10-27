@@ -41,8 +41,9 @@ checks or matching content as proof that all animation frames match.
 
 Current state: HOME implementation is integrated and committed. The scene owner
 has corrected R4-01 and the associated camera-refresh history, with source-matched
-cold/refreshed atlases and optical image samples. The corrected production build
-passes and fresh independent round5 is active. Full parity is not yet asserted.
+cold/refreshed atlases and optical image samples. Round5 passed those corrections
+and found four remaining P2 flow/timing differences, now in implementation.
+Full parity is not yet asserted.
 
 | Round | Result |
 | --- | --- |
@@ -50,7 +51,7 @@ passes and fresh independent round5 is active. Full parity is not yet asserted.
 | 2 | Four integration findings; see `home-parity-review-r2.md`. Short-stage, skip, chapter, return-cue and menu-pause fixes independently rechecked. |
 | 3 | All four R2 triggers pass independently. Two P2 findings (quiet paragraph margins and footer selector clearance) are fixed and cold-retested by the parent; fresh visual review remains required. |
 | 4 | Stopped after confirmed R4-01 to transfer the sole permitted tab pair. Scene fix now matches cold/remeasured reflection atlases and refreshed optical camera samples; independent retest remains required. |
-| 5 | Active against corrected frozen revision `8540377`, using only the existing source/local tabs. Includes controlled reload-flow and footer temporal checks. |
+| 5 | Corrected lens/camera/sculpture/Ideas and sampled reading layouts pass bounded checks. Open P2s: ordinary reload entry, restored-mount layout lifetime, footer keyboard resolve220ms, and source-reversed menu close. |
 
 Parent live comparisons on 2026-10-27 sampled EN at 1400×950/DPR1, scores
 87/312/500/580/658, and AR at 392×865/DPR1, scores 308/580. Systems and closing
