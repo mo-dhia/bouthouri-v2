@@ -23,12 +23,25 @@ integrated in the production preview. Full checks pass122 tests/4,041 assertions
 the production build and both-locale SSR/14-asset audit. Source/local recordings
 now include entry, the complete forward journey and reverse back through270,
 the lenses and hero. `comparison-en.mp4` aligns their replay starts with a fixed
-timestamp offset; it does not time-warp the animation. Fresh R11 is comparing
-the complete moving experience, Arabic/narrow layouts and interactions. No
-acceptance is claimed from passing tests or earlier settled-frame comparisons.
+timestamp offset; it does not time-warp the animation. R11 reviewed complete
+forward and reverse journeys in English and Arabic at wide and narrow sizes.
+It found two reading-footer defects: a stale Cairo clock and an interaction
+the source disables. No further repeatable broad motion difference was
+established in those recordings; the home page remains unaccepted.
+
+Implementation6cda57f separates the foreground clock from material eligibility
+and prevents inactive input from enabling the word morph. Background3d1271a
+adds the source reading-travel reset and late-boot current travel. Header3ab611b
+uses native reading progress and moves its side MENU with the chapter instead
+of leaving it fixed. The integrated check passes128 tests/4,101 assertions;
+the production build and both-locale SSR/14-asset audit pass. A further source
+investigation is checking the hero body's reading-mode lifecycle before the
+fresh visual review. These implementation checks do not close visual findings.
 
 Vawzen now drives the existing Firefox/Zen source/local pair (tabs37/36).
-Recordings are in `/tmp/gazzar-continuous-r10/`. The first scrollBy baseline
+Recordings are in `/tmp/gazzar-continuous-r10/` and
+`/tmp/gazzar-continuous-r11/`; the latter includes the complete AR-wide and
+both narrow captures and the R11 control evidence. The first scrollBy baseline
 bypasses wheel handling and had temporary tool-cadence drift; it is not wheel
 acceptance. The subsequent fixed replay dispatches synthetic wheel events and
 emulates browser default scrolling only when unblocked. It exercises the page's
@@ -89,8 +102,10 @@ correction is inferred from the unlike accumulated pair.
 
 The extra development3000 and review3100 servers were stopped after R9. The
 single production preview on3000 is rebuilt during R10 integration; the active
-review records identify the exact candidate. No new browser surfaces were created; the original one
-window/four tabs remain, with local EN preview active.
+review records identify the exact candidate. R9 used its existing one-window,
+four-tab Vaelix inventory. At the user's request R10 switched to Vawzen's
+existing two task tabs; no new browser surfaces were created. The active review
+owns that pair exclusively and records its actual state at release.
 
 Round6 is not accepted: ordinary reload from a completed journey produces a
 broad source reflection while local retains the dark field. Fresh navigation,
