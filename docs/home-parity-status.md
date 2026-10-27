@@ -112,6 +112,21 @@ regression and scoped lint and is committed as31f1813, still unserved. The
 R13-02 investigator now owns the original pair for a bounded event/write trace;
 no build or server change will occur during that31f4beb baseline diagnosis.
 
+The user then supplied browser focus for root's foreground source/local31f4beb
+baseline:2,040 exact matching native inputs each; every5,137/5,051 captured
+frame remained focused and visible. Hero pose held9/360 source versus243/303
+local moving frames. Pre270 callback-gap p95 was17.18ms/33.26ms; footer3/26
+gaps over25ms. These confirm the applied-response and scheduling differences
+under focus; they do not measure presented FPS or physical wheel latency.
+
+Source-clock edba0b1, header-cache3c8015f, fallback31f1813 and the reading-only
+main anchoring policy5b921d7 are now integrated in production3000. Combined
+lint/type/176-test(4,460 assertions), build and both-locale SSR/14-asset audit
+pass. The anchoring policy follows the proven main-level diagnostic and adds
+no old-y lock or scripted seek. Fresh R14 owns the original Vawzen pair for
+full-route reprofile, moving visual review and R13 exact regressions. The user
+smoothness blocker and parity acceptance remain open until that evidence.
+
 Vawzen now drives the existing Firefox/Zen source/local pair (tabs37/36).
 Recordings are in `/tmp/gazzar-continuous-r10/` and
 `/tmp/gazzar-continuous-r11/`; the latter includes the complete AR-wide and

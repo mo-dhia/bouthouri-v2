@@ -50,3 +50,31 @@ workload during another agent's live capture.
 Status: **open; user-observed smoothness blocker**. No diagnosis or fix is
 claimed by this record. It remains part of full-parity acceptance even if the
 reading portrait and prior visual findings pass.
+
+## Foreground baseline and first correction candidate
+
+The user focused the existing browser for root's two86.1-second runs on the
+unchanged31f4beb production build. Both completed all2,040 inputs; every
+captured frame remained visible and focused, and corresponding native y values
+matched exactly. Entry was complete and all recorded readiness markers remained
+stable. No new resource entries appeared. Sessions were preserved/warm, not a
+controlled cold pair. Input remained synthetic wheel intent plus default
+`scrollBy`, with no physical wheel/APZ or presented-FPS claim.
+
+The hero pose held9/360 moving frames on source versus243/303 locally
+(2.5% versus80.2%). Common-native-y pre270 callback gap p95 was17.18ms versus
+33.26ms. Footer had3 versus26 gaps over25ms. Work and systems had similar
+approximately17.16ms p95 callback spacing. These are application/callback
+measurements, not displayed-frame counts.
+
+Raw source/local captures, unchanged input plan, analysis and summary are in
+`/tmp/gazzar-r14-focused-baseline/`; the input protocol is retained under
+`/tmp/gazzar-r13-prep/`. All probes were disposed after capture and both pages
+returned to y0.
+
+Candidate5b921d7 integrates source-parent-clock alignment(edba0b1), header
+geometry/unchanged-pose caching(3c8015f), and the independent reading fixes.
+It passes176 tests/4,460 assertions, lint, TypeScript, production build and SSR.
+Fresh R14 must repeat whole-route measurements and moving review before any
+smoothness acceptance. Numeric fixtures or a better hero alone do not close
+the broader early-story/footer or physical-use concerns.
