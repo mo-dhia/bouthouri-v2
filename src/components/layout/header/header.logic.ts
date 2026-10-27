@@ -6,6 +6,7 @@ import {
 } from "@/lib/audio/material-audio";
 import { attachSectionWhispers } from "@/lib/audio/section-whispers";
 import menuStyles from "./menu.module.css";
+import { createMenuTimeline } from "./menu-timeline";
 import {
   heroWorldEvent,
   heroWorldPose,
@@ -67,7 +68,7 @@ export function mountHeader(root: HTMLElement): () => void {
   let lockedY = 0;
   let clockTimer: ReturnType<typeof setTimeout> | undefined;
   let copiedTimer: ReturnType<typeof setTimeout> | undefined;
-  let openRequest = 0;
+  let menuPhase: "closed" | "opening" | "open" | "closing" = "closed";
   let lastPose = heroWorldPose(0);
 
   const animate = (
@@ -232,7 +233,29 @@ export function mountHeader(root: HTMLElement): () => void {
   };
   document.addEventListener("visibilitychange", updateClock);
 
+  const setMenuPhase = (value: typeof menuPhase) => {
+    menuPhase = value;
+    dialog.dataset.phase = value;
+  };
+  const setMenuInteractive = (value: boolean) => {
+    dialog
+      .querySelectorAll<HTMLElement>(
+        "[data-menu-primary],[data-menu-information],[data-menu-identity],[data-menu-top-actions] > button:not([data-menu-close])",
+      )
+      .forEach((element) => {
+        element.inert = !value;
+      });
+  };
+  const menuTimeline = createMenuTimeline(dialog, {
+    complete: () => setMenuPhase("open"),
+    reverseComplete: () => finishClose(),
+  });
+  setMenuPhase("closed");
+  setMenuInteractive(false);
   const finishClose = () => {
+    menuTimeline.pause(0);
+    setMenuPhase("closed");
+    setMenuInteractive(false);
     dialog.close();
     document.documentElement.style.overflow = savedOverflow;
     document.documentElement.style.scrollbarGutter = savedGutter;
@@ -250,106 +273,61 @@ export function mountHeader(root: HTMLElement): () => void {
   };
   const close = (immediate = false) => {
     if (!dialog.open) return;
-    const request = ++openRequest;
-    if (reduced() || immediate) {
+    if (immediate) {
       finishClose();
       return;
     }
-    cancelAnimations();
-    const animation = animate(
-      dialog.querySelector("[data-menu-surface]"),
-      [{ clipPath: "inset(0 0 0% 0)" }, { clipPath: "inset(0 0 100% 0)" }],
-      340,
-    );
-    animate(
-      dialog.querySelector("[data-menu-scroll]"),
-      [{ opacity: 1 }, { opacity: 0 }],
-      180,
-    );
-    void animation?.finished
-      .then(() => {
-        if (!disposed && request === openRequest) finishClose();
-      })
-      .catch(() => {});
-    if (!animation) finishClose();
-  };
-  const open = (button: HTMLElement) => {
-    if (dialog.open) return;
-    ++openRequest;
-    opener = button;
-    lockedX = scrollX;
-    lockedY = scrollY;
-    savedOverflow = document.documentElement.style.overflow;
-    savedGutter = document.documentElement.style.scrollbarGutter;
-    document.documentElement.style.scrollbarGutter = "stable";
-    document.documentElement.style.overflow = "hidden";
-    document.documentElement.dataset.menuOpen = "true";
-    uiStore.getState().setMenuOpen(true);
-    globalThis.__bouthouriLenis?.stop();
-    buttons().forEach((control) =>
-      control.setAttribute("aria-expanded", "true"),
-    );
-    dialog.showModal();
-    measureInk();
+    if (menuPhase === "closing") return;
+    setMenuPhase("closing");
+    setMenuInteractive(false);
+    playMaterialSound("click");
     dialog
       .querySelector<HTMLButtonElement>("[data-menu-close]")
       ?.focus({ preventScroll: true });
-    updateClock();
-    cancelAnimations();
-    animate(
-      dialog.querySelector("[data-menu-surface]"),
-      [{ clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)" }],
-      360,
-    );
-    animate(
-      dialog.querySelector("[data-menu-scroll]"),
-      [{ clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)" }],
-      120,
-      360,
-    );
-    animate(
-      dialog.querySelector('[class*="menu-opening-line"]'),
-      [
-        { transform: "scaleX(0)", opacity: 1 },
-        { transform: "scaleX(1)", opacity: 1 },
-        { transform: "scaleX(1)", opacity: 0 },
-      ],
-      390,
-      360,
-    );
-    dialog
-      .querySelectorAll("[data-menu-link-inner]")
-      .forEach((link, i) =>
-        animate(
-          link,
-          [{ transform: "translateY(112%)" }, { transform: "translateY(0)" }],
-          360,
-          400 + i * 45,
-        ),
+    if (reduced() || menuTimeline.time() === 0) finishClose();
+    else menuTimeline.reverse();
+  };
+  const open = (button: HTMLElement) => {
+    if (!dialog.open) {
+      opener = button;
+      lockedX = scrollX;
+      lockedY = scrollY;
+      savedOverflow = document.documentElement.style.overflow;
+      savedGutter = document.documentElement.style.scrollbarGutter;
+      document.documentElement.style.scrollbarGutter = "stable";
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.dataset.menuOpen = "true";
+      uiStore.getState().setMenuOpen(true);
+      globalThis.__bouthouriLenis?.stop();
+      buttons().forEach((control) =>
+        control.setAttribute("aria-expanded", "true"),
       );
-    dialog
-      .querySelectorAll("[data-menu-secondary]")
-      .forEach((item, i) =>
-        animate(
-          item,
-          [{ transform: "translateY(105%)" }, { transform: "translateY(0)" }],
-          300,
-          540 + i * 45,
-        ),
-      );
-    animate(
-      dialog.querySelector("[data-menu-bottom]"),
-      [{ transform: "translateY(110%)" }, { transform: "translateY(0)" }],
-      250,
-      650,
-    );
+      dialog.dataset.focusOrigin = button.matches(":focus-visible")
+        ? "keyboard"
+        : "pointer";
+      dialog.showModal();
+      const scroller = dialog.querySelector<HTMLElement>("[data-menu-scroll]");
+      if (scroller) scroller.scrollTop = 0;
+      measureInk();
+      dialog
+        .querySelector<HTMLButtonElement>("[data-menu-close]")
+        ?.focus({ preventScroll: true });
+      updateClock();
+    }
+    setMenuPhase("opening");
+    setMenuInteractive(true);
+    playMaterialSound("click");
+    if (reduced()) {
+      menuTimeline.pause(menuTimeline.duration);
+      setMenuPhase("open");
+    } else menuTimeline.play();
   };
   const onClick = (event: MouseEvent) => {
     const target = event.target instanceof Element ? event.target : null;
     const menuButton = target?.closest<HTMLElement>("[data-menu-control]");
     if (menuButton) {
       event.preventDefault();
-      if (dialog.open) close();
+      if (menuPhase === "opening" || menuPhase === "open") close();
       else open(menuButton);
       return;
     }
@@ -604,8 +582,8 @@ export function mountHeader(root: HTMLElement): () => void {
   if (first) selectMenu(first);
   return () => {
     disposed = true;
-    ++openRequest;
     if (dialog.open) finishClose();
+    menuTimeline.dispose();
     cancelAnimations();
     clearTimeout(clockTimer);
     clearTimeout(copiedTimer);

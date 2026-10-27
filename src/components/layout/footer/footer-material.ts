@@ -67,8 +67,14 @@ export function mountFooterMaterial(
   let disposed = false,
     frame = 0,
     last = 0,
-    phase: "word" | "pull" | "to-logo" | "logo" | "clearing" | "to-word" =
-      "word",
+    phase:
+      | "word"
+      | "pull"
+      | "resolving"
+      | "to-logo"
+      | "logo"
+      | "clearing"
+      | "to-word" = "word",
     age = 0;
   let editorial: FooterThoughts | undefined;
   let paths: FooterPaths | undefined,
@@ -254,14 +260,15 @@ export function mountFooterMaterial(
         ? clamp(age / (reduced() ? 0.48 : 2.24))
         : phase === "to-word"
           ? clamp(age / (reduced() ? 0.42 : 2.04))
-          : phase === "word" || phase === "pull"
+          : phase === "word" || phase === "pull" || phase === "resolving"
             ? 0
             : 1;
     const contours = paths.contours(raw, phase === "to-word");
     const impulse = thoughtImpulse();
     drawn = [];
     drawnContours = [];
-    const wordMode = phase === "word" || phase === "pull";
+    const wordMode =
+      phase === "word" || phase === "pull" || phase === "resolving";
     const handoff = transfer ? Math.min(1, transferAge / 0.24) : 1;
     const handoffEase = handoff * handoff * (3 - 2 * handoff);
     if (handoff === 1) transfer = undefined;
@@ -331,6 +338,7 @@ export function mountFooterMaterial(
             index === pulledGlyph &&
             (phase === "pull" ||
               phase === "word" ||
+              phase === "resolving" ||
               (phase === "to-logo" && age < 0.5))
           ) {
             const radius = Math.max(70, 0.84 * paths!.boxes[index].height),
@@ -427,7 +435,7 @@ export function mountFooterMaterial(
       phase === "pull" ? limit * (1 - Math.exp(-pullLength / limit)) : 0;
     const goalX = pullLength ? (dx / pullLength) * pullAmount : 0,
       goalY = pullLength ? (dy / pullLength) * pullAmount : 0;
-    if (phase !== "to-logo") {
+    if (phase !== "to-logo" && phase !== "resolving") {
       silkX += (goalX - silkX) * (1 - Math.exp(-32 * dt));
       silkY += (goalY - silkY) * (1 - Math.exp(-32 * dt));
       if (Math.hypot(silkX, silkY) < 0.001 && pullAmount === 0) {
@@ -435,7 +443,16 @@ export function mountFooterMaterial(
         pulledGlyph = -1;
       }
     }
-    if (phase === "to-logo" && age >= (reduced() ? 0.48 : 2.24)) {
+    if (phase === "resolving" && age >= 0.22) {
+      captureRelease();
+      transfer = undefined;
+      silkX = silkY = 0;
+      pulledGlyph = -1;
+      phase = "to-logo";
+      age = 0;
+      mask.dataset.mode = "to-logo";
+      mask.setAttribute("aria-pressed", "true");
+    } else if (phase === "to-logo" && age >= (reduced() ? 0.48 : 2.24)) {
       phase = "logo";
       age = thoughtAge = 0;
       thoughtPhase = "settle";
@@ -496,6 +513,7 @@ export function mountFooterMaterial(
     }
     canvas.style.visibility = "visible";
     word.style.visibility = "hidden";
+    mask.dataset.mode = phase;
     draw();
     const raw =
       phase === "to-logo"
@@ -544,7 +562,7 @@ export function mountFooterMaterial(
     if (!disposed && !frame && !document.hidden)
       frame = requestAnimationFrame(tick);
   }
-  const activate = () => {
+  const captureRelease = () => {
     if (paths && drawnContours.length)
       releaseDelta = drawnContours.map((glyph, g) =>
         glyph.map((contour, c) =>
@@ -554,12 +572,25 @@ export function mountFooterMaterial(
           })),
         ),
       );
+  };
+  const activate = (fromPull = false) => {
+    if (fromPull) captureRelease();
+    else {
+      if (!transfer) {
+        transfer = drawnContours.map((glyph) =>
+          glyph.map((contour) => contour.map((point) => ({ ...point }))),
+        );
+        transferAge = 0;
+      }
+      releaseDelta = undefined;
+      hoverStrength = 0;
+    }
     enabled = true;
     clearTimeout(idleTimer);
     idle.reset();
     waves.clear();
-    transfer = undefined;
-    phase = "to-logo";
+    if (fromPull) transfer = undefined;
+    phase = fromPull ? "to-logo" : "resolving";
     age = 0;
     last = 0;
     concept = 0;
@@ -567,8 +598,8 @@ export function mountFooterMaterial(
     thoughtPhase = "settle";
     canvas.style.visibility = "visible";
     word.style.visibility = "hidden";
-    mask.dataset.mode = "to-logo";
-    mask.setAttribute("aria-pressed", "true");
+    mask.dataset.mode = phase;
+    mask.setAttribute("aria-pressed", String(fromPull));
     playMaterialSound("click");
     wake();
   };
@@ -849,7 +880,7 @@ export function mountFooterMaterial(
       Math.abs(scrollY - startScroll) < 6 &&
       (shortTap || (!touch && Math.hypot(dx, dy) >= threshold))
     )
-      activate();
+      activate(true);
     else {
       phase = "word";
       dx = dy = 0;
@@ -865,6 +896,7 @@ export function mountFooterMaterial(
       return;
     }
     if (event.key !== " " && event.key !== "Enter") return;
+    if (!canInteract()) return;
     event.preventDefault();
     delete mask.dataset.focusOrigin;
     if (phase === "logo") toWord();

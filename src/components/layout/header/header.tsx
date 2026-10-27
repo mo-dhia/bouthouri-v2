@@ -267,7 +267,7 @@ export default function Header({
         <div className={menu["menu-scroller"]} data-menu-scroll="true">
           <div className={menu["menu-opening-line"]} aria-hidden="true" />
           <header className={menu["menu-top"]}>
-            <div className={menu["menu-identity"]}>
+            <div className={menu["menu-identity"]} data-menu-identity="true">
               <Link
                 href={`/${locale}`}
                 className={styles.menuLogo}
@@ -281,7 +281,10 @@ export default function Header({
                 <span>{copy.index}</span>
               </span>
             </div>
-            <div className={menu["menu-top-actions"]}>
+            <div
+              className={menu["menu-top-actions"]}
+              data-menu-top-actions="true"
+            >
               <MenuButton copy={copy} close />
             </div>
           </header>
@@ -321,7 +324,10 @@ export default function Header({
                 </Link>
               ))}
             </nav>
-            <aside className={menu["menu-information"]}>
+            <aside
+              className={menu["menu-information"]}
+              data-menu-information="true"
+            >
               <div className={menu["menu-secondary-mask"]}>
                 <div
                   className={`${menu["menu-secondary-roll"]} ${menu["menu-preview"]}`}

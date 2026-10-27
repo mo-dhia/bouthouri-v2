@@ -74,3 +74,29 @@ Latest cold-dev AR 392×865 / reading mode, after the parent’s scoped-selector
 fix: document9406; footer top8644.53125; information top8724.53125, relative80,
 height195.3125; --footer-nav-top80px. These equal the supplied source readings.
 The reduced material canvas mounted on this same latest DOM.
+
+R5-02: keyboard activation now enters `resolving` for the source220ms. It takes
+over the current drawn contours (or retains an existing transfer), clears idle
+and waves, and resolves toward source-word geometry through the existing240ms
+transfer. At the resolving→to-logo boundary it captures the actual remaining
+geometry delta, clears the transfer/silk, then starts the unchanged2.24s morph.
+Pointer/touch pull release explicitly takes the direct to-logo path and retains
+the passed capture/release behavior. Resolving keeps aria-pressed false; to-logo
+sets it true. The existing single RAF, reverse .88s clearing+2.04s return, thought
+layout and teardown remain in place. Mode attributes now also expose clearing
+and to-word as the source does.
+
+Active pair1912×1009/DPR1: source resolving6.4ms/to-logo224.8ms/logo2468.9ms;
+final cold-dev resolving1.7ms/to-logo222.2ms/logo2474.0ms. Other local runs reached
+logo2475.4ms and2519.2ms, so these are observed frame timings, not a continuous
+motion certification. Reverse code/durations are unchanged; source recorded
+clearing6.6/to-word882.2/word2927.5ms, while local repeated samples reached
+to-word873.9..884.3ms and word2958.2..3083.2ms under variable frame load. This
+wall-time jitter is reported rather than treating numeric durations as proof of
+all-frame equality. The known220ms keyboard omission is closed.
+
+Trusted native drag from painted G stroke(80,700)→(160,760) still captured,
+entered to-logo directly on release and cleared held/capture; no resolving phase
+was inserted into that path. Root/shared clock and navigation files were not
+edited. Parent owns the final production build/review and any further temporal
+performance diagnosis. The loaned source/local pair has been explicitly RELEASED.

@@ -61,3 +61,37 @@ discipline sweep is implemented in CSS. Source scroll-magnet intent/snapping is
 owned by hero-scroll-magnet.ts and driven by the hero RAF; see hero.doc.md.
 `homeSceneFailed` participates in effective reduced behavior without changing the
 user’s quiet/audio preferences.
+
+R5-04: `menu-timeline.ts` now owns a single reversible native RAF clock for the
+complete source-authored opening. Surface0..360ms uses power3.inOut; content
+360..480 uses power2.inOut; line scale360..580 and opacity610..750 remain
+separate tracks. Links start400ms with45ms stagger/power3.out; secondary rolls
+start540ms with45ms stagger/power3.out; footer650..900 uses power2.out. The
+HOME’s four links/five secondary groups finish at1020ms. Close reverses this
+same position at1.55x (logical658.0645ms from full open), rather than starting a
+new wipe/fade. Reopen during closing changes direction from the last painted
+frame. Only final reverse completion closes the modal/releases the native/Lenis
+lock and restores the original opener. Content is inert during closing; the
+close/toggle stays available. Reduced motion takes the existing immediate path.
+`data-phase` exposes closed/opening/open/closing. Teardown cancels the sole RAF,
+removes the visibility listener, restores original track styles and releases the
+lock. Clock/rail/description micro-animations retain their existing ownership.
+
+Matched active pair1912×1009/DPR1, source175555005 and cold-dev175555011:
+full-close source667.6ms; local668.1ms initially and674.0ms after the final
+interruption fix (frame-observed modal/lock removal). A600ms open→close for200ms
+→reopen preserved the exact surface/content styles across direction changes,
+kept the modal/lock, changed primary inertness correctly, completed opening and
+closed normally with opener focus restored. Source had the same ordering and
+continuity. A native40→174 seek immediately followed by menu open settled
+under the locked modal in both (source174.01/local174.0071); close revealed the
+settled score. The parent owns that scalar-clock change; no journey/navigation
+file was changed here.
+
+Four focused timeline tests (17 assertions) check source offsets/eases, endpoints,
+reverse ordering and full duration. An isolated native-clock probe verifies
+interrupted direction continuity, completion callbacks, hidden pause and disposal
+without RAF/style leaks. Focused shell lint and scoped TypeScript pass. Browser
+pair ownership is RELEASED; both tabs remain ordinary EN/y0/entry complete,
+menus closed, original1912×1009/DPR1; local is latest dev3000. No tabs/windows
+were created and all temporary observers/globals were removed.
