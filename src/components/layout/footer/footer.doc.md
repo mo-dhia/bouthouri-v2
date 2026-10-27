@@ -110,3 +110,28 @@ entered to-logo directly on release and cleared held/capture; no resolving phase
 was inserted into that path. Root/shared clock and navigation files were not
 edited. Parent owns the final production build/review and any further temporal
 performance diagnosis. The loaned source/local pair has been explicitly RELEASED.
+
+Residual footer allocation pass (2026-10-27): the inspected public source cache
+`/tmp/gazzar-runtime/1lbueqoir1wno.js:628–684,1381–1382,1421–1432` guards surface
+updates, Path2D rebuilding and paint separately. It retains Canvas during partial
+reveal; see `docs/home-residual-cost-r15.md` for the measured scope and limits.
+The local material now retains the exact generated rest-word contours and six
+Path2D objects while partial reveal changes placement/clip. Only `word` with no
+idle episode, hover strength, waves, transfer or silk displacement can reuse
+them. Every other phase/effect retains its existing geometry calculations.
+Measure and reset discard both caches, including on teardown. An unchanged
+rest-word left/top/shift skips clear/fill; changed geometry repaints the cached
+paths with the existing transform and clip. Tick reads mask/word bounds once
+before writes; pointer hits independently read current event geometry and use
+the same drawn contours/paths. Phase clocks, thresholds, eligibility and audio
+updates remain outside the paint guard.
+
+The real-controller regression uses a control with only cache eligibility
+disabled, preserving the actual deformation formulas. Recorded path commands
+match across EN/AR, reduced motion, partial reveal/reversal, resolving and morph,
+thought impulse, clearing/return, idle takeover, hover/waves and pull release.
+It also checks Path2D/contour call reuse, stationary paint skipping, one bounds
+read per element per tick, fresh pointer coordinates, resize/DPR invalidation,
+reset and cleanup. These establish redundant geometry/paint elimination under
+the harness, not browser frame-time, presented-FPS or whole-HOME parity results.
+Parent owns integrated production validation and live comparison.

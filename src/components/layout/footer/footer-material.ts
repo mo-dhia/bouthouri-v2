@@ -105,6 +105,10 @@ export function mountFooterMaterial(
   let drawn: Path2D[] = [];
   let drawnContours: MaterialContours = [],
     idleTargets: MaterialContours[] = [];
+  let restGeometry:
+    | { paths: Path2D[]; contours: MaterialContours }
+    | undefined;
+  let paintedRest: { left: number; top: number; shift: number } | undefined;
   const idle = new FooterIdleEpisodes(),
     waves = new FooterRefractionWaves();
   const fine = matchMedia("(hover: hover) and (pointer: fine)");
@@ -157,6 +161,7 @@ export function mountFooterMaterial(
         .trim() || (rtl ? "Cairo" : "Questrial");
     editorial = new FooterThoughts(width, height, rtl, labels, family);
     drawn = [];
+    restGeometry = paintedRest = undefined;
     if (enabled || phase !== "word") wake();
   };
   const announce = () => {
@@ -249,13 +254,8 @@ export function mountFooterMaterial(
         (reduced() ? 2 : Math.min(14, 0.016 * width)),
     };
   };
-  const draw = () => {
+  const updatePaths = () => {
     if (!paths) return;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const rect = mask.getBoundingClientRect();
-    const shift = word.getBoundingClientRect().top - rect.top;
-    ctx.setTransform(dpr, 0, 0, dpr, rect.left * dpr, (rect.top + shift) * dpr);
     const raw =
       phase === "to-logo"
         ? clamp(age / (reduced() ? 0.48 : 2.24))
@@ -273,12 +273,6 @@ export function mountFooterMaterial(
     const handoff = transfer ? Math.min(1, transferAge / 0.24) : 1;
     const handoffEase = handoff * handoff * (3 - 2 * handoff);
     if (handoff === 1) transfer = undefined;
-    if (shift > 0.01) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, -shift, width, height);
-      ctx.clip();
-    }
     contours.forEach((glyph, index) => {
       const path = new Path2D();
       const glyphPoints: MaterialContours[number] = [];
@@ -364,6 +358,50 @@ export function mountFooterMaterial(
       });
       drawnContours.push(glyphPoints);
       drawn.push(path);
+    });
+  };
+  const readGeometry = () => {
+    const rect = mask.getBoundingClientRect(),
+      wordTop = word.getBoundingClientRect().top;
+    return { left: rect.left, top: rect.top, shift: wordTop - rect.top, wordTop };
+  };
+  const draw = (geometry = readGeometry()) => {
+    if (!paths) return;
+    const { left, top, shift } = geometry;
+    // Partial reveal only changes placement/clip while the word is undeformed.
+    const restWord =
+      phase === "word" &&
+      idle.kind < 0 &&
+      idle.amount === 0 &&
+      hoverStrength === 0 &&
+      !waves.active &&
+      !transfer &&
+      silkX === 0 &&
+      silkY === 0;
+    if (
+      restWord &&
+      paintedRest?.left === left &&
+      paintedRest.top === top &&
+      paintedRest.shift === shift
+    )
+      return;
+    if (restWord && restGeometry) {
+      drawn = restGeometry.paths;
+      drawnContours = restGeometry.contours;
+    } else {
+      updatePaths();
+      if (restWord) restGeometry = { paths: drawn, contours: drawnContours };
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(dpr, 0, 0, dpr, left * dpr, (top + shift) * dpr);
+    if (shift > 0.01) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, -shift, width, height);
+      ctx.clip();
+    }
+    drawn.forEach((path, index) => {
       ctx.fillStyle =
         phase === "logo" && partMap[index] === concept ? "#e1ded6" : "#dbd8d0";
       ctx.fill(path, "evenodd");
@@ -390,6 +428,7 @@ export function mountFooterMaterial(
       else ctx.stroke();
       ctx.restore();
     }
+    paintedRest = restWord ? geometry : undefined;
   };
   const tick = (now: number) => {
     frame = 0;
@@ -404,11 +443,8 @@ export function mountFooterMaterial(
     }
     const wordMode = phase === "word" || phase === "pull";
     if (wordMode || phase === "logo") waves.advance(dt);
-    const fullWord =
-      Math.abs(
-        word.getBoundingClientRect().top - mask.getBoundingClientRect().top,
-      ) <
-      height * 0.02;
+    const geometry = readGeometry();
+    const fullWord = Math.abs(geometry.shift) < height * 0.02;
     if (wordMode)
       idle.advance(
         dt,
@@ -515,7 +551,7 @@ export function mountFooterMaterial(
     canvas.style.visibility = "visible";
     word.style.visibility = "hidden";
     mask.dataset.mode = phase;
-    draw();
+    draw(geometry);
     const raw =
       phase === "to-logo"
         ? clamp(age / (reduced() ? 0.48 : 2.24))
@@ -630,6 +666,7 @@ export function mountFooterMaterial(
     waves.clear();
     idle.reset();
     transfer = undefined;
+    restGeometry = paintedRest = undefined;
     releaseDelta = returnDelta = undefined;
     hovering = false;
     hovered = -1;
@@ -670,10 +707,10 @@ export function mountFooterMaterial(
   };
   const hit = (event: PointerEvent) => {
     if (!paths) return -1;
-    const rect = mask.getBoundingClientRect(),
-      x = event.clientX - rect.left,
-      y = event.clientY - word.getBoundingClientRect().top;
-    if (!drawn.length) draw();
+    const geometry = readGeometry(),
+      x = event.clientX - geometry.left,
+      y = event.clientY - geometry.wordTop;
+    if (!drawn.length) draw(geometry);
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const tolerance = Math.max(7, Math.min(14, 0.045 * height));
