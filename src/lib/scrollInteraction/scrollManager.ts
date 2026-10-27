@@ -57,7 +57,7 @@ class ScrollEventManager {
    *
    * @example
    * scrollManager.createInstance('my-scroll', (event) => {
-   *   console.log('Scrolled!', window.scrollY);
+   *   console.log(JSON.stringify({ scrollY: window.scrollY }));
    * }, { useRAF: true });
    */
   createInstance(

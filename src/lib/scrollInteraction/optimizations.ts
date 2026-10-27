@@ -500,15 +500,11 @@ export function createPerformanceMonitor(): PerformanceMonitor {
 
     logStats(): void {
       const stats = this.getStats();
-      console.log("=== Scroll Animation Performance ===");
-      console.log(`Total Calls: ${stats.callCount}`);
-      console.log(
-        `Skipped Updates: ${stats.skippedUpdates} (${stats.skipRate.toFixed(2)}%)`,
-      );
-      console.log(`Avg Time: ${stats.avgTime.toFixed(3)}ms`);
-      console.log(`Min Time: ${stats.minTime.toFixed(3)}ms`);
-      console.log(`Max Time: ${stats.maxTime.toFixed(3)}ms`);
-      console.log(`Total Time: ${stats.totalTime.toFixed(3)}ms`);
+      console.log(JSON.stringify({
+        event: "scroll-callback-statistics",
+        ...stats,
+        minTime: stats.callCount ? stats.minTime : 0,
+      }));
     },
 
     reset(): void {
