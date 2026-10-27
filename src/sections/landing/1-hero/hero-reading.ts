@@ -1,11 +1,14 @@
 import { uiStore } from "@/store/uiStore";
 import { createHeroWorldPublisher, heroWorldPose } from "./hero-world";
+import { createReadingPortraitState } from "./hero-reading-portrait";
+import type { PortraitController } from "./hero-portrait";
 
 /** Source reduced tU: one body sample per wake, then stop; no animation clock. */
 export function mountHeroReading(root: HTMLElement): () => void {
   const scene = root.querySelector<HTMLElement>("[data-identity-hero]");
   const world = root.querySelector<HTMLElement>("[data-hero-world]");
   const portrait = root.querySelector<HTMLElement>("[data-hero-portrait]");
+  const image = portrait?.querySelector<HTMLImageElement>("img");
   const marquee = root.querySelector<HTMLElement>("[data-hero-marquee]");
   const track = root.querySelector<HTMLElement>("[data-hero-marquee-track]");
   const identity = root.querySelector<HTMLElement>("[data-hero-identity]");
@@ -22,6 +25,9 @@ export function mountHeroReading(root: HTMLElement): () => void {
   );
   const oldInert = scene.inert, oldDisabled = pause?.disabled;
   const publisher = createHeroWorldPublisher(root);
+  const portraitState = createReadingPortraitState();
+  const portraitAbort = new AbortController();
+  let portraitController: PortraitController | undefined;
   let disposed = false, bodyPending = false, published = false;
   let pose = heroWorldPose(0), bodyProgress = -1;
   let height = 1, top = 0;
@@ -31,6 +37,10 @@ export function mountHeroReading(root: HTMLElement): () => void {
     // the menu waits for close; merely opening/closing a settled menu is no tick.
     if (disposed || document.hidden || uiStore.getState().menuOpen) return;
     bodyPending = false;
+    // A source tU wakes the portrait before the body hidden/cached-pose return.
+    // During the deferred preparation this also preserves the !en resolve cache.
+    portraitState.sample({ resolve: 1, exit: pose.exit, pointer: pose.pointer, active: !pose.hidden });
+    portraitController?.render(0, 1, pose.exit, pose.pointer, !pose.hidden);
     scene.style.visibility = pose.hidden ? "hidden" : "visible";
     scene.style.opacity = pose.hidden ? "0" : "1";
     scene.inert = pose.hidden || pose.identityOpacity <= 0.01;
@@ -67,7 +77,13 @@ export function mountHeroReading(root: HTMLElement): () => void {
   };
   const measure = () => {
     height = Math.max(1, root.offsetHeight);
-    top = root.getBoundingClientRect().top + scrollY;
+    const rootTop = root.getBoundingClientRect().top;
+    top = rootTop + scrollY;
+    if (image) {
+      const rect = image.getBoundingClientRect();
+      portraitState.measure((rect.top - rootTop) / height, rect.height / height);
+    }
+    portraitController?.measure();
     sample();
   };
   let menuWasOpen = uiStore.getState().menuOpen;
@@ -97,9 +113,22 @@ export function mountHeroReading(root: HTMLElement): () => void {
   observer?.observe(track.firstElementChild ?? track);
   void document.fonts.ready.then(() => { if (!disposed) measure(); });
   measure();
+  // Only the optional graphics are deferred. Neither readiness nor wall time
+  // fabricates a source wake; the initializer draws without spending its budget.
+  void import("./hero-portrait")
+    .then(({ mountHeroPortrait }) => {
+      if (!disposed) return mountHeroPortrait(root, { signal: portraitAbort.signal, reading: portraitState });
+    })
+    .then((controller) => {
+      if (disposed) controller?.dispose();
+      else portraitController = controller;
+    })
+    .catch(() => { /* Keep the server photograph if optional graphics fail. */ });
   return () => {
     if (disposed) return;
     disposed = true;
+    portraitAbort.abort();
+    portraitController?.dispose();
     unsubscribe();
     observer?.disconnect();
     publisher.dispose();

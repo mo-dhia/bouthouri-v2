@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { emitMaterialProtection } from "@/components/layout/header/material-protection";
 import { clamp } from "./hero-world";
+import type { ReadingPortraitState } from "./hero-reading-portrait";
 import {
   playMaterialImpulse,
   setMaterialMotion,
@@ -19,6 +20,9 @@ export type PortraitController = {
   reset: () => void;
   dispose: () => void;
 };
+
+type PortraitOptions = { signal?: AbortSignal; reading?: ReadingPortraitState };
+const portraitOwners = new WeakMap<HTMLCanvasElement, () => void>();
 
 const vertexShader = `varying vec2 vUv; void main() { vUv=uv; gl_Position=vec4(position.xy,0.,1.); }`;
 // The reference's 34-cell nearest-neighbour material, reimplemented as an isolated
@@ -135,20 +139,46 @@ function entryOpacity(value: number): number {
 
 export async function mountHeroPortrait(
   root: HTMLElement,
+  options: PortraitOptions = {},
 ): Promise<PortraitController> {
   const container = root.querySelector<HTMLElement>(
     "[data-portrait-entrance]",
   )!;
   const image = container.querySelector<HTMLImageElement>("img")!;
   const canvas = container.querySelector<HTMLCanvasElement>("canvas")!;
-  await image.decode();
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    alpha: true,
-    antialias: false,
-    powerPreference: "low-power",
-    premultipliedAlpha: true,
-  });
+  const reading = options.reading;
+  const aborted = () => new DOMException("Portrait preparation cancelled", "AbortError");
+  if (options.signal?.aborted) throw aborted();
+  let cancelled = false;
+  const ownsCanvas = () => portraitOwners.get(canvas) === cancel;
+  const releaseOwner = () => {
+    options.signal?.removeEventListener("abort", cancel);
+    if (ownsCanvas()) {
+      container.dataset.portraitReady = "false";
+      portraitOwners.delete(canvas);
+    }
+  };
+  let cancelPreparation = releaseOwner;
+  const cancel = () => { cancelled = true; cancelPreparation(); };
+  const assertOwner = () => { if (cancelled || !ownsCanvas()) throw aborted(); };
+  portraitOwners.get(canvas)?.();
+  portraitOwners.set(canvas, cancel);
+  options.signal?.addEventListener("abort", cancel, { once: true });
+  let renderer: THREE.WebGLRenderer;
+  try {
+    await image.decode();
+    assertOwner();
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: false,
+      powerPreference: "low-power",
+      premultipliedAlpha: true,
+    });
+  } catch (error) {
+    cancel();
+    throw error;
+  }
   renderer.setClearColor(0, 0);
   renderer.toneMapping = THREE.NoToneMapping;
   const scene = new THREE.Scene();
@@ -191,7 +221,7 @@ export async function mountHeroPortrait(
     fieldActive: { value: 0 },
     departure: { value: 0 },
     exitVelocity: { value: 0 },
-    exitDetail: { value: innerWidth <= 700 ? 0.35 : 1 },
+    exitDetail: { value: reading ? 0 : innerWidth <= 700 ? 0.35 : 1 },
     exitPixel: { value: new THREE.Vector2(1, 1) },
     view: { value: new THREE.Vector2(0, 1) },
   };
@@ -224,7 +254,18 @@ export async function mountHeroPortrait(
     hover = false;
   let rect = image.getBoundingClientRect();
   let pixelWidth = 0,
-    pixelHeight = 0;
+    pixelHeight = 0,
+    pixelRatio = 0;
+  let compiling = false, resourcesReleased = false;
+  const releaseResources = () => {
+    if (resourcesReleased) return;
+    resourcesReleased = true;
+    geometry.dispose();
+    material.dispose();
+    photo.dispose();
+    field.dispose();
+    renderer.dispose();
+  };
   let previousExit = 0;
   let surfaceActive = false,
     protectedActive = false,
@@ -268,18 +309,34 @@ export async function mountHeroPortrait(
     } else if (protectedActive) releaseProtection();
   };
 
-  const alphaCanvas = document.createElement("canvas");
-  alphaCanvas.width = 192;
-  alphaCanvas.height = 128;
-  const alphaContext = alphaCanvas.getContext("2d", {
-    willReadFrequently: true,
-  });
-  alphaContext?.drawImage(image, 0, 0, 192, 128);
-  const alpha = alphaContext?.getImageData(0, 0, 192, 128).data;
+  let alpha: Uint8ClampedArray | undefined;
+  if (!reading) {
+    const alphaCanvas = document.createElement("canvas");
+    alphaCanvas.width = 192;
+    alphaCanvas.height = 128;
+    const alphaContext = alphaCanvas.getContext("2d", { willReadFrequently: true });
+    alphaContext?.drawImage(image, 0, 0, 192, 128);
+    alpha = alphaContext?.getImageData(0, 0, 192, 128).data;
+  }
   const measure = () => {
     if (disposed || lost) return;
     rect = image.getBoundingClientRect();
     heroHeight = root.offsetHeight;
+    if (reading) {
+      const width = rect.width, height = rect.height;
+      reading.measure((rect.top - root.getBoundingClientRect().top) / heroHeight, height / heroHeight);
+      uniforms.exitPixel.value.set(1 / width, 1 / height);
+      if (width && height) {
+        const ratio = Math.min(devicePixelRatio || 1, 1.5, (image.naturalWidth || 1536) / width);
+        if (width !== pixelWidth || height !== pixelHeight || ratio !== pixelRatio) {
+          renderer.setPixelRatio(ratio);
+          renderer.setSize(width, height, false);
+          pixelWidth = width; pixelHeight = height; pixelRatio = ratio;
+          reading.invalidate();
+        }
+      }
+      return;
+    }
     const width = image.offsetWidth,
       height = image.offsetHeight;
     uniforms.exitPixel.value.set(1 / width, 1 / height);
@@ -391,24 +448,31 @@ export async function mountHeroPortrait(
     if (document.hidden) reset();
   };
   const onContextLost = (event: Event) => {
+    if (disposed || !ownsCanvas()) return;
     event.preventDefault();
     lost = true;
     surfaceActive = false;
-    releaseProtection();
+    if (!reading) releaseProtection();
+    reading?.unavailable();
     container.dataset.portraitReady = "false";
     root.dispatchEvent(new Event("hero-portrait-wake"));
   };
   const onContextRestored = () => {
+    if (disposed || !ownsCanvas()) return;
     lost = false;
     dirty = true;
+    reading?.prepared();
     container.dataset.portraitReady = "true";
     root.dispatchEvent(new Event("hero-portrait-wake"));
   };
   const dispose = () => {
     if (disposed) return;
     disposed = true;
-    clearMaterialMotion();
-    releaseProtection();
+    if (!reading) {
+      clearMaterialMotion();
+      releaseProtection();
+    }
+    reading?.unavailable();
     window.removeEventListener("pointermove", move, true);
     window.removeEventListener("pointerdown", protect, true);
     window.removeEventListener("pointercancel", reset);
@@ -419,36 +483,66 @@ export async function mountHeroPortrait(
     window.removeEventListener("blur", reset);
     canvas.removeEventListener("webglcontextlost", onContextLost);
     canvas.removeEventListener("webglcontextrestored", onContextRestored);
-    geometry.dispose();
-    material.dispose();
-    photo.dispose();
-    field.dispose();
-    renderer.dispose();
-    container.dataset.portraitReady = "false";
+    // Three's compileAsync polls material programs. Keep them valid until its
+    // pending check finishes, but revoke drawing and DOM ownership immediately.
+    if (!compiling) releaseResources();
+    releaseOwner();
+  };
+  cancelPreparation = dispose;
+  const applyReadingFrame = () => {
+    if (!reading) return;
+    const frame = reading.frame;
+    uniforms.resolve.value = frame.resolve;
+    uniforms.opacity.value = entryOpacity(frame.resolve);
+    uniforms.departure.value = frame.exit;
+    const gain = clamp((uniforms.opacity.value * frame.pointer - 0.15) / 0.55);
+    const strength = gain * gain * (3 - 2 * gain);
+    if (uniforms.pointerStrength.value !== strength) reading.invalidate();
+    uniforms.pointerStrength.value = strength;
+    if (uniforms.view.value.x !== frame.viewTop || uniforms.view.value.y !== frame.viewHeight) {
+      uniforms.view.value.set(frame.viewTop, frame.viewHeight);
+      if (frame.exit > 0) reading.invalidate();
+    }
   };
   try {
     measure();
+    if (reading) { renderer.initTexture(photo); renderer.initTexture(field); }
+    compiling = true;
     await renderer.compileAsync(scene, camera);
+    compiling = false;
+    assertOwner();
+    if (reading) {
+      const gl = renderer.getContext();
+      if (renderer.info.programs?.some((program) => !gl.getProgramParameter(program.program, gl.LINK_STATUS)))
+        throw new Error("Portrait shader could not compile");
+      measure(); applyReadingFrame();
+    }
     renderer.render(scene, camera);
+    reading?.prepared();
     container.dataset.portraitReady = "true";
-    window.addEventListener("pointermove", move, {
-      passive: true,
-      capture: true,
-    });
-    window.addEventListener("pointerdown", protect, {
-      passive: true,
-      capture: true,
-    });
-    window.addEventListener("pointercancel", reset);
-    window.addEventListener("pointerout", pointerOut);
-    window.addEventListener("resize", reset);
-    document.addEventListener("visibilitychange", visibility);
-    window.addEventListener("click", click, { passive: true });
-    window.addEventListener("blur", reset);
+    if (reading) canvas.dataset.surface = "prepared";
+    if (!reading) {
+      window.addEventListener("pointermove", move, {
+        passive: true,
+        capture: true,
+      });
+      window.addEventListener("pointerdown", protect, {
+        passive: true,
+        capture: true,
+      });
+      window.addEventListener("pointercancel", reset);
+      window.addEventListener("pointerout", pointerOut);
+      window.addEventListener("resize", reset);
+      document.addEventListener("visibilitychange", visibility);
+      window.addEventListener("click", click, { passive: true });
+      window.addEventListener("blur", reset);
+    }
     canvas.addEventListener("webglcontextlost", onContextLost);
     canvas.addEventListener("webglcontextrestored", onContextRestored);
   } catch (error) {
+    compiling = false;
     dispose();
+    releaseResources();
     throw error;
   }
   return {
@@ -457,6 +551,20 @@ export async function mountHeroPortrait(
     dispose,
     render(delta, resolve, exit, strength, active) {
       if (disposed || lost) return false;
+      if (reading) {
+        if (document.hidden || document.documentElement.dataset.menuOpen === "true") return false;
+        // The lightweight caller preserves the same sample before preparation.
+        // This branch never integrates pointer fields or starts a frame clock.
+        reading.sample({ resolve, exit, pointer: strength, active });
+        applyReadingFrame();
+        if (!active) { canvas.dataset.surface = "sleep"; return false; }
+        if (reading.draw(delta)) {
+          renderer.render(scene, camera);
+          canvas.dataset.surface = resolve < 1 ? "resolving" : "rest";
+          canvas.dataset.exit = exit.toFixed(4);
+        }
+        return false;
+      }
       const speed =
         delta > 0 && delta < 0.1 && Math.abs(exit - previousExit) < 0.12
           ? (exit - previousExit) / delta

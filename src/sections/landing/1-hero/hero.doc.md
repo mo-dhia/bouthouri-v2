@@ -10,8 +10,9 @@ history/locale restore still needs to establish the fixed layer’s exit pose.
 Without JS the complete static hero stays visible and the scene is absolute
 rather than fixed. With JS, quiet reading, OS reduced motion, scene failure and
 a failed optional hero-controller import use the small `hero-reading.ts`
-controller. This is directly imported by the gate: it loads no portrait/audio,
-entry runtime or further chunk, and starts no RAF or timer.
+controller. This is directly imported by the gate and starts no RAF, timer or
+entry runtime. Its optional portrait graphics are a separate dynamic import;
+the server photograph remains useful while that enhancement loads or fails.
 
 ## Reading body and world contract (R11 follow-up)
 
@@ -50,6 +51,117 @@ checks do not validate rendered production frames or full-HOME acceptance.
 Root owns the final rebuild, SSR audit and continuous source/local review.
 Scoped validation: all 31 hero tests pass; ESLint passes for the gate, reading
 controller and its tests; plain `tsc --noEmit --incremental false` passes.
+
+## Reading portrait paint lifecycle (R13)
+
+R12 exposed a real reading resize history: the source's ready portrait becomes
+blank, while the former local static photo stayed visible. R13 traced the live
+source before choosing a fix. `hero-reading.ts` now defers the existing
+`hero-portrait.ts` renderer with `{signal, reading: pendingState}`. It retains
+the existing shader verbatim, including its noise/luminance alpha field. Reduced
+`exitDetail=0` disables only the source's displacement detail; replacing the
+shader with a CSS gradient or a boolean blackout would miss a frozen partial
+draw observed after a positive-budget resize. Normal motion's shader and render
+branch are unchanged. The extra normal-controller changes only cancel pending
+portrait preparation and leave readiness writes to the current graphics owner.
+
+`hero-reading-portrait.ts` owns the small per-mount pending sample and draw gate.
+Before readiness, each eligible native wake stores resolve/exit/pointer and the
+measured image coordinates, even when the **hero** is hidden. A hidden document
+or open menu skips that sample. Geometry measurement updates cached coordinates;
+only a real wake publishes them into the pending sample. This preserves the
+source's pre-ready `es` cache while its asynchronous controller is unavailable.
+The initializer decodes and compiles, reads that sample, renders unconditionally,
+and marks `prepared`, without spending the initial **1/60** draw budget or
+inventing a wake when the controller promise resolves.
+
+Subsequent native wakes call `render(0,1,exit,pointer,!hidden)` before the body
+controller's hidden/cached-pose early return. The source gate is retained:
+`(!dirty && lastResolve===resolve) || (lastResolve>=0 && budget<1/60-.0005)`
+skips drawing. Budget accumulates only the supplied delta, capped at 1/30; an
+actual gated draw spends 1/60. Completed reading supplies zero delta, so wall
+time, reverse scroll, visibility return and dirty state cannot refill it. A
+hidden hero does not spend it. Context availability restores the existing
+budget/cache instead of resetting them; a new mode mount creates fresh state.
+
+Reading measurement uses the actual image `getBoundingClientRect()` dimensions
+and `min(DPR,1.5,naturalWidth/imageWidth)`. It calls renderer size methods only
+when those values change. Even a CSS change that rounds to the same raster size
+can clear the buffer, matching the source's dimension comparison. A height-only
+viewport change that leaves the image dimensions/DPR equal does not clear it.
+Shader view coordinates use image top relative to the hero and image height
+divided by hero height. They therefore retain the source's reading image-relative
+field after native scroll, rather than the normal path's viewport-relative field.
+No pointer hit map, input/protection listeners, material-audio updates or owned
+frame loop run in the reading variant. Three may poll while compiling its program;
+the hero does not add an animation scheduler.
+
+Both motion and reading create an AbortController before starting the deferred
+import. A per-canvas owner cancels an older preparation. Abort during decode
+prevents renderer allocation; abort during compilation immediately revokes draw
+and DOM ownership. GPU disposal waits for Three's existing compilation poll to
+finish so it cannot inspect already-disposed programs. A stale completion checks
+ownership before measurement/render/readiness writes, releases only its own
+resources, and cannot clear a newer surface. Cleanup never forces context loss
+on the shared canvas. Graphics import/decode/compile failure leaves the SSR photo
+and native body/world controller intact.
+
+### Live source evidence and controls
+
+`/tmp/gazzar-reading-resize-r13/native-trace-final.json` contains 1,383 timestamped
+events plus the final state; `probe.js` records the exact probe. It wrapped
+`Math.min`, native canvas width/height setters and native WebGL draw methods with
+identical delegation, filtered to this portrait/source bundle, and recorded DOM
+attributes/events. It requested no draw, canvas conversion, private-state change,
+source clock override or source asset mutation. The restore closure reinstated
+every native method and removed observers/listeners/global before browser release.
+
+The inherited initial history was source AR reading, chapter y825 at 538×825,
+entry complete, already activated before the parent's wide→narrow resize. Source
+was hidden; its exact earlier budget was deliberately not assumed. On the traced
+wide activation at t346118ms, `tn` cleared through `setPixelRatio/setSize`, `tU`
+received delta0, and the portrait's budget expression read **1/60**. A native
+draw followed at t346119ms, writing exit .7805. This is a preserved counterexample
+to unconditional resize hiding.
+
+Controlled fresh wide y0 motion→reading remount produced pre-ready zero-delta
+wakes at t383035–383071ms, an unconditional initialization draw at t383101ms,
+and `portraitReady=true`/`surface=prepared`. Native y0→1 at t407723ms read budget
+1/60 and drew once. Wide→narrow at t413071ms then cleared actual dimensions;
+both zero-delta wakes read budget0 and no native draw followed. Narrow→wide
+repeated that spent-budget behavior. A fresh remount restored the portrait.
+
+A second controlled remount followed by actual 2544×1392→2544×1292 kept the
+image2544×1696/canvas1536×1024 and made no size writes; that wake spent the
+initial budget at t452775ms. The next image-size change cleared without drawing.
+At narrow hidden-hero y825, another fresh remount initialized but did not spend
+budget. Its wide resize made the hero visible at the same native position and
+legitimately drew exit .7805 using 1/60 at t472164ms. Returning to native0 left
+that partial alpha frozen with budget0. PNG controls include
+`/tmp/gazzar-reading-resize-r13-{remount-ready,drained-narrow,positive-return-top}.png`.
+
+Labels containing `document-hidden-resize` in the trace are **excluded** as proof
+of hidden-document resize ordering: the resize tool briefly activated a tab or
+the delayed event ran while visible. The trace retains the actual visibility
+events. Hidden-hero controls above are valid; document/menu guard behavior also
+comes directly from source tU. The attempted outer2654×1512 size was constrained
+by the screen and made no actual viewport change, so it is only a no-op control.
+MCP mode clicks warned about interception; each actual resulting mode was
+verified. These are synthetic handler activations, not physical hit tests.
+
+All browser calls finished before explicit release: both original /ar tabs,
+2544×1392/DPR1, native0, reading, entry complete, menus closed, sound quiet;
+source37 active, `portraitReady=true`, surface rest, and no probe global. Outer
+2654×1502 at -47,-5. No later browser calls were made by this implementer.
+
+Focused validation covers 43 hero tests, including the real controller with a
+non-GPU renderer double: positive and spent budgets, frozen partial draw inputs,
+fractional size/effective-DPR invalidation, hidden-hero/visibility/context restore,
+decode/compile cancellation, stale ownership and failure resource disposal.
+These tests do not establish rendered source/local parity. Root owns the full
+check/build/SSR audit and new served R13 pixel/continuous review. Early entry
+cadence and true hidden-document resize ordering were not newly measured live.
+The separately reported ordinary navigation flicker/scroll stutter remains open.
 
 ## Geometry and typography
 

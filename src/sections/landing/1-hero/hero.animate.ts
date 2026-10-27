@@ -152,6 +152,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     visualProgress = 0;
   let resolve = 1,
     portrait: PortraitController | undefined;
+  const portraitAbort = new AbortController();
   let groupWidth = 1,
     marqueeX = innerWidth + 8,
     paused = false;
@@ -768,8 +769,11 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     }
   });
   void import("./hero-portrait")
-    .then(({ mountHeroPortrait }) => mountHeroPortrait(root))
+    .then(({ mountHeroPortrait }) => {
+      if (!disposed) return mountHeroPortrait(root, { signal: portraitAbort.signal });
+    })
     .then((controller) => {
+      if (!controller) return;
       if (disposed) {
         controller.dispose();
         return;
@@ -781,7 +785,8 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     .catch(() => {
       if (!disposed) {
         readiness += 55;
-        portraitEntrance.dataset.portraitReady = "false";
+        // The graphics owner restores its fallback on failure. A late rejected
+        // preparation must not clear a newer mount's readiness here.
         wake();
       }
     });
@@ -789,6 +794,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   wake();
   return () => {
     disposed = true;
+    portraitAbort.abort();
     release();
     cancelAnimationFrame(frame);
     unsubscribe();

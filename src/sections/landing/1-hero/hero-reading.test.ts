@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import type { HeroWorldPose } from "./hero-world";
+import type { ReadingPortraitState } from "./hero-reading-portrait";
 
 class Surface extends EventTarget {
   dataset: Record<string, string> = {};
@@ -45,8 +46,10 @@ function harness(initialY = 0, initialHeight = 1392, initialTop = 0) {
   const state = { menuOpen: false, entryPhase: "idle", setEntryPhase(value: string) { state.entryPhase = value; listeners.forEach((listener) => listener()); } };
   const listeners = new Set<() => void>(), observers: { callback: () => void; disconnected: boolean }[] = [];
   const forbidden = () => { throw new Error("Reading hero must not start a frame, timer, network request or heavy runtime"); };
+  type PreparedPortrait = { render: (...args: unknown[]) => boolean; measure: () => void; dispose: () => void };
+  const graphics: { signal: AbortSignal; reading: ReadingPortraitState; ready: (controller: PreparedPortrait) => void }[] = [];
   const context = createContext({
-    window, document, Event, CustomEvent, requestAnimationFrame: forbidden, cancelAnimationFrame: forbidden,
+    window, document, Event, CustomEvent, AbortController, requestAnimationFrame: forbidden, cancelAnimationFrame: forbidden,
     setTimeout: forbidden, fetch: forbidden,
     ResizeObserver: class {
       record: typeof observers[number];
@@ -72,13 +75,16 @@ function harness(initialY = 0, initialHeight = 1392, initialTop = 0) {
   };
   const { mountHeroReading } = evaluate("./hero-reading.ts", {
     "./hero-world": world,
+    "./hero-reading-portrait": evaluate("./hero-reading-portrait.ts", {}),
+    "./hero-portrait": { mountHeroPortrait: (_root: unknown, options: { signal: AbortSignal; reading: ReadingPortraitState }) =>
+      new Promise<PreparedPortrait>((ready) => { graphics.push({ ...options, ready }); }) },
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe(listener: () => void) { listeners.add(listener); return () => listeners.delete(listener); } } },
   }) as { mountHeroReading: (root: Surface) => () => void };
   const events: HeroWorldPose[] = [];
   window.addEventListener("gazzar:hero-world", (event) => events.push((event as CustomEvent<HeroWorldPose>).detail));
   const mount = () => mountHeroReading(root);
   return {
-    root, elements, signature, document, window, events, observers, listeners, mount,
+    root, elements, signature, document, window, events, observers, listeners, mount, graphics,
     pose: () => world.readHeroWorldPose(root),
     scroll(value: number) { y = value; window.dispatchEvent(new Event("scroll")); },
     menu(value: boolean) { state.menuOpen = value; listeners.forEach((listener) => listener()); },
@@ -87,6 +93,47 @@ function harness(initialY = 0, initialHeight = 1392, initialTop = 0) {
     resolveFonts: () => fontResolve(),
   };
 }
+
+async function flushReading() { for (let i = 0; i < 12; i++) await Promise.resolve(); }
+
+test("deferred portrait readiness preserves pending native samples and never fabricates a body wake", async () => {
+  const h = harness(), dispose = h.mount();
+  await flushReading();
+  expect(h.graphics).toHaveLength(1);
+  const pending = h.graphics[0], calls: unknown[][] = [];
+  h.scroll(1044); // Hidden hero still samples the pending portrait before returning.
+  expect(pending.reading.frame).toMatchObject({ resolve: 1, exit: 1, active: false });
+  h.visibility(true); h.scroll(348);
+  expect(pending.reading.frame.active).toBe(false); // Hidden document skips tU.
+  h.visibility(false);
+  expect(pending.reading.frame.exit).toBe(h.pose()!.exit);
+  pending.reading.prepared();
+  pending.ready({ render: (...args) => { calls.push(args); return false; }, measure() {}, dispose() {} });
+  await flushReading();
+  expect(calls).toHaveLength(0);
+  h.scroll(696);
+  expect(calls).toEqual([[0, 1, h.pose()?.exit, h.pose()?.pointer, true]]);
+  h.scroll(1044);
+  expect(calls.at(-1)).toEqual([0, 1, 1, 0, false]);
+  dispose();
+  expect(pending.signal.aborted).toBe(true);
+});
+
+test("reading cleanup cancels preparation and an unstarted deferred import cannot mount a renderer", async () => {
+  const h = harness(), dispose = h.mount();
+  await flushReading();
+  const pending = h.graphics[0];
+  dispose();
+  expect(pending.signal.aborted).toBe(true);
+  let released = 0;
+  pending.ready({ render: () => { throw Error("Stale portrait wake"); }, measure() {}, dispose() { released++; } });
+  await flushReading();
+  expect(released).toBe(1);
+  const cancelled = harness(), cancel = cancelled.mount();
+  cancel();
+  await flushReading();
+  expect(cancelled.graphics).toHaveLength(0);
+});
 
 test("source reading wakes sample current world and retain the last visible body at hidden .75", () => {
   const h = harness(), dispose = h.mount();
