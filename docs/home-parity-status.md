@@ -75,6 +75,15 @@ lenses. The reviewer reproduced it twice and measured continuing60/67 difference
 with nearly identical cameras. The exact256/512 conversion order remains under
 scene-owner investigation; no new universal material or camera tuning is justified.
 
+An additional owner follow-up at the reading opening is also open: motion40→
+reading→native y1009 at1912×1009 shows source PERSPECTIVE00 and fitted headline,
+while local keeps LOOK CLOSER09 and loses its headline fitting on controller
+cleanup. Source retains a broad lens field in that transition; the newly created
+local static renderer uses the sharp field. These are separate reading-mode
+integration/history gaps, not claims from the completed R7 adversary. Parent
+will handle reading chrome/fitting after the current scene slot; retained-field
+behavior needs a focused source comparison. No static pixel-parity claim is made.
+
 | Round | Result |
 | --- | --- |
 | 1 | Reference inventory and acceptance checklist; see `home-parity-review-r1.md` |
