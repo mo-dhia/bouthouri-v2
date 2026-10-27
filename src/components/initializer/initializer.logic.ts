@@ -18,7 +18,7 @@ export function useInitializer() {
     const scheduleMeasure = () => { resizeFrame ??= requestAnimationFrame(measure); };
     const syncMotion = () => {
       const request = ++motionRequest;
-      if (motionQuery.matches || uiStore.getState().quietMode) {
+      if (motionQuery.matches || uiStore.getState().quietMode || uiStore.getState().homeSceneFailed) {
         destroySmoothScroll?.();
         return;
       }

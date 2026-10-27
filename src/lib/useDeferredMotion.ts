@@ -14,10 +14,11 @@ export function useDeferredMotion<T extends HTMLElement>(
   { rootMargin = "200px", enabled = true }: DeferredMotionOptions = {},
 ) {
   const quietMode = useUIStore((state) => state.quietMode);
+  const sceneFailed = useUIStore((state) => state.homeSceneFailed);
   const reducedMotion = useReducedMotion();
   useEffect(() => {
     const element = typeof target === "string" ? document.querySelector<T>(target) : target.current;
-    if (!element || !enabled || quietMode || reducedMotion) return;
+    if (!element || !enabled || quietMode || reducedMotion || sceneFailed) return;
     let cancelled = false;
     let started = false;
     let cleanup: (() => void) | undefined;
@@ -42,5 +43,5 @@ export function useDeferredMotion<T extends HTMLElement>(
       observer?.disconnect();
       cleanup?.();
     };
-  }, [enabled, load, quietMode, reducedMotion, target, rootMargin]);
+  }, [enabled, load, quietMode, reducedMotion, sceneFailed, target, rootMargin]);
 }
