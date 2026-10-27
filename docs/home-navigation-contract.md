@@ -181,7 +181,11 @@ at plain EN/y0, entry complete, motion enabled, audio muted, menus closed,
 1912×1009/DPR1, without pending calls or probes. Resize remains emulation-first.
 The parent subsequently reports full check **93 tests /3365 assertions**,
 production build and both-locale SSR/14-asset audit passing. Those are parent
-evidence; fresh independent production R8-01 acceptance remains R9-owned.
+evidence. R9 independently accepts R8-01 in production: wide EN→AR and AR→EN
+reading departures restore motion at1009, narrow EN→AR at865, with distinct
+outgoing checkpoint/locale/HOME records and native Back/Forward restored. Its
+same-HOME, retained312/mode/resize/no-op, reload and failure→locale controls pass.
+See `home-parity-review-r9.md` for exact provenance, exclusions and coverage.
 No new GPU, OS preference-change or full HOME parity certification is implied.
 
 ## Semantics and record lifetime

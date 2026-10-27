@@ -552,12 +552,15 @@ Live source fixture values (stage sizes, not necessarily viewport sizes):
 | 844x600 | AR | .149323879595268 | .7474329737969402 | 4.664220211789373 |
 
 R6-01 and complete CLARITY cold/remount controls independently pass in R7.
-The additional R7-01 correction above still needs root production/R8 acceptance.
+R8 independently accepts the additional R7-01 correction within matched native
+dark/dark and white/white conversion histories, preserving unlike pairs.
 Reading opening/chrome fixes are inff4d360/f167ba7; retained renderer, private-atlas
 disposal and independent reading readiness are inf155d0c. Root full check now
 passes93tests/3365assertions, production build and SSR audit pass. R8 independently
-accepts the sampled optical/reading corrections; its locale/MENU findings now
-await R9 after their fixes. Physical
+accepts the sampled optical/reading corrections; R9 accepts its locale/MENU
+followups and establishes no new actionable P1/P2. The accumulated Arabic
+lighting observation in R8 remains untraced; no universal scene acceptance follows.
+Physical
 coarse-touch hardware, other GPU/browser combinations
 and a comprehensive DPR/breakpoint screenshot sweep remain unverified coverage.
 The previous raster-text, missing idle drift, missing shell-pressure bridge and

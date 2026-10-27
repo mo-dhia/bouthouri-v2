@@ -109,4 +109,7 @@ width101.75px, left1733.78125/top49.625 and label reserve102px; AR392×865 foote
 has font14.56px, width74.234375px, left294.25/top16. Both inherit1.04/.8 and zero
 tracking. Hero controls remain9.225px/12.24px respectively. Evidence and excluded
 initial hidden/navigation reads: `/tmp/gazzar-r8-menu-root/evidence.json`.
-Scoped lint/diff checks pass; fresh production/R9 acceptance remains pending.
+Scoped lint/diff checks pass. R9 independently accepts these metrics in production
+and also matches EN narrow/AR wide, utility dock placement and the900/901px
+breakpoint. Hero/dialog controls retain their separate metrics; targeted menu
+interruption, reading and resize checks pass. See `docs/home-parity-review-r9.md`.

@@ -39,7 +39,7 @@ and allow its score to settle before capture. Compare cold entry, first scene
 activation, and warmed traversal separately. Do not present passing type/build
 checks or matching content as proof that all animation frames match.
 
-Current candidate: `41da321`, running in production at `http://localhost:3100`.
+Current implementation: `41da321`, running in production at `http://localhost:3000`.
 Full check passes: ESLint, TypeScript, 93 tests / 3,365 assertions. Production
 build and the HTTP SSR audit pass for both prerendered locales, metadata,
 redirects, 404s and 14 static assets. It includes the R7 demand/capture correction,
@@ -51,8 +51,17 @@ The MENU correction is committed in0a98f59 with exact EN-wide/AR-narrow dev
 geometry. Navigation41da321 resets the explicit reading preference on a new HOME
 and captures source locale anchors independently of ordinary reading checkpoints;
 the actual104px opening gap is covered. Source/dev y1009, Back/Forward, retained
-work intent and reload controls pass. Fresh production round9 remains pending.
-Full parity is not asserted.
+work intent and reload controls pass. Fresh production round9 accepts both R8
+findings within its measured scope and establishes no new actionable P1/P2 issue.
+See `home-parity-review-r9.md` for exact evidence and exclusions. Full/continuous/
+hardware parity is not asserted. R8's accumulated Arabic lighting observation
+remains untraced; fresh/remount controls pass, and no source invariant or material
+correction is inferred from the unlike accumulated pair.
+
+The extra development3000 and review3100 servers were stopped after R9. One
+production preview now serves the same built code on3000; the both-locale SSR
+audit passes there too. No new browser surfaces were created; the original one
+window/four tabs remain, with local EN preview active.
 
 Round6 is not accepted: ordinary reload from a completed journey produces a
 broad source reflection while local retains the dark field. Fresh navigation,
@@ -126,6 +135,7 @@ reading-navigation tests pass; EN/AR activation still needs the production revie
 | 6 | All four R5 triggers and the sampled integrated matrix pass. Two P2s remain: reload-specific reflection capture history and clean Back's pending generic HOME return. See `home-parity-review-r6.md`. |
 | 7 | R6 fixes, late reload race, CLARITY and both HOME return histories pass. One new P2 remains in the bounds/direct-sculpture/reverse optical branch; see `home-parity-review-r7.md`. |
 | 8 | R7 optical branches, retained reading scene, cue, disposal and sampled whole-home flows pass bounded production checks. Two P2s: locale should reset the explicit reading preference; persistent MENU needs source chapter-side type/width and measured dock reserve. See `home-parity-review-r8.md`. |
+| 9 | Both R8 findings pass wide/narrow locale and shell checks, with targeted retained-mode/history/reload/failure and representative HOME regressions. No new actionable P1/P2 finding established. Accepted only within the measured scope; see `home-parity-review-r9.md`. |
 
 R5 implementation responses: ordinary reload now explicitly starts fresh once
 per document; locale-restored mounts retain their initial semantic intent across
