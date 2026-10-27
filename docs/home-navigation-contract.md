@@ -134,10 +134,13 @@ match the recovered public source exactly:
 These differ from chapter/whisper labels and visual overlap ranges. Semantic
 fraction is mapped through the destination clock/geometry, including the
 nonlinear opening and the input compression after score 100. Locale/work/query
-restoration uses semantic position. An **initial history visit uses that entry's
-saved native pixels**, clamped to the current extent, matching the source. For
-example, Back to an EN entry captured at desktop y16362 restores y16362/score489.35
-at the narrow viewport; it does not reproject the old desktop annotation312.
+restoration uses semantic position. The current implementation's **initial
+history visit uses that entry's saved pixels**, clamped to the current extent.
+This matched the accumulated R5 source history, where Back to an EN entry
+captured at desktop y16362 restored y16362/score489.35 at the narrow viewport.
+It is not established as a universal source rule: R6's pristine control instead
+returns source EN y12091/312 while local returns16362/489.35. This remains open
+for source lifecycle diagnosis and a further correction.
 After this first history application, the actual restored frame supplies that
 visit's semantic annotation for subsequent in-mount layout changes. Later
 captures update the history checkpoint without replacing that active anchor.
@@ -234,6 +237,10 @@ or case-page changes belong to this pass.
 Bounded live verification used only the explicitly granted original Vaelix pair:
 source175555005/local175555011 in window175554986. Local was current development
 port3000; frozen production3100/8540377 was not used to claim these fixes.
+Viewport changes used Vaelix `chrome_computer` action `resize_page`. The installed
+tool attempts CDP device-metrics emulation before a native-window fallback; the
+executed branch was not verified. No OS-native resize or explicit clearing of
+device metrics was performed. Earlier "native resize" wording was incorrect.
 
 - Ordinary plain `/en` reload from confirmed completed QUIET entry at score40,
   y5263: source and final local settle y0/story0/opening0, hero `ready`, awaiting
@@ -247,13 +254,17 @@ port3000; frozen production3100/8540377 was not used to claim these fixes.
   irrelevant root-style updates without a new restore event.
 - Fresh ordinary EN580/y25188→reading clamps to y11437 in the12446px document;
   motion retains y11437/162.47 in source and local, with no entry replay/reset.
-- Equivalent AR-footer→Back→Forward: source hard `back_forward` restores
+- Bounded AR-footer→Back→Forward: source hard `back_forward` restores
   EN y16362/489.35 then AR y21772/714. Final local's single native
   `history.back()`/`history.forward()` calls produce the same positions through
   Next soft traversals. Its timeOrigin stays1793071494610.4 and performance type
   stays `navigate`; actual restore events are `history`, and the distinct entry
   IDs/checkpoints retain the AR footer. Earlier local `native` fallback lost the
   footer; this evidence drove the synchronous visited-entry recognition fix.
+  Source history included an earlier same-URL `/ar` navigation intended as tab
+  activation, so it was accumulated rather than a pristine two-entry control.
+  R6's clean source result differs as noted above; this run cannot establish
+  universal source history semantics.
 - Direct local `?work=wujhat` restores308 without entry; `#beyond` remains a
   native hash at y865 in the narrow layout and skips entry.
 

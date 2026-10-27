@@ -46,6 +46,13 @@ and found four P2 flow/timing differences. The fixes are now built in production
 at revision `d8509fc`, awaiting fresh independent round6 acceptance.
 Full parity is not yet asserted.
 
+Round6 in progress: all four direct R5 triggers pass in production. The reviewer
+has separately reproduced a cold reflection mismatch and a pristine history
+return mismatch, now under diagnosis. Prior resize work used Vaelix's
+emulation-first `resize_page`, not a verified OS-native window resize. The prior
+source history had accumulated extra navigations; its saved-pixel result does
+not invalidate the fresh review's different source result.
+
 | Round | Result |
 | --- | --- |
 | 1 | Reference inventory and acceptance checklist; see `home-parity-review-r1.md` |
