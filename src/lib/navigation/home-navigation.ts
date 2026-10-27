@@ -197,10 +197,11 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   const owner = journey() ?? root();
   // Completion belongs to the physical HOME owner too. A replacement root
   // needs its pending intent even when its final pin geometry is identical.
+  // Keep the completed visit's layout key/semantic phase; null is reserved for
+  // a new history cycle's initial saved-pixel application.
   // Same-root mode/Strict Mode remounts keep their successful anchor/no-op.
   if (owner?.isConnected && state.applied && state.intent?.position && state.appliedOwner !== owner) {
     state.applied = false;
-    state.layoutKey = null;
   }
   const geometry = (): HomeGeometry | null => {
     if (options.getGeometry) {

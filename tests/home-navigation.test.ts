@@ -810,6 +810,60 @@ describe("HOME browser lifecycle", () => {
     dispose();
   });
 
+  test("history resize then replacement preserves work312 semantics, while a new history cycle still uses saved pixels", () => {
+    for (const denied of [false, true]) {
+      const b = browser();
+      b.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
+      if (denied) Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+      const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
+      const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
+      const original: HomePosition = { section: "work", progress: 6 / 142 };
+      const rawPixels = homeScrollTarget(original, wide)!;
+      const saved = checkpoint({ created: Date.now(), position: original, scrollY: rawPixels });
+      b.runtime.history.state[HOME_HISTORY_STATE_KEY] = saved;
+      b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
+      b.setExtent(wide.start + wide.distance + b.runtime.innerHeight);
+      b.mount(); b.settle();
+      expect(b.runtime.scrollY).toBeCloseTo(16361.625072, 6);
+      expect(b.details[0].intent.kind).toBe("history");
+      expect(b.details[0].frame?.time).toBeCloseTo(312, 8);
+      const anchor = getHomeRestoreIntent(b.win)?.position;
+      b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
+      b.setExtent(narrow.start + narrow.distance + b.runtime.innerHeight);
+      b.runtime.dispatchEvent(new Event("resize")); b.settle();
+      expect(b.runtime.scrollY).toBeCloseTo(12091.123824, 6);
+      expect(b.details[1].frame?.time).toBeCloseTo(312, 8);
+      const projected = b.runtime.scrollY, href = b.runtime.location.href, id = homeHistoryId(b.runtime.history.state);
+      // Replace only the physical owner: no traversal, resize, clamp or user
+      // scroll. Its first apply must continue this visit's semantic phase.
+      b.root.isConnected = false;
+      const next = new ElementStub();
+      b.mount({ root: next as unknown as HTMLElement }); b.settle();
+      expect(b.details).toHaveLength(3);
+      expect(b.runtime.scrollY).toBeCloseTo(projected, 8);
+      expect(b.details[2].frame?.time).toBeCloseTo(312, 8);
+      expect(getHomeRestoreIntent(b.win)?.position).toEqual(anchor);
+      expect(getHomeRestoreIntent(b.win)?.scrollY).toBe(rawPixels);
+      expect(b.runtime.location.href).toBe(href); expect(homeHistoryId(b.runtime.history.state)).toBe(id);
+      b.runtime.scrollY = narrow.start + narrow.distance; b.capture();
+      const laterPixels = b.runtime.scrollY, writes = b.historyWrites.length;
+      b.mount({ root: next as unknown as HTMLElement }); b.settle();
+      b.notifyLayout(); b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+      expect(b.details).toHaveLength(3); expect(b.runtime.scrollY).toBe(laterPixels);
+      expect(b.historyWrites).toHaveLength(writes);
+      expect(getHomeRestoreIntent(b.win)?.position).toEqual(anchor);
+      // A genuinely different history entry starts its pixel phase again.
+      // Its wide-viewport checkpoint must not be interpreted as a work312 seek
+      // in this narrow viewport merely because the prior visit was semantic.
+      b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: { ...saved, id: "another-wide-history-entry" } };
+      b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+      expect(b.details).toHaveLength(4);
+      expect(b.runtime.scrollY).toBe(rawPixels);
+      expect(b.details[3].intent.kind).toBe("history");
+      expect(b.details[3].frame?.time).toBeCloseTo(489.333278, 6);
+    }
+  });
+
   test("route-remount guard does not run a late document clear, and explicit router target remains stronger than HOME return", () => {
     const b = browser("https://local.test/ar");
     b.runtime.performance.getEntriesByType = () => [{ type: "reload", name: "https://local.test/en" }];

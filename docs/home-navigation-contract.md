@@ -545,3 +545,29 @@ owned-file ESLint, plain `tsc --noEmit --incremental false` and `git diff --chec
 Browser/OS/server/build/typegen, full integration and fresh production review
 remain parent-owned. This correction makes no moving-cadence, stutter-cure or
 full HOME parity acceptance claim.
+
+## Completed history phase on replacement (R21 follow-up)
+
+The independent R21 review identified that clearing `layoutKey` on physical
+owner replacement also restarted a completed history visit's initial-pixel
+phase. After wide history work312 at16361.625072 reprojected to narrow
+work312 at12091.123824, replacing the root replayed16361.625072 and changed the
+retained anchor to story489.333278. The new regression reproduced that failure
+before the correction.
+
+Replacement now invalidates only application completion. It preserves the
+layout key and retained semantic phase, so a new root applies work312 at the
+current narrow target. An uncompleted destination or genuinely new history
+cycle still starts with a null layout key and uses its saved native pixels.
+The outgoing-locale ownership guard and integration API are unchanged; no field,
+timer, retry or runtime dependency was added.
+
+Available- and denied-storage regressions cover history→wide/narrow resize→root
+replacement at the same URL/ID and identical geometry, retained position,
+same-root remount/READY no-ops after later capture, and a genuinely different
+history entry applying the original wide pixels in the narrow viewport. All
+prior65 focused guards remain. Validation passes **66 navigation/reading tests
+/1157 assertions**, scoped ESLint, plain `tsc --noEmit --incremental false` and
+`git diff --check`. A new independent review and fresh production validation
+remain parent-owned; the review report and separate status document were not
+edited by this follow-up.
