@@ -90,6 +90,28 @@ reads/redundant writes and whole-route scheduling priorities. See
 diagnosis are still pending; the user's whole-experience smoothness blocker is
 not closed by the reading shader checks or numerical clock fixtures.
 
+R13 released the existing pair at16:15:54UTC. The fallback-mask correction is
+prepared but unserved, while the smoothness investigator measures the unchanged
+31f4beb production baseline. Reading resize research excludes a fresh local
+semantic restore request as the leading cause of825→1392. Source ScrollTrigger
+has additional cached-pixel/global refresh behavior, but an event/write trace is
+still needed to distinguish it from native anchoring. No blanket resize lock is
+implemented; accepted locale/history/mode rules remain intact.
+
+The smoothness baseline released the pair at16:33UTC after2,040 corresponding
+inputs with exactly matching native y. During moving hero frames, applied pose
+held238/298 times locally versus9/307 on source. The pre270 observer gap p95 was
+33.32ms versus17.20ms; footer also had additional long gaps. Both runs remained
+visible but OS-unfocused and used synthetic wheel intent/default-scroll replay.
+These establish applied-pose/callback differences, not presented FPS. Source
+clock alignment and header measurement/unchanged-pose caching are being
+implemented as separate changes. Whole-experience acceptance stays open.
+
+The R13-01 native-wake fallback-mask correction passed its real-controller
+regression and scoped lint and is committed as31f1813, still unserved. The
+R13-02 investigator now owns the original pair for a bounded event/write trace;
+no build or server change will occur during that31f4beb baseline diagnosis.
+
 Vawzen now drives the existing Firefox/Zen source/local pair (tabs37/36).
 Recordings are in `/tmp/gazzar-continuous-r10/` and
 `/tmp/gazzar-continuous-r11/`; the latter includes the complete AR-wide and
