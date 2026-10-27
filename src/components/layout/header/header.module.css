@@ -156,6 +156,8 @@
 .language[lang='ar'] { font-family: var(--font-arabic); font-weight: 450; line-height: 1.7 }
 .sound { padding: 0; text-decoration: none !important }
 .sideMenu { --type-scale: 1.04; --tracking-scale: .8; position: absolute; inset-inline-end: 4vw; inset-block-start: 50%; transform: translateY(-50%); overflow: clip; visibility: hidden; pointer-events: auto }
+.readingNavigation { position: absolute; inset-inline: 0; block-size: 100svh; pointer-events: none; overflow: clip }
+.readingFrame { position: absolute; inset-inline: 0; pointer-events: none }
 .sideMenu [data-menu-control] { inline-size: calc(4em + 56px); block-size: 44px; font-size: calc(11px * var(--type-scale, 1)); letter-spacing: 0; padding-inline: 8px; line-height: 1.45 }
 .sideMenu [data-menu-control] > span { inline-size: 4em }
 .shell[data-locale='ar'] .sideMenu [data-menu-control] { font-size: calc(14px * var(--type-scale, 1)); line-height: 1.6 }

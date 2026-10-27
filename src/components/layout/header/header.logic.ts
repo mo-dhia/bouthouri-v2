@@ -6,6 +6,7 @@ import {
 } from "@/lib/audio/material-audio";
 import { attachSectionWhispers } from "@/lib/audio/section-whispers";
 import menuStyles from "./menu.module.css";
+import styles from "./header.module.css";
 import { createMenuTimeline } from "./menu-timeline";
 import {
   heroWorldEvent,
@@ -55,6 +56,36 @@ export function mountHeader(root: HTMLElement): () => void {
   );
   const side = root.querySelector<HTMLElement>("[data-shell-side-menu]");
   const sideRoll = side?.querySelector<HTMLElement>("[data-nav-side-roll]");
+  const sideHome = document.createComment("chapter menu home");
+  side?.before(sideHome);
+  let readingViewport: HTMLElement | undefined;
+  let readingFrame: HTMLElement | undefined;
+  const positionSideMenu = () => {
+    if (!side) return;
+    if (!reduced() || !chapter) {
+      if (readingViewport) {
+        sideHome.after(side);
+        readingViewport.remove();
+        readingViewport = readingFrame = undefined;
+      }
+      return;
+    }
+    if (!readingViewport) {
+      // The source's reading peripheral viewport belongs to the document. A
+      // translation inside fixed utilities looks right but breaks focus scroll.
+      readingViewport = document.createElement("div");
+      readingViewport.dataset.readingNavigation = "true";
+      readingViewport.className = styles.readingNavigation;
+      readingFrame = document.createElement("div");
+      readingFrame.className = styles.readingFrame;
+      readingViewport.append(readingFrame);
+      root.append(readingViewport);
+      readingFrame.append(side);
+    }
+    readingViewport.style.top = `${chapter.getBoundingClientRect().top - root.getBoundingClientRect().top}px`;
+    readingFrame!.style.top = getComputedStyle(utilities).top;
+    readingFrame!.style.height = `${utilities.getBoundingClientRect().height}px`;
+  };
   const animations = new Set<Animation>();
   const activeAnimations = new Map<Element, Animation>();
   const disposers: Array<() => void> = [];
@@ -438,9 +469,7 @@ export function mountHeader(root: HTMLElement): () => void {
     persistent.setAttribute("aria-hidden", String(persistent.inert));
     const sideVisible = pose.sideY < 100;
     if (side && sideRoll) {
-      // Source reading CSS makes its peripheral viewport absolute in the chapter.
-      // Keep the shared shell control at that same document-relative position.
-      side.style.translate = reduced() && chapter ? `0 ${chapter.getBoundingClientRect().top}px` : "";
+      positionSideMenu();
       side.style.visibility = sideVisible ? "visible" : "hidden";
       side.inert = !sideVisible;
       side.setAttribute("aria-hidden", String(!sideVisible));
@@ -516,7 +545,7 @@ export function mountHeader(root: HTMLElement): () => void {
     if (identity && reduced()) {
       const top = identity.getBoundingClientRect().top + scrollY;
       applyNavigation(heroWorldPose((scrollY - top) / Math.max(1, identity.offsetHeight)));
-    } else if (identity?.hasAttribute("data-enhanced")) {
+    } else if (identity?.hasAttribute("data-enhanced") || identity?.dataset.heroReading === "true") {
       const published = readHeroWorldPose(identity);
       if (published) applyNavigation(published);
       else if (Number.isFinite(progress)) applyNavigation(heroWorldPose(progress));
@@ -618,6 +647,9 @@ export function mountHeader(root: HTMLElement): () => void {
     document.removeEventListener("visibilitychange", updateClock);
     query.removeEventListener("change", syncWave);
     query.removeEventListener("change", onQuietScroll);
+    if (side && readingViewport) sideHome.after(side);
+    readingViewport?.remove();
+    sideHome.remove();
     [hero, persistent, ...rolls, side, sideRoll].forEach((element) =>
       element?.removeAttribute("style"),
     );
