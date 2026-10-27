@@ -45,8 +45,9 @@ Native stacks, JavaScript, process CPU and ordinary memory tracking were
 enabled. Screenshots, allocation tracing, file I/O and IPC tracing were not.
 Every export explicitly included hidden threads, hidden time range and resource
 URLs/paths; screenshots and extension information remained excluded. Checkbox
-state and the nonempty, completed gzip download were checked before closing
-each viewer. Downloads stayed local.
+state and nonempty, completed gzip downloads were checked. Temporary viewers
+were closed without accumulating them; all retained copies passed gzip/JSON
+validation. Downloads stayed local.
 
 ## Retention is distinct from input coverage
 
@@ -85,9 +86,18 @@ Native `about:processes` showed the newer localhost process 53900; an authorized
 temporary settings tab was used and closed before capture, preserving the
 source/local documents. The replacement viewer exposed tracks for 53900.
 The local `timeOrigin` remained 1793130235552, and input/observer completion is
-recorded separately above. Native end-marker identity and retained active
-coverage still require analyst verification. The replacement is 13,600,305 bytes;
+recorded separately above. Subsequent analysis verified the native end marker
+for PID53900 / innerWindowID2347199627265, with samples and relevant marker
+stamps preceding its first input. The common active range is [501,18401]ms;
+the replacement's final10ms of tail is excluded. The replacement is 13,600,305 bytes;
 the earlier 9,503,016-byte parent-only file remains preserved and excluded.
+
+The [native cost report](home-native-cost-r19.md) records the accepted intervals,
+method corrections and a later same-document history-write intervention.
+Suppressing matching native checkpoint writes reduced parent-thread CPU
+958→136ms, while observed RAF callbacks changed207→210 and gaps over25ms
+14→13. This establishes avoidable CPU work, **not a demonstrated stutter cure**.
+The subsequent R20 implementation needs its own production moving review.
 
 ## Additional bounded checks
 
