@@ -182,9 +182,13 @@ tests pass (12tests/478assertions), independently without typegen or server
 management.
 
 After the P2 fixes and final scoped checks, the original pair is explicitly
-RELEASED: EN/y0,1912×1009/DPR1, entry complete, motion enabled, audio off, menus
+RELEASED: EN/y0,1912×1009/DPR1, motion enabled, audio off, menus
 closed. All fetch/GLTF/renderer/prototype probes were restored and deleted;
 fresh local assignment cleared the research module cache. No pending browser
 calls or further scene browser use after release. `release.json` records the
 state; source's own host width100% is retained and local QA width overrides are
 absent. Implementation is frozen for root review/check/build/R8.
+The last post-P2 local mutation is a fresh EN assignment after the added R7
+control. Earlier complete-entry snapshots are retained but do not certify that
+new document's entry completion; local may await QUIET. Root owns the pair and
+must read the actual current entry state before subsequent acceptance captures.
