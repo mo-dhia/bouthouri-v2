@@ -1,55 +1,55 @@
-.utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: clamp(20px,4.3svh,60px); left: 0 }
-.navEntrance { z-index: 2; opacity: 0; width: 100%; height: clamp(40px,5.6svh,76px); position: relative }
-.language,.sound,.logo,.talk,.pause,.scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
-.language { width: 44px; height: var(--nav-hit-height); font-size: calc(24px * var(--type-scale,1)); color: #a9a8a2; place-items: center; transition: color .2s; display: grid }
-.language:before { content: ""; width: 1px; height: 18px; opacity: calc(1 - var(--nav-compact)); background: #3f3f3b; position: absolute; top: 50%; left: 0; transform: translateY(-50%) }
+.utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: clamp(20px, 4.3svh, 60px); left: 0 }
+.navEntrance { z-index: 2; opacity: 0; width: 100%; height: clamp(40px, 5.6svh, 76px); position: relative }
+.language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
+.language { width: 44px; height: var(--nav-hit-height); font-size: calc(24px * var(--type-scale, 1)); color: #a9a8a2; place-items: center; transition: color .2s; display: grid }
+.language:before { content: ''; width: 1px; height: 18px; opacity: calc(1 - var(--nav-compact)); background: #3f3f3b; position: absolute; top: 50%; left: 0; transform: translateY(-50%) }
 .language:hover { color: var(--paper, #e4e1d9) }
-.logo,.logoWindow { color: #777772; place-items: center; width: clamp(80px,5.5vw,116px); height: 58px; transition: color .25s; display: grid; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) }
+.logo, .logoWindow { color: #777772; place-items: center; width: clamp(80px, 5.5vw, 116px); height: 58px; transition: color .25s; display: grid; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
 .logo { cursor: pointer }
-.logo:hover,.logo:focus-visible { color: #e4e1d9 }
+.logo:hover, .logo:focus-visible { color: #e4e1d9 }
 .logo svg { width: 100%; height: auto; display: block; overflow: visible }
-.actions { align-items: center; gap: clamp(12px,1vw,28px); display: flex }
-.sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: clamp(36px,5.6svh,76px); height: clamp(36px,5.6svh,76px); transition: border-color .25s,color .25s; display: grid }
+.actions { align-items: center; gap: clamp(12px, 1vw, 28px); display: flex }
+.sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: clamp(36px, 5.6svh, 76px); height: clamp(36px, 5.6svh, 76px); transition: border-color .25s, color .25s; display: grid }
 .sound svg { width: 26px; height: 26px; overflow: visible }
 .sound path { stroke: currentColor; stroke-width: 1.1px; stroke-linecap: round; transform-origin: 50% }
 .sound:hover { border-color: rgb(119 118 110/calc(1 - var(--nav-compact))); color: var(--paper, #e4e1d9) }
-.talk[data-kinetic] { color: #191919; height: clamp(34px,4.5svh,60px); min-height: 0; font-size: calc(clamp(12px, 1.05vw, 24px) * var(--type-scale,1)); letter-spacing: calc(-.025em * var(--tracking-scale,1)); background: #e5e3dd; border-radius: 40px; padding: 0 1.8vw; transition: background .2s,color .2s; box-shadow: 0 2px 20px #eee8d308 }
+.talk[data-kinetic] { color: #191919; height: clamp(34px, 4.5svh, 60px); min-height: 0; font-size: calc(clamp(12px, 1.05vw, 24px) * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); background: #e5e3dd; border-radius: 40px; padding: 0 1.8vw; transition: background .2s, color .2s; box-shadow: 0 2px 20px #eee8d308 }
 .talk[data-kinetic]:hover { background: #f3f1e9 }
-.talk[data-kinetic]:is(:hover,:focus-visible) { color: #191919 }
+.talk[data-kinetic]:is(:hover, :focus-visible) { color: #191919 }
 .talk:focus-visible { outline-offset: 5px }
 .navLayer[data-nav-context=persistent] .talk[data-kinetic] { color: #aaa89f; box-shadow: none; background: 0 0 }
-.navLayer[data-nav-context=persistent] .talk[data-kinetic]:is(:hover,:focus-visible) { color: #e4e1d9; background: 0 0 }
+.navLayer[data-nav-context=persistent] .talk[data-kinetic]:is(:hover, :focus-visible) { color: #e4e1d9; background: 0 0 }
 .reduced .sound:hover path { animation: none }
 @media (max-width:700px) {
-.utilities { --nav-gutter: 19px; top: 17px }
-.navEntrance { height: 48px }
-.language { width: 44px; height: var(--nav-hit-height); font-size: calc(23px * var(--type-scale,1)) }
-.logo,.logoWindow { height: var(--nav-hit-height); width: 70px; top: 50%; left: 50% }
-.actions { gap: 8px }
-.sound { width: 40px; height: 40px }
-.sound svg { width: 22px }
-.talk[data-kinetic] { height: 40px; font-size: calc(11px * var(--type-scale,1)); padding: 0 14px }
+  .utilities { --nav-gutter: 19px; top: 17px }
+  .navEntrance { height: 48px }
+  .language { width: 44px; height: var(--nav-hit-height); font-size: calc(23px * var(--type-scale, 1)) }
+  .logo, .logoWindow { height: var(--nav-hit-height); width: 70px; top: 50%; left: 50% }
+  .actions { gap: 8px }
+  .sound { width: 40px; height: 40px }
+  .sound svg { width: 22px }
+  .talk[data-kinetic] { height: 40px; font-size: calc(11px * var(--type-scale, 1)); padding: 0 14px }
 }
 @media (max-width:400px) {
-.logo,.logoWindow { width: 64px }
-.talk[data-kinetic] { padding: 0 12px }
+  .logo, .logoWindow { width: 64px }
+  .talk[data-kinetic] { padding: 0 12px }
 }
 @media (max-width:360px) {
-.logo,.logoWindow { width: 60px }
-.utilities { --nav-gutter: 14px }
-.language { width: 36px }
-.sound { width: 36px; height: 36px }
-.talk[data-kinetic] { padding: 0 10px }
+  .logo, .logoWindow { width: 60px }
+  .utilities { --nav-gutter: 14px }
+  .language { width: 36px }
+  .sound { width: 36px; height: 36px }
+  .talk[data-kinetic] { padding: 0 10px }
 }
 @media (max-height:600px) and (min-aspect-ratio:6/5) {
-.utilities { top: 12px }
+  .utilities { top: 12px }
 }
 @media (prefers-reduced-motion:reduce) {
-.sound:hover path { animation: none }
+  .sound:hover path { animation: none }
 }
-.hero[data-hero-phase=loading] .marquee,.hero[data-hero-phase=settling] .marquee,.world,.utilities,.information,.bottom { visibility: hidden }
+.hero[data-hero-phase=loading] .marquee, .hero[data-hero-phase=settling] .marquee, .world, .utilities, .information, .bottom { visibility: hidden }
 .navWindow { clip-path: inset(100% -12px 0) }
-.languageWindow,.actionsWindow { position: absolute; top: 50%; transform: translateY(-50%) }
+.languageWindow, .actionsWindow { position: absolute; top: 50%; transform: translateY(-50%) }
 .languageWindow { left: var(--nav-gutter) }
 .actionsWindow { right: var(--nav-gutter) }
 .logoWindow>[data-hero-nav-item] { height: 100% }
@@ -58,13 +58,13 @@
 .navLayer { pointer-events: none; position: absolute; inset: 0 }
 .navLayer[data-nav-context=hero] { --nav-compact: 0 }
 .navLayer[data-nav-context=persistent] { --nav-compact: 1; visibility: hidden }
-.navLayer[inert] :is(button,a) { pointer-events: none }
+.navLayer[inert] :is(button, a) { pointer-events: none }
 .navControl { pointer-events: none; position: relative }
 .logoWindow .navControl { width: 100%; height: 100% }
-.navControl>button,.navControl>a { will-change: transform; position: relative }
-.navControl>button:after,.navControl>a:after,.persistentSound .sound:after { content: ""; width: 100%; min-width: 44px; height: 100%; min-height: var(--nav-hit-height); position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) }
-.language>span { transition: transform .22s,color .22s }
-[data-nav-context=persistent] .language:is(:hover,:focus-visible)>span { transform: translateY(-1px) }
+.navControl>button, .navControl>a { will-change: transform; position: relative }
+.navControl>button:after, .navControl>a:after, .persistentSound .sound:after { content: ''; width: 100%; min-width: 44px; height: 100%; min-height: var(--nav-hit-height); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
+.language>span { transition: transform .22s, color .22s }
+[data-nav-context=persistent] .language:is(:hover, :focus-visible)>span { transform: translateY(-1px) }
 .persistentIdentity { height: var(--nav-hit-height); clip-path: inset(0 -8px); position: absolute; top: 50%; left: 4vw; transform: translateY(-50%) }
 .persistentIdentityContent { height: var(--nav-hit-height); align-items: center; gap: 14px; display: flex }
 .persistentLogo { width: 64px; height: var(--nav-hit-height); clip-path: inset(0 -8px); flex: none }
@@ -72,57 +72,57 @@
 .persistentLogo .logo { width: 60px; height: var(--nav-hit-height); position: relative; top: auto; left: auto; transform: none }
 .persistentRoleWindow { height: var(--nav-hit-height); clip-path: inset(0 -8px) }
 .persistentRole.persistentRole { height: var(--nav-hit-height); flex-direction: column; justify-content: center; margin-left: 0; display: flex }
-.navDock { right: calc(4vw + var(--nav-right-label,116px) + 2px); pointer-events: none; align-items: center; gap: 18px; display: flex; position: absolute; top: 50%; transform: translateY(-50%) }
+.navDock { right: calc(4vw + var(--nav-right-label, 116px) + 2px); pointer-events: none; align-items: center; gap: 18px; display: flex; position: absolute; top: 50%; transform: translateY(-50%) }
 .utilityGroup { width: 100px; height: var(--nav-hit-height); clip-path: inset(0 -6px); position: relative }
 .utilityContent { width: 100%; height: var(--nav-hit-height); align-items: center; display: flex; position: relative }
-.utilityContent>.language,.persistentSound { width: 50px; height: var(--nav-hit-height); flex: none; place-items: center; display: grid }
+.utilityContent>.language, .persistentSound { width: 50px; height: var(--nav-hit-height); flex: none; place-items: center; display: grid }
 .persistentSound .sound { border-color: #0000; width: 40px; height: 36px; position: relative }
 .persistentSound .sound svg { width: 19px; height: 19px }
 .persistentTalkWindow { width: 84px; height: var(--nav-hit-height); clip-path: inset(0 -8px) }
 .persistentTalkWindow>[data-nav-roll] { height: var(--nav-hit-height); place-items: center; display: grid }
-.persistentTalkWindow .talk[data-kinetic] { height: var(--nav-hit-height); min-height: var(--nav-hit-height); font-size: calc(clamp(11px, .95vw, 14px) * var(--type-scale,1)); padding: 0 8px }
+.persistentTalkWindow .talk[data-kinetic] { height: var(--nav-hit-height); min-height: var(--nav-hit-height); font-size: calc(clamp(11px, .95vw, 14px) * var(--type-scale, 1)); padding: 0 8px }
 .navLayer [data-nav-roll] { will-change: transform; transform: translateY(100%) }
 .utilityFrame { pointer-events: none; position: absolute; inset: 0 }
-.utilityFrame:before,.utilityFrame:after { content: ""; transform-origin: 50%; background: #b9b5ab; width: 22px; height: 1px; transition: transform .2s cubic-bezier(.22,.61,.36,1); position: absolute; bottom: 4px; transform: scaleX(0) }
+.utilityFrame:before, .utilityFrame:after { content: ''; transform-origin: 50%; background: #b9b5ab; width: 22px; height: 1px; transition: transform .2s cubic-bezier(.22, .61, .36, 1); position: absolute; bottom: 4px; transform: scaleX(0) }
 .utilityFrame:before { left: 14px }
 .utilityFrame:after { left: 64px }
-.utilityFrame[data-utility-focus=language]:before,.utilityFrame[data-utility-focus=sound]:after { transform: scaleX(1) }
+.utilityFrame[data-utility-focus=language]:before, .utilityFrame[data-utility-focus=sound]:after { transform: scaleX(1) }
 .utilityRegistration { opacity: 0; transform-origin: 50%; background: #a5a196; width: 22px; height: 1px; position: absolute; bottom: 4px; left: 14px }
 .utilityRegistration+.utilityRegistration { left: 64px }
 @media (max-width:900px) {
-.utilities { height: calc(160px - clamp(20px,4.3svh,60px)) }
-.persistentIdentity { left: 24px }
-.persistentLogo { width: 58px }
-.persistentLogo .logo { width: 54px }
-.persistentIdentityContent { gap: 12px }
-.navDock { gap: 12px; top: calc(138px - clamp(20px,4.3svh,60px)); right: 24px }
-.persistentTalkWindow { width: 96px }
+  .utilities { height: calc(160px - clamp(20px, 4.3svh, 60px)) }
+  .persistentIdentity { left: 24px }
+  .persistentLogo { width: 58px }
+  .persistentLogo .logo { width: 54px }
+  .persistentIdentityContent { gap: 12px }
+  .navDock { gap: 12px; top: calc(138px - clamp(20px, 4.3svh, 60px)); right: 24px }
+  .persistentTalkWindow { width: 96px }
 }
 @media (max-width:700px) {
-.utilities { height: 143px }
-.navDock { top: 121px }
+  .utilities { height: 143px }
+  .navDock { top: 121px }
 }
 @media (max-width:400px) {
-.persistentIdentity { left: 18px }
-.persistentIdentityContent { gap: 8px }
-.navDock { gap: 8px; right: 18px }
-.persistentTalkWindow { width: 92px }
+  .persistentIdentity { left: 18px }
+  .persistentIdentityContent { gap: 8px }
+  .navDock { gap: 8px; right: 18px }
+  .persistentTalkWindow { width: 92px }
 }
 @media (prefers-reduced-motion:reduce) {
-.navControl>button,.navControl>a,.navLayer [data-nav-roll] { will-change: auto }
-.utilityFrame:before,.utilityFrame:after,.language>span { transition: none }
+  .navControl>button, .navControl>a, .navLayer [data-nav-roll] { will-change: auto }
+  .utilityFrame:before, .utilityFrame:after, .language>span { transition: none }
 }
-.utilities,.actions,.persistentIdentityContent,.utilityContent,.navDock,.bottom { direction: ltr }
-.persistentRole,.information,.scrollLink { direction: var(--reading-direction) }
-:global(html[lang='ar']) .talk[data-kinetic] { font-size: calc(clamp(15px, 1.3vw, 25px) * var(--type-scale,1)); letter-spacing: 0 }
-:global(html[lang='ar']) .persistentTalkWindow .talk[data-kinetic] { font-size: calc(14px * var(--type-scale,1)) }
+.utilities, .actions, .persistentIdentityContent, .utilityContent, .navDock, .bottom { direction: ltr }
+.persistentRole, .information, .scrollLink { direction: var(--reading-direction) }
+:global(html[lang='ar']) .talk[data-kinetic] { font-size: calc(clamp(15px, 1.3vw, 25px) * var(--type-scale, 1)); letter-spacing: 0 }
+:global(html[lang='ar']) .persistentTalkWindow .talk[data-kinetic] { font-size: calc(14px * var(--type-scale, 1)) }
 @media (max-width:700px) {
-:global(html[lang='ar']) .talk[data-kinetic] { font-size: calc(14px * var(--type-scale,1)) }
+  :global(html[lang='ar']) .talk[data-kinetic] { font-size: calc(14px * var(--type-scale, 1)) }
 }
 :global(html[lang='ar']) .persistentRole { white-space: nowrap }
 .menuAndLanguage { pointer-events: auto; direction: ltr; align-items: center; gap: 12px; display: flex }
 @media (max-width:700px) {
-.menuAndLanguage { gap: 4px }
+  .menuAndLanguage { gap: 4px }
 }
 .utilityContent>.language { text-align: center; justify-items: center; padding: 0; position: relative }
 .utilityContent>.language:before { display: none }
@@ -131,17 +131,17 @@
 .sweptTalk:focus-visible { outline-offset: 5px; outline: 1px solid #aaa69b }
 .staticTalkLabel { white-space: nowrap; padding-block: 2px; line-height: 1.45; display: block }
 .staticTalkLabel:lang(ar) { letter-spacing: 0; line-height: 1.6 }
-:is(.sweptTalk .peripheral-line,.sweptTalk .peripheral-word) { font: inherit; white-space: nowrap; display: inline-block; position: relative }
-.sweptTalk:is(:hover,:focus-visible) .peripheral-word { filter: brightness(1.16) }
+:is(.sweptTalk .peripheral-line, .sweptTalk .peripheral-word) { font: inherit; white-space: nowrap; display: inline-block; position: relative }
+.sweptTalk:is(:hover, :focus-visible) .peripheral-word { filter: brightness(1.16) }
 @media (max-width:900px) {
-.utilities { --nav-gutter: max(6vw, env(safe-area-inset-right)); height: 48px; top: max(16px, env(safe-area-inset-top)) }
-.navEntrance { height: var(--nav-hit-height) }
-.languageWindow { left: auto; right: var(--nav-gutter) }
-.languageWindow .language,.actionsWindow,.persistentRoleWindow,.navDock { display: none }
-.logoWindow { left: max(6vw, env(safe-area-inset-left)); width: 48px; height: var(--nav-hit-height); top: 50%; transform: translateY(-50%) }
-.persistentIdentity { left: max(6vw, env(safe-area-inset-left)) }
-.persistentLogo,.persistentLogo .logo { width: 48px }
-.menuAndLanguage { gap: 0 }
+  .utilities { --nav-gutter: max(6vw, env(safe-area-inset-right)); height: 48px; top: max(16px, env(safe-area-inset-top)) }
+  .navEntrance { height: var(--nav-hit-height) }
+  .languageWindow { left: auto; right: var(--nav-gutter) }
+  .languageWindow .language, .actionsWindow, .persistentRoleWindow, .navDock { display: none }
+  .logoWindow { left: max(6vw, env(safe-area-inset-left)); width: 48px; height: var(--nav-hit-height); top: 50%; transform: translateY(-50%) }
+  .persistentIdentity { left: max(6vw, env(safe-area-inset-left)) }
+  .persistentLogo, .persistentLogo .logo { width: 48px }
+  .menuAndLanguage { gap: 0 }
 }
 .shell { --nav-hit-height: 44px; --reading-direction: ltr; --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --paper: #e4e1d9; position: relative; z-index: 20 }
 .shell[data-locale='ar'] { --reading-direction: rtl }
@@ -169,12 +169,20 @@
   .sideMenu { inset-inline-end: max(6vw, env(safe-area-inset-right)); inset-block-start: calc(var(--nav-hit-height) / 2) }
   .sideMenu [data-menu-control] { inline-size: auto; min-inline-size: 64px }
 }
-@media (max-width: 760px) { .menuLogo { inline-size: 44px } }
-@media (prefers-reduced-motion: reduce) { .shell *, .shell *::before, .shell *::after { transition: none !important } }
+@media (max-width: 760px) {
+  .menuLogo { inline-size: 44px }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell *, .shell *::before, .shell *::after { transition: none !important }
+}
 .navInk { white-space: nowrap; font: inherit; letter-spacing: inherit; line-height: inherit; display: inline-block; position: relative }
 .navInkBaseline { vertical-align: baseline; pointer-events: none; border: 0; inline-size: 0; block-size: 0; margin: 0; padding: 0; display: inline-block }
 .persistentRole span { color: #74746f; background-image: linear-gradient(100deg, #74746f 0% 43%, #8c8c85 47%, #cdcac0 50%, #8c8c85 53%, #74746f 57% 100%); background-size: 360% 100%; background-position: 100% 0; -webkit-text-fill-color: transparent; background-clip: text; animation: light-sweep 4.8s linear infinite }
 .navLayer[aria-hidden='true'] .persistentRole span { animation-play-state: paused }
-@keyframes light-sweep { to { background-position: -100% 0 } }
-@media (prefers-reduced-motion: reduce) { .persistentRole span { animation: none; background: none; -webkit-text-fill-color: currentColor } }
+@keyframes light-sweep {
+  to { background-position: -100% 0 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .persistentRole span { animation: none; background: none; -webkit-text-fill-color: currentColor }
+}
 .shell[data-locale='ar'] { font-weight: var(--weight-400, 450) }

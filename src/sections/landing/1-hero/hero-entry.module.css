@@ -24,4 +24,7 @@
   .choices { inline-size: min(60vw, 360px); inset-block-start: 72% }
   .continue { inset-block-end: 3% }
 }
-@media (prefers-reduced-motion: reduce) { .mark { will-change: auto } .choices button { transition: none } }
+@media (prefers-reduced-motion: reduce) {
+  .mark { will-change: auto }
+  .choices button { transition: none }
+}

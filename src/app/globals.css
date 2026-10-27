@@ -32,35 +32,36 @@ p, h1, h2 { margin: 0 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important }
 }
-
 /* Reference typography metrics shared by server content and local motion islands. */
-html[data-typography=questrial-cairo]{font-synthesis:none;--tracking-scale:.6;--heading-tracking:-.039em;--weight-250:400;--weight-350:400;--weight-400:400;--weight-430:400;--weight-440:400;--weight-450:400;--weight-470:400;--weight-480:400;--weight-500:400;--weight-650:400;--weight-760:400}
-html[data-typography=questrial-cairo][lang=ar]{--tracking-scale:1;--heading-tracking:0em;--weight-250:450;--weight-350:450;--weight-400:450;--weight-430:450;--weight-440:450;--weight-450:450;--weight-470:450;--weight-480:450;--weight-500:500;--weight-650:500;--weight-760:500}
-html[data-typography=questrial-cairo]{--type-scale:1.025;--body-line-height:1.6;--name-metric-tracking:-.03}
-html[data-typography=questrial-cairo] :is(h1,h2,h3,.project-name,.case-project-name,.opening-heading,.post-line){--type-scale:1.085}
-html[data-typography=questrial-cairo] :is(.editorial-eyebrow,.editorial-kicker,.case-route-label,.case-story-label,.chapter-side,.chapter-role,.chapter-person,.nav-menu-footer){--type-scale:1.04;--tracking-scale:.8}
-html[data-typography=questrial-cairo] :is(.practice-copy,.case-story-system p[data-story-reveal],.case-hero-deck p){max-width:48ch;line-height:1.75}
-html[data-typography=questrial-cairo] .service-index .service-index-row>p{max-width:47ch;line-height:1.7}
-html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal]{font-size:clamp(17px,1.44vw,22px)}
-html[data-typography=questrial-cairo] .footer-word-text{--tracking-scale:.6;--type-scale:1;direction:ltr;font-weight:400}
-html[data-typography=questrial-cairo][lang=en] .about-moving-thought h2{letter-spacing:-.036em}
-html[data-typography=questrial-cairo][lang=ar]{--type-scale:1.02;--ar-body-leading:1.85;--ar-mask-pad:.19em;--ar-heading-leading:1.5}
-html[data-typography=questrial-cairo][lang=ar] :is(h1,h2,h3){--type-scale:1.035;font-weight:500}
-html[data-typography=questrial-cairo][lang=ar] :is(.practice-copy,.case-story-system p[data-story-reveal],.case-hero-deck p){max-width:42ch;font-weight:450;line-height:1.9}
-html[data-typography=questrial-cairo][lang=ar] .service-index .service-index-row>p{max-width:42ch;font-weight:450;line-height:1.85}
-html[data-typography=questrial-cairo][lang=ar] .solving-page .services-intro h2{font-weight:500}
-html[data-typography=questrial-cairo][lang=ar] :is(.masked-text-line,.editorial-line){margin-block:-.19em;padding-block:.19em}
-html[data-typography=questrial-cairo] :is(.case-hero-title,.case-project-name,.project-name,[lang=en]){--tracking-scale:.6;font-weight:400}
-html[data-typography=questrial-cairo] :is(.case-hero-title,.case-project-name,.project-name),html[data-typography=questrial-cairo] [data-hero-name-line]{--type-scale:1.075}
-html[data-typography=questrial-cairo][lang=ar] [data-hero-name-line]{--type-scale:1.035;line-height:1.25}
-@media (max-width:760px){html[data-typography=questrial-cairo] :is(h1,h2,h3,.project-name,.case-project-name){--type-scale:1.055}
-html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal]{font-size:16px;line-height:1.75}
-html[data-typography=questrial-cairo][lang=ar] :is(h1,h2,h3){--type-scale:1.01}
-html[data-typography=questrial-cairo][lang=ar] .case-story-system p[data-story-reveal]{font-size:18px;line-height:1.9}
-html[data-typography=questrial-cairo] .service-index .service-index-row>p{max-width:100%}
+html[data-typography=questrial-cairo] { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
+html[data-typography=questrial-cairo][lang=ar] { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
+html[data-typography=questrial-cairo] { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
+html[data-typography=questrial-cairo] :is(h1, h2, h3, .project-name, .case-project-name, .opening-heading, .post-line) { --type-scale: 1.085 }
+html[data-typography=questrial-cairo] :is(.editorial-eyebrow, .editorial-kicker, .case-route-label, .case-story-label, .chapter-side, .chapter-role, .chapter-person, .nav-menu-footer) { --type-scale: 1.04; --tracking-scale: .8 }
+html[data-typography=questrial-cairo] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 48ch; line-height: 1.75 }
+html[data-typography=questrial-cairo] .service-index .service-index-row>p { max-width: 47ch; line-height: 1.7 }
+html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: clamp(17px, 1.44vw, 22px) }
+html[data-typography=questrial-cairo] .footer-word-text { --tracking-scale: .6; --type-scale: 1; direction: ltr; font-weight: 400 }
+html[data-typography=questrial-cairo][lang=en] .about-moving-thought h2 { letter-spacing: -.036em }
+html[data-typography=questrial-cairo][lang=ar] { --type-scale: 1.02; --ar-body-leading: 1.85; --ar-mask-pad: .19em; --ar-heading-leading: 1.5 }
+html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --type-scale: 1.035; font-weight: 500 }
+html[data-typography=questrial-cairo][lang=ar] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 42ch; font-weight: 450; line-height: 1.9 }
+html[data-typography=questrial-cairo][lang=ar] .service-index .service-index-row>p { max-width: 42ch; font-weight: 450; line-height: 1.85 }
+html[data-typography=questrial-cairo][lang=ar] .solving-page .services-intro h2 { font-weight: 500 }
+html[data-typography=questrial-cairo][lang=ar] :is(.masked-text-line, .editorial-line) { margin-block: -.19em; padding-block: .19em }
+html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name, [lang=en]) { --tracking-scale: .6; font-weight: 400 }
+html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name), html[data-typography=questrial-cairo] [data-hero-name-line] { --type-scale: 1.075 }
+html[data-typography=questrial-cairo][lang=ar] [data-hero-name-line] { --type-scale: 1.035; line-height: 1.25 }
+@media (max-width:760px) {
+  html[data-typography=questrial-cairo] :is(h1, h2, h3, .project-name, .case-project-name) { --type-scale: 1.055 }
+  html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: 16px; line-height: 1.75 }
+  html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --type-scale: 1.01 }
+  html[data-typography=questrial-cairo][lang=ar] .case-story-system p[data-story-reveal] { font-size: 18px; line-height: 1.9 }
+  html[data-typography=questrial-cairo] .service-index .service-index-row>p { max-width: 100% }
 }
-html[data-typography=questrial-cairo][lang=ar] :is(h1,h2,h3){--weight-400:500;--weight-430:500;--weight-440:500;--weight-450:500;--weight-470:500;--weight-480:500}
-html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title,.case-project-name,.project-name){--weight-400:400;--weight-430:400;--weight-450:400;--weight-500:400;--tracking-scale:.6;--type-scale:1.075;font-weight:400!important}
-@media (max-width:760px){html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title,.case-project-name,.project-name){--type-scale:1.055}
+html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --weight-400: 500; --weight-430: 500; --weight-440: 500; --weight-450: 500; --weight-470: 500; --weight-480: 500 }
+html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title, .case-project-name, .project-name) { --weight-400: 400; --weight-430: 400; --weight-450: 400; --weight-500: 400; --tracking-scale: .6; --type-scale: 1.075; font-weight: 400 !important }
+@media (max-width:760px) {
+  html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title, .case-project-name, .project-name) { --type-scale: 1.055 }
 }
-html[data-typography] :is(.project-name,.case-hero-title,.case-project-name)[lang=ar]{--type-scale:1.035;direction:rtl;font-family:var(--font-arabic), sans-serif!important;letter-spacing:0!important;font-weight:500!important;line-height:1.5!important}
+html[data-typography] :is(.project-name, .case-hero-title, .case-project-name)[lang=ar] { --type-scale: 1.035; direction: rtl; font-family: var(--font-arabic), sans-serif !important; letter-spacing: 0 !important; font-weight: 500 !important; line-height: 1.5 !important }

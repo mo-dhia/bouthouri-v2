@@ -2,39 +2,39 @@
 .action[data-kinetic] { min-height: 44px }
 .action[hidden] { display: none }
 .window { white-space: nowrap; padding-block: 2px; line-height: 1.45; display: block; position: relative; overflow: hidden }
-.label { transition: transform .38s cubic-bezier(.65,0,.25,1); display: block; transform: translate(0,0) }
-.echo { pointer-events: none; transition: transform .38s cubic-bezier(.65,0,.25,1); display: block; position: absolute; top: 2px; left: 0; transform: translate(-3px,115%) }
-.boundary { pointer-events: none; opacity: .5; transform-origin: 0; background: currentColor; height: 1px; transition: transform .38s cubic-bezier(.65,0,.25,1),opacity .25s; display: block; position: absolute }
+.label { transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; transform: translate(0, 0) }
+.echo { pointer-events: none; transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; position: absolute; top: 2px; left: 0; transform: translate(-3px, 115%) }
+.boundary { pointer-events: none; opacity: .5; transform-origin: 0; background: currentColor; height: 1px; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; display: block; position: absolute }
 .frame { pointer-events: none; position: absolute; inset: 0 }
-.primary { font-size: calc(12px * var(--type-scale,1)); letter-spacing: calc(.015em * var(--tracking-scale,1)); min-height: 44px; padding: 0 20px }
-.primary .frame:before,.primary .frame:after { content: ""; pointer-events: none; opacity: .5; border-color: currentColor; width: 6px; height: 9px; transition: transform .38s cubic-bezier(.65,0,.25,1),opacity .25s; position: absolute }
+.primary { font-size: calc(12px * var(--type-scale, 1)); letter-spacing: calc(.015em * var(--tracking-scale, 1)); min-height: 44px; padding: 0 20px }
+.primary .frame:before, .primary .frame:after { content: ''; pointer-events: none; opacity: .5; border-color: currentColor; width: 6px; height: 9px; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute }
 .primary .frame:before { border-top: 1px solid; border-left: 1px solid; top: 10px; left: 0 }
 .primary .frame:after { border-bottom: 1px solid; border-right: 1px solid; bottom: 10px; right: 0 }
 .primary .boundary { bottom: 5px; left: 20px; right: 20px; transform: scaleX(.18) }
-.primary:is(:hover,:focus-visible) .boundary { opacity: .9; transform: translate(82%)scaleX(.18) }
-.primary:is(:hover,:focus-visible) .label { transform: translate(3px) }
-.primary:is(:hover,:focus-visible) .frame:before { opacity: .9; transform: translateY(8px) }
-.primary:is(:hover,:focus-visible) .frame:after { opacity: .9; transform: translateY(-8px) }
+.primary:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translate(82%)scaleX(.18) }
+.primary:is(:hover, :focus-visible) .label { transform: translate(3px) }
+.primary:is(:hover, :focus-visible) .frame:before { opacity: .9; transform: translateY(8px) }
+.primary:is(:hover, :focus-visible) .frame:after { opacity: .9; transform: translateY(-8px) }
 .editorial { justify-content: flex-start; padding: 0 22px 0 0 }
 .editorial .boundary { width: 10px; bottom: calc(50% - 1px); right: 0; transform: scaleX(1) }
-.editorial:is(:hover,:focus-visible) .label { transform: translate(3px,-115%) }
-.editorial:is(:hover,:focus-visible) .echo { transform: translate(0,0) }
-.editorial:is(:hover,:focus-visible) .boundary { opacity: .9; transform: translateY(7px)scaleX(.55) }
+.editorial:is(:hover, :focus-visible) .label { transform: translate(3px, -115%) }
+.editorial:is(:hover, :focus-visible) .echo { transform: translate(0, 0) }
+.editorial:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translateY(7px)scaleX(.55) }
 .action:focus-visible { outline-offset: 5px; outline: 1px solid #aaa69b }
 .action:active .window { transform: translateY(1px) }
 @media (prefers-reduced-motion:reduce) {
-.action *,.action:before,.action:after { transition: none!important }
-.editorial:is(:hover,:focus-visible) .label { transform: none }
-.editorial .echo { display: none }
-.action:is(:hover,:focus-visible) { color: var(--paper, #e4e1d9) }
+  .action *, .action:before, .action:after { transition: none !important }
+  .editorial:is(:hover, :focus-visible) .label { transform: none }
+  .editorial .echo { display: none }
+  .action:is(:hover, :focus-visible) { color: var(--paper, #e4e1d9) }
 }
 .rollover .echo { transform: translateY(115%) }
-.rollover:is(:hover,:focus-visible) .label { transform: translate3d(0, var(--rollover-exit,-115%), 0) }
-.rollover:is(:hover,:focus-visible) .echo { transform: translate3d(0, var(--rollover-enter,0%), 0) }
+.rollover:is(:hover, :focus-visible) .label { transform: translate3d(0, var(--rollover-exit, -115%), 0) }
+.rollover:is(:hover, :focus-visible) .echo { transform: translate3d(0, var(--rollover-enter, 0%), 0) }
 .rollover:active .window { transform: none }
 @media (prefers-reduced-motion:reduce) {
-.rollover:is(:hover,:focus-visible) .label { transform: none }
-.rollover .echo { display: none }
+  .rollover:is(:hover, :focus-visible) .label { transform: none }
+  .rollover .echo { display: none }
 }
 .window:lang(ar) { letter-spacing: 0; line-height: 1.6 }
 .editorial { padding-inline: 0 22px }

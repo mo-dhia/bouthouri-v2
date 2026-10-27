@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "bun test",
     "check": "bun run lint && bun run typecheck && bun test",
-    "test:ssr": "bun scripts/audit-ssr.ts"
+    "test:ssr": "bun scripts/audit-ssr.ts",
+    "format:css": "bun scripts/format-css.ts --write"
   },
   "dependencies": {
     "next": "16.4.3",
@@ -30,7 +31,8 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "postcss": "8.5.23"
   },
   "packageManager": "bun@1.3.3",
   "ignoreScripts": [

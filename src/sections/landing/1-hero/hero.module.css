@@ -3,67 +3,67 @@
 .world { z-index: 1; isolation: isolate; position: absolute; inset: 0 }
 .marquee { -webkit-user-select: none; user-select: none; z-index: 0; pointer-events: none; direction: ltr; position: absolute; inset: 17.5% 0 auto }
 .track { will-change: transform; direction: ltr; width: max-content; display: flex; position: relative; left: 0; right: auto; transform: translate(calc(100vw + 8px)) }
-.cycle { font-size: calc(clamp(130px, 20.4vw, 390px) * var(--type-scale,1)); font-weight: var(--weight-470,470); letter-spacing: calc(-.075em * var(--tracking-scale,1)); color: #242424; white-space: nowrap; flex: none; align-items: center; line-height: 1.1; display: flex }
+.cycle { font-size: calc(clamp(130px, 20.4vw, 390px) * var(--type-scale, 1)); font-weight: var(--weight-470, 470); letter-spacing: calc(-.075em * var(--tracking-scale, 1)); color: #242424; white-space: nowrap; flex: none; align-items: center; line-height: 1.1; display: flex }
 .cycle span { flex: none; align-items: center; display: flex }
-.cycle i { font-size: calc(.47em * var(--type-scale,1)); font-style: normal; font-weight: var(--weight-250,250); letter-spacing: 0; margin: 0 .6em }
+.cycle i { font-size: calc(.47em * var(--type-scale, 1)); font-style: normal; font-weight: var(--weight-250, 250); letter-spacing: 0; margin: 0 .6em }
 .portrait { z-index: 1; transform-origin: 45% 55%; position: absolute; inset: 0 }
 .portraitEntrance { opacity: 0; width: 100%; height: 100%; position: relative }
-.portrait img,.portraitCanvas { -webkit-user-select: none; user-select: none; width: max(100vw,150svh); max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%) }
-.language,.sound,.logo,.talk,.pause,.scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
-.information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 40px); position: absolute; bottom: clamp(32px,4.5svh,72px); right: clamp(20px,2.2vw,64px) }
+.portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: max(100vw, 150svh); max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
+.language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
+.information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 40px); position: absolute; bottom: clamp(32px, 4.5svh, 72px); right: clamp(20px, 2.2vw, 64px) }
 .copyEntrance { opacity: 0; position: relative }
-.information h1 { font-size: calc(clamp(30px, 3.65vw, 108px) * var(--type-scale,1)); font-weight: var(--weight-440,440); letter-spacing: calc(-.05em * var(--tracking-scale,1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 3px; line-height: 1.05 }
-.information p { width: 0; min-width: 100%; font-size: calc(clamp(12px, .95vw, 24px) * var(--type-scale,1)); font-weight: var(--weight-400,400); letter-spacing: calc(-.017em * var(--tracking-scale,1)); color: #aaa8a1; margin: 0; line-height: 1.48 }
-.signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence,1)); position: absolute; bottom: calc(.8svh - 40px); left: -13vw; overflow: visible }
+.information h1 { font-size: calc(clamp(30px, 3.65vw, 108px) * var(--type-scale, 1)); font-weight: var(--weight-440, 440); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 3px; line-height: 1.05 }
+.information p { width: 0; min-width: 100%; font-size: calc(clamp(12px, .95vw, 24px) * var(--type-scale, 1)); font-weight: var(--weight-400, 400); letter-spacing: calc(-.017em * var(--tracking-scale, 1)); color: #aaa8a1; margin: 0; line-height: 1.48 }
+.signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence, 1)); position: absolute; bottom: calc(.8svh - 40px); left: -13vw; overflow: visible }
 .signature path { stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1px; opacity: 0 }
 .bottom { z-index: 4; align-items: center; gap: 20px; display: flex; position: absolute; inset: auto 3.4vw 27px }
-.pause { color: #92918a; border: 1px solid #393935; border-radius: 50%; place-items: center; width: 32px; height: 32px; transition: color .2s,border-color .2s; display: grid }
+.pause { color: #92918a; border: 1px solid #393935; border-radius: 50%; place-items: center; width: 32px; height: 32px; transition: color .2s, border-color .2s; display: grid }
 .pause:hover { color: var(--paper, #e4e1d9); border-color: #77766e }
 .pause svg { stroke: currentColor; stroke-width: 1.2px; width: 14px; height: 14px }
 .pause:disabled { opacity: .3; cursor: default }
-.scrollLink { font-size: calc(9px * var(--type-scale,1)); letter-spacing: calc(.035em * var(--tracking-scale,1)); color: #aaa8a1; align-items: center; gap: 20px; transition: color .2s; display: flex }
+.scrollLink { font-size: calc(9px * var(--type-scale, 1)); letter-spacing: calc(.035em * var(--tracking-scale, 1)); color: #aaa8a1; align-items: center; gap: 20px; transition: color .2s; display: flex }
 .scrollLink:hover { color: var(--paper, #e4e1d9) }
 .reduced .scene { position: absolute }
 .reduced .sound:hover path { animation: none }
 .reduced .track { transform: none }
 @media (min-width:1800px) {
-.bottom { bottom: 32px }
+  .bottom { bottom: 32px }
 }
 @media (max-aspect-ratio:6/5) and (min-width:701px) {
-.portrait img,.portraitCanvas { width: 130svh; top: 45%; left: calc(50% + 65px) }
-.marquee { top: 34% }
-.information { bottom: 8%; right: clamp(20px,2.2vw,40px) }
-.information h1 { font-size: calc(4.8vw * var(--type-scale,1)) }
-.information p { font-size: calc(14px * var(--type-scale,1)) }
-.signature { width: 47vw; left: -19vw }
+  .portrait img, .portraitCanvas { width: 130svh; top: 45%; left: calc(50% + 65px) }
+  .marquee { top: 34% }
+  .information { bottom: 8%; right: clamp(20px, 2.2vw, 40px) }
+  .information h1 { font-size: calc(4.8vw * var(--type-scale, 1)) }
+  .information p { font-size: calc(14px * var(--type-scale, 1)) }
+  .signature { width: 47vw; left: -19vw }
 }
 @media (max-width:700px) {
-.portrait img,.portraitCanvas { width: max(164vw,104svh); top: 44%; left: calc(50% + 65px); transform: translate(-50%,-50%); -webkit-mask-image: linear-gradient(#000 77%,#0000 100%); mask-image: linear-gradient(#000 77%,#0000 100%) }
-.marquee { top: 29% }
-.cycle { font-size: calc(clamp(130px, 31vw, 230px) * var(--type-scale,1)) }
-.information { width: max-content; max-width: calc(100% - 40px); bottom: 12%; left: auto; right: 20px }
-.information h1 { font-size: calc(clamp(26px, 6.8vw, 46px) * var(--type-scale,1)); letter-spacing: calc(-.05em * var(--tracking-scale,1)); margin-bottom: 3px }
-.information p { font-size: calc(12px * var(--type-scale,1)); color: #b3b0a7; line-height: 1.5 }
-.signature { width: 90vw; max-width: 480px; opacity: calc(.28 * var(--signature-presence,1)); bottom: -20px; left: -30vw }
-.bottom { gap: 14px; bottom: 24px; left: 7%; right: 7% }
-.scrollLink { font-size: calc(8px * var(--type-scale,1)); min-height: var(--nav-hit-height); gap: 13px }
-.pause { width: 40px; height: 40px }
+  .portrait img, .portraitCanvas { width: max(164vw, 104svh); top: 44%; left: calc(50% + 65px); transform: translate(-50%, -50%); -webkit-mask-image: linear-gradient(#000 77%, #0000 100%); mask-image: linear-gradient(#000 77%, #0000 100%) }
+  .marquee { top: 29% }
+  .cycle { font-size: calc(clamp(130px, 31vw, 230px) * var(--type-scale, 1)) }
+  .information { width: max-content; max-width: calc(100% - 40px); bottom: 12%; left: auto; right: 20px }
+  .information h1 { font-size: calc(clamp(26px, 6.8vw, 46px) * var(--type-scale, 1)); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); margin-bottom: 3px }
+  .information p { font-size: calc(12px * var(--type-scale, 1)); color: #b3b0a7; line-height: 1.5 }
+  .signature { width: 90vw; max-width: 480px; opacity: calc(.28 * var(--signature-presence, 1)); bottom: -20px; left: -30vw }
+  .bottom { gap: 14px; bottom: 24px; left: 7%; right: 7% }
+  .scrollLink { font-size: calc(8px * var(--type-scale, 1)); min-height: var(--nav-hit-height); gap: 13px }
+  .pause { width: 40px; height: 40px }
 }
 @media (max-width:360px) {
-.information { right: 18px }
+  .information { right: 18px }
 }
 @media (max-height:600px) and (min-aspect-ratio:6/5) {
-.information { bottom: 8% }
-.information h1 { font-size: calc(3.5vw * var(--type-scale,1)) }
-.information p { font-size: calc(11px * var(--type-scale,1)) }
-.bottom { bottom: 15px }
+  .information { bottom: 8% }
+  .information h1 { font-size: calc(3.5vw * var(--type-scale, 1)) }
+  .information p { font-size: calc(11px * var(--type-scale, 1)) }
+  .bottom { bottom: 15px }
 }
 @media (prefers-reduced-motion:reduce) {
-.track { transform: none }
+  .track { transform: none }
 }
 .cueEntrance { align-items: center; gap: inherit; opacity: 0; display: flex }
-.hero[data-hero-phase=loading] .marquee,.hero[data-hero-phase=settling] .marquee,.world,.utilities,.information,.bottom { visibility: hidden }
-.copyWindow,.cueWindow { overflow: hidden }
+.hero[data-hero-phase=loading] .marquee, .hero[data-hero-phase=settling] .marquee, .world, .utilities, .information, .bottom { visibility: hidden }
+.copyWindow, .cueWindow { overflow: hidden }
 .cueWindow { gap: inherit; display: flex }
 .portraitCanvas { aspect-ratio: 3/2; opacity: 0; pointer-events: none }
 .portraitEntrance[data-portrait-ready=true]>img { visibility: hidden }
@@ -72,35 +72,35 @@
 .copySource { opacity: 0 }
 .copyLines { pointer-events: none; -webkit-user-select: none; user-select: none; display: block; position: absolute; inset: 0 }
 .information { pointer-events: auto }
-.utilities,.actions,.persistentIdentityContent,.utilityContent,.navDock,.bottom { direction: ltr }
-.persistentRole,.information,.scrollLink { direction: var(--reading-direction) }
-:global(html[lang='ar']) .cycle { font-family: var(--font-arabic); font-weight: var(--weight-500,500); letter-spacing: 0; line-height: 1.5 }
+.utilities, .actions, .persistentIdentityContent, .utilityContent, .navDock, .bottom { direction: ltr }
+.persistentRole, .information, .scrollLink { direction: var(--reading-direction) }
+:global(html[lang='ar']) .cycle { font-family: var(--font-arabic); font-weight: var(--weight-500, 500); letter-spacing: 0; line-height: 1.5 }
 :global(html[lang='ar']) .cycle span { direction: rtl }
-:global(html[lang='ar']) .scrollLink { font-size: calc(12px * var(--type-scale,1)); letter-spacing: 0 }
+:global(html[lang='ar']) .scrollLink { font-size: calc(12px * var(--type-scale, 1)); letter-spacing: 0 }
 @media (max-width:700px) {
-:global(html[lang='ar']) .scrollLink { font-size: calc(10px * var(--type-scale,1)) }
+  :global(html[lang='ar']) .scrollLink { font-size: calc(10px * var(--type-scale, 1)) }
 }
-:global(html[lang='ar']) .information { text-align: right; width: clamp(310px,30vw,560px); max-width: calc(100vw - 40px) }
-:global(html[lang='ar']) .information h1 { font-size: calc(var(--ar-hero-size) * var(--type-scale,1)); font-weight: var(--weight-500,500); letter-spacing: 0 }
-:global(html[lang='ar']) .information p { width: 100%; min-width: 0; max-width: none; font-size: calc(clamp(14px, 1.2vw, 21px) * var(--type-scale,1)); letter-spacing: 0; line-height: 1.85 }
+:global(html[lang='ar']) .information { text-align: right; width: clamp(310px, 30vw, 560px); max-width: calc(100vw - 40px) }
+:global(html[lang='ar']) .information h1 { font-size: calc(var(--ar-hero-size) * var(--type-scale, 1)); font-weight: var(--weight-500, 500); letter-spacing: 0 }
+:global(html[lang='ar']) .information p { width: 100%; min-width: 0; max-width: none; font-size: calc(clamp(14px, 1.2vw, 21px) * var(--type-scale, 1)); letter-spacing: 0; line-height: 1.85 }
 :global(html[lang='ar']) .signature { z-index: 0; left: auto; right: 0 }
 :global(html[lang='ar']) .copyEntrance { z-index: 1 }
 :global(html[lang='ar']) .copyWindow { padding-block: var(--ar-mask-pad); margin-block: calc(-1 * var(--ar-mask-pad)) }
 @media (min-width:901px) {
-:global(html[lang='ar']) .information { width: clamp(350px,39vw,720px) }
-:global(html[lang='ar']) .information p { text-wrap: balance }
+  :global(html[lang='ar']) .information { width: clamp(350px, 39vw, 720px) }
+  :global(html[lang='ar']) .information p { text-wrap: balance }
 }
 @media (max-width:700px) {
-:global(html[lang='ar']) .information { width: calc(100% - 40px) }
-:global(html[lang='ar']) .information p { font-size: calc(14px * var(--type-scale,1)); max-width: 100% }
-:global(html[lang='ar']) .signature { right: -12vw }
+  :global(html[lang='ar']) .information { width: calc(100% - 40px) }
+  :global(html[lang='ar']) .information p { font-size: calc(14px * var(--type-scale, 1)); max-width: 100% }
+  :global(html[lang='ar']) .signature { right: -12vw }
 }
 @media (max-width:900px) {
-:global(html[lang='ar']) .information p { max-width: 18em }
+  :global(html[lang='ar']) .information p { max-width: 18em }
 }
-.hero[data-hero-departing=true] :is(.portrait,.marquee,.information,.signature,.bottom) { will-change: transform, opacity }
+.hero[data-hero-departing=true] :is(.portrait, .marquee, .information, .signature, .bottom) { will-change: transform, opacity }
 @media (max-width:900px) {
-.bottom { bottom: max(24px, env(safe-area-inset-bottom)) }
+  .bottom { bottom: max(24px, env(safe-area-inset-bottom)) }
 }
 .hero { --nav-hit-height: 44px; --reading-direction: ltr; --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ar-hero-size: clamp(38px, 4.3vw, 90px); --ar-mask-pad: .19em }
 .hero[data-locale='ar'] { --reading-direction: rtl }
@@ -114,6 +114,12 @@
 .pause { padding: 0; text-decoration: none !important }
 .hero:not([data-enhanced='true']) .pause { display: none }
 .hero[data-hero-reading='true'] .pause { display: grid }
-@media (max-width: 700px) { .hero { --ar-hero-size: clamp(38px, 10vw, 58px) } }
-@media (prefers-reduced-motion: reduce) { .scene { position: absolute } .track { will-change: auto } .hero * { transition: none !important } }
+@media (max-width: 700px) {
+  .hero { --ar-hero-size: clamp(38px, 10vw, 58px) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene { position: absolute }
+  .track { will-change: auto }
+  .hero * { transition: none !important }
+}
 .hero[data-locale='ar'] { font-weight: var(--weight-400, 450) }
