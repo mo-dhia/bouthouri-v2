@@ -59,6 +59,10 @@ EN1912×1009 opening rows and fit.8101939248682843 match source exactly; AR392×
 rows and fit.9774 also match, with document9406 and native8541 preserved through
 mode toggles. Evidence: `/tmp/gazzar-reading-ui-root/evidence.json`. The static
 lens environment is a separate scene-lifetime concern and is not certified here.
+The reading scroll cue now uses the source `#beyond.scrollIntoView({
+behavior: 'auto', block: 'start' })` action. Its listener is removed on mode
+change and HOME disposal. An independent offline review found this previously
+inert control; live EN/AR activation remains on the next production review list.
 
 Mode changes preserve the native offset, clamped to the newly measured document,
 then snap target/displayed score through the shared render path. This mirrors

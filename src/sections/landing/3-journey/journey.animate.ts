@@ -172,10 +172,14 @@ export function mountJourney(root: HTMLElement) {
       const opening = createOpeningType(root);
       let readingDisposed = false;
       const measureOpening = () => opening.measure();
+      const explore = root.querySelector<HTMLButtonElement>(".scroll-cue");
+      const move = () => root.querySelector<HTMLElement>("#beyond")?.scrollIntoView({ behavior: "auto", block: "start" });
+      explore?.addEventListener("click", move);
       window.addEventListener("resize", measureOpening, { passive: true });
       void document.fonts.ready.then(() => { if (!readingDisposed) measureOpening(); });
       disposeMotion = () => {
         readingDisposed = true;
+        explore?.removeEventListener("click", move);
         window.removeEventListener("resize", measureOpening);
         opening.dispose();
       };

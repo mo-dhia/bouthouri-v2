@@ -91,6 +91,11 @@ AR8541→motion164.58→reading8541 retains the offset in both. Full check86test
 3254assertions passes. Retained static lens environment remains open and will be
 handled as a separate scene resource-lifetime task before R8.
 
+An independent offline review also found the reading scroll cue had no handler.
+It now scrolls to `#beyond` with the source's auto/start behavior and removes
+its listener on mode changes and HOME disposal. Scoped lint and the six journey/
+reading-navigation tests pass; EN/AR activation still needs the production review.
+
 | Round | Result |
 | --- | --- |
 | 1 | Reference inventory and acceptance checklist; see `home-parity-review-r1.md` |
