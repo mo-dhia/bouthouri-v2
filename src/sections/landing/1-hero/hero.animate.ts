@@ -14,7 +14,10 @@ import {
   smoother,
   heroWorldEvent,
   heroWorldPose,
-  heroWorldScrub,
+  createHeroWorldClock,
+  createHeroWorldPublisher,
+  heroInputProgressFromScroll,
+  heroInputFromWorldProgress,
   worldProgressFromScroll,
 } from "./hero-world";
 import type { PortraitController } from "./hero-portrait";
@@ -151,11 +154,10 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     portrait: PortraitController | undefined;
   let groupWidth = 1,
     marqueeX = innerWidth + 8,
-    paused = false,
-    targetWorld = 0,
-    currentWorld = 0;
-  let worldFrom = 0,
-    worldStarted = 0;
+    paused = false;
+  const worldClock = createHeroWorldClock();
+  const worldPublisher = createHeroWorldPublisher(root);
+  let worldPose = worldClock.pose(innerWidth <= 700);
   let height = root.offsetHeight,
     top = root.getBoundingClientRect().top + scrollY;
   let previousWorld = -1,
@@ -397,7 +399,8 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     wake();
   };
   const renderWorld = () => {
-    const pose = heroWorldPose(currentWorld),
+    const pose = worldPose,
+      currentWorld = pose.progress,
       scale = height * (innerWidth <= 700 ? 0.62 : 1),
       portraitY = pose.portraitY * scale,
       portraitScale =
@@ -434,9 +437,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     signature.style.transform = `translate3d(0,${(pose.signatureY - pose.identityY) * scale}px,0)`;
     bottom.style.opacity = String(pose.cueOpacity);
     bottom.style.transform = `translate3d(0,${pose.identityY * scale * 0.5}px,0)`;
-    window.dispatchEvent(
-      new CustomEvent(heroWorldEvent, { detail: { progress: currentWorld } }),
-    );
+    worldPublisher.publish(pose);
   };
   const tick = (now: number) => {
     frame = 0;
@@ -543,9 +544,9 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       if (t >= 2.5) finish();
     }
     if (entered || phase === "assembling") {
-      currentWorld = heroWorldScrub(worldFrom, targetWorld, now - worldStarted);
+      worldPose = worldClock.sample(now, innerWidth <= 700);
       renderWorld();
-      const pose = heroWorldPose(currentWorld);
+      const pose = worldPose;
       if (!paused && !pose.hidden && assemblyTime >= 0.16) {
         marqueeX -= 133 * delta;
         if (marqueeX <= 0) marqueeX = -(-marqueeX % groupWidth);
@@ -561,7 +562,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         ) ?? false;
       if (
         (!pose.hidden && (!paused || active)) ||
-        targetWorld !== currentWorld ||
+        !worldClock.settled ||
         phase !== "complete" ||
         magnetMoving
       )
@@ -581,10 +582,8 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const sync = () => {
     const menuOpen = uiStore.getState().menuOpen;
     if (menuOpen) magnet.reset();
-    else if (menuWasOpen && targetWorld !== currentWorld) {
-      worldFrom = currentWorld;
-      worldStarted = performance.now();
-    }
+    else if (menuWasOpen && !worldClock.settled)
+      worldClock.resume(performance.now());
     menuWasOpen = menuOpen;
     if (menuOpen || document.hidden) portrait?.reset();
     lastFrame = 0;
@@ -594,33 +593,29 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     const detail = (event as CustomEvent<{ progress: number }>).detail;
     if (detail && Number.isFinite(detail.progress)) {
       root.dataset.heroWorldOwner = "journey";
-      setWorldTarget(detail.progress);
+      setWorldTarget(heroInputFromWorldProgress(detail.progress, innerWidth <= 700));
       wake();
     }
   };
   const setWorldTarget = (value: number, immediate = false) => {
     const next = clamp(value);
     if (immediate || phase !== "complete") {
-      worldFrom = targetWorld = currentWorld = next;
-      worldStarted = 0;
+      worldClock.snap(next, performance.now());
+      worldPose = worldClock.pose(innerWidth <= 700);
       previousWorld = -1;
       renderWorld();
-    } else if (next !== targetWorld) {
-      worldFrom = currentWorld;
-      targetWorld = next;
-      worldStarted = performance.now();
-    }
+    } else worldClock.retarget(next, performance.now());
   };
   const updateScroll = () => {
     setWorldTarget(
-      worldProgressFromScroll(scrollY - top, height, innerWidth <= 700),
+      heroInputProgressFromScroll(scrollY - top, height, innerWidth <= 700),
     );
     delete root.dataset.heroWorldOwner;
     wake();
   };
   const snapWorldToScroll = () => {
     setWorldTarget(
-      worldProgressFromScroll(scrollY - top, height, innerWidth <= 700),
+      heroInputProgressFromScroll(scrollY - top, height, innerWidth <= 700),
       true,
     );
     delete root.dataset.heroWorldOwner;
@@ -800,6 +795,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     resize?.disconnect();
     trigger?.removeInstance("identity-world");
     portrait?.dispose();
+    worldPublisher.dispose();
     magnet.dispose();
     if (main) delete main.dataset.worldMagnet;
     document.removeEventListener("visibilitychange", sync);
@@ -842,7 +838,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       uiStore.getState().setEntryPhase("complete");
     window.dispatchEvent(
       new CustomEvent(heroWorldEvent, {
-        detail: { progress: scrollY > top + height ? 1 : 0 },
+        detail: heroWorldPose(scrollY > top + height ? 1 : 0),
       }),
     );
   };

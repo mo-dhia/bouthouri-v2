@@ -27,6 +27,7 @@ export function heroWorldPose(value: number) {
     portraitY: -0.061 * smooth(0.02, 0.72, progress),
     marqueeY: -0.041 * smooth(0.015, 0.72, progress),
     portraitScale: 1 - 0.023 * smooth(0.12, 0.72, progress),
+    chapterPresence: smooth(0.81, 1, progress),
     persistentY: [0, 1, 2, 4].map(
       (index) =>
         112 * (1 - smooth(0.83 + 0.02 * index, 0.91 + 0.02 * index, progress)),
@@ -44,14 +45,20 @@ export function heroWorldScrub(from: number, to: number, elapsedMs: number) {
   return from + (to - from) * (1 - Math.pow(1 - progress, 3));
 }
 
-/** Same world-to-input remap as the reference, including its six-unit opening hold. */
-export function worldProgressFromScroll(
+/** Normalized hero trigger input, before the source's 100ms quickTo. */
+export function heroInputProgressFromScroll(
   scroll: number,
   height: number,
   mobile: boolean,
 ) {
   const unit = 100 / (mobile ? 5.8 : 6.8);
-  const input = Math.max(0, scroll / height) * unit - unit;
+  return clamp(scroll / (height + (height / unit) * 22));
+}
+
+/** Source worldProgressFromInput: apply only AFTER smoothing raw trigger input. */
+export function worldProgressFromInput(progress: number, mobile: boolean) {
+  const unit = 100 / (mobile ? 5.8 : 6.8);
+  const input = clamp(progress) * (unit + 22) - unit;
   const seam = (unit + 16) * 0.745 - unit;
   const mapped =
     input <= seam
@@ -60,4 +67,60 @@ export function worldProgressFromScroll(
         ? input - 6
         : seam + ((input - seam) * (16 - seam)) / (22 - seam);
   return clamp((unit + mapped) / (unit + 16));
+}
+
+/** Inverse for the existing mapped-world input event, not native magnet input. */
+export function heroInputFromWorldProgress(progress: number, mobile: boolean) {
+  const unit = 100 / (mobile ? 5.8 : 6.8);
+  const mapped = clamp(progress) * (unit + 16) - unit;
+  const seam = (unit + 16) * 0.745 - unit;
+  const input = mapped <= seam ? mapped : seam + (mapped - seam) * (22 - seam) / (16 - seam);
+  return clamp((unit + input) / (unit + 22));
+}
+
+export function worldProgressFromScroll(scroll: number, height: number, mobile: boolean) {
+  return worldProgressFromInput(heroInputProgressFromScroll(scroll, height, mobile), mobile);
+}
+
+/** No RAF: the hero owns sampling, pause/resume and immediate restore/refresh. */
+export function createHeroWorldClock() {
+  let input = 0, target = 0, from = 0, started = 0;
+  let latestTime = 0;
+  const time = (now: number) => (latestTime = Math.max(latestTime, now));
+  const pose = (mobile: boolean) => heroWorldPose(worldProgressFromInput(input, mobile));
+  return {
+    get settled() { return input === target; },
+    pose,
+    sample(now: number, mobile: boolean) {
+      input = heroWorldScrub(from, target, time(now) - started);
+      return pose(mobile);
+    },
+    retarget(value: number, now: number) {
+      const next = clamp(value);
+      if (next === target) return;
+      // Cached hero calls quickTo(next, l.progress): resetTo's explicit start
+      // preserves the displayed input, unlike quickTo(next) without a start.
+      from = input; target = next; started = time(now);
+    },
+    snap(value: number, now = latestTime) { input = from = target = clamp(value); started = time(now); },
+    resume(now: number) { from = input; started = time(now); },
+  };
+}
+
+const displayedWorlds = new WeakMap<HTMLElement, { pose: HeroWorldPose }>();
+
+/** Full precision, scoped to the current hero mount; no global route history. */
+export function readHeroWorldPose(root: HTMLElement | null) {
+  return root ? displayedWorlds.get(root)?.pose : undefined;
+}
+
+export function createHeroWorldPublisher(root: HTMLElement, target: EventTarget = window) {
+  const state = { pose: heroWorldPose(0) };
+  return {
+    publish(pose: HeroWorldPose) {
+      state.pose = pose; displayedWorlds.set(root, state);
+      target.dispatchEvent(new CustomEvent<HeroWorldPose>(heroWorldEvent, { detail: pose }));
+    },
+    dispose() { if (displayedWorlds.get(root) === state) displayedWorlds.delete(root); },
+  };
 }

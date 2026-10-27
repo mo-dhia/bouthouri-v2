@@ -1,0 +1,313 @@
+{
+  "source": {
+    "clock": "0or6--g23od4n.js.pretty:140-145",
+    "hero": "2gz902oulp4x8.js.pretty:265-267,504-505,577",
+    "sha256": [
+      "413ff804dc4a5ba06dcd30727494286529ebdbe7e1535246c1bf7ebf8395edd1",
+      "89f51c401d9cc48c6ba2da1d0b0bde6418cd1b354a5f71a4ff00f51beb0227de"
+    ],
+    "note": "Fixed outputs evaluated from the cached public source d/worldProgressFromInput/eg, with the source 100ms power2.out raw-input quickTo; no local implementation imported."
+  },
+  "cases": [
+    {
+      "label": "EN desktop enter and opening hold",
+      "mobile": false,
+      "from": 0,
+      "to": 1,
+      "samples": [
+        {"ms":0,"progress":0,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":10,"progress":0.32395402298850556,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":25,"progress":0.6910919540229884,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":40,"progress":0.8538134490238611,"chapterPresence":0.13500105574394697,"openingOpacity":0.9343924263786882,"hidden":true},
+        {"ms":50,"progress":0.9154013015184381,"chapterPresence":0.5817874186447456,"openingOpacity":1,"hidden":true},
+        {"ms":75,"progress":0.9894251626898047,"chapterPresence":0.9910517004811297,"openingOpacity":1,"hidden":true},
+        {"ms":100,"progress":0.9999999999999999,"chapterPresence":1,"openingOpacity":1,"hidden":true},
+        {"ms":140,"progress":0.9999999999999999,"chapterPresence":1,"openingOpacity":1,"hidden":true}
+      ]
+    },
+    {
+      "label": "AR mobile enter and opening hold",
+      "mobile": true,
+      "from": 0,
+      "to": 1,
+      "samples": [
+        {"ms":0,"progress":0,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":10,"progress":0.319914937759336,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":25,"progress":0.6824753630705395,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":40,"progress":0.8506954409032443,"chapterPresence":0.1179756233255429,"openingOpacity":0.8292800292369724,"hidden":true},
+        {"ms":50,"progress":0.9135968986708589,"chapterPresence":0.5676849871375693,"openingOpacity":1,"hidden":true},
+        {"ms":75,"progress":0.9891996123338576,"chapterPresence":0.9906735854035287,"openingOpacity":1,"hidden":true},
+        {"ms":100,"progress":1,"chapterPresence":1,"openingOpacity":1,"hidden":true},
+        {"ms":140,"progress":1,"chapterPresence":1,"openingOpacity":1,"hidden":true}
+      ]
+    },
+    {
+      "label": "EN desktop reverse to hero",
+      "mobile": false,
+      "from": 1,
+      "to": 0,
+      "samples": [
+        {"ms":0,"progress":0.9999999999999999,"chapterPresence":1,"openingOpacity":1,"hidden":true},
+        {"ms":10,"progress":0.816590021691974,"chapterPresence":0.0035255564882819717,"openingOpacity":0.0014351907114023195,"hidden":true},
+        {"ms":25,"progress":0.5043103448275862,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":40,"progress":0.2582068965517241,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":50,"progress":0.14942528735632182,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":75,"progress":0.01867816091954025,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":100,"progress":0,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":140,"progress":0,"chapterPresence":0,"openingOpacity":0,"hidden":false}
+      ]
+    },
+    {
+      "label": "AR mobile reverse to hero",
+      "mobile": true,
+      "from": 1,
+      "to": 0,
+      "samples": [
+        {"ms":0,"progress":1,"chapterPresence":1,"openingOpacity":1,"hidden":true},
+        {"ms":10,"progress":0.8126780763184221,"chapterPresence":0.000590418144593953,"openingOpacity":0.000040750314713787,"hidden":true},
+        {"ms":25,"progress":0.4980225622406639,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":40,"progress":0.2549875518672199,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":50,"progress":0.14756224066390042,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":75,"progress":0.01844528008298758,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":100,"progress":0,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":140,"progress":0,"chapterPresence":0,"openingOpacity":0,"hidden":false}
+      ]
+    },
+    {
+      "label": "EN desktop crosses opening seam",
+      "mobile": false,
+      "from": 0.6,
+      "to": 0.8,
+      "samples": [
+        {"ms":0,"progress":0.7172413793103447,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":10,"progress":0.7659661605206074,"chapterPresence":0,"openingOpacity":0,"hidden":true},
+        {"ms":25,"progress":0.8075379609544469,"chapterPresence":0,"openingOpacity":0,"hidden":true},
+        {"ms":40,"progress":0.8354047722342732,"chapterPresence":0.048853592826640785,"openingOpacity":0.22275589392146608,"hidden":true},
+        {"ms":50,"progress":0.8477223427331886,"chapterPresence":0.10260095036730242,"openingOpacity":0.7062468822080852,"hidden":true},
+        {"ms":75,"progress":0.8625271149674619,"chapterPresence":0.1870288459643963,"openingOpacity":1,"hidden":true},
+        {"ms":100,"progress":0.8646420824295009,"chapterPresence":0.20055191852066787,"openingOpacity":1,"hidden":true},
+        {"ms":140,"progress":0.8646420824295009,"chapterPresence":0.20055191852066787,"openingOpacity":1,"hidden":true}
+      ]
+    },
+    {
+      "label": "AR mobile crosses opening seam",
+      "mobile": true,
+      "from": 0.6,
+      "to": 0.8,
+      "samples": [
+        {"ms":0,"progress":0.708298755186722,"chapterPresence":0,"openingOpacity":0,"hidden":false},
+        {"ms":10,"progress":0.7609744604830642,"chapterPresence":0,"openingOpacity":0,"hidden":true},
+        {"ms":25,"progress":0.8034329444762041,"chapterPresence":0,"openingOpacity":0,"hidden":true},
+        {"ms":40,"progress":0.8318941260540231,"chapterPresence":0.036775193383532176,"openingOpacity":0.13420129200710698,"hidden":true},
+        {"ms":50,"progress":0.8444744176075462,"chapterPresence":0.08681907402865272,"openingOpacity":0.5637739921738472,"hidden":true},
+        {"ms":75,"progress":0.8595949603401457,"chapterPresence":0.16883405199146198,"openingOpacity":1,"hidden":true},
+        {"ms":100,"progress":0.8617550378733744,"chapterPresence":0.1821741393405796,"openingOpacity":1,"hidden":true},
+        {"ms":140,"progress":0.8617550378733744,"chapterPresence":0.1821741393405796,"openingOpacity":1,"hidden":true}
+      ]
+    }
+  ],
+  "retarget": [
+    {
+      "kind": "snap",
+      "input": 0.5
+    },
+    {
+      "kind": "target",
+      "input": 0.78,
+      "ms": 0
+    },
+    {
+      "kind": "sample",
+      "ms": 10,
+      "progress": 0.6884082758620689,
+      "chapterPresence": 0,
+      "openingOpacity": 0,
+      "hidden": false
+    },
+    {
+      "kind": "sample",
+      "ms": 25,
+      "progress": 0.7711605206073753,
+      "chapterPresence": 0,
+      "openingOpacity": 0,
+      "hidden": true
+    },
+    {
+      "kind": "target",
+      "input": 1,
+      "ms": 25
+    },
+    {
+      "kind": "sample",
+      "ms": 35,
+      "progress": 0.8331760195227765,
+      "chapterPresence": 0.04100684059128186,
+      "openingOpacity": 0.16338824766071003,
+      "hidden": true
+    },
+    {
+      "kind": "sample",
+      "ms": 50,
+      "progress": 0.9034583446312364,
+      "chapterPresence": 0.48783010495553514,
+      "openingOpacity": 1,
+      "hidden": true
+    },
+    {
+      "kind": "target",
+      "input": 0.58,
+      "ms": 50
+    },
+    {
+      "kind": "sample",
+      "ms": 60,
+      "progress": 0.8525889423468004,
+      "chapterPresence": 0.12820806013927105,
+      "openingOpacity": 0.8972453126784858,
+      "hidden": true
+    },
+    {
+      "kind": "sample",
+      "ms": 75,
+      "progress": 0.794938517340869,
+      "chapterPresence": 0,
+      "openingOpacity": 0,
+      "hidden": true
+    },
+    {
+      "kind": "sample",
+      "ms": 100,
+      "progress": 0.734776962104885,
+      "chapterPresence": 0,
+      "openingOpacity": 0,
+      "hidden": true
+    },
+    {
+      "kind": "sample",
+      "ms": 150,
+      "progress": 0.6933333333333331,
+      "chapterPresence": 0,
+      "openingOpacity": 0,
+      "hidden": false
+    }
+  ],
+  "cachedQuickTo": {
+    "version": "3.15.0",
+    "sha256": "e1899cd720c6c19111d45a94334434ebb3fd826e1cdb191dda8b312e17b0fef8",
+    "note": "Evaluated cached GSAP core with paused smoothChildTiming parent, no render before between-frame resetTo. explicit matches cached hero w(e.progress,l.progress); implicit omits the second quickTo argument.",
+    "implicit": [
+      {
+        "kind": "target",
+        "ms": 0,
+        "to": 1,
+        "from": 0,
+        "last": 0,
+        "progress": 0,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "sample",
+        "ms": 10,
+        "input": 0.271,
+        "progress": 0.3239540229885058,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "target",
+        "ms": 25,
+        "to": 0.6,
+        "from": 0.578125,
+        "last": 0.271,
+        "progress": 0.6910919540229884,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "sample",
+        "ms": 40,
+        "input": 0.586566,
+        "progress": 0.7011823448275861,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "target",
+        "ms": 53,
+        "to": 1,
+        "from": 0.591835,
+        "last": 0.586566,
+        "progress": 0.7074809195402298,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "sample",
+        "ms": 70,
+        "input": 0.766617,
+        "progress": 0.8420488156182212,
+        "chapterPresence": 0.07575824043188766
+      },
+      {
+        "kind": "sample",
+        "ms": 153,
+        "input": 1,
+        "progress": 0.9999999999999999,
+        "chapterPresence": 1
+      }
+    ],
+    "explicit": [
+      {
+        "kind": "target",
+        "ms": 0,
+        "to": 1,
+        "from": 0,
+        "last": 0,
+        "progress": 0,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "sample",
+        "ms": 10,
+        "input": 0.271,
+        "progress": 0.3239540229885058,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "target",
+        "ms": 25,
+        "to": 0.6,
+        "from": 0.271,
+        "last": 0.271,
+        "progress": 0.3239540229885058,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "sample",
+        "ms": 40,
+        "input": 0.397953,
+        "progress": 0.47571393103448273,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "target",
+        "ms": 53,
+        "to": 1,
+        "from": 0.397953,
+        "last": 0.397953,
+        "progress": 0.47571393103448273,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "sample",
+        "ms": 70,
+        "input": 0.655757,
+        "progress": 0.7670199219088936,
+        "chapterPresence": 0
+      },
+      {
+        "kind": "sample",
+        "ms": 153,
+        "input": 1,
+        "progress": 0.9999999999999999,
+        "chapterPresence": 1
+      }
+    ]
+  }
+}

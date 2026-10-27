@@ -62,9 +62,13 @@ WebGL failure leaves the server image, with a CSS departure mask.
 ## Parent / shell integration
 
 `heroWorldEvent` is **`gazzar:hero-world`** on `window`, with
-`detail: { progress }` in 0..1. `heroWorldPose(progress)` and
+`detail` is the full displayed `HeroWorldPose`: `progress` remains in 0..1 and
+`chapterPresence` is the source smoothstep over world .81..1. `heroWorldPose(progress)` and
 `worldProgressFromScroll(scroll, heroHeight, mobile)` are exported from
-`hero-world.ts`. Header and the parent's opening renderer consume that event.
+`hero-world.ts`. Header, the parent's opening renderer and object-scene emergence
+consume that same event. `readHeroWorldPose(heroElement)` reads its full-precision
+current pose for late subscribers; the publisher cache is scoped to the mounted
+hero element and removed on teardown.
 Hero does not animate opening words or the story HUD.
 
 Default world input follows the source's independent hero trigger: desktop unit
@@ -72,10 +76,21 @@ Default world input follows the source's independent hero trigger: desktop unit
 The custom scroll engine registers `identity-world` with `useRAF:false`; it only
 feeds the hero’s RAF. A native passive scroll listener also reads position so
 large immediate Lenis/native seeks cannot miss the trigger’s active interval.
-Changed targets use the source 100ms `power2.out` (cubic out) curve, retargeted
-from the displayed world value. Refresh and navigation restores snap directly.
+`heroInputProgressFromScroll` normalizes the native trigger's whole hero+22-unit
+span. `createHeroWorldClock` retains/smooths that **raw input**, then applies
+`worldProgressFromInput` and computes the displayed pose. Changed targets use the
+source 100ms `power2.out` (cubic out) curve. Smoothing the already mapped world
+value changes the trajectory across the opening hold and clamps. Refresh and
+navigation restores snap directly. A monotonic timestamp guard rejects stale
+RAF timestamps after input/refresh; no second RAF is introduced.
+The cached hero calls `w(e.progress, l.progress)`. Cached GSAP3.15.0 forwards
+that second argument as `resetTo`'s explicit start, so a between-frame retarget
+starts at the last displayed raw input. Calling quickTo without that argument
+advances its previous tween at the parent timestamp and produces a different
+trajectory; both VM-generated goldens are retained in the source fixture.
 Parent may dispatch **`gazzar:hero-world-input`** on `window` with `{ progress }`;
-it temporarily labels the input owner `journey`. The next native scroll remains
+this legacy channel remains mapped-world progress and is inverted to raw input
+before retargeting. It temporarily labels the input owner `journey`. The next native scroll remains
 authoritative and clears that label.
 Do not feed display progress `(opening+score)/740` into this world channel.
 
@@ -117,6 +132,17 @@ a stationary pointer. Inactive packets restore scale 1 on blur, hidden, resize,
 pointercancel, menu/reset and disposal. The scene owns composition and its RAF.
 
 ## Validation and remaining comparison work
+
+R10 clock fixtures in `hero-world-source.json` evaluate the cached public
+`worldProgressFromInput`, `eg` pose and `openingOpacity` functions, with file hashes
+and source line provenance. They cover EN/AR trigger extents, forward/reverse
+entry, the opening seam, retargeting, immediate restore and scene late subscription.
+At desktop raw0→1 /40ms the source world is .8538134490238611,
+chapterPresence .13500105574394697 and opening opacity .9343924263786882.
+The existing hero RAF publishes that pose; scene demand invalidation does not use
+the independent 480ms journey opening clock. These temporal fixtures establish
+regression coverage; the parent owns full continuous forward/reverse video review
+and all appearance/experience/animation acceptance.
 
 Focused ESLint and an in-memory TypeScript program over owned files passed.
 Numerical comparison to the recovered source `te` matches all 12,342 exit-field

@@ -27,6 +27,8 @@ export function sampleStoryScore(frame: StoryFrame, mobile = false) {
   const time = clamp(Number.isFinite(frame.time) ? frame.time : 0, 0, 714);
   const openingTime = clamp(Number.isFinite(frame.openingTime) ? frame.openingTime : 0, 0, 26);
   const heroInput = 100 / (mobile ? 5.8 : 6.8);
+  // The live object scene supplies displayed hero-world chapterPresence. This
+  // opening-time fallback is only an authored snapshot for standalone samplers.
   const emergence = frame.emergence ?? smooth(0.81, 1, (heroInput + openingTime / 26 * 16) / (heroInput + 16));
   const distance = time >= 70 ? tween(0.035, -0.24, time, 70, 5, "linear")
     : time >= 48 ? tween(3.2, 0.035, time, 48, 22, "cubic-in")

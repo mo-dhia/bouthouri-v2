@@ -24,6 +24,25 @@ the scene's sole demand RAF owns GPU draws, coalescing scroll/resize/idle/pointe
 requests. No alternate-native-frame frequency is promised: callback ordering and
 ongoing interaction affect which shared frame a draw consumes. The direct CPU
 work-origin handoff after306 and finite warm/static draws remain separate.
+
+`story-hero-handoff.ts` keeps glasses emergence on the **displayed hero-world**
+clock. It reads `chapterPresence` from `gazzar:hero-world` and invalidates the
+scene's existing demand RAF when that value changes. Journey events still own
+story time but cannot replace emergence, even when their openingTime is0 or26.
+Cold/late scene mounts read the full-precision current pose from the current hero
+element; before a publisher exists they initialize from current native geometry.
+The handoff remains live while GPU/font assets load and while retained reading
+mode is active. Re-enabling motion refreshes it before history sampling. Every
+live object frame supplies an explicit numeric emergence, including0; the
+standalone authored sampler's opening-time fallback cannot re-enter that path.
+Reading renders internal time0, openingTime26, emergence1 and idle0 explicitly.
+Cleanup removes the hero event listener with the scene's existing ownership.
+No capture, optical history, asset generation or renderer lifetime is changed.
+
+R10 source fixtures cover .81 emergence entry/exit, nonlinear opening holds,
+different EN/AR trigger extents, delayed journey frames and late subscriptions.
+They verify the clock contract; full continuous visual parity remains the
+parent's integrated video review rather than an inference from numerical scores.
 `story-glasses.ts`, `story-shadow.ts`, `story-logo.ts` and `story-type.ts` own
 their specific visual responsibilities. `story-assets.ts` caches network bytes
 only, parses a fresh model graph per mount and clones materials before mutation.
@@ -46,6 +65,8 @@ controllers are separate from the story object's render loop. The background
 continues through all 714 story units without taking over native systems paths
 or the shell-owned footer material. Visible ambient drift continues at its
 intentional source cadence; hidden/offscreen/menu states stop all scheduled work.
+The retained background controller, source allocation keys and focused offline
+history checks are documented in [story-background.doc.md](story-background.doc.md).
 `story-material-protection.ts` combines independent portrait/footer protection
 publishers using the explicit window event documented in the scene contract.
 

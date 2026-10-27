@@ -11,6 +11,8 @@ import { disposePrivateStoryAtlas } from "./story-atlas-ownership";
 import { loadStoryMotionAssets } from "./story-motion-assets";
 import { uiStore } from "@/store/uiStore";
 import { sampleStoryScore, type StoryFrame } from "./story-score";
+import { createStoryHeroHandoff } from "./story-hero-handoff";
+import { heroWorldPose, readHeroWorldPose, worldProgressFromScroll } from "../1-hero/hero-world";
 import { createSpatialType } from "./story-type";
 import type { SceneInteraction } from "./story-environment.animate";
 import styles from "./story-scene.module.css";
@@ -94,12 +96,20 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     if (!frameId && sceneReady && isActive()) frameId = requestAnimationFrame(render);
   }
   const pointer = createStoryPointer(canvas, camera, requestRender);
+  const hero = stage.closest("main")?.querySelector<HTMLElement>("#identity") ?? null;
+  const heroHandoff = createStoryHeroHandoff(() => readHeroWorldPose(hero) ?? heroWorldPose(worldProgressFromScroll(
+    hero ? -hero.getBoundingClientRect().top : scrollY, hero?.offsetHeight || innerHeight, innerWidth <= 700,
+  )), () => {
+    if (staticMode) return;
+    frame = heroHandoff.sample(frame); requestRender();
+  });
+  frame = heroHandoff.sample(frame);
   let cameraHistory = createStoryCameraHistory();
   let opticalHistory = createStoryOpticalHistory();
   if (!staticMode) opticalHistory.sample(cameraHistory.sample(frame, width < 701));
   if (staticMode) pointer.setActive(false);
   const currentScore = () => {
-    const score = staticMode ? sampleStoryScore({ time: 0, openingTime: 26, progress: 26 / 740 }, width < 701) : opticalHistory.sample(cameraHistory.sample(frame, width < 701));
+    const score = staticMode ? sampleStoryScore({ time: 0, openingTime: 26, progress: 26 / 740, emergence: 1 }, width < 701) : opticalHistory.sample(cameraHistory.sample(frame, width < 701));
     if (staticMode) score.idle = 0;
     return score;
   };
@@ -155,7 +165,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     if (staticMode) return;
     const next = (event as CustomEvent<StoryFrame>).detail;
     if (!next || !Number.isFinite(next.time) || !Number.isFinite(next.openingTime)) return;
-    frame = next;
+    frame = heroHandoff.sample(next);
     // The source clock exists before optional GPU assets. Retain both property
     // histories even when render() cannot draw yet or the stage is offscreen.
     opticalHistory.sample(cameraHistory.sample(frame, width < 701));
@@ -387,7 +397,8 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     if (enabled) { host.style.display = "block"; disposeMotion(); }
     else {
       restoreDisplay();
-      frame = { time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) };
+      heroHandoff.refresh();
+      frame = heroHandoff.sample({ time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) });
       opticalHistory.sample(cameraHistory.sample(frame, width < 701));
     }
     // Source reduced-prop rerender recaptures its existing256 Environment even
@@ -408,6 +419,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     cancelStudio();
     window.removeEventListener("identity-entry-complete", onEntry);
     window.removeEventListener("scroll", scrollMeasure, true);
+    heroHandoff.dispose();
     stage.removeEventListener("journey-frame", onFrame); document.removeEventListener("visibilitychange", visibility);
     canvas.removeEventListener("webglcontextlost", contextLost);
     pointer.dispose(); disposeVisuals(); renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
