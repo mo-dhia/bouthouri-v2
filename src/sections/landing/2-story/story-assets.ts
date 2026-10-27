@@ -122,11 +122,11 @@ function createStudioCube(renderer: WebGLRenderer, type: "glasses" | "sculpture"
 }
 
 /** Keep both raw cubes on r180's ONE renderer-owned CubeUV cache, like source.
- * The 256px glasses cube refreshes only after a real stage geometry change.
+ * The 256px glasses cube refreshes after a measured canvas bounds change.
  * Its cached target then uses the 512px sculpture scratch layout: this recurring
  * source behavior is visibly different from separate one-shot PMREM generators.
  */
-export function createStoryEnvironments(renderer: WebGLRenderer, sculpture: boolean, width: number, height: number) {
+export function createStoryEnvironments(renderer: WebGLRenderer, sculpture: boolean) {
   const glasses = createStudioCube(renderer, "glasses");
   let logo: ReturnType<typeof createStudioCube> | undefined;
   try { if (sculpture) logo = createStudioCube(renderer, "sculpture"); }
@@ -134,11 +134,9 @@ export function createStoryEnvironments(renderer: WebGLRenderer, sculpture: bool
   let disposed = false;
   return {
     glasses: glasses.target, sculpture: logo?.target,
-    measure(nextWidth: number, nextHeight: number) {
-      if (disposed || nextWidth === width && nextHeight === height) return false;
-      width = nextWidth; height = nextHeight;
+    refresh() {
+      if (disposed) return;
       logo?.capture(); glasses.capture();
-      return true;
     },
     dispose() { if (disposed) return; disposed = true; glasses.dispose(); logo?.dispose(); },
   };

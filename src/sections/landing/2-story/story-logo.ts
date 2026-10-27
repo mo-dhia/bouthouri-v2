@@ -39,6 +39,12 @@ export function createSculptures(model: Object3D, scene: Scene, environment: Tex
   let poses: SculpturePose[] = previous;
   return {
     root, objects: parts.map((part) => part.object),
+    setEnvironment(environment: Texture | null) {
+      for (const { material } of parts) {
+        if (material.envMap === environment) continue;
+        material.envMap = environment; material.needsUpdate = true;
+      }
+    },
     get poses() { return poses; },
     guards(camera: PerspectiveCamera, presence: number): SceneGuard[] {
       return parts.map(({ object }) => {

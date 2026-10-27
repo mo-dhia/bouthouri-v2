@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { Color, Matrix4, Mesh, MeshBasicMaterial, PerspectiveCamera, SRGBColorSpace, WebGLCoordinateSystem, type Scene, type WebGLRenderer } from "three";
 import { createStoryEnvironments } from "../src/sections/landing/2-story/story-assets";
 import { createStoryCameraHistory } from "../src/sections/landing/2-story/story-camera-history";
+import { createStoryEnvironmentLifecycle } from "../src/sections/landing/2-story/story-environment-lifecycle";
 import { sampleStoryScore } from "../src/sections/landing/2-story/story-score";
 import { createMaterialProtection } from "../src/sections/landing/2-story/story-material-protection";
 import { projectTerminalGlyph, terminalGlyph } from "../src/sections/landing/2-story/story-text-metrics";
@@ -11,7 +12,7 @@ import ar from "../src/sections/landing/3-journey/journey-ar.json";
 import latinCoverage from "../public/assets/textures/questrial-studio-coverage.json";
 import arabicCoverage from "../public/assets/textures/cairo-studio-coverage.json";
 
-test("source studio keeps sRGB softboxes and refreshes only changed geometry", () => {
+test("source studio keeps sRGB softboxes and owns finite raw-cube refreshes", () => {
   let draws = 0, targetDisposals = 0, materialDisposals = 0;
   const materials = new Set<MeshBasicMaterial>();
   const mock = {
@@ -22,7 +23,7 @@ test("source studio keeps sRGB softboxes and refreshes only changed geometry", (
       if (object instanceof Mesh && object.material instanceof MeshBasicMaterial) materials.add(object.material);
     }); },
   };
-  const studio = createStoryEnvironments(mock as unknown as WebGLRenderer, true, 1912, 1009);
+  const studio = createStoryEnvironments(mock as unknown as WebGLRenderer, true);
   expect(draws).toBe(12);
   expect(mock.autoClear).toBe(false); expect(mock.xr.enabled).toBe(true);
   const mapped = [...materials].filter((m) => m.map);
@@ -33,16 +34,53 @@ test("source studio keeps sRGB softboxes and refreshes only changed geometry", (
   }
   // R3F's source unsigned-byte map conversion: encoded midpoint is not .502 linear.
   expect(new Color().setRGB(128 / 255, 128 / 255, 128 / 255, SRGBColorSpace).r).toBeCloseTo(0.21586050010324417, 14);
-  expect(studio.measure(1912, 1009)).toBe(false); expect(draws).toBe(12);
-  expect(studio.measure(1910, 1009)).toBe(true); expect(draws).toBe(24);
-  expect(studio.measure(1912, 1009)).toBe(true); expect(draws).toBe(36);
-  expect(studio.measure(1912, 1007)).toBe(true); expect(draws).toBe(48);
+  studio.refresh(); expect(draws).toBe(24);
+  studio.refresh(); expect(draws).toBe(36);
+  studio.refresh(); expect(draws).toBe(48);
   studio.glasses.addEventListener("dispose", () => targetDisposals++);
   studio.sculpture!.addEventListener("dispose", () => targetDisposals++);
   for (const material of materials) material.addEventListener("dispose", () => materialDisposals++);
   studio.dispose(); studio.dispose();
   expect(targetDisposals).toBe(2); expect(materialDisposals).toBe(9);
-  expect(studio.measure(1912, 1009)).toBe(false); expect(draws).toBe(48);
+  studio.refresh(); expect(draws).toBe(48);
+});
+
+test("source full-bounds recapture preserves entry/cache order independently of navigation type", () => {
+  // Source1912x1009: the first pin changes top1009 to0, without a size change.
+  const below = { x: 0, y: 1009, top: 1009, bottom: 2018, left: 0, right: 1912, width: 1912, height: 1009 };
+  const pinned = { ...below, y: 0, top: 0, bottom: 1009 };
+  const create = () => {
+    let scratch = 256;
+    const captures: number[] = [];
+    const lifecycle = createStoryEnvironmentLifecycle(below, () => captures.push(scratch), () => { scratch = 512; });
+    return { lifecycle, captures };
+  };
+  // Foreground assign AND reload: the child is ready before the pin measure.
+  const foreground = create();
+  foreground.lifecycle.activate(below); foreground.lifecycle.measure(pinned);
+  expect(foreground.captures).toEqual([512]);
+  // Browser DOMRect coordinates are prototype accessors, not own spread keys.
+  const nativeRect = Object.create(Object.fromEntries(Object.entries(pinned).map(([key, value]) => [key, value]))) as typeof pinned;
+  expect(Object.keys(nativeRect)).toHaveLength(0);
+  expect(foreground.lifecycle.measure(nativeRect)).toBe(false);
+  expect(foreground.lifecycle.measure(pinned)).toBe(false);
+  expect(foreground.captures).toEqual([512]);
+  // Hidden entry tail: the queued position measure precedes the child commit.
+  const hiddenTail = create();
+  hiddenTail.lifecycle.activate(pinned);
+  expect(hiddenTail.captures).toEqual([256]); expect(hiddenTail.lifecycle.active).toBe(true);
+  hiddenTail.lifecycle.activate(pinned);
+  expect(hiddenTail.captures).toEqual([256]);
+  const narrow = { ...pinned, width: 1910, right: 1910 };
+  hiddenTail.lifecycle.measure(narrow); hiddenTail.lifecycle.measure(pinned);
+  expect(hiddenTail.captures).toEqual([256, 512, 512]);
+  hiddenTail.lifecycle.measure(below); hiddenTail.lifecycle.measure(pinned);
+  expect(hiddenTail.captures).toEqual([256, 512, 512, 512, 512]);
+  hiddenTail.lifecycle.dispose();
+  expect(hiddenTail.lifecycle.measure(below)).toBe(false);
+  expect(hiddenTail.captures).toHaveLength(5);
+  const remount = create(); remount.lifecycle.measure(pinned); remount.lifecycle.activate(pinned);
+  expect(remount.captures).toEqual([256]);
 });
 
 test("camera refresh preserves source future-start history without changing authored sampling", () => {

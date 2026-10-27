@@ -4,6 +4,8 @@ import { createGlasses } from "./story-glasses";
 import { createSculptures } from "./story-logo";
 import { createStoryPointer } from "./story-pointer";
 import { createStoryCameraHistory } from "./story-camera-history";
+import { createStoryEnvironmentLifecycle } from "./story-environment-lifecycle";
+import { uiStore } from "@/store/uiStore";
 import { sampleStoryScore, type StoryFrame } from "./story-score";
 import { createSpatialType } from "./story-type";
 import type { SceneInteraction } from "./story-environment.animate";
@@ -64,6 +66,10 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   let glasses: ReturnType<typeof createGlasses> | undefined;
   let sculptures: ReturnType<typeof createSculptures> | undefined;
   let typography: Awaited<ReturnType<typeof createSpatialType>> | undefined;
+  let environmentLifecycle: ReturnType<typeof createStoryEnvironmentLifecycle> | undefined;
+  let environmentMeasureTimer = 0, studioIdle = 0;
+  let entryComplete = uiStore.getState().entryPhase === "complete";
+  const bounds = () => host.getBoundingClientRect();
   const stopFrame = () => { if (frameId) cancelAnimationFrame(frameId); frameId = 0; lastRender = 0; };
   const isActive = () => !disposed && !lost && visible && !document.hidden && !menuOpen && frame.time < 306;
   const fail = (error?: unknown) => {
@@ -90,6 +96,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     const dt = lastRender ? Math.min((now - lastRender) / 1000, 0.05) : 1 / 60;
     elapsed += dt; lastRender = now;
     const score = currentScore();
+    if (!staticMode && score.time >= 98) activateStudio();
     const pointerMoving = pointer.advance(dt, score.time, score.emergence);
     const glassMoving = glasses.update(score, pointer, width / height, elapsed, dt);
     const logoMoving = sculptures?.update(score, pointer, dt) ?? false;
@@ -115,11 +122,11 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   function measure() {
     width = Math.max(1, host.clientWidth || stage.clientWidth);
     height = Math.max(1, host.clientHeight || stage.clientHeight);
-    if (sceneReady) environments?.measure(width, height);
+    const rect = stage.getBoundingClientRect(); visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
+    if (sceneReady && !document.hidden && !menuOpen && visible) environmentLifecycle?.measure(bounds());
     renderer.setPixelRatio(Math.min(Math.max(1, devicePixelRatio), width < 701 ? 1.5 : 2));
     renderer.setSize(width, height, false);
     camera.aspect = width / height; camera.updateProjectionMatrix();
-    const rect = stage.getBoundingClientRect(); visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
     pointer.measure(); sculptures?.resize(width / height); typography?.resize(width, height);
     canvas.dataset.dpr = String(renderer.getPixelRatio());
     requestRender();
@@ -150,6 +157,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   const visibility = () => {
     if (document.hidden) { pointer.setActive(false); stopFrame(); }
     else {
+      measureEnvironment(); scheduleStudio();
       pointer.setActive(!staticMode && visible && !menuOpen);
       if (sceneReady && !ready) render(performance.now(), true);
       requestRender();
@@ -166,7 +174,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   const menu = new MutationObserver(() => {
     menuOpen = document.documentElement.dataset.menuOpen === "true";
     pointer.setActive(!staticMode && visible && !document.hidden && !menuOpen);
-    if (menuOpen) stopFrame(); else requestRender();
+    if (menuOpen) stopFrame(); else { measureEnvironment(); scheduleStudio(); requestRender(); }
   });
   menu.observe(document.documentElement, { attributes: true, attributeFilter: ["data-menu-open"] });
   let cameraRefreshTimer = 0;
@@ -175,6 +183,31 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     cameraRefreshTimer = window.setTimeout(() => { cameraRefreshTimer = 0; if (!staticMode && !disposed) cameraHistory.refresh(); }, 200);
   };
   window.addEventListener("resize", cameraRefresh, { passive: true });
+  function measureEnvironment() {
+    clearTimeout(environmentMeasureTimer); environmentMeasureTimer = 0;
+    if (!sceneReady || disposed || lost || document.hidden || menuOpen || !visible || staticMode) return;
+    if (environmentLifecycle?.measure(bounds())) requestRender();
+  }
+  const scrollMeasure = () => {
+    if (staticMode) return;
+    clearTimeout(environmentMeasureTimer);
+    if (!document.hidden && !menuOpen) environmentMeasureTimer = window.setTimeout(measureEnvironment, 50);
+  };
+  function activateStudio() {
+    if (staticMode || !sceneReady || !environmentLifecycle || disposed || lost || document.hidden || menuOpen) return;
+    clearTimeout(environmentMeasureTimer); environmentMeasureTimer = 0;
+    try { environmentLifecycle.activate(bounds()); }
+    catch (error) { fail(error); }
+  }
+  function scheduleStudio() {
+    if (staticMode || !entryComplete || studioIdle || environmentLifecycle?.active || document.hidden || menuOpen || disposed) return;
+    const run = () => { studioIdle = 0; activateStudio(); };
+    studioIdle = typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(run, { timeout: 1200 }) : window.setTimeout(run, 32);
+  }
+  const onEntry = () => { entryComplete = true; scheduleStudio(); };
+  window.addEventListener("identity-entry-complete", onEntry);
+  window.addEventListener("scroll", scrollMeasure, { passive: true, capture: true });
   stage.addEventListener("journey-frame", onFrame);
   document.addEventListener("visibilitychange", visibility);
   canvas.addEventListener("webglcontextlost", contextLost);
@@ -182,6 +215,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
 
   const disposeVisuals = () => {
     sceneReady = false;
+    environmentLifecycle?.dispose(); environmentLifecycle = undefined;
     typography?.dispose(); typography = undefined;
     sculptures?.dispose(); sculptures = undefined;
     glasses?.dispose(); glasses = undefined;
@@ -204,11 +238,21 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     if (rejected?.status === "rejected") { disposeVisuals(); fail(rejected.reason); return; }
     try {
       stage.dataset.storyBoot = "environments";
-      const studio = createStoryEnvironments(renderer, !staticMode, width, height);
+      const studio = createStoryEnvironments(renderer, !staticMode);
       environments = studio;
+      environmentLifecycle = createStoryEnvironmentLifecycle(bounds(), () => studio.refresh(), () => {
+        if (!sculptures || !studio.sculpture) return;
+        sculptures.setEnvironment(studio.sculpture.texture);
+        // Only these physical materials changed. Text was already compiled by
+        // boot; keep its derived SDF programs out of this environment commit.
+        for (const object of sculptures.objects) renderer.compile(object, camera, scene);
+      });
       glasses = createGlasses(models[0], scene, camera, studio.glasses.texture, width);
       if (!staticMode) {
         sculptures = createSculptures(models[1], scene, studio.sculpture!.texture, width / height, document.documentElement.lang === "ar");
+        // Source mounts this private studio after identity entry. Prewarm its
+        // model/type programs without converting its 512px environment yet.
+        sculptures.setEnvironment(null);
         stage.dataset.storyBoot = "typography";
         const type = await createSpatialType(stage, scene, sculptures.root, camera, width, height, requestRender);
         if (disposed) { type.dispose(); return; }
@@ -237,6 +281,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
       sceneReady = true; measure();
       stage.dataset.storyBoot = "warm";
       render(performance.now(), true);
+      scheduleStudio();
       requestRender();
     } catch (error) { disposeVisuals(); fail(error); }
   })();
@@ -244,6 +289,13 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   return () => {
     disposed = true; stopFrame(); intersection.disconnect(); resize.disconnect(); menu.disconnect();
     clearTimeout(cameraRefreshTimer); window.removeEventListener("resize", cameraRefresh);
+    clearTimeout(environmentMeasureTimer);
+    if (studioIdle) {
+      if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(studioIdle);
+      else window.clearTimeout(studioIdle);
+    }
+    window.removeEventListener("identity-entry-complete", onEntry);
+    window.removeEventListener("scroll", scrollMeasure, true);
     stage.removeEventListener("journey-frame", onFrame); document.removeEventListener("visibilitychange", visibility);
     canvas.removeEventListener("webglcontextlost", contextLost);
     pointer.dispose(); disposeVisuals(); renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
