@@ -41,11 +41,22 @@ intentional source cadence; hidden/offscreen/menu states stop all scheduled work
 publishers using the explicit window event documented in the scene contract.
 
 The reflection studios retain raw 256px/512px cubes on the renderer's native
-shared r180 CubeUV cache. Real size changes recapture them; same-size measures
-do not. The softbox `DataTexture` must stay explicitly **sRGB**, matching source
+shared r180 CubeUV cache. `story-environment-lifecycle.ts` compares all eight
+canvas DOMRect coordinates, including position-only pin changes. Identical
+bounds do not recapture. The 512px cache activates after entry readiness, processing
+an earlier pending measure first. Thus a hidden entry tail can retain sharp
+reflections while a foreground fresh assignment or reload becomes broad; no
+navigation-type condition is used. The 50ms scroll measure and idle activation
+are owned/cancelled separately from the 200ms camera-history refresh.
+The softbox `DataTexture` must stay explicitly **sRGB**, matching source
 R3F's automatic material-map conversion. Linear decoding and independent PMREM
 generators were the two causes of R4-01. Lens constants remain unchanged.
-The scene contract records exact cold/refreshed GPU fields and optical crops.
+The scene contract records exact sampled GPU fields and optical crops, the R6
+event-order traces, and remaining validation boundaries. Current focused checks
+pass 8 tests/420 assertions. The dev missing-C symptom at CLARITY 174 remains
+OPEN even after motion remount; atlas equality does not certify its text. Root
+owns a fresh production/R7 check and a queued guard for the already-active studio
+after commit d4b4fe7. No implementation changes followed the scene freeze.
 
 Original assets are local at `/assets/models/` and `/assets/textures/`:
 

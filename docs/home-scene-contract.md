@@ -210,9 +210,10 @@ target retains the 512px scratch layout. Separate one-shot PMREM generators
 produced a different visible field despite identical model/material constants.
 The owned controller now uses the native shared cache, with a finite clean
 256px boot refresh before the sculpture cache initializes. It preserves the
-source transparent-transmission clear state during compilation. Both raw cubes
-recapture only when measured stage width or height actually changes. No-op
-measurements, idle rendering and scroll frames do not recapture them.
+source transparent-transmission clear state during compilation. The later R6
+investigation below corrected the capture trigger from width/height alone to
+the full measured canvas bounds, and delayed private-studio cache activation
+until entry readiness. Identical bounds and idle rendering do not recapture.
 
 Studio cards, raw cube targets and their texture maps are owned per mount and
 explicitly disposed. Model cleanup excludes those externally owned environment
@@ -224,7 +225,7 @@ Measured using only the loaned main-window source5/local11 at **1912x1009/DPR1**
 
 | Geometry history | Source/local red Float32-bit FNV-1a | Source/local mean red |
 | --- | --- | --- |
-| Cold HOME, before geometry change | 1985076677 / 1985076677 | .2260496046918282 / .2260496046918282 |
+| Sampled sharp state, before explicit geometry change | 1985076677 / 1985076677 | .2260496046918282 / .2260496046918282 |
 | Same-size window resize | unchanged | unchanged |
 | Canvas width 1912→1910→1912 | 1639153093 / 1639153093 | .1720630727537961 / .1720630727537961 |
 | Canvas height 1009→1007→1009 | 1639153093 / 1639153093 | .1720630727537961 / .1720630727537961 |
@@ -233,8 +234,12 @@ Those hashes describe the GPU atlas on this driver, including unused texels;
 they are diagnostic fixtures, not cross-GPU pixel guarantees. Source raw/cached
 versions were 6/6 cold, 10/10 after width, 12/12 after height; own versions were
 2/2, 4/4 and 6/6. Source performs extra equivalent captures during React layout;
-the resulting fields match. Both cold sharp-card and refreshed broad-charcoal
-states were checked, rather than forcing the latter at every boot.
+the resulting fields match. These are sampled cache states, not proof that all
+fresh navigation or reload lifecycles choose the sharp state. The old evidence
+does not contain a complete document-start recapture trace. R6 supplied the
+missing controlled lifecycle check, described separately below. Earlier browser
+resize work used Vaelix's emulation-first action; it was not verified as an
+OS-native resize.
 
 After the width cycle, settled score-40 crop mean RGB source/local was
 19.6297/19.5793 at (30,300)-(160,440), 24.1940/24.3841 at
@@ -256,20 +261,114 @@ under `/tmp/gazzar-scene-pass3/evidence.json` and `camera-evidence.json`.
 The quiet/motion round trip kept one ready static glasses canvas without a
 512px studio, then created a fresh motion renderer/history. Normal forward
 scrub, reverse, future-start refresh, restored-frame scalar fixtures and cleanup
-are covered by the focused tests. A separate **OPEN root flow check** remains:
+are covered by the focused tests. The pass-3 **root flow observation** was:
 hard reload from y5263 restarted source entry at 0 while local restored score40.
 Those were unlike boot histories and were not graded as matching camera images.
-The next independent review must control URL/session/entry completion to assess
-that route/restore behavior; this scene pass does not change root navigation.
+The parent subsequently fixed ordinary reload entry reset; independent R6
+repeated it successfully in frozen production d8509fc. This scene pass does not
+change root navigation.
+
+## R6-01 bounds and child-readiness correction
+
+R6 established a separate visible failure: completed score 40 → ordinary reload →
+trusted QUIET → score 40 gave source broad reflections while production d8509fc kept
+the sharp field (primary crop MAE 5.4907, p99=30). No reviewer size change occurred
+inside that source document. Material constants were not the remaining cause.
+
+The cached public Drei Environment has a layout effect depending on its
+`children` array. Source rebuilds that array when its scene component renders.
+R3F's canvas measurement compares x/y/top/bottom/left/right/width/height, listens
+to scroll with a 50ms debounce, and propagates top/left into its store. The first
+pin changes canvas bounds from (0,1009,1912,1009) to (0,0,1912,1009). That position
+change alone recaptures the private 512px cube then the glasses 256px cube. This was
+observed without requesting any additional draws or conversions.
+
+The order relative to the first 512px PMREM conversion determines the field.
+Foreground fresh assignment and foreground reload both produced broad fields.
+A controlled fresh assignment → trusted QUIET → immediate switch to the other
+existing tab for 4s → reactivate and seek score 40 produced the sharp field, including
+after entry and sculpture readiness finished. The trace explains both:
+
+| Source history | Entry complete, ms | First 512px conversion, ms | Pin scroll, ms | Glasses recapture, ms | Field hash |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Foreground assignment | 17926.3 | 18343.1 | 19528.5 | 19598.9 | 1639153093 |
+| Foreground reload from 40 | 12145.4 | 12560.1 | 13348.9 | 13426.0 | 1639153093 |
+| Hidden entry tail | 15818.3 | 16316.7 | 15806.0 | 15838.4 | 1985076677 |
+
+Times are document-relative and describe order, not animation-duration targets.
+An entirely unprobed foreground assignment also showed broad reflections. These
+results reconcile the different observed states without a navigation-type
+condition or an unconditional mixed-resolution refresh.
+
+`story-environment-lifecycle.ts` owns the small numeric bounds/order adapter.
+It snapshots all eight coordinates explicitly because DOMRect exposes them as
+prototype accessors. The renderer keeps the finite glasses warm draw; models,
+type and programs may prewarm, while conversion of the 512px studio waits for the
+existing `identity-entry-complete` event and one idle callback. Initial
+`uiStore.entryPhase` covers late mounts/remounts. A pending bounds measurement is
+processed before that child-ready commit; a direct sculpture frame activates
+the studio before drawing. Only physical sculpture materials are compiled by
+that commit. No hero or journey event changes are required. Static mode omits
+the 512px studio. Hidden/menu state defers activation and capture; cleanup removes
+the scroll/entry listeners and cancels the 50ms timer/idle callback. The separate
+200ms camera-history refresh rule is unchanged.
+
+At actual 1912×1009/DPR1, source/local glasses fields matched exactly: sharp
+hash 1985076677 / mean .2260496046918282, broad hash 1639153093 /
+mean .1720630727537961. Identical-size resize preserved the sharp state; actual
+canvas width 1912→1910→1912 changed it to broad. The 512px field remained exactly
+hash 2799271365 / mean .010923630587058142 through 128/174. These remain
+driver-specific diagnostic hashes, not cross-GPU guarantees.
+
+Matched foreground reload optical crops (200,180)–(1500,800):
+
+| Score | MAE, 8-bit RGB levels | p99 absolute error |
+| --- | ---: | ---: |
+| 40 | .4909 | 7 |
+| 60 | .3251 | 2 |
+| 67 | .0439 | 1 |
+| 71 | .0468 | 1 |
+| Reverse 40 after 174 | .4061 | 5 |
+
+The settled hidden-entry-tail score 40 crop MAE was .9351/p99=12, with exact sharp atlas
+equality. Static mode reached ready with camera [0,.12,9.8], time 0 and one object
+canvas; enabling motion created a new ready renderer. This is bounded lifecycle
+verification, not acceptance of every text/pointer/entry frame.
+
+**OPEN:** cold dev 3000 captures and a subsequent motion remount omitted the C
+in CLARITY at 174. The complete source title was visible. The reload 174 crop
+MAE was 3.9769/p99=68, and remount 174 MAE 4.0414/p99=68. This is a real remaining
+rendered-text symptom; matching sculpture atlases does not close it, and it is
+not dismissed as HMR. R6's frozen production title was complete. Root owns the
+fresh production check and R7 control; no SDF/type implementation was changed
+in this focused material-lifecycle pass.
+
+**Queued root guard:** after scene commit d4b4fe7, offline review found that an
+already-active `activateStudio()` can clear a pending bounds timer before its
+lifecycle returns early. Root will add the early active guard before that clear,
+then check/rebuild after navigation's browser slot. The scene child did not edit
+implementation after the freeze.
+
+Evidence and original PNG paths are indexed under `/tmp/gazzar-scene-r6/`:
+`source-final.json`, `local-final.json`, `final-metrics.json`,
+`source-fresh-hidden-entry-tail.json`, `local-hidden-tail-final.json` and
+`source-final-controls.json`. Source method wrappers were restored, the research
+module cleared by a clean reload, and the temporary local canvas hook removed
+from implementation and fresh documents. `release.json` records EN/y0,
+1912×1009/DPR1, entry complete, menus closed and audio QUIET. Source5/local11 were
+explicitly released to navigation with no pending calls. No later browser calls
+belong to this scene pass.
 
 ## Verification and remaining scope
 
-Verified on 2026-10-27 using owned Vaelix tabs, at 1400x950 CSS pixels / DPR 1:
+Verified on 2026-10-27 using the explicitly loaned Vaelix pair. Earlier pass-2
+checks used 1400x950/DPR1; R4/R6 lifecycle measurements above used 1912x1009/DPR1.
 
 - Original asset SHA-256 values match the independent home audit.
 - Scoped ESLint, `tsc --noEmit --incremental false`, and
-  `bun test tests/story-scene.test.ts` pass (7 tests, 413 assertions). Full
-  build/typegen and production SSR auditing remain parent-owned, as requested.
+  `bun test tests/story-scene.test.ts` pass (8 tests, 420 assertions). The
+  parent also reports its full check/build/audit pass before the queued guard.
+  Full build/typegen and production SSR auditing remain parent-owned, as requested.
 - Compared 205,800 route/sample values against the actual public source at
   aspects .42/.88/1.47/1.85, both directions, all three pieces and score steps
   of .25 through 306. Maximum numeric difference: 4.44e-16.
@@ -311,10 +410,10 @@ Live source fixture values (stage sizes, not necessarily viewport sizes):
 | 844x600 | EN | .8749433619431227 | .7087184771846298 | 6.562339747950105 |
 | 844x600 | AR | .149323879595268 | .7474329737969402 | 4.664220211789373 |
 
-No known open scene defect remains from the focused pass-2 cases and R4-01
-material/camera checks above. This is
-not full-home pixel-parity acceptance: the parent still owns the fresh production
-visual adversary. Physical coarse-touch hardware, other GPU/browser combinations
+R6-01's bounds/cache ordering correction is implemented and measured in dev;
+fresh production acceptance remains parent/R7-owned. Missing C in CLARITY and
+the queued active guard above remain explicit open handoff items. Physical
+coarse-touch hardware, other GPU/browser combinations
 and a comprehensive DPR/breakpoint screenshot sweep remain unverified coverage.
 The previous raster-text, missing idle drift, missing shell-pressure bridge and
 settled/cold work-origin differences are closed, rather than deferred.
