@@ -115,3 +115,27 @@ inside that tick, and resumes its standalone scheduler on release. Pending
 ownership, not a second animation clock, prevents competing submissions. The
 intermediate result remains explicitly rejected; new native phase/count and
 whole-route cadence/appearance checks are pending for the follow-up build.
+
+## R16–R18: remaining cadence and native profiling boundary
+
+R16 verifies the corrected current-frame background handoff and zero duplicate
+draw bins. All four new complete-route EN/AR wide/narrow comparisons were
+reviewed at4fps (1,368 paired samples). No additional repeatable geometry/asset
+finding was established, but early-story/footer callback gaps still repeat in
+two unrecorded pairs. Full parity remains unaccepted. The independent MENU
+clock/tail finding is corrected in b711a74 and awaits its bounded live review.
+
+R17 records217–223ms late footer input-timer receipts while observation RAFs
+continue every16–18ms. Those receipts are not217–223ms continuous main-thread
+blocks. Geometry max1ms and captured callback max7ms do not attribute the
+remaining shorter frame gaps. Native GPU timer queries are unavailable. Do not
+change easing, assets or quality from this evidence.
+
+R18 primary-source research finds no supported native-profiler start/capture
+operation in Vawzen or public Firefox Profiler WebChannel. Manual native capture
+opens a viewer tab and can collect beyond the assigned tabs; active-tab view is
+not a collection boundary. Root requested a user decision about that scope and
+one temporary viewer tab, with local saving only. No profiler capture, preference
+change, new browser surface or external profile upload has been authorized or
+performed by this record. See `home-native-profiler-plan-r18.md`. Existing menu
+QA proceeds independently.
