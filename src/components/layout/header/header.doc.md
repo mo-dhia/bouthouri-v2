@@ -128,10 +128,16 @@ still prevent native focus scrolling. The reading viewport therefore owns the
 actual control outside the fixed utilities, preserves its measured row geometry
 and100svh clip, and returns it to its original home on motion/cleanup. It stays
 focusable offscreen as on source. Source default focus from y1892 moved native
-scroll to793.85; production verification of the correction remains required.
+scroll to793.85; R12 independently confirmed the same default-focus behavior
+at wide and narrow sizes in both locales.
 At native348/696/1044 source raw progress is.25/.5/.75 and the hero utility row
 has already exited; the former coarse0/1 fallback incorrectly kept it onscreen.
 Mode, resize and OS-preference changes now replay this native pose, and stale
 hero cleanup events cannot overwrite it. Motion continues using the published
 full-precision hero pose. These additional reading corrections require the fresh
-production review alongside the R11 footer fixes.
+production review alongside the R11 footer fixes. R12 accepted the reading
+hero and both footer corrections, but exposed an Arabic placement regression:
+moving MENU outside the LTR utilities made its logical end resolve to the left.
+The reading frame now explicitly keeps that same LTR placement coordinate
+system. The menu button retains its existing Arabic font and ink shaping.
+Fresh paired wide/narrow review remains required for this R12 correction.
