@@ -34,9 +34,19 @@ and prevents inactive input from enabling the word morph. Background3d1271a
 adds the source reading-travel reset and late-boot current travel. Header3ab611b
 uses native reading progress and moves its side MENU with the chapter instead
 of leaving it fixed. The integrated check passes128 tests/4,101 assertions;
-the production build and both-locale SSR/14-asset audit pass. A further source
-investigation is checking the hero body's reading-mode lifecycle before the
-fresh visual review. These implementation checks do not close visual findings.
+the production build and both-locale SSR/14-asset audit pass.
+
+The source investigation confirmed that reading still publishes raw hero
+progress and samples the body on scroll/measure/visibility wakes. Its hidden
+branch retains the last visible body opacity. Hero218d9ca now implements this
+lightweight path and its cleanup without a RAF or heavy runtime. A code adversary
+also found that merely translating MENU inside the fixed header would break
+native focus scrolling; c4c36bf gives the actual control a document-positioned
+reading viewport. Root production/source samples match the body poses at
+native0/348/696/1044/1892 and default MENU focus scroll1892→793.8499756.
+The integrated check now passes139 tests/4,171 assertions, build and SSR.
+Fresh R12 owns the existing Vawzen pair for the moving experience and reading
+controls. These implementation checks do not close visual findings.
 
 Vawzen now drives the existing Firefox/Zen source/local pair (tabs37/36).
 Recordings are in `/tmp/gazzar-continuous-r10/` and
