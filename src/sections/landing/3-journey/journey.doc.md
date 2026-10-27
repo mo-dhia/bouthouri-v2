@@ -28,6 +28,15 @@ frames do not stretch the animation. Scores at270 and later synchronize directly
 Visibility pauses preserve elapsed scrub time, while restored positions snap
 both the target and displayed score.
 
+Continuous-input correction: the presentation clock advances the pending scrub
+to the input event's timestamp before changing its destination. It does not
+restart from the previous RAF's stale value. The source's cached GSAP3.15.0
+render-before-resetTo sequence supplies forward/reverse fixtures with inputs
+between frames. A monotonic clock prevents an earlier RAF timestamp from
+rewinding a newer input transaction. Geometry refresh synchronously measures
+and snaps the native position, matching the reference's onRefresh transaction.
+Native wheel scrolling is retained; no Lenis smoother precedes this scrub.
+
 `work-paths.js` and `work-renderer.js` contain the original project mark geometry,
 measured pen windows, horizontal composition and pointer/focus behavior ported
 to ordinary modules. `systems-geometry.js` contains cubic path/arc-length math;
@@ -78,7 +87,7 @@ then snap target/displayed score through the shared render path. This mirrors
 the source's native-position behavior rather than seeking the previous semantic
 chapter when toggling reading. A simulated scene/context failure latches the
 separate `homeSceneFailed` state, removes the pin, exposes the server reading
-layout/poster and suppresses optional motion/Lenis without changing user audio
+layout/poster and suppresses optional motion without changing user audio
 or the explicit quiet preference. The scene gate clears that latch on HOME
 unmount, allowing a new route mount to retry.
 

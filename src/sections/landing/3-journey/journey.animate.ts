@@ -21,7 +21,7 @@ import {
 } from "@/lib/navigation/home-navigation";
 import { readingNavigation } from "./reading-navigation";
 import { getSettledStoryOrigin } from "../2-story/story-origin";
-import { journeyScrub } from "./journey-scrub";
+import { createJourneyScrubClock } from "./journey-scrub";
 
 const beatWindows = [
   [14, 19, 25, 30],
@@ -222,13 +222,8 @@ export function mountJourney(root: HTMLElement) {
       origin.current.changed?.();
     };
     stage.addEventListener("story-origin", onOrigin);
-    let target = 0,
-      displayed = 0,
-      frameId: number | null = null,
-      scrubFrom = 0,
-      scrubStart = 0,
-      disposed = false;
-    let pausedAt: number | null = null;
+    const clock = createJourneyScrubClock();
+    let frameId: number | null = null, disposed = false;
     const render = (progress: number) => {
       const frame = frameFromProgress(
         progress,
@@ -285,15 +280,11 @@ export function mountJourney(root: HTMLElement) {
         new CustomEvent<JourneyFrame>("journey-frame", { detail: frame }),
       );
     };
-    const tick = (now: number) => {
+    const tick = () => {
       frameId = null;
       if (disposed || document.hidden) return;
-      const immediate = frameFromProgress(target).time >= 270;
-      displayed = immediate
-        ? target
-        : journeyScrub(scrubFrom, target, now - scrubStart);
-      render(displayed);
-      if (displayed !== target) frameId = requestAnimationFrame(tick);
+      render(clock.sample(performance.now()));
+      if (clock.value !== clock.target) frameId = requestAnimationFrame(tick);
     };
     const request = () => {
       if (frameId === null && !document.hidden)
@@ -302,12 +293,11 @@ export function mountJourney(root: HTMLElement) {
     const pauseOrResume = () => {
       const now = performance.now();
       if (document.hidden) {
-        pausedAt ??= now;
+        clock.pause(now);
         if (frameId !== null) cancelAnimationFrame(frameId);
         frameId = null;
       } else {
-        if (pausedAt !== null) scrubStart += now - pausedAt;
-        pausedAt = null;
+        clock.resume(now);
         request();
       }
     };
@@ -315,10 +305,9 @@ export function mountJourney(root: HTMLElement) {
     const snap = (progress: number) => {
       if (frameId !== null) cancelAnimationFrame(frameId);
       frameId = null;
-      target = displayed = scrubFrom = progress;
-      scrubStart = performance.now();
-      pausedAt = document.hidden ? scrubStart : null;
-      render(displayed);
+      clock.snap(progress, performance.now());
+      if (document.hidden) clock.pause(performance.now());
+      render(clock.value);
     };
     settleModePosition = () => {
       const start = chapter.getBoundingClientRect().top + scrollY;
@@ -345,12 +334,7 @@ export function mountJourney(root: HTMLElement) {
         endPoint: [0, 0, start + distance],
         callback: ({ v }) => {
           const next = v[0] ?? 0;
-          if (next !== target) {
-            scrubFrom = displayed;
-            target = next;
-            scrubStart = performance.now();
-            if (pausedAt !== null) pausedAt = scrubStart;
-          }
+          clock.retarget(next, performance.now(), frameFromProgress(next).time >= 270);
           request();
         },
       });
@@ -360,6 +344,7 @@ export function mountJourney(root: HTMLElement) {
       }
       work.resize();
       systems.resize();
+      snap(distance > 0 ? Math.max(0, Math.min(1, (scrollY - start) / distance)) : 0);
       kickScroll();
       window.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT));
     };
@@ -391,7 +376,7 @@ export function mountJourney(root: HTMLElement) {
         ?.focus({ preventScroll: true });
     };
     const move = () => {
-      const atEnd = frameFromProgress(target).time >= 710;
+      const atEnd = frameFromProgress(clock.target).time >= 710;
       const hero = document.querySelector<HTMLElement>("#identity");
       const y = atEnd
         ? (hero?.offsetHeight ?? innerHeight) * (1 + (innerWidth <= 700 ? 5.8 : 6.8) * 22 / 100)
@@ -410,7 +395,6 @@ export function mountJourney(root: HTMLElement) {
     void document.fonts.ready.then(() => {
       if (!disposed) measure();
     });
-    snap(target);
     finishModeChange();
     disposeMotion = () => {
       disposed = true;
