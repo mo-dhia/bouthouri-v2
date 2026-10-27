@@ -41,6 +41,31 @@ new history entry still applies saved pixels. Root validation passes206 tests
 SSR/14-asset checks. A new independent code review and Vawzen production review
 are active; this snapshot does not claim their acceptance.
 
+R22's fresh code review found no new P1/P2. Its production review passes two
+clean unhooked local repetitions of the fresh-AR-reload Back/Forward failure,
+the source control and the requested generic-return, reading-locale, retained
+resize/mode, no-op and ordinary reload cases. All189 stale local observer
+samples receive current metadata0–4ms later and before the next observer
+callback. That locates callback ordering, without certifying presentation time.
+See `home-owner-production-review-r22.md`.
+
+R23 then recorded the current6b05b8c build through the entire forward/footer
+stop/reverse native-wheel journey. The user-reviewable paired MP4 is
+`/tmp/gazzar-native-moving-r23/comparison-en-wide-native-60.mp4`, source left and
+local right,65.7167s/3200×912. Both receive734 trusted native XTest wheels with
+zero prevented events. Review of the whole route and nine contiguous windows
+establishes no additional actionable repeatable P1/P2. Requested60fps screen
+capture has variable gaps; the60fps delivery copy selects/holds original frames
+and does not certify sustained60 distinct presented frames or a stutter cure.
+All originals, timestamps and qualifications are retained. No further app
+change is justified by that review alone; full identical moving acceptance is
+left for user review of the concrete current comparison. See
+`home-native-moving-review-r23.md`.
+
+All R23 capture/input/encoding/extraction processes have exited. The original
+Vawzen pair is restored to complete EN0,2544×1392/DPR1, motion on, sound off and
+menus closed; local is selected. No probes or task-created surfaces remain.
+
 R21 offline smoothness triage finds that the recurring213–217ms maxima are
 late timer-driven input issuance while13 observer callbacks continue, rather
 than one continuous scene block. Native story metadata often corresponds to
