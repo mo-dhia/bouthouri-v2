@@ -143,12 +143,12 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
     controller, module: loaded, stage, work, owner, fields, pointers, surfaces, backgroundDraws, dimensions, rafs, timers, errors,
     get stats() { return { creations, renders, rendererDisposals, contextLosses }; },
     get canvas() { return owner.children[0].children[0]; },
-    step(dt = 1 / 60, after?: () => void) {
+    step(dt = 1 / 60, after?: () => void, rafOffsetMs = 0) {
       now += dt * 1000;
       const pending = [...rafs];
       for (const [id, callback] of pending) {
         if (!rafs.has(id)) continue;
-        rafs.delete(id); callback(now);
+        rafs.delete(id); callback(now + rafOffsetMs);
       }
       after?.();
     },
@@ -240,6 +240,24 @@ test("recurring journey ticks submit the current pose once, preempt old settling
   owner.dispose(); expect(h.rafs.size).toBe(1); h.step();
   expect(h.backgroundDraws.at(-1)!.stage).toBeCloseTo(score.sampleStoryScore({ time: 174, openingTime: 26, progress: 0 }).environment, 14);
   h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
+});
+
+test("handoff from immediate journey draws to an older RAF stamp cannot move material time backward", () => {
+  const h = environmentHarness(); h.step();
+  const owner = journeyRender.createJourneyRenderOwner(h.stage as unknown as HTMLElement);
+  owner.setPending(true);
+  owner.render(() => h.frame(151.2819));
+  const time = h.backgroundDraws.at(-1)!.time;
+  owner.setPending(false); h.menu(true);
+  // Actual callback receipt advances 1ms, but its refresh stamp is 4ms behind
+  // the previous immediate sample, reproducing R18's mixed-clock ordering.
+  h.step(0.001, undefined, -5);
+  expect(h.backgroundDraws.at(-1)!.time - time).toBeCloseTo(0.001, 12);
+  h.step(1 / 60, undefined, -8);
+  expect(h.backgroundDraws.at(-1)!.time - time).toBeCloseTo(0.001 + 1 / 60, 12);
+  expect(h.fields[0].field.uniforms.uQuiet.value).toBe(1);
+  expect(h.backgroundDraws.every((draw, i, list) => i === 0 || draw.time >= list[i - 1].time)).toBe(true);
+  owner.dispose(); h.controller.dispose();
 });
 
 test("source reduced-prop updates retain material time, pointer, targets and wave/stroke memory", () => {

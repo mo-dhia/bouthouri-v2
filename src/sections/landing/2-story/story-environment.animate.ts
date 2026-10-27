@@ -71,9 +71,12 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   }
   const pointer = createEnvironmentPointer(wake);
   const fail = () => { lost = true; cancel(); host.style.visibility = "hidden"; stage.dataset.storyEnvironment = "failed"; };
-  function render(now: number) {
+  function render() {
     frameId = 0;
     if (!active() || (journeyOwnsRender(stage) && !isJourneyRendering(stage))) return;
+    // RAF's refresh timestamp can precede the previous immediate journey draw's
+    // callback time. Sample one monotonic clock in both ownership paths.
+    const now = Math.max(last, performance.now());
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60); last = now; time += dt * (reduced ? 0.035 : 1);
     if (!reduced && refreshFrame) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = false; }
     // Source resets initialNarrative on reading entry independently of DOM time.
@@ -161,7 +164,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     // The journey parks our idle/settling RAF before requesting its first tick.
     // Submit after its DOM/work publication in that same tick, never before it.
     // Non-RAF restores/measurements still coalesce into our demand scheduler.
-    if (isJourneyRendering(stage)) render(performance.now());
+    if (isJourneyRendering(stage)) render();
     else wake();
   };
   const renderOwnership = () => { if (journeyOwnsRender(stage)) park(); else wake(); };
