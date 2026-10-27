@@ -18,6 +18,9 @@ import {
   getHomeRestoreIntent, prepareHomeFreshEntry, mountHomeNavigation, type HomeNavigationOptions, type HomeRestoreDetail,
 } from "../src/lib/navigation/home-navigation";
 import { frameFromProgress, journeyDistance, progressFromStoryTime } from "../src/sections/landing/3-journey/journey-clock";
+import { readingNavigation } from "../src/sections/landing/3-journey/reading-navigation";
+import { worldProgressFromScroll } from "../src/sections/landing/1-hero/hero-world";
+import { uiStore } from "../src/store/uiStore";
 
 const desktop: HomeGeometry = { start: 850, distance: 24086, heroInput: 100 / 6.8 };
 const mobile: HomeGeometry = { start: 932, distance: 22526, heroInput: 100 / 5.8 };
@@ -334,6 +337,140 @@ function browser(href = "https://local.test/en") {
 }
 
 describe("HOME browser lifecycle", () => {
+  test("reading locale departure saves opening0 before the new HOME resets quiet and restores motion at1009", () => {
+    const b = browser(), previousUI = uiStore.getState();
+    const previousDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
+    const previousScroll = Object.getOwnPropertyDescriptor(globalThis, "scrollY");
+    const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
+    const quiet = () => uiStore.getState().quietMode;
+    const row = (top: number, height: number) => ({ offsetHeight: height, getBoundingClientRect: () => ({
+      top: top - b.runtime.scrollY, bottom: top + height - b.runtime.scrollY, height,
+    }) });
+    const rows = new Map([["#identity", row(0, 1009)], [".glasses-opening", row(1113, 804)], ["#beyond", row(2018, 1000)]]);
+    Object.assign(b.document, { getElementById: (id: string) => rows.get(`#${id}`) ?? null });
+    Object.defineProperty(globalThis, "document", { configurable: true, value: { querySelector: (selector: string) => rows.get(selector) ?? null } });
+    Object.defineProperty(globalThis, "scrollY", { configurable: true, get: () => b.runtime.scrollY });
+    const options = (root: ElementStub) => ({
+      root: Object.assign(root, { hasAttribute: () => !quiet() }) as unknown as HTMLElement,
+      getGeometry: () => quiet() ? null : wide,
+    });
+    try {
+      uiStore.setState({ quietMode: false, homeSceneFailed: false, soundEnabled: false, audioPreference: "quiet", audioState: "muted" });
+      const english = options(b.root), reading = readingNavigation(english.root);
+      b.mount({ ...english, ...reading }); b.settle();
+      uiStore.getState().setQuietMode(true); b.runtime.scrollY = 1009;
+      // The real opening has a104px inset: ordinary reading capture includes
+      // that gap in the hero band, while source locale capture uses its height.
+      expect(reading.getPosition()).toEqual({ section: "hero", progress: 1009 / 1113 });
+      b.document.dispatchEvent({ type: "click", target: new LinkStub("https://local.test/ar"), ...click } as unknown as Event);
+      const raw = b.storage.get(HOME_LOCALE_RETURN_KEY)!;
+      const englishEntry = b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint;
+      expect(JSON.parse(raw).position).toEqual({ section: "opening", progress: 0 });
+      expect(quiet()).toBe(true); // Click must preserve the outgoing reading owner.
+      b.runtime.location = new URL("https://local.test/ar"); b.runtime.history.state = { __NA: true };
+      const arabic = options(new ElementStub()); let changes = 0;
+      b.mount({ ...arabic, ...readingNavigation(arabic.root), onHomeChange: () => {
+        changes++;
+        expect(b.root.dataset.homeNavigation).toBeUndefined(); // Outgoing cleanup ran.
+        expect(getHomeRestoreIntent(b.win)?.kind).toBe("locale");
+        expect(b.storage.get(HOME_LOCALE_RETURN_KEY)).toBe(raw); // Not consumed before geometry.
+        expect(b.details).toHaveLength(0);
+        expect(quiet()).toBe(true);
+        uiStore.getState().setQuietMode(false); // Exact journey integration.
+      } });
+      expect(changes).toBe(1); expect(quiet()).toBe(false);
+      b.settle();
+      expect(b.runtime.scrollY).toBeCloseTo(1009, 8);
+      expect(b.details[0].frame?.time).toBe(0);
+      expect(b.details[0].frame?.openingTime).toBeCloseTo(0, 8);
+      expect(b.details[0].frame?.progress).toBeCloseTo(0, 8);
+      expect(worldProgressFromScroll(b.runtime.scrollY, 1009, false)).toBeCloseTo(0.4789272, 6);
+      expect(b.storage.has(HOME_LOCALE_RETURN_KEY)).toBe(false);
+      expect(JSON.parse(b.storage.get(HOME_RETURN_KEY)!).position).toEqual({ section: "hero", progress: 1 });
+      expect(uiStore.getState().audioPreference).toBe("quiet");
+      expect(uiStore.getState().audioState).toBe("muted");
+      const arabicEntry = b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint;
+      const reset = () => uiStore.getState().setQuietMode(false);
+      b.runtime.location = new URL("https://local.test/en");
+      b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: englishEntry };
+      b.mount({ ...english, ...reading, onHomeChange: reset }); b.settle();
+      expect(b.details.at(-1)?.intent.kind).toBe("home-return");
+      expect(b.details.at(-1)?.intent.position).toEqual({ section: "hero", progress: 1 });
+      expect(b.runtime.scrollY).toBe(1009);
+      expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
+      b.runtime.location = new URL("https://local.test/ar");
+      b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: arabicEntry };
+      b.mount({ ...arabic, ...readingNavigation(arabic.root), onHomeChange: reset }); b.settle();
+      expect(b.details.at(-1)?.intent.kind).toBe("history");
+      expect(b.runtime.scrollY).toBeCloseTo(1009, 8);
+    } finally {
+      uiStore.setState(previousUI);
+      if (previousDocument) Object.defineProperty(globalThis, "document", previousDocument); else Reflect.deleteProperty(globalThis, "document");
+      if (previousScroll) Object.defineProperty(globalThis, "scrollY", previousScroll); else Reflect.deleteProperty(globalThis, "scrollY");
+    }
+  });
+
+  test("reading locale departure follows source hero-height/opening/beyond thresholds without rewriting checkpoints", () => {
+    const b = browser(); b.setGeometry(null);
+    const readingPosition = { section: "work", progress: 0.5 } as const;
+    Object.assign(b.document, { getElementById: (id: string) => id === "identity" ? { offsetHeight: 1009 }
+      : id === "beyond" ? { getBoundingClientRect: () => ({ top: 2018 - b.runtime.scrollY }) } : null });
+    b.mount({ getPosition: () => readingPosition }); b.settle();
+    for (const [y, locale] of [
+      [504.5, { section: "hero", progress: 0.5 }], [1009, { section: "opening", progress: 0 }],
+      [1113, { section: "opening", progress: 0 }], [2018, { section: "philosophy", progress: 0 }],
+      [4000, { section: "philosophy", progress: 0 }],
+    ] as const) {
+      b.runtime.scrollY = y;
+      b.document.dispatchEvent({ type: "click", target: new LinkStub("https://local.test/ar"), ...click } as unknown as Event);
+      expect(JSON.parse(b.storage.get(HOME_LOCALE_RETURN_KEY)!).position).toEqual(locale);
+      expect(JSON.parse(b.storage.get(HOME_RETURN_KEY)!).position).toEqual({ section: "hero", progress: Math.min(1, y / 1009) });
+      expect((b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint).position).toEqual(readingPosition);
+      expect(b.scrolls).toHaveLength(0);
+    }
+  });
+
+  test("HOME motion lifetime preserves early reading choice, same-owner remounts, hashes, queries, BFCache and unrelated UI updates", () => {
+    const b = browser(), previousUI = uiStore.getState(); let changes = 0;
+    const onHomeChange = () => { changes++; uiStore.getState().setQuietMode(false); };
+    try {
+      uiStore.getState().setQuietMode(true); // Chosen before deferred navigation imports.
+      let dispose = b.mount({ onHomeChange }); b.settle();
+      for (const suffix of ["", "#beyond", "?view=reading"]) {
+        dispose(); b.runtime.location = new URL(`https://local.test/en${suffix}`);
+        dispose = b.mount({ onHomeChange }); b.settle();
+        expect(uiStore.getState().quietMode).toBe(true);
+      }
+      uiStore.setState({ homeSceneFailed: true, soundEnabled: true, audioPreference: "sound", audioState: "playing", menuOpen: true });
+      b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.notifyLayout(); b.settle();
+      b.runtime.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true })); b.settle();
+      expect(changes).toBe(0); expect(uiStore.getState().quietMode).toBe(true);
+      dispose();
+      b.mount({ root: new ElementStub() as unknown as HTMLElement, onHomeChange }); b.settle();
+      expect(changes).toBe(1); expect(uiStore.getState().quietMode).toBe(false);
+      expect(uiStore.getState().homeSceneFailed).toBe(true);
+      expect(uiStore.getState().soundEnabled).toBe(true);
+      expect(uiStore.getState().audioPreference).toBe("sound");
+      expect(uiStore.getState().audioState).toBe("playing");
+      expect(uiStore.getState().menuOpen).toBe(true);
+    } finally { uiStore.setState(previousUI); }
+  });
+
+  test("locale reset waits for destination mount, including a reused HOME root; detached stale mounts never claim ownership", () => {
+    const b = browser(); let quiet = true, changes = 0;
+    const onHomeChange = () => { changes++; quiet = false; };
+    const first = b.mount({ onHomeChange }); b.settle();
+    b.runtime.location = new URL("https://local.test/ar");
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(changes).toBe(0); expect(quiet).toBe(true); // Outgoing listener is not a new owner.
+    first(); expect(quiet).toBe(true);
+    const stale = new ElementStub(); stale.isConnected = false;
+    b.mount({ root: stale as unknown as HTMLElement, onHomeChange }); b.settle();
+    expect(changes).toBe(0);
+    b.mount({ onHomeChange }); b.settle();
+    expect(changes).toBe(1); expect(quiet).toBe(false);
+  });
+
   test("first document clears all stale return records, while direct work query and hash remain explicit URL intents", () => {
     for (const type of ["navigate", "reload"] as const) {
       for (const suffix of ["", "?work=wujhat", "#beyond"]) {

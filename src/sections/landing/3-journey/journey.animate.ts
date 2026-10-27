@@ -445,6 +445,7 @@ export function mountJourney(root: HTMLElement) {
   const reading = readingNavigation(root);
   const disposeNavigation = mountHomeNavigation({
     root,
+    onHomeChange: () => uiStore.getState().setQuietMode(false),
     ...reading,
     getGeometry: () => root.hasAttribute("data-enhanced") && pinDistance > 0 ? {
       start: chapter.getBoundingClientRect().top + scrollY,

@@ -32,6 +32,8 @@ export type HomeNavigationOptions = {
   getTarget?: (position: HomePosition) => number | null;
   scrollTo?: (y: number) => void;
   onRestore?: (detail: HomeRestoreDetail) => void;
+  /** New HOME owner/locale only, after outgoing cleanup and destination intent selection. */
+  onHomeChange?: () => void;
   /** Optional explicit router transaction; do not fill this from every checkpoint. */
   historyTarget?: number | null;
   window?: BrowserWindow;
@@ -44,6 +46,7 @@ type RestoreState = {
 };
 const states = new WeakMap<Document, RestoreState>();
 const mounts = new WeakMap<Document, () => void>();
+const homeOwners = new WeakMap<Document, { root: HTMLElement; path: string }>();
 const entryPrepared = new WeakSet<Document>();
 const visitedEntries = new WeakMap<Document, Map<string, string>>();
 const documentBoots = new WeakMap<Document, { fresh: boolean }>();
@@ -349,10 +352,22 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     const current = position();
     if (!current) return;
     save(true, current);
+    // Without the source pin, locale departure uses identity height and beyond,
+    // not the reading adapter's extended section bands (which include gaps).
+    // Preserve checkpoint/within-HOME capture; only this departure is different.
+    let homePosition = current, localePosition = current;
+    if (intent.kind === "locale" && !geometry()) {
+      const height = Math.max(1, doc.getElementById("identity")?.offsetHeight ?? win.innerHeight);
+      const beyond = doc.getElementById("beyond");
+      const beyondTop = (beyond?.getBoundingClientRect().top ?? 0) + win.scrollY;
+      homePosition = { section: "hero", progress: Math.max(0, Math.min(1, win.scrollY / height)) };
+      localePosition = win.scrollY < height ? homePosition
+        : { section: win.scrollY < beyondTop ? "opening" : "philosophy", progress: 0 };
+    }
     const home = homePath(win.location.pathname)!;
-    safeWrite(win, HOME_RETURN_KEY, JSON.stringify({ version: 1, home, created: Date.now(), position: current }));
+    safeWrite(win, HOME_RETURN_KEY, JSON.stringify({ version: 1, home, created: Date.now(), position: homePosition }));
     if (intent.kind === "locale") {
-      safeWrite(win, HOME_LOCALE_RETURN_KEY, JSON.stringify({ version: 1, from: intent.from, to: intent.to, created: Date.now(), position: current }));
+      safeWrite(win, HOME_LOCALE_RETURN_KEY, JSON.stringify({ version: 1, from: intent.from, to: intent.to, created: Date.now(), position: localePosition }));
       safeWrite(win, HOME_HANDOFF_KEY, JSON.stringify({ version: 1, to: intent.to, created: Date.now() }));
     } else if (intent.kind === "project") {
       safeWrite(win, HOME_WORK_RETURN_KEY, JSON.stringify({
@@ -407,7 +422,6 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   if (doc.fonts) void doc.fonts.ready.then(() => { fontsReady = true; wake(); }, () => { fontsReady = true; wake(); });
   claimHistory();
   status(state.intent && !state.applied ? "pending" : "ready");
-  wake();
 
   const cleanup = () => {
     if (disposed) return;
@@ -431,6 +445,18 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     if (mounts.get(doc) === cleanup) mounts.delete(doc);
   };
   mounts.set(doc, cleanup);
+  const owner = journey() ?? root();
+  if (owner?.isConnected) {
+    const previous = homeOwners.get(doc);
+    const next = { root: owner, path: homePath(win.location.pathname)! };
+    // Keep the owner across cleanup: Strict Mode and mode-controller remounts
+    // reuse it. A new connected HOME or locale is a new source HOME lifetime.
+    // Do this here, never on departure/popstate/cleanup: reading capture and
+    // synchronous destination intent selection must precede the mode change.
+    homeOwners.set(doc, next);
+    if (previous && (previous.root !== next.root || previous.path !== next.path)) options.onHomeChange?.();
+  }
+  wake();
   return cleanup;
 }
 
