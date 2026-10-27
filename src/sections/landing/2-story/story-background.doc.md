@@ -24,9 +24,17 @@ The parent source `2gz902oulp4x8.js.pretty:567–577` resets the narrative in it
 `26`. `45adsxrqjjj5i.js:14` defines `initialNarrative` from `initialJourney`;
 environment and surface quiet therefore reset to `0` independently of DOM story
 time. The background selects that reading score even after a late motion frame.
-Motion return reads the current stage clock and rereads it before the first draw
-unless a newer precise `journey-frame` arrived. No score reset clears the field
-or material time.
+`initialJourney` in `0or6--g23od4n.js.pretty:115` also supplies work travel `-1.35`.
+The adjacent reduced `ep(e).update(0)` updates only the concept header; it does
+not replace that travel. Reading therefore selects effective travel `-1.35`
+while retaining `previousTravel`: its first draw applies the source horizontal
+reset impulse, and following unchanged draws contribute zero horizontal force.
+Motion return reads the current stage clock and `.work-world.dataset.travel`,
+rereading both before the first draw unless a newer precise `journey-frame`
+arrived with its associated DOM travel. No score/travel selection clears the
+field or resets material time. Initial background boot also reads current DOM
+travel, so an import that finishes after a work restore does not inject the
+opening's stale negative travel impulse into that scene.
 
 Hero gain/presence consume the displayed `gazzar:hero-world` progress. Late boot
 reads `readHeroWorldPose(#identity)` at full precision, using native geometry only
@@ -56,7 +64,8 @@ material time/rates, retained pulse/stroke coordinates, same-size/same-aspect/DP
 resizes, the exact aspect/mobile allocation keys, mobile grid replacement,
 idle cadence, paused resize/context restore, optional failure and idle/import
 cancellation with the latest mode. Additional regressions cover `174 → reading`
-zero-score selection, current-clock resume and displayed hero clock ownership.
+zero-score selection, current-clock resume, reading travel impulse/current-travel
+resume and displayed hero clock ownership.
 These are CPU/resource/history regressions,
 not shader-pixel, continuous-motion or full-HOME acceptance. Root owns the
 integrated build, full checks and continuous Vawzen comparison. This lifecycle

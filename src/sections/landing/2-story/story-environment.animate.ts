@@ -48,13 +48,15 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   const mesh = new Mesh(geometry(), material); mesh.frustumCulled = false; scene.add(mesh);
   let disposed = false, lost = false, visible = true, frameId = 0, timer = 0, last = 0;
   let time = 0, remaining = 0, pulse = 0, click = 0, lastX = 0, lastY = 0, initialized = false, fieldCleared = false, fieldNeedsClear = false;
-  let previousTravel = -1.2, workTravel = -1.35;
+  let previousTravel = -1.2;
   let menuOpen = document.documentElement.dataset.menuOpen === "true";
   const heroRoot = page.querySelector<HTMLElement>("#identity");
   let heroProgress = readHeroWorldPose(heroRoot)?.progress ?? worldProgressFromScroll(
     heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || innerHeight, width <= 700,
   );
   const readFrame = (): StoryFrame => ({ time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) });
+  const readWorkTravel = () => Number(stage.querySelector<HTMLElement>(".work-world")?.dataset.travel ?? -1.35);
+  let workTravel = readWorkTravel();
   const readingFrame: StoryFrame = { time: 0, openingTime: 26, progress: 0, emergence: 1 };
   let frame = readFrame(), refreshFrame = false;
   let guards: SceneGuard[] = [];
@@ -71,7 +73,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     frameId = 0;
     if (!active()) return;
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60); last = now; time += dt * (reduced ? 0.035 : 1);
-    if (!reduced && refreshFrame) { frame = readFrame(); refreshFrame = false; }
+    if (!reduced && refreshFrame) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = false; }
     // Source resets initialNarrative on reading entry independently of DOM time.
     const score = sampleStoryScore(reduced ? readingFrame : frame, width < 701), input = pointer.state;
     const pointerMoving = pointer.advance(dt, menuOpen);
@@ -92,8 +94,11 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     u.uStroke.value.set(lastX, lastY, x, y); lastX = x; lastY = y;
     u.uMotion.value = motion; u.uPress.value = input.press * input.pressureScale * gain;
     u.uDrag.value.set(input.dragX * aspect, input.dragY);
-    const horizontal = clamp((workTravel - previousTravel) / Math.max(dt, 0.001) * 0.18, -1, 1) * (1 - 0.6 * workQuiet);
-    previousTravel = workTravel;
+    // Reading resets narrative travel, while the source keeps its lastTravel
+    // memory: the first draw contributes the reset delta to the existing field.
+    const travel = reduced ? -1.35 : workTravel;
+    const horizontal = clamp((travel - previousTravel) / Math.max(dt, 0.001) * 0.18, -1, 1) * (1 - 0.6 * workQuiet);
+    previousTravel = travel;
     u.uHorizontal.value = horizontal; u.uScroll.value = input.scrollVelocity * gain;
     u.uQuiet.value = menuOpen ? 1 : 0.45 * score.surfaceQuiet;
     for (let i = 0; i < 4; i++) {
@@ -149,7 +154,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     const next = (event as CustomEvent<StoryFrame>).detail;
     if (!next || !Number.isFinite(next.time)) return;
     frame = next; refreshFrame = false;
-    workTravel = Number(stage.querySelector<HTMLElement>(".work-world")?.dataset.travel ?? -1.35);
+    workTravel = readWorkTravel();
     // Parent clock owns this update; use our RAF only for physical settling.
     if (frameId) { cancelAnimationFrame(frameId); frameId = 0; }
     if (timer) { clearTimeout(timer); timer = 0; }
@@ -188,7 +193,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     // Resume from this HOME's current clock, never its last motion score. A
     // subsequent precise journey event wins; otherwise reread before the draw
     // in case the parent's mode/layout effect refreshed the DOM clock later.
-    if (!enabled) { frame = readFrame(); refreshFrame = true; }
+    if (!enabled) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = true; }
     // Source's reduced-prop input effect releases transient targets, retaining
     // smoothed pointer coordinates, protections and the complete field history.
     pointer.resetInput();

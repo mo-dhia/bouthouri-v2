@@ -41,8 +41,10 @@ class Surface extends EventTarget {
   querySelector(): Surface | null { return null; }
 }
 
-function environmentHarness({ reduced = false, simulate = true, failCreation = false, failMeasure = false, initialHeroProgress = undefined as number | undefined } = {}) {
+function environmentHarness({ reduced = false, simulate = true, failCreation = false, failMeasure = false, initialHeroProgress = undefined as number | undefined, initialStoryTime = 0, initialWorkTravel = -1.35 } = {}) {
   const page = new Surface(), owner = new Surface(), stage = new Surface();
+  const work = new Surface(); work.dataset.travel = String(initialWorkTravel); stage.querySelector = () => work;
+  stage.dataset.storyTime = String(initialStoryTime);
   const heroRoot = Object.assign(new Surface(), { offsetHeight: 1000, getBoundingClientRect: () => ({ top: 0 }) });
   page.querySelector = () => heroRoot;
   stage.closest = (selector) => selector === "main" ? page : selector === ".experience" ? owner : null;
@@ -132,7 +134,7 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   const controller = loaded.createStoryEnvironment(stage, { reduced });
   const event = (type: string, properties: Record<string, unknown> = {}) => window.dispatchEvent(Object.assign(new Event(type), properties));
   return {
-    controller, module: loaded, stage, owner, fields, pointers, surfaces, dimensions, rafs, timers, errors,
+    controller, module: loaded, stage, work, owner, fields, pointers, surfaces, dimensions, rafs, timers, errors,
     get stats() { return { creations, renders, rendererDisposals, contextLosses }; },
     get canvas() { return owner.children[0].children[0]; },
     step(dt = 1 / 60) { now += dt * 1000; const pending = [...rafs.values()]; rafs.clear(); for (const callback of pending) callback(now); },
@@ -209,6 +211,49 @@ test("reading selects source zero narrative and resumes the current DOM/event cl
   const cold = environmentHarness({ reduced: true }); cold.frame(174); cold.step();
   expect(cold.surfaces[0].material.uniforms.uStage.value).toBe(0); expect(cold.fields[0].field.uniforms.uQuiet.value).toBe(0);
   cold.controller.dispose();
+});
+
+test("late background boot starts from the current work travel rather than a stale opening default", () => {
+  const h = environmentHarness({ initialStoryTime: 350, initialWorkTravel: 0.2 });
+  h.step();
+  const field = h.fields[0];
+  // Source keeps initial lastTravel=-1.2 but reads the current shared travel=.2.
+  // The positive impulse saturates at1, then workQuiet applies its .4 gain.
+  expect(field.field.uniforms.uHorizontal.value).toBeCloseTo(0.4, 12);
+  h.step(); expect(field.field.uniforms.uHorizontal.value).toBe(0);
+  expect(h.fields).toHaveLength(1); expect(field.disposals).toBe(0);
+  h.controller.dispose();
+});
+
+test("reading resets effective work travel with one source horizontal kick and resumes current DOM/event travel", () => {
+  const h = environmentHarness(); h.work.dataset.travel = "0.2"; h.frame(350); h.step();
+  const field = h.fields[0], material = h.surfaces[0].material, u = field.field.uniforms;
+  const time = material.uniforms.uTime.value as number, clears = field.clears;
+  expect(u.uHorizontal.value).toBe(0);
+  h.controller.setReducedMode(true); h.step();
+  // Source retains lastTravel=.2, then initialNarrative supplies -1.35. Reading
+  // has no workQuiet attenuation, so its first reset impulse clamps to -1.
+  expect(u.uHorizontal.value).toBe(-1);
+  expect(material.uniforms.uTime.value - time).toBeCloseTo(0.035 / 60, 10);
+  h.step(); expect(u.uHorizontal.value).toBe(0);
+  h.work.dataset.travel = "0.9"; h.frame(350); expect(u.uHorizontal.value).toBe(0);
+  h.work.dataset.travel = "-1.33"; h.controller.setReducedMode(false);
+  // A silent parent refresh after the setter must be consumed before drawing.
+  h.work.dataset.travel = "-1.32"; h.stage.dataset.storyTime = "350"; h.step();
+  // (.03 / (1/60)) * .18 * (1 - .6 * 1), fixed source fixture.
+  expect(u.uHorizontal.value).toBeCloseTo(0.1296, 10);
+  h.step(); expect(u.uHorizontal.value).toBe(0);
+  h.controller.setReducedMode(true); h.step(); h.step();
+  h.hidden(true); const draws = h.stats.renders;
+  h.controller.setReducedMode(false); h.work.dataset.travel = "-1.31"; h.frame(350.123456789);
+  // A newer journey event owns both precise clock and associated work travel.
+  h.work.dataset.travel = "-1.30";
+  expect(h.stats.renders).toBe(draws); expect(h.rafs.size + h.timers.size).toBe(0);
+  h.hidden(false); h.step(); expect(u.uHorizontal.value).toBeCloseTo(0.1728, 10);
+  h.step(); expect(u.uHorizontal.value).toBe(0);
+  expect(h.fields).toHaveLength(1); expect(h.stats.creations).toBe(1);
+  expect(field.clears).toBe(clears); expect(field.disposals).toBe(0);
+  expect(material.uniforms.uTime.value).toBeGreaterThan(time); h.controller.dispose();
 });
 
 test("background gain/presence use the published displayed hero clock, never opening/raw input", () => {
