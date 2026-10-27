@@ -39,13 +39,13 @@ and allow its score to settle before capture. Compare cold entry, first scene
 activation, and warmed traversal separately. Do not present passing type/build
 checks or matching content as proof that all animation frames match.
 
-Current state: HOME implementation is integrated and committed. The scene owner
-has corrected R4-01 and the associated camera-refresh history, with source-matched
-cold/refreshed atlases and optical image samples. Round5 passed those corrections
-and found four P2 flow/timing differences. Their fixes were built in production
-at revision `d8509fc`. Round6 passed all four direct triggers and found two
-additional P2 lifecycle/return branches, now in implementation.
-Full parity is not yet asserted.
+Current candidate: `f155d0c`, running in production at `http://localhost:3100`.
+Full check passes: ESLint, TypeScript, 89 tests / 3,286 assertions. Production
+build and the HTTP SSR audit pass for both prerendered locales, metadata,
+redirects, 404s and 14 static assets. It includes the R7 demand/capture correction,
+reading opening/chrome and scroll-cue fixes, and retained reading renderer with
+independent glasses readiness and explicit private-atlas disposal. Fresh round8
+production review is pending; full parity is not yet asserted.
 
 Round6 is not accepted: ordinary reload from a completed journey produces a
 broad source reflection while local retains the dark field. Fresh navigation,
@@ -72,24 +72,37 @@ foreground/hidden controls and both HOME return histories in production.
 One P2 remains after R7: hidden entry→sharp40→same-size resize→2px canvas bounds
 change with an immediate jump to174→restore bounds→reverse40 gives darker local
 lenses. The reviewer reproduced it twice and measured continuing60/67 differences
-with nearly identical cameras. The exact256/512 conversion order remains under
-scene-owner investigation; no new universal material or camera tuning is justified.
+with nearly identical cameras. The correction in2a1f485 coalesces RO capture
+through the existing50ms bounds measure, retains the source74-tween veil history,
+and lets the existing scene demand RAF own GPU draws. Later exact source controls
+also naturally produced the dark field when rendering skipped early return poses.
+R8 must adjudicate actual conversion/pose histories and both field branches;
+a universal-white expectation is not supported. Failed/white/dark controls remain
+in `/tmp/gazzar-reading-scene/` and the scene contracts.
 
-An additional owner follow-up at the reading opening is also open: motion40→
+An additional owner follow-up found a reading-opening difference: motion40→
 reading→native y1009 at1912×1009 shows source PERSPECTIVE00 and fitted headline,
 while local keeps LOOK CLOSER09 and loses its headline fitting on controller
 cleanup. Source retains a broad lens field in that transition; the newly created
 local static renderer uses the sharp field. These are separate reading-mode
-integration/history gaps, not claims from the completed R7 adversary. Parent
-will handle reading chrome/fitting after the current scene slot; retained-field
-behavior needs a focused source comparison. No static pixel-parity claim is made.
+integration/history gaps, not claims from the completed R7 adversary. The parent
+fixed reading chrome/fitting inff4d360. Live identity/capture proof then confirmed
+source retains its renderer/glasses/raw256/cache across mode changes; f155d0c
+implements that lifetime with lazy motion attachments. No whole-static-mode
+pixel-parity claim follows from the sampled comparisons.
 
 Parent reading UI correction now passes source/dev comparisons: EN opening fit
 and every row coordinate/font match exactly; AR narrow does too, with PERSPECTIVE00
 (منظور00), zero DOM score/opening/progress and unchanged reading document extents.
-AR8541→motion164.58→reading8541 retains the offset in both. Full check86tests/
-3254assertions passes. Retained static lens environment remains open and will be
-handled as a separate scene resource-lifetime task before R8.
+AR8541→motion164.58→reading8541 retains the offset in both. The retained scene now
+also matches sampled EN foreground/hidden and AR desktop static crops at p99=1,
+with zero settled object draws. An offline adversary found two lifecycle P2s:
+leaked derived512 atlases and cold reading waiting on obsolete motion work. Both
+are fixed and independently re-reviewed without further P1/P2 findings. Live GPU
+counts plateau13motion/7reading over three cycles; held logo/font work no longer
+prevents reading readiness. Details and limitations are in
+`src/sections/landing/2-story/story-reading.doc.md`. Production/R8 acceptance
+remains pending.
 
 An independent offline review also found the reading scroll cue had no handler.
 It now scrolls to `#beyond` with the source's auto/start behavior and removes
@@ -149,7 +162,7 @@ margins then closed the reading-extent difference: at EN 1400×850, document
 equal the reference. Removing the nonexistent footer ancestor requirement also
 matched information clearance at102.34375px relative to the footer.
 
-Latest completed root check: ESLint, TypeScript, 85 tests / 3,228 assertions,
+Latest completed root check: ESLint, TypeScript, 89 tests / 3,286 assertions,
 production build with deferred Troika, and production HTTP SSR audit pass.
 The production scene boots with local fonts and no cross-origin requests. At
 EN 1400×950/DPR1, score312, its incoming connector and project symbol path strings
@@ -161,7 +174,8 @@ Expo.out shared scrub, and source five-stop portrait fallback. The subsequent
 environment/camera correction is revision `8540377`; production round5 passed
 its bounded independent comparisons and confirmed the ordinary reload mismatch.
 The subsequent flow/timing fixes are revision `d8509fc`, with a fresh production
-build and SSR audit passing; independent round6 is still required.
+build and SSR audit passing; the subsequent round6 findings and responses are
+recorded above.
 Trusted SOUND entry was
 also exercised via Vaelix's CDP double-click path: the recorded click was trusted,
 audio entered `playing`, and muting entered `muted`. Trusted COPY activation
