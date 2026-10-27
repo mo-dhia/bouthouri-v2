@@ -44,8 +44,11 @@ Full check passes: ESLint, TypeScript, 89 tests / 3,286 assertions. Production
 build and the HTTP SSR audit pass for both prerendered locales, metadata,
 redirects, 404s and 14 static assets. It includes the R7 demand/capture correction,
 reading opening/chrome and scroll-cue fixes, and retained reading renderer with
-independent glasses readiness and explicit private-atlas disposal. Fresh round8
-production review is pending; full parity is not yet asserted.
+independent glasses readiness and explicit private-atlas disposal. Round8 gives
+those optical/reading changes bounded production acceptance, but requests changes
+for reading preference surviving locale navigation and persistent MENU metrics.
+The MENU correction is committed in0a98f59 with exact EN-wide/AR-narrow dev
+geometry; navigation lifetime is in implementation. Full parity is not asserted.
 
 Round6 is not accepted: ordinary reload from a completed journey produces a
 broad source reflection while local retains the dark field. Fresh navigation,
@@ -118,6 +121,7 @@ reading-navigation tests pass; EN/AR activation still needs the production revie
 | 5 | Corrected lens/camera/sculpture/Ideas and sampled reading layouts pass bounded checks. Open P2s: ordinary reload entry, restored-mount layout lifetime, footer keyboard resolve220ms, and source-reversed menu close. |
 | 6 | All four R5 triggers and the sampled integrated matrix pass. Two P2s remain: reload-specific reflection capture history and clean Back's pending generic HOME return. See `home-parity-review-r6.md`. |
 | 7 | R6 fixes, late reload race, CLARITY and both HOME return histories pass. One new P2 remains in the bounds/direct-sculpture/reverse optical branch; see `home-parity-review-r7.md`. |
+| 8 | R7 optical branches, retained reading scene, cue, disposal and sampled whole-home flows pass bounded production checks. Two P2s: locale should reset the explicit reading preference; persistent MENU needs source chapter-side type/width and measured dock reserve. See `home-parity-review-r8.md`. |
 
 R5 implementation responses: ordinary reload now explicitly starts fresh once
 per document; locale-restored mounts retain their initial semantic intent across
