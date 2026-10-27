@@ -1,11 +1,14 @@
 import { ACESFilmicToneMapping, Color, PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer, type Object3D } from "three";
-import { acquireStoryLighting, createStoryEnvironments, disposeObject, loadStoryModel } from "./story-assets";
+import { createStoryEnvironments, disposeObject, loadStoryModel } from "./story-assets";
 import { createGlasses } from "./story-glasses";
 import { createSculptures } from "./story-logo";
 import { createStoryPointer } from "./story-pointer";
 import { createStoryCameraHistory } from "./story-camera-history";
 import { createStoryEnvironmentLifecycle } from "./story-environment-lifecycle";
 import { createStoryOpticalHistory } from "./story-optical-history";
+import { createStoryBoot, waitForStoryTask } from "./story-boot";
+import { disposePrivateStoryAtlas } from "./story-atlas-ownership";
+import { loadStoryMotionAssets } from "./story-motion-assets";
 import { uiStore } from "@/store/uiStore";
 import { sampleStoryScore, type StoryFrame } from "./story-score";
 import { createSpatialType } from "./story-type";
@@ -13,13 +16,19 @@ import type { SceneInteraction } from "./story-environment.animate";
 import styles from "./story-scene.module.css";
 
 export type StorySceneOptions = { staticMode?: boolean; onReady?: () => void; onFailure?: () => void };
+export type StorySceneController = { setStaticMode(enabled: boolean): void; dispose(): void };
+
+/** Compatibility adapter for callers that only need mount/cleanup. */
+export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions = {}): () => void {
+  return createStoryScene(stage, options).dispose;
+}
 
 /** Deferred scene leaf. The parent owns SSR, native pinning and the sole story clock. */
-export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions = {}): () => void {
+export function createStoryScene(stage: HTMLElement, options: StorySceneOptions = {}): StorySceneController {
   const candidate = stage.querySelector<HTMLElement>(".canvas-layer");
-  if (!candidate) return () => {};
+  if (!candidate) return { setStaticMode() {}, dispose() {} };
   const host: HTMLElement = candidate;
-  const staticMode = options.staticMode ?? false;
+  let staticMode = options.staticMode ?? false;
   const previousDisplay = host.style.getPropertyValue("display");
   const previousDisplayPriority = host.style.getPropertyPriority("display");
   // The SSR fallback rule hides enhancement hosts when native reading mode has
@@ -52,16 +61,18 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     renderer.outputColorSpace = SRGBColorSpace;
   } catch {
     stage.dataset.storyBoot = "failed"; stage.dataset.storyScene = "failed"; options.onFailure?.();
-    return () => {
+    return { setStaticMode() {}, dispose() {
       restoreDisplay();
       if (stage.dataset.storyFailed === "true") { stage.dataset.storyScene = "failed"; stage.dataset.storyBoot = "failed"; }
       else { delete stage.dataset.storyBoot; if (previousState === null) delete stage.dataset.storyScene; else stage.setAttribute("data-story-scene", previousState); }
-    };
+    } };
   }
   host.append(canvas);
   const scene = new Scene(), camera = new PerspectiveCamera(34, width / height, 0.005, 60);
   camera.position.set(0, 0, 10);
-  let models: Object3D[] = [];
+  let glassesModel: Object3D | undefined, motionModel: Object3D | undefined;
+  let motionGeneration = 0, motionPending = false, modeCapture = false;
+  let motionAbort = new AbortController();
   let environments: ReturnType<typeof createStoryEnvironments> | undefined;
   let releaseLighting: (() => void) | undefined;
   let glasses: ReturnType<typeof createGlasses> | undefined;
@@ -72,7 +83,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   let entryComplete = uiStore.getState().entryPhase === "complete";
   const bounds = () => host.getBoundingClientRect();
   const stopFrame = () => { if (frameId) cancelAnimationFrame(frameId); frameId = 0; lastRender = 0; };
-  const isActive = () => !disposed && !lost && visible && !document.hidden && !menuOpen && frame.time < 306;
+  const isActive = () => !disposed && !lost && visible && !document.hidden && !menuOpen && (staticMode || frame.time < 306);
   const fail = (error?: unknown) => {
     if (disposed) return;
     lost = true; stopFrame(); canvas.style.opacity = "0";
@@ -83,8 +94,8 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     if (!frameId && sceneReady && isActive()) frameId = requestAnimationFrame(render);
   }
   const pointer = createStoryPointer(canvas, camera, requestRender);
-  const cameraHistory = createStoryCameraHistory();
-  const opticalHistory = createStoryOpticalHistory();
+  let cameraHistory = createStoryCameraHistory();
+  let opticalHistory = createStoryOpticalHistory();
   if (!staticMode) opticalHistory.sample(cameraHistory.sample(frame, width < 701));
   if (staticMode) pointer.setActive(false);
   const currentScore = () => {
@@ -94,7 +105,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   };
   function render(now: number, warm = false) {
     frameId = 0;
-    if (!sceneReady || (!warm && !isActive()) || disposed || lost || document.hidden || !glasses || !staticMode && (!sculptures || !typography)) return;
+    if (!sceneReady || (!warm && !isActive()) || disposed || lost || document.hidden || !glasses) return;
     const dt = lastRender ? Math.min((now - lastRender) / 1000, 0.05) : 1 / 60;
     elapsed += dt; lastRender = now;
     const score = currentScore();
@@ -102,6 +113,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     const pointerMoving = pointer.advance(dt, score.time, score.emergence);
     const glassMoving = glasses.update(score, pointer, width / height, elapsed, dt);
     const logoMoving = sculptures?.update(score, pointer, dt) ?? false;
+    if (modeCapture) { modeCapture = false; environments?.refreshGlasses(); }
     camera.updateMatrixWorld();
     stage.dispatchEvent(new CustomEvent<SceneInteraction>("journey-scene-interaction", {
       detail: { guards: sculptures?.guards(camera, score.environment) ?? [], grabbed: pointer.pulls.some((pull) => pull.held) },
@@ -126,7 +138,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   function measure() {
     width = Math.max(1, host.clientWidth || stage.clientWidth);
     height = Math.max(1, host.clientHeight || stage.clientHeight);
-    const rect = stage.getBoundingClientRect(); visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
+    const rect = host.getBoundingClientRect(); visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
     // Source react-use-measure routes ResizeObserver through its 50ms scroll
     // debounce too. Coalesce capture with that existing full-bounds measure:
     // an immediate scroll must update the shared frame before cube invalidation
@@ -178,7 +190,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
     pointer.setActive(!staticMode && visible && !document.hidden && !menuOpen);
     if (visible) { pointer.measure(); requestRender(); } else stopFrame();
   }, { threshold: 0.001 });
-  intersection.observe(stage);
+  intersection.observe(host);
   const resize = new ResizeObserver(measure); resize.observe(host);
   const menu = new MutationObserver(() => {
     menuOpen = document.documentElement.dataset.menuOpen === "true";
@@ -197,22 +209,21 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   window.addEventListener("resize", cameraRefresh, { passive: true });
   function measureEnvironment() {
     clearTimeout(environmentMeasureTimer); environmentMeasureTimer = 0;
-    if (!sceneReady || disposed || lost || document.hidden || menuOpen || !visible || staticMode) return;
+    if (!sceneReady || disposed || lost || document.hidden || menuOpen || !visible) return;
     if (environmentLifecycle?.measure(bounds())) requestRender();
   }
   const scrollMeasure = () => {
-    if (staticMode) return;
     clearTimeout(environmentMeasureTimer);
     if (!document.hidden && !menuOpen) environmentMeasureTimer = window.setTimeout(measureEnvironment, 50);
   };
   function activateStudio() {
-    if (staticMode || !sceneReady || !environmentLifecycle || environmentLifecycle.active || disposed || lost || document.hidden || menuOpen) return;
+    if (staticMode || !sceneReady || !sculptures || !environments?.sculpture || !environmentLifecycle || environmentLifecycle.active || disposed || lost || document.hidden || menuOpen) return;
     clearTimeout(environmentMeasureTimer); environmentMeasureTimer = 0;
     try { environmentLifecycle.activate(bounds()); }
     catch (error) { fail(error); }
   }
   function scheduleStudio() {
-    if (staticMode || !entryComplete || studioIdle || environmentLifecycle?.active || document.hidden || menuOpen || disposed) return;
+    if (staticMode || !sculptures || !entryComplete || studioIdle || environmentLifecycle?.active || document.hidden || menuOpen || disposed) return;
     const run = () => { studioIdle = 0; activateStudio(); };
     studioIdle = typeof window.requestIdleCallback === "function"
       ? window.requestIdleCallback(run, { timeout: 1200 }) : window.setTimeout(run, 32);
@@ -225,51 +236,98 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
   canvas.addEventListener("webglcontextlost", contextLost);
   measure();
 
-  const disposeVisuals = () => {
-    sceneReady = false;
-    environmentLifecycle?.dispose(); environmentLifecycle = undefined;
-    typography?.dispose(); typography = undefined;
-    sculptures?.dispose(); sculptures = undefined;
-    glasses?.dispose(); glasses = undefined;
-    // Models were freshly parsed for this mount. Their cloned material graph,
-    // embedded roughness map and bitmap source belong exclusively to this mount.
-    const externalTextures = new Set([environments?.glasses.texture, environments?.sculpture?.texture].filter((texture) => texture !== undefined));
-    for (const model of models) disposeObject(model, externalTextures); models = [];
-    environments?.dispose(); environments = undefined;
-    releaseLighting?.(); releaseLighting = undefined;
+  const externalTextures = () => new Set([environments?.glasses.texture, environments?.sculpture?.texture].filter((texture) => texture !== undefined));
+  const cancelStudio = () => {
+    if (!studioIdle) return;
+    if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(studioIdle);
+    else window.clearTimeout(studioIdle);
+    studioIdle = 0;
   };
-  void (async () => {
-    stage.dataset.storyBoot = "models";
-    const results = await Promise.allSettled(staticMode ? [loadStoryModel("glasses-folded")] : [loadStoryModel("glasses-folded"), loadStoryModel("logo-finished-components"), acquireStoryLighting()]);
-    for (const [index, result] of results.entries()) if (result.status === "fulfilled") {
-      if (index < 2) models.push(result.value as Object3D);
-      else releaseLighting = result.value as () => void;
-    }
-    if (disposed) { disposeVisuals(); return; }
-    const rejected = results.find((result) => result.status === "rejected");
-    if (rejected?.status === "rejected") { disposeVisuals(); fail(rejected.reason); return; }
+  const resetEnvironmentLifecycle = () => {
+    environmentLifecycle?.dispose();
+    const studio = environments;
+    if (!studio) return;
+    environmentLifecycle = createStoryEnvironmentLifecycle(bounds(), () => studio.refresh(), () => {
+      if (!sculptures || !studio.sculpture) return;
+      sculptures.setEnvironment(studio.sculpture.texture);
+      for (const object of sculptures.objects) renderer.compile(object, camera, scene);
+    });
+  };
+  const disposeMotion = () => {
+    typography?.dispose(); typography = undefined;
+    if (sculptures && environments?.sculpture) disposePrivateStoryAtlas(renderer, environments.sculpture, sculptures.objects);
+    sculptures?.dispose(); sculptures = undefined;
+    if (motionModel) { disposeObject(motionModel, externalTextures()); motionModel = undefined; }
+    releaseLighting?.(); releaseLighting = undefined;
+    environments?.setSculpture(false);
+    if (glasses) pointer.setObjects([glasses.hitPlane]);
+  };
+  const disposeVisuals = () => {
+    sceneReady = false; motionGeneration++; motionAbort.abort();
+    environmentLifecycle?.dispose(); environmentLifecycle = undefined;
+    disposeMotion();
+    glasses?.dispose(); glasses = undefined;
+    if (glassesModel) { disposeObject(glassesModel, externalTextures()); glassesModel = undefined; }
+    environments?.dispose(); environments = undefined;
+  };
+  const currentMotion = (generation: number) => !disposed && !lost && !staticMode && generation === motionGeneration;
+  async function installMotion(model: Object3D, release: () => void, generation: number) {
+    let ownSculptures: ReturnType<typeof createSculptures> | undefined;
+    let ownType: Awaited<ReturnType<typeof createSpatialType>> | undefined;
     try {
-      stage.dataset.storyBoot = "environments";
-      const studio = createStoryEnvironments(renderer, !staticMode);
-      environments = studio;
-      environmentLifecycle = createStoryEnvironmentLifecycle(bounds(), () => studio.refresh(), () => {
-        if (!sculptures || !studio.sculpture) return;
-        sculptures.setEnvironment(studio.sculpture.texture);
-        // Only these physical materials changed. Text was already compiled by
-        // boot; keep its derived SDF programs out of this environment commit.
-        for (const object of sculptures.objects) renderer.compile(object, camera, scene);
-      });
-      glasses = createGlasses(models[0], scene, camera, studio.glasses.texture, width);
-      if (!staticMode) {
-        sculptures = createSculptures(models[1], scene, studio.sculpture!.texture, width / height, document.documentElement.lang === "ar");
-        // Source mounts this private studio after identity entry. Prewarm its
-        // model/type programs without converting its 512px environment yet.
-        sculptures.setEnvironment(null);
-        stage.dataset.storyBoot = "typography";
-        const type = await createSpatialType(stage, scene, sculptures.root, camera, width, height, requestRender);
-        if (disposed) { type.dispose(); return; }
-        typography = type;
+      if (!currentMotion(generation) || !environments) return;
+      environments.setSculpture(true);
+      ownSculptures = createSculptures(model, scene, environments.sculpture!.texture, width / height, document.documentElement.lang === "ar");
+      ownSculptures.root.visible = false; ownSculptures.setEnvironment(null);
+      ownType = await createSpatialType(stage, scene, ownSculptures.root, camera, width, height, requestRender, motionAbort.signal);
+      if (!currentMotion(generation)) return;
+      motionModel = model; releaseLighting = release;
+      sculptures = ownSculptures; typography = ownType;
+      sculptures.resize(width / height);
+      typography.resize(width, height); typography.update(frame.time);
+      pointer.setObjects([glasses!.hitPlane, ...sculptures.objects]);
+      // Adoption transfers all ownership; stale async work cleans up below.
+      ownSculptures = undefined; ownType = undefined;
+    } finally {
+      if (motionModel !== model) {
+        ownType?.dispose(); ownSculptures?.dispose(); disposeObject(model, externalTextures()); release();
+        environments?.setSculpture(false);
       }
+    }
+  }
+  async function upgradeMotion() {
+    if (!sceneReady || staticMode || disposed || lost || sculptures || motionPending) return;
+    motionPending = true;
+    const generation = motionGeneration;
+    try {
+      const assets = await loadStoryMotionAssets(motionAbort.signal);
+      await installMotion(assets.model, assets.release, generation);
+      if (currentMotion(generation)) {
+        renderer.compile(scene, camera);
+        scheduleStudio(); requestRender();
+      }
+    } catch (error) { if (currentMotion(generation)) fail(error); }
+    finally {
+      motionPending = false;
+      // A rapid quiet→motion cycle may supersede an in-flight layout. Start
+      // its replacement only after the stale attachment has released its graph.
+      if (generation !== motionGeneration) void upgradeMotion();
+    }
+  }
+  stage.dataset.storyBoot = "models";
+  const baseLoad = loadStoryModel("glasses-folded").then((model) => {
+    if (disposed) { disposeObject(model); throw new DOMException("Story disposed.", "AbortError"); }
+    glassesModel = model; return model;
+  }).catch((error: unknown) => { if (!disposed) fail(error); throw error; });
+  const boot = createStoryBoot(baseLoad, (model, motion) => {
+      if (disposed || lost) return;
+      stage.dataset.storyBoot = "environments";
+      const studio = createStoryEnvironments(renderer, motion && !staticMode);
+      environments = studio;
+      resetEnvironmentLifecycle();
+      glasses = createGlasses(model, scene, camera, studio.glasses.texture, width);
+  }, () => {
+      if (disposed || lost || !glasses || !environments) return;
       stage.dataset.storyBoot = "compile";
       pointer.setObjects([glasses.hitPlane, ...(sculptures?.objects ?? [])]);
       // Compile both sides of the lens-transmission branch before the first
@@ -287,7 +345,7 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
         // The source has a second glasses-only Environment capture before its
         // private 512px studio initializes. Refresh the existing 256px cache
         // while its scratch size is still 256; this keeps cold state clean.
-        studio.glasses.texture.needsPMREMUpdate = true;
+        environments.glasses.texture.needsPMREMUpdate = true;
         glasses.prepare(renderer); renderer.compile(scene, camera);
       } finally { renderer.setClearColor(clear, alpha); }
       sceneReady = true; measure();
@@ -295,17 +353,59 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
       render(performance.now(), true);
       scheduleStudio();
       requestRender();
-    } catch (error) { disposeVisuals(); fail(error); }
-  })();
+      void upgradeMotion();
+  });
+  // Cold normal motion retains its measured assets→base→type→warm ordering.
+  // Reading can independently mount/finish the glasses base at either await.
+  async function startBoot() {
+    const generation = motionGeneration;
+    const signal = motionAbort.signal;
+    let assets: Awaited<ReturnType<typeof loadStoryMotionAssets>> | undefined;
+    try {
+      if (!staticMode) assets = await loadStoryMotionAssets(signal);
+      await waitForStoryTask(boot.mount(Boolean(assets) && currentMotion(generation)), signal);
+      if (assets) {
+        const owned = assets; assets = undefined;
+        stage.dataset.storyBoot = "typography";
+        await installMotion(owned.model, owned.release, generation);
+      }
+      if (!disposed && !lost) boot.finish();
+    } catch (error) {
+      if (assets) { disposeObject(assets.model); assets.release(); }
+      if (generation === motionGeneration && !disposed && !lost) { disposeVisuals(); fail(error); }
+    }
+  }
+  void startBoot();
 
-  return () => {
+  function setStaticMode(enabled: boolean) {
+    if (disposed || lost || enabled === staticMode) return;
+    staticMode = enabled; motionGeneration++; motionAbort.abort(); motionAbort = new AbortController();
+    stopFrame(); cancelStudio(); clearTimeout(cameraRefreshTimer); clearTimeout(environmentMeasureTimer);
+    cameraRefreshTimer = environmentMeasureTimer = 0;
+    pointer.reset(); glasses?.reset();
+    cameraHistory = createStoryCameraHistory(); opticalHistory = createStoryOpticalHistory();
+    if (enabled) { host.style.display = "block"; disposeMotion(); }
+    else {
+      restoreDisplay();
+      frame = { time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) };
+      opticalHistory.sample(cameraHistory.sample(frame, width < 701));
+    }
+    // Source reduced-prop rerender recaptures its existing256 Environment even
+    // without a geometry change. Defer that finite work while hidden/offscreen.
+    resetEnvironmentLifecycle(); modeCapture = Boolean(environments);
+    measure(); pointer.setActive(!staticMode && visible && !document.hidden && !menuOpen);
+    if (staticMode && !sceneReady) {
+      void boot.mount(false).then(() => { if (!disposed && !lost && staticMode) boot.finish(); }).catch((error: unknown) => { if (!disposed) fail(error); });
+    }
+    else if (!sceneReady) void startBoot();
+    requestRender(); void upgradeMotion();
+  }
+  function dispose() {
+    if (disposed) return;
     disposed = true; stopFrame(); intersection.disconnect(); resize.disconnect(); menu.disconnect();
     clearTimeout(cameraRefreshTimer); window.removeEventListener("resize", cameraRefresh);
     clearTimeout(environmentMeasureTimer);
-    if (studioIdle) {
-      if (typeof window.cancelIdleCallback === "function") window.cancelIdleCallback(studioIdle);
-      else window.clearTimeout(studioIdle);
-    }
+    cancelStudio();
     window.removeEventListener("identity-entry-complete", onEntry);
     window.removeEventListener("scroll", scrollMeasure, true);
     stage.removeEventListener("journey-frame", onFrame); document.removeEventListener("visibilitychange", visibility);
@@ -320,5 +420,6 @@ export function mountStoryScene(stage: HTMLElement, options: StorySceneOptions =
       delete stage.dataset.storyBoot;
     }
     delete stage.dataset.storyActivity;
-  };
+  }
+  return { setStaticMode, dispose };
 }

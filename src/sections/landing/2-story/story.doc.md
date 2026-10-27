@@ -7,8 +7,11 @@ validation evidence and remaining fidelity gaps are maintained in
 `story-scene-gate.tsx` is a null-content client boundary. The server section
 continues to own all text, routes, SVGs and fallback markup. The gate imports
 the fixed background during idle time and the object scene near its viewport;
-the shared boot slot serializes the object startup. Quiet/reduced mode renders
-one initial glasses pose without sculptures, SDF text or an object idle loop.
+the shared boot slot serializes the object startup. Its per-HOME controller handle
+retains renderer/glasses/raw256 across mode changes and releases motion-only
+attachments in reading mode. A fresh quiet/reduced mount loads glasses only;
+both paths render one initial pose without an object idle loop. Detailed live
+identity, resource, pixel and coverage evidence is in [story-reading.doc.md](story-reading.doc.md).
 An object failure latches the shared HOME reading fallback until route unmount.
 
 `story-score.ts` and `story-paths.ts` contain the recovered numerical data.
@@ -59,12 +62,13 @@ R3F's automatic material-map conversion. Linear decoding and independent PMREM
 generators were the two causes of R4-01. Lens constants remain unchanged.
 The scene contract records exact sampled GPU fields and optical crops, R6/R7
 event-order traces, preserved failed attempts and remaining validation boundaries.
-Focused checks pass9 tests/446 assertions. R7 independently passes the R6 reload
+Focused checks pass12 tests/478 assertions. R7 independently passes the R6 reload
 and complete-CLARITY cold/remount controls. The new R7 capture/veil/demand correction
 has two measured dev repeats; root owns production build and fresh R8 acceptance.
-Static motion40→reading currently exposes a separate opening/chrome and retained
-environment mismatch. Zero settled static draws do not certify pixel parity;
-fresh reading versus retained motion cache require separate controls.
+Parent ff4d360 fixes the reading opening/chrome. The retained-environment change
+now has EN/AR p99=1 reading captures in dev. Fresh OS reading remains unavailable
+to this browser API; static resource fixtures and retained-mode controls are
+distinguished. Root owns production build and independent acceptance.
 
 Original assets are local at `/assets/models/` and `/assets/textures/`:
 

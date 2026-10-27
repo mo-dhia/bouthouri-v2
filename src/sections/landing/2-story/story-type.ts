@@ -2,6 +2,7 @@ import { Group, Vector3, type PerspectiveCamera, type Scene } from "three";
 import { clamp, smooth } from "./story-score";
 import { createSceneText, prepareSceneFont } from "./story-text";
 import { projectTerminalGlyph } from "./story-text-metrics";
+import { waitForStoryTask } from "./story-boot";
 
 export type WorkOrigin = { x: number; y: number; radius: number; ready: boolean; direction: "ltr" | "rtl" };
 type TextPlane = ReturnType<typeof createSceneText>;
@@ -16,14 +17,18 @@ function headingLines(heading: Element | null) {
   return lines.map((line) => line.trim()).filter(Boolean);
 }
 
-export async function createSpatialType(stage: HTMLElement, scene: Scene, sculptureRoot: Group, camera: PerspectiveCamera, width: number, height: number, invalidate?: () => void) {
+export async function createSpatialType(stage: HTMLElement, scene: Scene, sculptureRoot: Group, camera: PerspectiveCamera, width: number, height: number, invalidate?: () => void, signal?: AbortSignal) {
   const rtl = document.documentElement.lang === "ar";
   const headings = [...stage.querySelectorAll<HTMLElement>(".spatial-description h2")].slice(0, 3);
   const meaningCopy = headings.map((heading) => [heading.textContent ?? "", heading.nextElementSibling?.textContent ?? ""]);
   const ideasLines = headingLines(stage.querySelector(".quiet-outlook h2"));
   const ideasIntro = stage.querySelector(".quiet-outlook .eyebrow")?.textContent ?? "";
-  await prepareSceneFont(rtl, [...meaningCopy.flat(), ...ideasLines, ideasIntro]);
+  const font = prepareSceneFont(rtl, [...meaningCopy.flat(), ...ideasLines, ideasIntro]);
+  await (signal ? waitForStoryTask(font, signal) : font);
   const meaningRoot = new Group(), ideasRoot = new Group();
+  // Async motion upgrades share a live glasses canvas. Hide Ideas until the
+  // owning controller adopts the completed layout and supplies its first score.
+  ideasRoot.visible = false;
   meaningRoot.name = "Sculpture_Meanings_Foreground"; ideasRoot.name = "Ideas_Put_To_Work_Foreground";
   sculptureRoot.add(meaningRoot); scene.add(ideasRoot);
   let planes: TextPlane[] = [];
@@ -97,8 +102,8 @@ export async function createSpatialType(stage: HTMLElement, scene: Scene, sculpt
     layoutReady = true;
     return true;
   };
-  try { await create(); }
-  catch (error) { for (const plane of planes) plane.dispose(); meaningRoot.removeFromParent(); ideasRoot.removeFromParent(); throw error; }
+  try { const layout = create(); await (signal ? waitForStoryTask(layout, signal) : layout); }
+  catch (error) { disposed = true; generation++; for (const plane of planes) plane.dispose(); meaningRoot.removeFromParent(); ideasRoot.removeFromParent(); throw error; }
   stage.dataset.storyTextRenderer = "troika-sdf";
   let latestTime = Number(stage.dataset.storyTime ?? 0);
   const controller = {

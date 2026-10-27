@@ -1,5 +1,11 @@
-import { describe, expect, test } from "bun:test";
-import { Color, Matrix4, Mesh, MeshBasicMaterial, PerspectiveCamera, SRGBColorSpace, WebGLCoordinateSystem, type Scene, type WebGLRenderer } from "three";
+import { describe, expect, spyOn, test } from "bun:test";
+import { Color, CubeUVReflectionMapping, Matrix4, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, SRGBColorSpace, WebGLCoordinateSystem, WebGLCubeRenderTarget, WebGLRenderTarget, type Scene, type WebGLRenderer } from "three";
+import { WebGLCubeUVMaps } from "three/src/renderers/webgl/WebGLCubeUVMaps.js";
+import { WebGLProperties } from "three/src/renderers/webgl/WebGLProperties.js";
+import { PMREMGenerator } from "three/src/extras/PMREMGenerator.js";
+import { disposePrivateStoryAtlas } from "../src/sections/landing/2-story/story-atlas-ownership";
+import { createStoryBoot, waitForStoryTask } from "../src/sections/landing/2-story/story-boot";
+import { loadStoryMotionAssets } from "../src/sections/landing/2-story/story-motion-assets";
 import { createStoryEnvironments } from "../src/sections/landing/2-story/story-assets";
 import { createStoryCameraHistory } from "../src/sections/landing/2-story/story-camera-history";
 import { createStoryEnvironmentLifecycle } from "../src/sections/landing/2-story/story-environment-lifecycle";
@@ -82,6 +88,94 @@ test("source full-bounds recapture preserves entry/cache order independently of 
   expect(hiddenTail.captures).toHaveLength(5);
   const remount = create(); remount.lifecycle.measure(pinned); remount.lifecycle.activate(pinned);
   expect(remount.captures).toEqual([256]);
+});
+
+test("reading studio keeps the glasses cube while motion studios acquire and release independently", () => {
+  let draws = 0, privateDisposals = 0;
+  const renderer = {
+    coordinateSystem: WebGLCoordinateSystem, autoClear: false, xr: { enabled: true },
+    getRenderTarget: () => null, getActiveCubeFace: () => 0, getActiveMipmapLevel: () => 0,
+    setRenderTarget() {}, render(scene: Scene) { draws++; scene.updateMatrixWorld(); },
+  } as unknown as WebGLRenderer;
+  // A genuine static boot owns only its six-face glasses studio.
+  const studio = createStoryEnvironments(renderer, false), glasses = studio.glasses;
+  expect(draws).toBe(6); expect(studio.sculpture).toBeUndefined();
+  studio.setSculpture(false); expect(draws).toBe(6);
+  studio.setSculpture(true); const first = studio.sculpture!;
+  first.texture.addEventListener("dispose", () => privateDisposals++);
+  expect(draws).toBe(12); expect(studio.glasses).toBe(glasses);
+  studio.setSculpture(true); expect(draws).toBe(12);
+  studio.setSculpture(false); studio.setSculpture(false);
+  expect(privateDisposals).toBe(1); expect(studio.sculpture).toBeUndefined();
+  studio.refreshGlasses(); expect(draws).toBe(18); expect(studio.glasses).toBe(glasses);
+  studio.setSculpture(true);
+  expect(studio.sculpture).not.toBe(first); expect(draws).toBe(24);
+  studio.dispose(); studio.setSculpture(true); studio.refreshGlasses();
+  expect(draws).toBe(24);
+});
+
+test("r180 versioned CubeUV branch releases its owned512 atlas without disposing256 or generator scratch", () => {
+  const properties = new WebGLProperties();
+  const renderer = { properties, compile() {} } as unknown as WebGLRenderer;
+  const privateCube = new WebGLCubeRenderTarget(512), glassesCube = new WebGLCubeRenderTarget(256);
+  const privateAtlas = new WebGLRenderTarget(1536, 2048), glassesAtlas = new WebGLRenderTarget(768, 1024), scratch = new WebGLRenderTarget(1536, 2048);
+  privateAtlas.texture.mapping = glassesAtlas.texture.mapping = CubeUVReflectionMapping;
+  let privateDisposals = 0, glassesDisposals = 0, scratchDisposals = 0;
+  privateAtlas.addEventListener("dispose", () => privateDisposals++);
+  glassesAtlas.addEventListener("dispose", () => glassesDisposals++);
+  scratch.addEventListener("dispose", () => scratchDisposals++);
+  const fromCube = spyOn(PMREMGenerator.prototype, "fromCubemap").mockImplementation(function (this: PMREMGenerator, texture) {
+    (this as unknown as { _pingPongRenderTarget: WebGLRenderTarget })._pingPongRenderTarget = scratch;
+    return texture === privateCube.texture ? privateAtlas : glassesAtlas;
+  });
+  const cache = new WebGLCubeUVMaps(renderer);
+  try {
+    privateCube.texture.needsPMREMUpdate = glassesCube.texture.needsPMREMUpdate = true;
+    const privateTexture = cache.get(privateCube.texture), glassesTexture = cache.get(glassesCube.texture);
+    const privateMaterial = new MeshStandardMaterial({ envMap: privateCube.texture });
+    const glassesMaterial = new MeshStandardMaterial({ envMap: glassesCube.texture });
+    (properties.get(privateMaterial) as { envMap: unknown }).envMap = privateTexture;
+    (properties.get(glassesMaterial) as { envMap: unknown }).envMap = glassesTexture;
+    const parts = [new Mesh(undefined, privateMaterial), new Mesh(undefined, privateMaterial), new Mesh(undefined, glassesMaterial)];
+    // Execute the actual installed version branch: raw disposal has no listener.
+    privateCube.texture.dispose(); expect(privateDisposals).toBe(0);
+    expect(disposePrivateStoryAtlas(renderer, privateCube, parts)).toBe(1);
+    expect(privateDisposals).toBe(1); expect(glassesDisposals).toBe(0); expect(scratchDisposals).toBe(0);
+    expect(disposePrivateStoryAtlas(renderer, privateCube, parts)).toBe(0);
+    expect(disposePrivateStoryAtlas(renderer, glassesCube, parts)).toBe(0);
+    expect(cache.get(glassesCube.texture)).toBe(glassesTexture);
+    for (const part of parts) part.geometry.dispose();
+    privateMaterial.dispose(); glassesMaterial.dispose();
+  } finally { fromCube.mockRestore(); cache.dispose(); privateCube.dispose(); glassesCube.dispose(); privateAtlas.dispose(); glassesAtlas.dispose(); scratch.dispose(); }
+});
+
+test("reading base readiness bypasses pending motion model/font and releases cancelled asset ownership", async () => {
+  const deferred = <T,>() => { let resolve!: (value: T) => void; const promise = new Promise<T>((done) => { resolve = done; }); return { promise, resolve }; };
+  const base = deferred<string>(), logo = deferred<Mesh>();
+  let ready = 0, baseMounts = 0, releases = 0, modelDisposals = 0;
+  const boot = createStoryBoot(base.promise, () => { baseMounts++; }, () => { ready++; });
+  const controller = new AbortController();
+  const motion = loadStoryMotionAssets(controller.signal, { model: () => logo.promise, lighting: async () => () => { releases++; } });
+  const pendingMotion = motion.catch((error: unknown) => error);
+  await Promise.resolve(); await Promise.resolve();
+  const reading = boot.mount(false).then(() => boot.finish());
+  base.resolve("glasses"); await reading;
+  expect(ready).toBe(1); expect(baseMounts).toBe(1);
+  controller.abort(); expect(await pendingMotion).toMatchObject({ name: "AbortError" }); expect(releases).toBe(1);
+  const late = new Mesh(); late.geometry.addEventListener("dispose", () => modelDisposals++);
+  logo.resolve(late); await Promise.resolve(); await Promise.resolve();
+  expect(modelDisposals).toBe(1); expect(releases).toBe(1);
+  const font = deferred<void>(), fontController = new AbortController();
+  const pendingFont = waitForStoryTask(font.promise, fontController.signal).catch((error: unknown) => error);
+  await boot.mount(true); boot.finish(); fontController.abort();
+  expect(await pendingFont).toMatchObject({ name: "AbortError" }); expect(ready).toBe(1); expect(baseMounts).toBe(1);
+  font.resolve();
+  // A normal cold motion boot still waits for its attachment before its warm.
+  const order: string[] = [], normalFont = deferred<void>();
+  const normal = createStoryBoot(Promise.resolve("glasses"), () => order.push("base"), () => order.push("warm"));
+  const normalMotion = normal.mount(true).then(async () => { await normalFont.promise; normal.finish(); });
+  await Promise.resolve(); await Promise.resolve(); expect(order).toEqual(["base"]);
+  normalFont.resolve(); await normalMotion; expect(order).toEqual(["base", "warm"]);
 });
 
 test("camera refresh preserves source future-start history without changing authored sampling", () => {

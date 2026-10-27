@@ -58,6 +58,7 @@ export function createGlasses(model: Object3D, scene: Scene, camera: Perspective
   let hoverX = 0, hoverY = 0;
   return {
     root, hitPlane,
+    reset() { hoverX = hoverY = 0; },
     prepare(renderer: WebGLRenderer) {
       const lenses = [...materials].filter((material) => material.name.startsWith("Lenses"));
       const transmission = lenses.map((material) => material.transmission);

@@ -118,7 +118,7 @@ function createStudioCube(renderer: WebGLRenderer, type: "glasses" | "sculpture"
   };
   try { capture(); }
   catch (error) { target.dispose(); disposeObject(studio); throw error; }
-  return { target, capture, dispose() { target.dispose(); disposeObject(studio); } };
+  return { target, capture, dispose() { target.texture.dispose(); target.dispose(); disposeObject(studio); } };
 }
 
 /** Keep both raw cubes on r180's ONE renderer-owned CubeUV cache, like source.
@@ -133,7 +133,14 @@ export function createStoryEnvironments(renderer: WebGLRenderer, sculpture: bool
   catch (error) { glasses.dispose(); throw error; }
   let disposed = false;
   return {
-    glasses: glasses.target, sculpture: logo?.target,
+    glasses: glasses.target,
+    get sculpture() { return logo?.target; },
+    setSculpture(enabled: boolean) {
+      if (disposed) return;
+      if (enabled && !logo) logo = createStudioCube(renderer, "sculpture");
+      else if (!enabled && logo) { logo.dispose(); logo = undefined; }
+    },
+    refreshGlasses() { if (!disposed) glasses.capture(); },
     refresh() {
       if (disposed) return;
       logo?.capture(); glasses.capture();

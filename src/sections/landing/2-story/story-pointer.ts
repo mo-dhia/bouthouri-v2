@@ -93,6 +93,10 @@ export function createStoryPointer(canvas: HTMLCanvasElement, camera: Camera, in
   return {
     state, pulls,
     get hovered() { return hover; },
+    reset() {
+      cancel(); Object.assign(state, { x: 0, y: 0, targetX: 0, targetY: 0, vx: 0, vy: 0 });
+      for (const pull of pulls) Object.assign(pull, makePull());
+    },
     setObjects(value: Object3D[]) { objects = value; },
     measure() { rect = canvas.getBoundingClientRect(); },
     setActive(value: boolean) { active = value; if (!value) cancel(); },

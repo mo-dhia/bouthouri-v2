@@ -5,6 +5,7 @@ import { useSceneActivation } from "@/lib/scene/sceneActivation";
 import { useSceneBootSlot } from "@/lib/scene/sceneBootGate";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { uiStore, useUIStore } from "@/store/uiStore";
+import type { StorySceneController } from "./story-scene.animate";
 
 const loadScene = () => import("./story-scene.animate");
 const loadEnvironment = () => import("./story-environment.animate");
@@ -29,12 +30,18 @@ export default function StorySceneGate() {
     };
   }, []);
   const staticMode = quiet || reduced;
-  return failed || sharedFailure ? null : <StorySceneMount key={staticMode ? "static" : "motion"} staticMode={staticMode} onFailure={onFailure} />;
+  return failed || sharedFailure ? null : <StorySceneMount staticMode={staticMode} onFailure={onFailure} />;
 }
 
 function StorySceneMount({ staticMode, onFailure }: { staticMode: boolean; onFailure: () => void }) {
   const target = useRef<HTMLElement | null>(null);
   const [settled, setSettled] = useState(false);
+  const controller = useRef<StorySceneController | null>(null);
+  const mode = useRef(staticMode);
+  useEffect(() => {
+    mode.current = staticMode;
+    controller.current?.setStaticMode(staticMode);
+  }, [staticMode]);
   useEffect(() => { target.current = document.getElementById("top"); }, []);
   const { shouldMount } = useSceneActivation({ targetRef: target, prewarmMargin: "300px" });
   const boot = useSceneBootSlot(shouldMount, settled, target);
@@ -60,14 +67,17 @@ function StorySceneMount({ staticMode, onFailure }: { staticMode: boolean; onFai
     if (!shouldMount || !boot || !stage) return;
     stage.dataset.storyScene = "loading";
     let cancelled = false;
-    let cleanup: (() => void) | undefined;
-    void loadScene().then(({ mountStoryScene }) => {
-      if (!cancelled) cleanup = mountStoryScene(stage, { staticMode, onReady: () => setSettled(true), onFailure: () => { setSettled(true); onFailure(); } });
+    let owned: StorySceneController | undefined;
+    void loadScene().then(({ createStoryScene }) => {
+      if (!cancelled) {
+        owned = createStoryScene(stage, { staticMode: mode.current, onReady: () => setSettled(true), onFailure: () => { setSettled(true); onFailure(); } });
+        controller.current = owned;
+      }
     }).catch((error: unknown) => {
       if (!cancelled) { setSettled(true); onFailure(); }
       console.error("Optional story controller failed to load.", error);
     });
-    return () => { cancelled = true; cleanup?.(); };
-  }, [staticMode, shouldMount, boot, onFailure]);
+    return () => { cancelled = true; owned?.dispose(); if (controller.current === owned) controller.current = null; };
+  }, [shouldMount, boot, onFailure]);
   return null;
 }

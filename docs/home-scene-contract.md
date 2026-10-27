@@ -8,6 +8,11 @@ all SSR content, stage pinning, and the central clock under `3-journey/`.
 - Mount with `mountStoryScene(stage)` where `stage` is `#top.stage` and contains
   `.canvas-layer`. The function returns synchronous cleanup, including cancellation
   of an in-flight boot. A null-rendering deferred gate is supplied separately.
+- The gate uses `createStoryScene(stage, options)` from the same module, returning
+  `{ setStaticMode(enabled), dispose() }`. One handle owns the object canvas for
+  the HOME lifetime. Mode changes retain its renderer/glasses/raw256/native cache
+  and replace only motion attachments. The cleanup-only mount adapter remains
+  compatible; no parent journey API changes are required.
 - The scene reads `stage.dataset.storyTime`, `openingTime`, and `progress` at
   startup, and listens on **the stage** for `journey-frame`, whose detail is
   `{ time, openingTime, progress }`. No second scroll mapping or DOM animation.
@@ -40,11 +45,15 @@ all SSR content, stage pinning, and the central clock under `3-journey/`.
   stage dimensions, including the short-viewport minimum. Recompute before work
   resize when those dimensions change; same-size/font-ready measures must not
   replace a live Ideas origin. Real `story-origin` events remain authoritative.
-- Quiet/reduced reading remounts a **static** glasses-only controller, with time
+- Quiet/reduced reading selects a **static** glasses-only pose, with time
   zero, opening 26, emergence 1, and idle 0. It omits sculpture/font/LTC loading,
-  pointer interaction and the idle loop. `mountStoryScene(stage, { staticMode:
-  true })` is the imperative equivalent. The source's initial camera/pose is
-  retained. No mode toggle or scene function writes scroll position.
+  pointer interaction and the idle loop. A fresh `mountStoryScene(stage, {
+  staticMode: true })` loads only glasses. A retained motion→reading transition
+  disposes sculpture/type/LTC/private512 resources while keeping the renderer's
+  own scratch/cache history. The source's initial camera/pose is retained. No
+  mode toggle or scene function writes scroll position. Live proof, current
+  metrics and unavailable fresh OS coverage are in
+  [`story-reading.doc.md`](../src/sections/landing/2-story/story-reading.doc.md).
 - The host's original opacity and display declarations are restored on cleanup.
   Static mode exposes the canvas host even when the parent's unenhanced-reading
   CSS hides optional hosts. All other server reading layout stays with the parent.
