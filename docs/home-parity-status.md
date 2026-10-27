@@ -64,7 +64,9 @@ assertions, production build and SSR audit pass. Fresh production174 shows
 complete CLARITY on cold entry and motion remount, with source capture instability
 recorded separately. A subsequent production reload from40 exposed a late native
 scroll replay: entry ready at y5263/story40 despite no pending return records.
-Navigation is fixing that startup race before a fresh independent R7 begins.
+The source-backed fix in9a5dd77 retains manual document restoration and a guarded
+one-shot pageshow reset. Two dev reload repetitions and HOME history pass;
+full check85tests/3228assertions passes. Fresh production R7 remains required.
 
 | Round | Result |
 | --- | --- |
@@ -74,6 +76,7 @@ Navigation is fixing that startup race before a fresh independent R7 begins.
 | 4 | Stopped after confirmed R4-01 to transfer the sole permitted tab pair. Scene fix now matches cold/remeasured reflection atlases and refreshed optical camera samples; independent retest remains required. |
 | 5 | Corrected lens/camera/sculpture/Ideas and sampled reading layouts pass bounded checks. Open P2s: ordinary reload entry, restored-mount layout lifetime, footer keyboard resolve220ms, and source-reversed menu close. |
 | 6 | All four R5 triggers and the sampled integrated matrix pass. Two P2s remain: reload-specific reflection capture history and clean Back's pending generic HOME return. See `home-parity-review-r6.md`. |
+| 7 | Pending fresh review of9a5dd77: R6 bounds/readiness and HOME return fixes, late reload-race correction, and complete-title production controls. |
 
 R5 implementation responses: ordinary reload now explicitly starts fresh once
 per document; locale-restored mounts retain their initial semantic intent across
@@ -118,7 +121,7 @@ margins then closed the reading-extent difference: at EN 1400×850, document
 equal the reference. Removing the nonexistent footer ancestor requirement also
 matched information clearance at102.34375px relative to the footer.
 
-Latest completed root check: ESLint, TypeScript, 74 tests / 3,068 assertions,
+Latest completed root check: ESLint, TypeScript, 85 tests / 3,228 assertions,
 production build with deferred Troika, and production HTTP SSR audit pass.
 The production scene boots with local fonts and no cross-origin requests. At
 EN 1400×950/DPR1, score312, its incoming connector and project symbol path strings

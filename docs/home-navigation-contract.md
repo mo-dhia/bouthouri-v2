@@ -26,8 +26,12 @@ import {
    in this document and resets native/Lenis scroll to zero. Use
    `(freshReloadEntry || scrollY < 20)` in `shouldEnter`, retaining the existing
    entry-phase/hash/restore guards. The reset never repeats on a quiet/motion or
-   Strict Mode remount. Before load it temporarily uses manual browser scroll
-   restoration, releasing on load without another scroll reset.
+   Strict Mode remount. Fresh HOME keeps manual browser scroll restoration as
+   document policy; returning to auto at load can replay the outgoing pixels
+   after hydration. One nonpersisted initial `pageshow` repeats the reset, then
+   removes its document listeners. Page hide also cleans them; later routes and
+   BFCache visits cannot inherit that one-shot reset. This matches the source
+   head's manual policy without adding another hero or journey owner.
    A non-null restore result has `skipEntry: true`, including a
    history return to hero fraction zero. Finish the existing hero entry immediately
    in this case; do not reset scroll, play the loader, or require a sound choice.
@@ -237,6 +241,13 @@ Back uses16362/489.35. Retained reading3827→motion312, no-op footer hold and f
 ordinary11437 offset checks also pass. These are development observations;
 fresh independent production acceptance remains pending.
 Previous R5 validation was35 navigation tests/427 assertions (36/439 with reading).
+The later startup-race correction passes46 targeted tests/592 assertions and
+keeps manual restoration through load and remounts. Its source/dev live evidence
+at `/tmp/gazzar-home-navigation-startup-race/evidence.json` covers the exact
+174→mode-remount→174→40→reload trigger, a second completed40 reload, retained
+11437 offset and pristine HOME return/Forward after the change. Both reloads
+remain at0 with ready entry and manual restoration after load. Root full check
+passes85 tests/3228 assertions; production acceptance remains R7-owned.
 ESLint passes for the owned TypeScript files, tests and minimal hero integration;
 plain `tsc --noEmit --incremental false` passes (no Next build/typegen).
 
