@@ -155,10 +155,10 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     if (!next || !Number.isFinite(next.time)) return;
     frame = next; refreshFrame = false;
     workTravel = readWorkTravel();
-    // Parent clock owns this update; use our RAF only for physical settling.
-    if (frameId) { cancelAnimationFrame(frameId); frameId = 0; }
-    if (timer) { clearTimeout(timer); timer = 0; }
-    render(performance.now());
+    // Keep the parent's latest precise pose, but let the existing demand RAF
+    // submit it. A settling draw may already have run in this refresh; another
+    // synchronous draw here would submit the old and new poses in one cycle.
+    wake();
   };
   const interaction = (event: Event) => {
     const detail = (event as CustomEvent<SceneInteraction>).detail;

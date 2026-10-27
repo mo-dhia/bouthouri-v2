@@ -58,6 +58,19 @@ menu-open states submit no background GPU work; resize can prepare CPU resources
 while paused. Disposal is idempotent and releases the field, plane, material,
 fallback texture, renderer/context, listeners, pointer owner and scheduled work.
 
+R15's native draw trace (`docs/home-residual-cost-r15.md`) found two background
+default-framebuffer submissions in 444 local document-timeline bins, versus none
+in source. A settling callback drew an older pose before the parent's journey
+callback synchronously drew again. Journey events now store the newest precise
+score and associated travel, then invalidate the existing demand RAF. Multiple
+events share its pending draw; if the settling draw already ran, the newest pose
+remains pending for the next refresh. Hero, pointer, resize and mode changes use
+that same scheduler. This follows source's demand-root ownership without
+discarding a newer pose or changing field resolution, equations, quality or idle
+cadence. The focused regression exercises both callback orders and hidden-state
+resume. Native submission counts and whole-route moving parity require a new
+production review; no presented-FPS claim follows from the CPU harness.
+
 `story-environment.test.ts` executes the real controller and native pointer code
 in an isolated event/renderer harness. It checks allocation identity and disposal,
 material time/rates, retained pulse/stroke coordinates, same-size/same-aspect/DPR

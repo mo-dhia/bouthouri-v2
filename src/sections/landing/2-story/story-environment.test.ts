@@ -62,6 +62,7 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   const fields: { field: ReturnType<typeof createEnvironmentField>; clears: number; advances: number; disposals: number }[] = [];
   const pointers: ReturnType<typeof createEnvironmentPointer>[] = [];
   const surfaces: three.Mesh<three.PlaneGeometry, three.ShaderMaterial>[] = [];
+  const backgroundDraws: { stage: number; time: number }[] = [];
   const errors: unknown[][] = [];
   const dimensions: number[][] = [];
   class Renderer {
@@ -81,7 +82,10 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
       if (throwRender) throw new Error("Optional material draw failed");
       renders++;
       const mesh = scene.children[0] as three.Mesh<three.PlaneGeometry, three.ShaderMaterial>;
-      if (mesh.material.uniforms.uTime && !surfaces.includes(mesh)) surfaces.push(mesh);
+      if (mesh.material.uniforms.uTime) {
+        if (!surfaces.includes(mesh)) surfaces.push(mesh);
+        backgroundDraws.push({ stage: mesh.material.uniforms.uStage.value, time: mesh.material.uniforms.uTime.value });
+      }
     }
     dispose() { rendererDisposals++; }
     forceContextLoss() { contextLosses++; }
@@ -134,10 +138,10 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   const controller = loaded.createStoryEnvironment(stage, { reduced });
   const event = (type: string, properties: Record<string, unknown> = {}) => window.dispatchEvent(Object.assign(new Event(type), properties));
   return {
-    controller, module: loaded, stage, work, owner, fields, pointers, surfaces, dimensions, rafs, timers, errors,
+    controller, module: loaded, stage, work, owner, fields, pointers, surfaces, backgroundDraws, dimensions, rafs, timers, errors,
     get stats() { return { creations, renders, rendererDisposals, contextLosses }; },
     get canvas() { return owner.children[0].children[0]; },
-    step(dt = 1 / 60) { now += dt * 1000; const pending = [...rafs.values()]; rafs.clear(); for (const callback of pending) callback(now); },
+    step(dt = 1 / 60, after?: () => void) { now += dt * 1000; const pending = [...rafs.values()]; rafs.clear(); for (const callback of pending) callback(now); after?.(); },
     timer() { const [id, timer] = timers.entries().next().value!; timers.delete(id); timer.callback(); },
     event,
     hero(progress: number) { publisher.publish(heroWorld.heroWorldPose(progress)); },
@@ -157,6 +161,30 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
     get disconnected() { return intersections.every((entry) => entry.disposed === 1) && mutations.every((entry) => entry.disposed === 1); },
   };
 }
+
+test("journey and physical settling share one demand submission and preserve the newest precise pose", () => {
+  const h = environmentHarness();
+  h.frame(98.123456789); h.frame(174.987654321);
+  expect(h.backgroundDraws).toHaveLength(0); expect(h.rafs.size).toBe(1);
+  h.step();
+  expect(h.backgroundDraws).toHaveLength(1);
+  expect(h.backgroundDraws[0].stage).toBeCloseTo(score.sampleStoryScore({ time: 174.987654321, openingTime: 26, progress: 0 }).environment, 14);
+  const firstTime = h.backgroundDraws[0].time;
+  // Reproduce R15's callback order: the old settling pose draws first, then
+  // the journey publishes later in the same refresh. Do not draw it twice.
+  h.step(1 / 60, () => { h.frame(40); h.frame(128.123456789); });
+  expect(h.backgroundDraws).toHaveLength(2); expect(h.rafs.size).toBe(1);
+  expect(h.backgroundDraws[1].time - firstTime).toBeCloseTo(1 / 60, 12);
+  h.step();
+  expect(h.backgroundDraws).toHaveLength(3);
+  expect(h.backgroundDraws[2].stage).toBeCloseTo(score.sampleStoryScore({ time: 128.123456789, openingTime: 26, progress: 0 }).environment, 14);
+  expect(h.backgroundDraws[2].time - h.backgroundDraws[1].time).toBeCloseTo(1 / 60, 12);
+  h.hidden(true); h.frame(40); h.hero(0.6);
+  expect(h.rafs.size + h.timers.size).toBe(0); expect(h.backgroundDraws).toHaveLength(3);
+  h.hidden(false); h.step(); expect(h.backgroundDraws).toHaveLength(4);
+  expect(h.backgroundDraws[3].stage).toBeCloseTo(score.sampleStoryScore({ time: 40, openingTime: 26, progress: 0 }).environment, 14);
+  h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
+});
 
 test("source reduced-prop updates retain material time, pointer, targets and wave/stroke memory", () => {
   const h = environmentHarness();
@@ -227,6 +255,8 @@ test("late background boot starts from the current work travel rather than a sta
 
 test("reading resets effective work travel with one source horizontal kick and resumes current DOM/event travel", () => {
   const h = environmentHarness(); h.work.dataset.travel = "0.2"; h.frame(350); h.step();
+  expect(h.fields[0].field.uniforms.uHorizontal.value).toBeCloseTo(0.4, 12);
+  h.step(); // The retained travel is stationary after its first real draw.
   const field = h.fields[0], material = h.surfaces[0].material, u = field.field.uniforms;
   const time = material.uniforms.uTime.value as number, clears = field.clears;
   expect(u.uHorizontal.value).toBe(0);
