@@ -1,0 +1,95 @@
+# HOME adversarial review — round 6
+
+Date: 2026-10-27, approximately03:30–03:53UTC. **Not accepted: two bounded P2 findings remain.** All four original R5 triggers pass on the frozen production build; the additional clean history sequence and reload-dependent lens state do not.
+
+Reviewed implementation **d8509fc**, served at `http://localhost:3100/en` and `/ar`. The checkout initially included later documentation commits (`994352d` at inspection); those do not change the reviewed production implementation. This reviewer writes only this document and temporary evidence. No implementation edits, checks/tests, build/typegen/install, commits, server or process management were performed. Later offline implementation work authorized by the parent is outside this frozen review.
+
+Only Vaelix source175555005/local175555011 in window175554986 were used. No windows, tabs, iframes or replacement surfaces were created, and no unrelated pages were touched. Source stayed on the original site's HOME routes. Local was navigated from development3000 to production3100 before acceptance testing.
+
+## Confirmed findings
+
+### R6-01 · P2 — Ordinary reload produces the wrong lens reflection state on the next journey
+
+**URLs/session:** plain `https://www.thisisgazzar.com/en` versus `http://localhost:3100/en`, empty search/hash, original loaned tabs. EN,1912×1009CSSpx/DPR1; object canvas1912×1009 backing/CSS pixels. Motion enabled, menu closed, sound QUIET. This is specifically a reload/startup-history difference, not a proposal to change the already-correct universal material constants.
+
+**Reproduction:**
+
+1. Complete the actual QUIET entry using trusted Vaelix CDP double-click. Seek40→60→67→71→40, settling each native position. Both finish at y5263, opening26, source40.00/local40.0008.
+2. Call `location.reload()` in the existing foreground tab. Wait for fonts and ready boot. Both correctly restart at y0/story0/opening0 and await entry; R5-01 itself passes.
+3. Complete QUIET again, wait3s, seek y5263 and allow1.8s of foreground settling. Do not resize the viewport or canvas in this new document. Capture the visible lenses.
+
+**Reference/actual:** source has the broad charcoal reflection across the lens interiors; production retains the much darker sharp cold field. The frame/bridge remains bright, the optical caption and pose agree, and production reports ready/visible. The difference survives a controlled repeat. The final repeat's source document timeOrigin is1793073134159.7 and local1793073149686.4; pre-reload origins were1793073083110.6/1793072845139.9. Both new documents report navigation type`reload`, entry complete and the exact matched geometry above. The primary optical crop(200,180)–(1500,800) has MAE5.4907 and p99=30 in8-bit RGB levels. This is a visible reflection-field difference, not acceptance or rejection from a build number.
+
+Earlier reload observations produced the same difference, including the first explicit completed40 reload (source origin1793071879307.6/local1793071882863.6). The separate foreground reload control (1793072475189.2/1793072492056.6) also differs; that control reloaded a fresh EN document at zero before completing its new entry and is not mislabeled as a second identical40-origin trigger. Its subsequent40/60/67 captures have optical crop MAEs5.47/7.82/7.53. The final exact40-origin repeat above is the primary reproduction.
+
+**Distinguishing controls:** fresh `location.assign(origin+'/en')` navigation gives both pages the dark/sharp cold40 state. In that fresh-navigation control, a same-size synthetic resize does not change the visible reflection state; an actual canvas-width1912→1910→1912 cycle produces the broad field in both. The refreshed60/67/71 samples agree closely (MAE.0318/.00017/.0549,p99≤1). Source reload itself already produced the broad state before any reviewer canvas remeasure, whereas production reload did not. Do not compare this source reload to a local fresh navigation or force every cold boot to use the refreshed field.
+
+**Likely ownership:** startup/recapture sequencing in `2-story/story-scene.animate.ts` and `story-assets.ts:createStoryEnvironments`, coordinated with the reload entry/native-position reset. The exact internal cause is unresolved here. Source environment/cube versions and atlas hashes were not independently obtained; the earlier scene owner's hashes remain attributed prior evidence. No renderer hooks or broad GPU readback probes were installed to manufacture them.
+
+**Evidence:** `evidence-final.json` labels`final-reload-from-completed40-pre`, `final-reload-from-completed40-ready`, `final-reload-from40-t40`; primary paired image`final-reload-from40-t40-pair.png`; `final-repeat-metrics.json`. The fresh-navigation/no-op/actual2px controls are`final-optical-*`, with`final-control-metrics.json`. Preserve both navigation kinds when fixing and reviewing this finding.
+
+### R6-02 · P2 — Clean locale→footer→Back loses the source's pending semantic HOME return
+
+**URLs/session:** EN→AR HOME in the same two original tabs, initially1912×1009CSSpx/DPR1. Production uses Next same-document navigation; source locale changes and history visits replace the document. No extra same-URL activation navigation is inserted into the clean sequence.
+
+**Reproduction, including the final settled control:**
+
+1. Start a fresh plain EN document, complete QUIET, and settle work312 at y16362. Use the visible, non-inert persistent header's actual`/ar` link.
+2. Wait until AR is visibly restored at1912×1009, y16362/story312.01, with source`data-app-boot=ready` and the route settled. Only then use Vaelix`chrome_computer action=resize_page,width392,height865` on each existing tab. Both settle y12091/story311.99 and have392×865 object canvases.
+3. Scroll AR to footer714/y21772, allow the checkpoint to settle, then Back once. The final control used`chrome_navigate({tabId,url:'back',newWindow:false,background:false})`; Forward used the corresponding`'forward'`. Earlier clean controls with native`history.back()/forward()` give the same result.
+
+**Reference/actual on Back:** source restores **y12091/story311.99, Wujhat**; production restores **y16362/story489.3488, systems “CLARITY BY DESIGN.”** This is a4271px/177.35score difference with visibly different content. Both are EN, entry complete, opening26, menus closed and392×865/DPR1, after foreground activation and settling.
+
+The final source EN entry is`57571f51-74ef-4136-b9aa-99dd5a98e68b`. Its saved value in`portfolio-route-positions-v1` remains **16362**, even while its actual restored position is12091. Thus reading the saved pixel record alone does not predict this branch's visible result. Source initial EN/AR/Back/Forward timeOrigins are1793072844757.2 /1793072950153.3 /1793072975279.6 /1793072992076.8; history visits report`back_forward`. Source AR entry is`8e0ef9b5-8b5c-44b1-b435-844e8f5e4638`.
+
+Production keeps timeOrigin1793072845139.9 and navigation performance type`navigate` throughout the final sequence. Its EN ID`94b2f8be-362b-4390-88a4-1d4edc48bad9` and AR ID`47b44595-27de-4ebd-8d42-f4c2ad2cb354` are preserved. **Forward passes:** both return to AR y21772/story714; the old lost-footer lifecycle defect does not reproduce. The initial same-document history recognition fix therefore works, but its selected return intent differs in this clean branch.
+
+**Likely ownership and supported explanation:** navigation intent precedence in`src/lib/navigation/home-navigation-state.ts`/`home-navigation.ts`. The parent and navigation owner independently identified a missing source branch offline: public`2gz902oulp4x8.js.pretty` calls generic`rememberHomePosition()` before locale navigation, and`0or6--g23od4n.js.pretty`185–187 stores`portfolio-page-return-v1` with the outgoing HOME semantic position. The AR mount leaves a mismatched EN record intact; a timely hard Back EN consumes it, and the boot's semantic HOME return precedes saved-pixel fallback. An explicit route historyTarget has its own precedence. This explains the observed saved16362/actual12091 combination; it is supporting source analysis, not a claim the reviewer independently observed every storage branch.
+
+Prior accumulated-session pixel restoration remains real bounded evidence. The owner corrected its provenance during R6: an extra same-URL navigation had cleared pending HOME/work/locale records, selecting a different branch. **Do not replace all history restoration with semantic seeking.** Add/review the pending generic HOME return and retain consumed/expired/no-return saved-pixel cases. Frozen production does not implement this branch; no offline fix is accepted by this review.
+
+**Evidence:** labels`settled-history-en-before-locale`, `settled-history-ar-wide-before-resize`, `settled-history-ar-narrow-before-footer`, `settled-history-ar-footer-before-back`, `settled-history-back-en`, `settled-history-forward-ar`; paired visible proof`settled-history-back-en-pair.png`. Earlier`clean-history-*` records corroborate the result; the final settled series avoids the earlier source-navigation race.
+
+## Independent bounded acceptance matrix
+
+“Pass” applies to the exercised inputs and rendered checkpoints. It is not universal continuous animation, hardware, or browser parity.
+
+| Area | R6 result | Independent evidence / boundary |
+| --- | --- | --- |
+| R5-01 ordinary reload entry | **Pass** | Completed trusted QUIET,40→60→67→71→40/y5263→reload yields ready choice at y0/story0/opening0 in both. Repeated again at the end. R6-01 concerns the subsequent reflection state, not entry replay. |
+| R5-02 footer keyboard resolve | **Pass** | Trusted CDP Enter trace: source resolving9.0ms/to-logo224.6ms/logo2469.0ms; production.5/214.5/2460.3ms. The source resolve interval is present locally; no screenshot calls occurred during timing measurement. |
+| Footer reverse timing | **Pass at the measured foreground runs** | Trusted Escape source clearing6.3ms/to-word879.6ms/word2924.0ms; production7.3/870.2/2913.9ms. A separate actual-handler run returned2925/2931.3ms. No sustained reverse-duration defect reproduced. |
+| Footer drag / clipping | **Pass at tested desktop coordinates** | Trusted counter drag(95,700)→(95,790) retains word/heldfalse in both. Painted G stroke(80,700)→(160,760) captures, crosses pull threshold, clears held and enters to-logo directly without resolving. Both settle logo. Source transient pull-ready/local pull names are diagnostics, not a visual defect. |
+| EN/AR footer thought | **Pass at settled captures** | Wait4.5s after trusted Enter. Original Perspective title/prose and geometry agree in EN1912×1009 and AR392×865. EN whole-CSS-viewport MAE.247/p99=1; AR CSS crop.249/p99=1. Both reverse to word. Concept cycling/selection across every phase is not recertified. |
+| R5-04 menu close | **Pass** | Full-open actual Close: modal/lock removal668.6ms source/672.6ms production. Matching staged link withdrawal, content clipping, then surface departure; lock and inert closing content remain until completion. Invoking-control focus returns in both. |
+| Menu interruption / underlying scrub | **Pass at tested sequences** |600ms open→200ms reverse→reopen preserves each side's last painted surface/content/link pose at direction change, keeps modal/lock, restores primary interaction on reopening, and completes normally. A500px programmatic seek remains locked.40→174 immediately before opening settles174 under the modal in both. Full-open visible captures also retained. Physical Tab/default Escape behavior is not inferred from handler checks. |
+| R5-03 restored semantic lifetime | **Pass** | Visible EN312→AR312 at wide; resize narrow yields12091/312; reverse wide yields16362/312. Footer714 then same-size resize/ready/irrelevant attribute update stays714. In the same locale-restored narrow mount, footer→reading yields3827; motion returns12091/312. |
+| Fresh ordinary mode policy | **Pass, kept separate from restored intent** | Fresh ordinary EN580/y25188→reading clamps to11437 in document12446; motion retains11437/source162.47/local162.4688. Capturing a later checkpoint did not turn this fresh mount into a semantic restore. |
+| Same-document Back/Forward | **Partial; R6-02 blocks clean Back** | Production retains the same document and distinct entry IDs; both Forward visits restore AR footer21772/714. Clean Back selects the wrong source branch as described above. |
+| Fresh / refreshed lens and crossing | **Bounded pass; reload variant fails R6-01** | Direct fresh navigation cold40, no-op and actual2px histories were kept separate. Refreshed40→60→67→71→reverse40 closely agree. No universal material-constant regression is alleged. |
+| Sculpture128/174 | **Pass after pointer/settling control** | Neutral pointer at(0,0),1.9s settle, matching score/native pixels. Crop MAE.1775/.1205 and p99=1, with matching complete title/sculpture/support. Earlier750ms captures had transient pointer/pose differences and are superseded. |
+| Ideas265/280 and all four projects | **Pass at sampled desktop frames** | Captured at14814/15308 and work312/349/385/417 at16362/17580/18765/19819. Text, mark/connector composition and continuing origin closely agree; selected crop p99=1. |
+| Work hover/focus gates | **Pass at actual-handler checks** | At nominal308, no emphasis; at completed312/349/385/417, active project hover/focus engages. Only the focused project is non-inert/tab0; all others inert/tab−1. Active link accepts focus. Pointer-enter was dispatched to real handlers, so this does not certify physical hover/light travel on every mark. Original HOME project hrefs remain; destination pages are later scope. |
+| Systems580 / footer714 / reverse | **Pass at bounded checkpoints** | EN25188/29601, AR18545/21772 sampled visibly. Final reverse714→580→417→280→174→128→40→0 agrees in native score/opening and restores the hero. This is settled reverse traversal, not a recording of every intermediate frame. |
+| AR narrow visuals | **Pass at sampled CSS coverage** |392×865/DPR1 hero,128/y7660,280/11321,312/12091,580/18545,714/21772 and settled thought. Correct Cairo/RTL compositions and localized text; sculpture/Ideas/work/systems CSS-crop p99=1. Marquee/portrait phase remains time-dependent. |
+| Reading geometry / R3 fixes | **Pass at EN wide and AR narrow** | EN document12446; philosophy3127.890625/h896.5, outlook4024.390625/h452.640625, work4668.734375/h4053.9375, footer11557.921875/h887.90625, information11671.546875/h99.890625 match. AR document9406; footer8644.53125, information8724.53125/h195.3125, relative80 match; prose uses Cairo450 and16.32px margins. |
+| Background / hero | **Bounded visible agreement** | Captured resting hero, work, systems and footer include the original material background. Trusted QUIET entry and reverse hero return work. Accumulated pressure histories, marquee phase, active portrait strokes and every idle/force frame are not graded as synchronized pixels. |
+| Quiet/reduced/failure/no-JS/SSR/audio/COPY | **Attributed prior/root evidence retained** | R6 independently repeats explicit reading toggles and final muted control labels. OS preference, failed chunk/context, no-JS rendering, audible balance and clipboard are not independently repeated. Parent reports check74tests/3068assertions, production build and HTTP SSR audit pass; those remain parent evidence. |
+
+## Evidence, provenance and exclusions
+
+Canonical temporary index: **`/tmp/gazzar-home-review-r6/evidence-final.json`**,173 labeled records with raw tool responses, document/viewport/score snapshots and screenshot paths. `acceptance-index.json` provides a decoded index. Copied PNGs are under`screenshots/`; original Vaelix saves are in Downloads. Primary finding pairs and metrics are named above. Additional metrics:`pixel-metrics-checkpoint2.json`(desktop), `ar-css-pixel-metrics.json`(correct narrow CSS coverage), `final-control-metrics.json`, `final-repeat-metrics.json`. `evidence.json` and`evidence-checkpoint*.json` are earlier checkpoints, not competing final indexes.
+
+Actual measured CSS sizes are1912×1009 and392×865, DPR1; object canvas backing and CSS sizes were checked. **Resize provenance correction:** exposed Vaelix`resize_page` first calls`Emulation.setDeviceMetricsOverride`; native`chrome.windows.update` is only its catch fallback. R6 used the exposed action on the existing tabs, not a verified native OS resize or physical phone. Parent/nav owner confirmed that prior “native resize” wording also described this same action and cannot establish a native path. No clear-emulation operation is exposed, and the extension/install was not changed.
+
+Vaelix viewport screenshots can retain the larger physical image dimensions even when CSS is392×865. The first automatically generated narrow metrics incorrectly selected a desktop crop based on PNG width; they are superseded by`ar-css-pixel-metrics.json` and`ar-narrow-*-css-pair.png`, which explicitly crop(0,0)–(392,865). Empty padding is not evidence of Arabic parity. Desktop metrics also use their explicit listed CSS crop, not whole-file padding.
+
+Excluded setup observations: the first source “cold-hero” PNG still shows the entry choice after an ineffective early click; it is not a completed-hero comparison. The first locale attempt selected a non-visible/inert header link locally and landed at0; it is excluded. The verified locale series uses the visible non-inert persistent link. Early source evaluations that report “target navigated” are tool/navigation races, not site failures; final settled history controls verify ARwide312/ready before resizing. Untrusted`chrome_keyboard` runs are labeled actual-handler observations; the reported trusted timings use`chrome_computer action=key` with observed`isTrusted=true`.
+
+No source/local environment hash equality, broad resource-leak certification, all breakpoint boundaries, DPR2, physical touch/coarse pointer, mobile browser bars, other browser/GPU behavior, physical keyboard default actions, denied storage/BFCache, audible balance or continuous frame-for-frame motion parity is claimed. No new route content outside HOME is accepted. Query/hash/project-return cases not listed in the matrix retain their prior bounded evidence, rather than being silently counted as R6 repetitions.
+
+## Handoff
+
+**Browser ownership RELEASED with no calls pending. No browser calls follow release.** Source175555005 is`https://www.thisisgazzar.com/en`; local175555011 is`http://localhost:3100/en`, active, both in original window175554986. Both final measurements:1912×1009CSSpx/DPR1, y0/story0/opening0, entry complete, motion enabled, menus closed, pointer heldfalse and sound OFF (`quiet`, controls say Enable sound). Review observers/listeners/globals and temporary canvas width overrides are removed. Final inventory remains one window/four original tabs; unrelated tabs were preserved.
+
+The two findings require implementation and a fresh review of their specific branches. Passing the original R5 triggers and the exercised matrix does not establish universal HOME parity.

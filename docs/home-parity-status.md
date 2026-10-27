@@ -42,13 +42,16 @@ checks or matching content as proof that all animation frames match.
 Current state: HOME implementation is integrated and committed. The scene owner
 has corrected R4-01 and the associated camera-refresh history, with source-matched
 cold/refreshed atlases and optical image samples. Round5 passed those corrections
-and found four P2 flow/timing differences. The fixes are now built in production
-at revision `d8509fc`, awaiting fresh independent round6 acceptance.
+and found four P2 flow/timing differences. Their fixes were built in production
+at revision `d8509fc`. Round6 passed all four direct triggers and found two
+additional P2 lifecycle/return branches, now in implementation.
 Full parity is not yet asserted.
 
-Round6 in progress: all four direct R5 triggers pass in production. The reviewer
-has separately reproduced a cold reflection mismatch and a pristine history
-return mismatch, now under diagnosis. Prior resize work used Vaelix's
+Round6 is not accepted: ordinary reload from a completed journey produces a
+broad source reflection while local retains the dark field. Fresh navigation,
+same-size and actual2px remeasure controls match. Clean locale→footer→Back also
+misses the source's pending generic HOME return: source Wujhat12091/312 versus
+local systems16362/489.35; Forward restores footer in both. Prior resize work used Vaelix's
 emulation-first `resize_page`, not a verified OS-native window resize. The prior
 source history had accumulated extra navigations; its saved-pixel result does
 not invalidate the fresh review's different source result.
@@ -60,7 +63,7 @@ not invalidate the fresh review's different source result.
 | 3 | All four R2 triggers pass independently. Two P2 findings (quiet paragraph margins and footer selector clearance) are fixed and cold-retested by the parent; fresh visual review remains required. |
 | 4 | Stopped after confirmed R4-01 to transfer the sole permitted tab pair. Scene fix now matches cold/remeasured reflection atlases and refreshed optical camera samples; independent retest remains required. |
 | 5 | Corrected lens/camera/sculpture/Ideas and sampled reading layouts pass bounded checks. Open P2s: ordinary reload entry, restored-mount layout lifetime, footer keyboard resolve220ms, and source-reversed menu close. |
-| 6 | Pending fresh production review of `d8509fc`, including all R5 triggers and the same-document Back/Forward correction. |
+| 6 | All four R5 triggers and the sampled integrated matrix pass. Two P2s remain: reload-specific reflection capture history and clean Back's pending generic HOME return. See `home-parity-review-r6.md`. |
 
 R5 implementation responses: ordinary reload now explicitly starts fresh once
 per document; locale-restored mounts retain their initial semantic intent across
@@ -70,7 +73,10 @@ reapply. Browser history visits use source saved-pixel semantics; a bounded
 per-document visited-ID/exact-URL map recognizes Next's same-document history
 before route teardown can discard the popstate listener. In the implementer's
 clean sequence, EN312 wide→AR312 narrow→ARfooter→Back EN489.35/y16362→Forward
-AR714/y21772 now matches source.
+AR714/y21772 matches the accumulated source run. Round6's pristine sequence
+exposed the missing generic HOME return that precedes pixel fallback; that
+additional branch is being added without changing all history visits to
+semantic restoration.
 
 Footer Enter resolves/captures current geometry for220ms before the original
 2.24s morph; pointer pull release remains direct. The menu now reverses all
