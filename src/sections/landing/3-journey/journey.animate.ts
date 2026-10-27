@@ -251,7 +251,7 @@ export function mountJourney(root: HTMLElement) {
     };
     const tick = (now: number) => {
       frameId = null;
-      if (disposed || document.hidden || uiStore.getState().menuOpen) return;
+      if (disposed || document.hidden) return;
       const immediate = frameFromProgress(target).time >= 270;
       displayed = immediate
         ? target
@@ -260,12 +260,12 @@ export function mountJourney(root: HTMLElement) {
       if (displayed !== target) frameId = requestAnimationFrame(tick);
     };
     const request = () => {
-      if (frameId === null && !document.hidden && !uiStore.getState().menuOpen)
+      if (frameId === null && !document.hidden)
         frameId = requestAnimationFrame(tick);
     };
     const pauseOrResume = () => {
       const now = performance.now();
-      if (document.hidden || uiStore.getState().menuOpen) {
+      if (document.hidden) {
         pausedAt ??= now;
         if (frameId !== null) cancelAnimationFrame(frameId);
         frameId = null;
@@ -281,7 +281,7 @@ export function mountJourney(root: HTMLElement) {
       frameId = null;
       target = displayed = scrubFrom = progress;
       scrubStart = performance.now();
-      pausedAt = document.hidden || uiStore.getState().menuOpen ? scrubStart : null;
+      pausedAt = document.hidden ? scrubStart : null;
       render(displayed);
     };
     settleModePosition = () => {

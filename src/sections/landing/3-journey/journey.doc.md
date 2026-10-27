@@ -25,7 +25,7 @@ remain outside React/Storio. The scene receives `journey-frame` on `#top` with
 The registration uses `useRAF:false` because presentation owns its RAF. Scrubbing
 uses the recovered 480ms Expo.out curve and wall-clock elapsed time; long GPU
 frames do not stretch the animation. Scores at270 and later synchronize directly.
-Menu/visibility pauses preserve elapsed scrub time, while restored positions snap
+Visibility pauses preserve elapsed scrub time, while restored positions snap
 both the target and displayed score.
 
 `work-paths.js` and `work-renderer.js` contain the original project mark geometry,
@@ -40,7 +40,9 @@ under `2-story/`. Every controller releases its listeners, observers, keys,
 pending frames, and owned inline styles. Browser QA must exercise forward and
 reverse scrolling, restored positions, resize, quiet/reduced preferences, and
 hidden-tab resumption.
-The settling controller also pauses while the menu is open.
+The scalar scrub continues settling beneath an open menu, as in the reference.
+The object/material renderers independently pause GPU activity under the modal;
+closing the menu reveals the settled score without starting a delayed journey.
 
 Mode changes preserve the native offset, clamped to the newly measured document,
 then snap target/displayed score through the shared render path. This mirrors
