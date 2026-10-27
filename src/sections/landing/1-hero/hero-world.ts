@@ -42,6 +42,7 @@ export const heroWorldEvent = "gazzar:hero-world";
 /** Source quickTo duration .1 / power2.out, retargeted from its displayed value. */
 export function heroWorldScrub(from: number, to: number, elapsedMs: number) {
   const progress = clamp(elapsedMs / 100);
+  if (progress === 1) return to;
   return from + (to - from) * (1 - Math.pow(1 - progress, 3));
 }
 
@@ -82,17 +83,30 @@ export function worldProgressFromScroll(scroll: number, height: number, mobile: 
   return worldProgressFromInput(heroInputProgressFromScroll(scroll, height, mobile), mobile);
 }
 
-/** No RAF: the hero owns sampling, pause/resume and immediate restore/refresh. */
+/** No RAF: the hero supplies callback wall time and its owner's awake/idle state. */
 export function createHeroWorldClock() {
   let input = 0, target = 0, from = 0, started = 0;
-  let latestTime = 0;
+  let latestTime = 0, parentTime = 0, awake = false;
   const time = (now: number) => (latestTime = Math.max(latestTime, now));
+  const wake = (now: number) => {
+    const wall = time(now);
+    if (awake) return;
+    // A sleeping source ticker wakes inside resetTo. Rebase the local epoch
+    // without consuming idle wall time or advancing the explicit displayed FROM.
+    started += wall - parentTime;
+    parentTime = wall;
+    awake = true;
+  };
   const pose = (mobile: boolean) => heroWorldPose(worldProgressFromInput(input, mobile));
   return {
     get settled() { return input === target; },
     pose,
+    wake,
+    sleep() { awake = false; },
     sample(now: number, mobile: boolean) {
-      input = heroWorldScrub(from, target, time(now) - started);
+      parentTime = time(now);
+      awake = true;
+      input = heroWorldScrub(from, target, parentTime - started);
       return pose(mobile);
     },
     retarget(value: number, now: number) {
@@ -100,10 +114,18 @@ export function createHeroWorldClock() {
       if (next === target) return;
       // Cached hero calls quickTo(next, l.progress): resetTo's explicit start
       // preserves the displayed input, unlike quickTo(next) without a start.
-      from = input; target = next; started = time(now);
+      wake(now);
+      from = input; target = next; started = parentTime;
     },
-    snap(value: number, now = latestTime) { input = from = target = clamp(value); started = time(now); },
-    resume(now: number) { from = input; started = time(now); },
+    snap(value: number, now = latestTime) {
+      time(now);
+      input = from = target = clamp(value);
+      started = parentTime;
+    },
+    resume(now: number) {
+      parentTime = time(now);
+      from = input; started = parentTime; awake = true;
+    },
   };
 }
 

@@ -442,7 +442,10 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   };
   const tick = (now: number) => {
     frame = 0;
-    if (disposed || document.hidden || uiStore.getState().menuOpen) return;
+    if (disposed || document.hidden || uiStore.getState().menuOpen) {
+      worldClock.sleep();
+      return;
+    }
     const magnetMoving = magnet.step(now);
     const delta = lastFrame ? Math.min(0.05, (now - lastFrame) / 1000) : 1 / 60;
     lastFrame = now;
@@ -545,7 +548,8 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       if (t >= 2.5) finish();
     }
     if (entered || phase === "assembling") {
-      worldPose = worldClock.sample(now, innerWidth <= 700);
+      // Source ticker reads Date.now inside its callback, not the RAF stamp.
+      worldPose = worldClock.sample(performance.now(), innerWidth <= 700);
       renderWorld();
       const pose = worldPose;
       if (!paused && !pose.hidden && assemblyTime >= 0.16) {
@@ -574,18 +578,23 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       Math.abs(choicesTilt - tiltTarget) > 0.0001
     )
       wake();
+    if (!frame) worldClock.sleep();
   };
   function wake() {
-    if (!disposed && !frame && !document.hidden && !uiStore.getState().menuOpen)
+    if (!disposed && !frame && !document.hidden && !uiStore.getState().menuOpen) {
+      worldClock.wake(performance.now());
       frame = requestAnimationFrame(tick);
+    }
   }
-  let menuWasOpen = uiStore.getState().menuOpen;
+  let worldWasPaused = document.hidden || uiStore.getState().menuOpen;
   const sync = () => {
     const menuOpen = uiStore.getState().menuOpen;
+    const worldPaused = document.hidden || menuOpen;
     if (menuOpen) magnet.reset();
-    else if (menuWasOpen && !worldClock.settled)
+    if (worldPaused) worldClock.sleep();
+    else if (worldWasPaused && !worldClock.settled)
       worldClock.resume(performance.now());
-    menuWasOpen = menuOpen;
+    worldWasPaused = worldPaused;
     if (menuOpen || document.hidden) portrait?.reset();
     lastFrame = 0;
     wake();

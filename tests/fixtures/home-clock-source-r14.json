@@ -1,0 +1,1433 @@
+{
+  "source": {
+    "version": "3.15.0",
+    "sha256": "e1899cd720c6c19111d45a94334434ebb3fd826e1cdb191dda8b312e17b0fef8",
+    "core": "244pluf-w83n0.js / module 32919",
+    "hero": "2gz902oulp4x8.js:4787–4828; explicit w(e.progress,l.progress)",
+    "journey": "2mptg809nyngd.js / module 43340; parent pre-render before resetTo",
+    "note": "Actual cached core, fake Date.now inside ticker callbacks, inert timers, default lag smoothing. Only ticks and sleeping-ticker wake advance the source parent. RAF stamps are recorded adversarial inputs, never source time. No local helper is imported. Six-decimal source writes; compare with accumulated rounding tolerance. Synthetic contracts do not establish live cadence or presented FPS."
+  },
+  "cases": {
+    "hero-betweenTicks": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 1,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 10,
+          "raf": 10,
+          "input": 0.271,
+          "parentMs": 10,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 25,
+          "to": 0.6,
+          "input": 0.271,
+          "parentMs": 10,
+          "startMs": 10
+        },
+        {
+          "kind": "tick",
+          "wall": 40,
+          "raf": 40,
+          "input": 0.487153,
+          "parentMs": 40,
+          "startMs": 10
+        },
+        {
+          "kind": "target",
+          "wall": 53,
+          "to": 1,
+          "input": 0.487153,
+          "parentMs": 40,
+          "startMs": 40
+        },
+        {
+          "kind": "tick",
+          "wall": 70,
+          "raf": 70,
+          "input": 0.824093,
+          "parentMs": 70,
+          "startMs": 40
+        },
+        {
+          "kind": "tick",
+          "wall": 153,
+          "raf": 153,
+          "input": 1,
+          "parentMs": 153,
+          "startMs": 40
+        }
+      ]
+    },
+    "hero-beforeRAF": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 17,
+          "to": 0.1,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 18,
+          "raf": 16.666666666666668,
+          "input": 0.044863,
+          "parentMs": 18,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 34,
+          "to": 0.2,
+          "input": 0.044863,
+          "parentMs": 18,
+          "startMs": 18
+        },
+        {
+          "kind": "tick",
+          "wall": 35,
+          "raf": 33.333333333333336,
+          "input": 0.111295,
+          "parentMs": 35,
+          "startMs": 18
+        },
+        {
+          "kind": "target",
+          "wall": 51,
+          "to": 0.3,
+          "input": 0.111295,
+          "parentMs": 35,
+          "startMs": 35
+        },
+        {
+          "kind": "tick",
+          "wall": 52,
+          "raf": 50,
+          "input": 0.192101,
+          "parentMs": 52,
+          "startMs": 35
+        },
+        {
+          "kind": "target",
+          "wall": 68,
+          "to": 0.4,
+          "input": 0.192101,
+          "parentMs": 52,
+          "startMs": 52
+        },
+        {
+          "kind": "tick",
+          "wall": 69,
+          "raf": 66.66666666666667,
+          "input": 0.281126,
+          "parentMs": 69,
+          "startMs": 52
+        },
+        {
+          "kind": "tick",
+          "wall": 86,
+          "raf": 83.33333333333333,
+          "input": 0.34023,
+          "parentMs": 86,
+          "startMs": 52
+        },
+        {
+          "kind": "tick",
+          "wall": 566,
+          "raf": 566,
+          "input": 0.4,
+          "parentMs": 566,
+          "startMs": 52
+        }
+      ]
+    },
+    "hero-multipleEvents": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.2,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 23,
+          "to": 0.4,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 27,
+          "to": 0.1,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 30,
+          "to": 0.3,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 34,
+          "raf": 32,
+          "input": 0.179503,
+          "parentMs": 34,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 39,
+          "to": 0.05,
+          "input": 0.179503,
+          "parentMs": 34,
+          "startMs": 34
+        },
+        {
+          "kind": "target",
+          "wall": 44,
+          "to": 0.2,
+          "input": 0.179503,
+          "parentMs": 34,
+          "startMs": 34
+        },
+        {
+          "kind": "tick",
+          "wall": 52,
+          "raf": 48,
+          "input": 0.188699,
+          "parentMs": 52,
+          "startMs": 34
+        },
+        {
+          "kind": "tick",
+          "wall": 544,
+          "raf": 544,
+          "input": 0.2,
+          "parentMs": 544,
+          "startMs": 34
+        }
+      ]
+    },
+    "hero-reversal": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 1,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 20,
+          "raf": 20,
+          "input": 0.488,
+          "parentMs": 20,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 37,
+          "to": 0,
+          "input": 0.488,
+          "parentMs": 20,
+          "startMs": 20
+        },
+        {
+          "kind": "tick",
+          "wall": 38,
+          "raf": 33.333333333333336,
+          "input": 0.269068,
+          "parentMs": 38,
+          "startMs": 20
+        },
+        {
+          "kind": "target",
+          "wall": 54,
+          "to": 0.8,
+          "input": 0.269068,
+          "parentMs": 38,
+          "startMs": 38
+        },
+        {
+          "kind": "tick",
+          "wall": 55,
+          "raf": 50,
+          "input": 0.49642,
+          "parentMs": 55,
+          "startMs": 38
+        },
+        {
+          "kind": "tick",
+          "wall": 535,
+          "raf": 535,
+          "input": 0.8,
+          "parentMs": 535,
+          "startMs": 38
+        }
+      ]
+    },
+    "hero-callbackDelay": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.2,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 30,
+          "to": 0.4,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 80,
+          "raf": 32,
+          "input": 0.385138,
+          "parentMs": 80,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 89,
+          "to": 0.05,
+          "input": 0.385138,
+          "parentMs": 80,
+          "startMs": 80
+        },
+        {
+          "kind": "tick",
+          "wall": 110,
+          "raf": 96,
+          "input": 0.164952,
+          "parentMs": 110,
+          "startMs": 80
+        },
+        {
+          "kind": "tick",
+          "wall": 590,
+          "raf": 590,
+          "input": 0.05,
+          "parentMs": 590,
+          "startMs": 80
+        }
+      ]
+    },
+    "hero-pre270": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.2,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 30,
+          "to": 0.4,
+          "input": 0.081459,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 32,
+          "raf": 32,
+          "input": 0.211199,
+          "parentMs": 32,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 46,
+          "to": 0.05,
+          "input": 0.211199,
+          "parentMs": 32,
+          "startMs": 32
+        },
+        {
+          "kind": "tick",
+          "wall": 48,
+          "raf": 48,
+          "input": 0.145543,
+          "parentMs": 48,
+          "startMs": 32
+        },
+        {
+          "kind": "target",
+          "wall": 62,
+          "to": 0.3,
+          "input": 0.145543,
+          "parentMs": 48,
+          "startMs": 48
+        },
+        {
+          "kind": "tick",
+          "wall": 64,
+          "raf": 64,
+          "input": 0.208453,
+          "parentMs": 64,
+          "startMs": 48
+        },
+        {
+          "kind": "tick",
+          "wall": 80,
+          "raf": 80,
+          "input": 0.251434,
+          "parentMs": 80,
+          "startMs": 48
+        },
+        {
+          "kind": "tick",
+          "wall": 542,
+          "raf": 542,
+          "input": 0.3,
+          "parentMs": 542,
+          "startMs": 48
+        }
+      ]
+    },
+    "hero-settledWake": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.3,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 480,
+          "raf": 480,
+          "input": 0.3,
+          "parentMs": 480,
+          "startMs": 0
+        },
+        {
+          "kind": "sleep",
+          "wall": 480,
+          "input": 0.3,
+          "parentMs": 480,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 2000,
+          "to": 0.1,
+          "input": 0.3,
+          "parentMs": 513,
+          "startMs": 513
+        },
+        {
+          "kind": "target",
+          "wall": 2007,
+          "to": 0.2,
+          "input": 0.3,
+          "parentMs": 513,
+          "startMs": 513
+        },
+        {
+          "kind": "tick",
+          "wall": 2016,
+          "raf": 2000,
+          "input": 0.25927,
+          "parentMs": 529,
+          "startMs": 513
+        },
+        {
+          "kind": "tick",
+          "wall": 2490,
+          "raf": 2490,
+          "input": 0.2,
+          "parentMs": 1002.9999999999999,
+          "startMs": 513
+        }
+      ]
+    },
+    "hero-unfinishedWake": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.3,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 20,
+          "raf": 20,
+          "input": 0.1464,
+          "parentMs": 20,
+          "startMs": 0
+        },
+        {
+          "kind": "sleep",
+          "wall": 20,
+          "input": 0.1464,
+          "parentMs": 20,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 2000,
+          "to": 0.1,
+          "input": 0.1464,
+          "parentMs": 53,
+          "startMs": 53
+        },
+        {
+          "kind": "tick",
+          "wall": 2016,
+          "raf": 2000,
+          "input": 0.127501,
+          "parentMs": 69,
+          "startMs": 53
+        },
+        {
+          "kind": "tick",
+          "wall": 2490,
+          "raf": 2490,
+          "input": 0.1,
+          "parentMs": 543,
+          "startMs": 53
+        }
+      ]
+    },
+    "hero-refreshWake": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.4,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.162918,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "snap",
+          "wall": 31,
+          "to": 0.2,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "sleep",
+          "wall": 31,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 2000,
+          "to": 0.3,
+          "input": 0.2,
+          "parentMs": 49,
+          "startMs": 49
+        },
+        {
+          "kind": "tick",
+          "wall": 2016,
+          "raf": 2000,
+          "input": 0.24073,
+          "parentMs": 65,
+          "startMs": 49
+        },
+        {
+          "kind": "tick",
+          "wall": 2490,
+          "raf": 2490,
+          "input": 0.3,
+          "parentMs": 539,
+          "startMs": 49
+        }
+      ]
+    },
+    "hero-refreshAwake": {
+      "kind": "hero",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.4,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.162918,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "snap",
+          "wall": 31,
+          "to": 0.2,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 35,
+          "to": 0.3,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 40,
+          "raf": 40,
+          "input": 0.256102,
+          "parentMs": 40,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 520,
+          "raf": 520,
+          "input": 0.3,
+          "parentMs": 520,
+          "startMs": 16
+        }
+      ]
+    },
+    "journey-betweenTicks": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 1,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 10,
+          "raf": 10,
+          "input": 0.134134,
+          "parentMs": 10,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 25,
+          "to": 0.6,
+          "input": 0.134134,
+          "parentMs": 10,
+          "startMs": 10
+        },
+        {
+          "kind": "tick",
+          "wall": 40,
+          "raf": 40,
+          "input": 0.297035,
+          "parentMs": 40,
+          "startMs": 10
+        },
+        {
+          "kind": "target",
+          "wall": 53,
+          "to": 1,
+          "input": 0.297035,
+          "parentMs": 40,
+          "startMs": 40
+        },
+        {
+          "kind": "tick",
+          "wall": 70,
+          "raf": 70,
+          "input": 0.542843,
+          "parentMs": 70,
+          "startMs": 40
+        },
+        {
+          "kind": "tick",
+          "wall": 153,
+          "raf": 153,
+          "input": 0.861819,
+          "parentMs": 153,
+          "startMs": 40
+        }
+      ]
+    },
+    "journey-beforeRAF": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 17,
+          "to": 0.1,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 18,
+          "raf": 16.666666666666668,
+          "input": 0.0228,
+          "parentMs": 18,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 34,
+          "to": 0.2,
+          "input": 0.0228,
+          "parentMs": 18,
+          "startMs": 18
+        },
+        {
+          "kind": "tick",
+          "wall": 35,
+          "raf": 33.333333333333336,
+          "input": 0.061227,
+          "parentMs": 35,
+          "startMs": 18
+        },
+        {
+          "kind": "target",
+          "wall": 51,
+          "to": 0.3,
+          "input": 0.061227,
+          "parentMs": 35,
+          "startMs": 35
+        },
+        {
+          "kind": "tick",
+          "wall": 52,
+          "raf": 50,
+          "input": 0.113007,
+          "parentMs": 52,
+          "startMs": 35
+        },
+        {
+          "kind": "target",
+          "wall": 68,
+          "to": 0.4,
+          "input": 0.113007,
+          "parentMs": 52,
+          "startMs": 52
+        },
+        {
+          "kind": "tick",
+          "wall": 69,
+          "raf": 66.66666666666667,
+          "input": 0.175244,
+          "parentMs": 69,
+          "startMs": 52
+        },
+        {
+          "kind": "tick",
+          "wall": 86,
+          "raf": 83.33333333333333,
+          "input": 0.223712,
+          "parentMs": 86,
+          "startMs": 52
+        },
+        {
+          "kind": "tick",
+          "wall": 566,
+          "raf": 566,
+          "input": 0.4,
+          "parentMs": 566,
+          "startMs": 52
+        }
+      ]
+    },
+    "journey-multipleEvents": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.2,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 23,
+          "to": 0.4,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 27,
+          "to": 0.1,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 30,
+          "to": 0.3,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 34,
+          "raf": 32,
+          "input": 0.100137,
+          "parentMs": 34,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 39,
+          "to": 0.05,
+          "input": 0.100137,
+          "parentMs": 34,
+          "startMs": 34
+        },
+        {
+          "kind": "target",
+          "wall": 44,
+          "to": 0.2,
+          "input": 0.100137,
+          "parentMs": 34,
+          "startMs": 34
+        },
+        {
+          "kind": "tick",
+          "wall": 52,
+          "raf": 48,
+          "input": 0.122905,
+          "parentMs": 52,
+          "startMs": 34
+        },
+        {
+          "kind": "tick",
+          "wall": 544,
+          "raf": 544,
+          "input": 0.2,
+          "parentMs": 544,
+          "startMs": 34
+        }
+      ]
+    },
+    "journey-reversal": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 1,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 20,
+          "raf": 20,
+          "input": 0.249785,
+          "parentMs": 20,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 37,
+          "to": 0,
+          "input": 0.249785,
+          "parentMs": 20,
+          "startMs": 20
+        },
+        {
+          "kind": "tick",
+          "wall": 38,
+          "raf": 33.333333333333336,
+          "input": 0.192835,
+          "parentMs": 38,
+          "startMs": 20
+        },
+        {
+          "kind": "target",
+          "wall": 54,
+          "to": 0.8,
+          "input": 0.192835,
+          "parentMs": 38,
+          "startMs": 38
+        },
+        {
+          "kind": "tick",
+          "wall": 55,
+          "raf": 50,
+          "input": 0.324504,
+          "parentMs": 55,
+          "startMs": 38
+        },
+        {
+          "kind": "tick",
+          "wall": 535,
+          "raf": 535,
+          "input": 0.8,
+          "parentMs": 535,
+          "startMs": 38
+        }
+      ]
+    },
+    "journey-callbackDelay": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.2,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 30,
+          "to": 0.4,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 80,
+          "raf": 32,
+          "input": 0.256288,
+          "parentMs": 80,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 89,
+          "to": 0.05,
+          "input": 0.256288,
+          "parentMs": 80,
+          "startMs": 80
+        },
+        {
+          "kind": "tick",
+          "wall": 110,
+          "raf": 96,
+          "input": 0.184155,
+          "parentMs": 110,
+          "startMs": 80
+        },
+        {
+          "kind": "tick",
+          "wall": 590,
+          "raf": 590,
+          "input": 0.05,
+          "parentMs": 590,
+          "startMs": 80
+        }
+      ]
+    },
+    "journey-pre270": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.2,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 30,
+          "to": 0.4,
+          "input": 0.041112,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 32,
+          "raf": 32,
+          "input": 0.114884,
+          "parentMs": 32,
+          "startMs": 16
+        },
+        {
+          "kind": "target",
+          "wall": 46,
+          "to": 0.05,
+          "input": 0.114884,
+          "parentMs": 32,
+          "startMs": 32
+        },
+        {
+          "kind": "tick",
+          "wall": 48,
+          "raf": 48,
+          "input": 0.101547,
+          "parentMs": 48,
+          "startMs": 32
+        },
+        {
+          "kind": "target",
+          "wall": 62,
+          "to": 0.3,
+          "input": 0.101547,
+          "parentMs": 48,
+          "startMs": 48
+        },
+        {
+          "kind": "tick",
+          "wall": 64,
+          "raf": 64,
+          "input": 0.142341,
+          "parentMs": 64,
+          "startMs": 48
+        },
+        {
+          "kind": "tick",
+          "wall": 80,
+          "raf": 80,
+          "input": 0.174571,
+          "parentMs": 80,
+          "startMs": 48
+        },
+        {
+          "kind": "tick",
+          "wall": 542,
+          "raf": 542,
+          "input": 0.3,
+          "parentMs": 542,
+          "startMs": 48
+        }
+      ]
+    },
+    "journey-settledWake": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.3,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 480,
+          "raf": 480,
+          "input": 0.3,
+          "parentMs": 480,
+          "startMs": 0
+        },
+        {
+          "kind": "sleep",
+          "wall": 480,
+          "input": 0.3,
+          "parentMs": 480,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 2000,
+          "to": 0.1,
+          "input": 0.3,
+          "parentMs": 513,
+          "startMs": 513
+        },
+        {
+          "kind": "target",
+          "wall": 2007,
+          "to": 0.2,
+          "input": 0.3,
+          "parentMs": 513,
+          "startMs": 513
+        },
+        {
+          "kind": "tick",
+          "wall": 2016,
+          "raf": 2000,
+          "input": 0.279444,
+          "parentMs": 529,
+          "startMs": 513
+        },
+        {
+          "kind": "tick",
+          "wall": 2490,
+          "raf": 2490,
+          "input": 0.2,
+          "parentMs": 1002.9999999999999,
+          "startMs": 513
+        }
+      ]
+    },
+    "journey-unfinishedWake": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.3,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 20,
+          "raf": 20,
+          "input": 0.074935,
+          "parentMs": 20,
+          "startMs": 0
+        },
+        {
+          "kind": "sleep",
+          "wall": 20,
+          "input": 0.074935,
+          "parentMs": 20,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 2000,
+          "to": 0.1,
+          "input": 0.074935,
+          "parentMs": 53,
+          "startMs": 53
+        },
+        {
+          "kind": "tick",
+          "wall": 2016,
+          "raf": 2000,
+          "input": 0.080087,
+          "parentMs": 69,
+          "startMs": 53
+        },
+        {
+          "kind": "tick",
+          "wall": 2490,
+          "raf": 2490,
+          "input": 0.1,
+          "parentMs": 543,
+          "startMs": 53
+        }
+      ]
+    },
+    "journey-refreshWake": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.4,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.082223,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "snap",
+          "wall": 31,
+          "to": 0.2,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "sleep",
+          "wall": 31,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 2000,
+          "to": 0.3,
+          "input": 0.2,
+          "parentMs": 49,
+          "startMs": 49
+        },
+        {
+          "kind": "tick",
+          "wall": 2016,
+          "raf": 2000,
+          "input": 0.220556,
+          "parentMs": 65,
+          "startMs": 49
+        },
+        {
+          "kind": "tick",
+          "wall": 2490,
+          "raf": 2490,
+          "input": 0.3,
+          "parentMs": 539,
+          "startMs": 49
+        }
+      ]
+    },
+    "journey-refreshAwake": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.4,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.082223,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "snap",
+          "wall": 31,
+          "to": 0.2,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 35,
+          "to": 0.3,
+          "input": 0.2,
+          "parentMs": 16,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 40,
+          "raf": 40,
+          "input": 0.229149,
+          "parentMs": 40,
+          "startMs": 16
+        },
+        {
+          "kind": "tick",
+          "wall": 520,
+          "raf": 520,
+          "input": 0.3,
+          "parentMs": 520,
+          "startMs": 16
+        }
+      ]
+    },
+    "journey-cutoff": {
+      "kind": "journey",
+      "rows": [
+        {
+          "kind": "target",
+          "wall": 0,
+          "to": 0.1,
+          "input": 0,
+          "parentMs": 0,
+          "startMs": 0
+        },
+        {
+          "kind": "tick",
+          "wall": 16,
+          "raf": 16,
+          "input": 0.020556,
+          "parentMs": 16,
+          "startMs": 0
+        },
+        {
+          "kind": "target",
+          "wall": 25,
+          "to": 0.488578613937416,
+          "immediate": true,
+          "input": 0.488579,
+          "parentMs": 16,
+          "startMs": -464
+        },
+        {
+          "kind": "tick",
+          "wall": 32,
+          "raf": 32,
+          "input": 0.488579,
+          "parentMs": 32,
+          "startMs": -464
+        },
+        {
+          "kind": "target",
+          "wall": 37,
+          "to": 0.48742560952198116,
+          "input": 0.488579,
+          "parentMs": 32,
+          "startMs": 32
+        },
+        {
+          "kind": "tick",
+          "wall": 48,
+          "raf": 48,
+          "input": 0.488342,
+          "parentMs": 48,
+          "startMs": 32
+        },
+        {
+          "kind": "target",
+          "wall": 63,
+          "to": 0.4943367248992129,
+          "immediate": true,
+          "input": 0.494337,
+          "parentMs": 48,
+          "startMs": -432
+        },
+        {
+          "kind": "tick",
+          "wall": 64,
+          "raf": 64,
+          "input": 0.494337,
+          "parentMs": 64,
+          "startMs": -432
+        },
+        {
+          "kind": "target",
+          "wall": 79,
+          "to": 0.4770589364561336,
+          "input": 0.494337,
+          "parentMs": 64,
+          "startMs": 64
+        },
+        {
+          "kind": "tick",
+          "wall": 80,
+          "raf": 80,
+          "input": 0.490785,
+          "parentMs": 80,
+          "startMs": 64
+        },
+        {
+          "kind": "tick",
+          "wall": 560,
+          "raf": 560,
+          "input": 0.477059,
+          "parentMs": 560,
+          "startMs": 64
+        }
+      ]
+    }
+  }
+}

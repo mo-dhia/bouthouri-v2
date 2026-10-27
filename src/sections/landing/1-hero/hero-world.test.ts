@@ -2,9 +2,10 @@ import { describe, expect, test } from "bun:test";
 import {
   createHeroWorldClock, createHeroWorldPublisher, heroInputFromWorldProgress,
   heroInputProgressFromScroll, heroWorldPose, readHeroWorldPose,
-  worldProgressFromInput, worldProgressFromScroll,
+  heroWorldScrub, worldProgressFromInput, worldProgressFromScroll,
 } from "./hero-world";
 import source from "./hero-world-source.json";
+import clocks from "../../../../tests/fixtures/home-clock-source-r14.json";
 
 describe("source raw hero trigger clock", () => {
   for (const fixture of source.cases) test(fixture.label, () => {
@@ -33,27 +34,43 @@ describe("source raw hero trigger clock", () => {
     }
   });
 
-  test("cached GSAP hero quickTo uses its explicit displayed start between frames", () => {
-    const clock = createHeroWorldClock();
+  test("explicit FROM is independent of the awake parent's last tick", () => {
     expect(source.cachedQuickTo.version).toBe("3.15.0");
-    for (const action of source.cachedQuickTo.explicit) {
-      if (action.kind === "target") clock.retarget(action.to!, action.ms);
-      else clock.sample(action.ms, false);
-      // GSAP rounds property writes to six decimals; our raw sampler retains
-      // precision, so compare remapped output within two source write quanta.
-      expect(Math.abs(clock.pose(false).progress - action.progress)).toBeLessThan(0.000002);
-    }
     expect(source.cachedQuickTo.explicit[2].from).toBe(0.271);
     expect(source.cachedQuickTo.implicit[2].from).toBe(0.578125);
+    const rows = clocks.cases["hero-betweenTicks"].rows;
+    expect(rows[2].input).toBe(0.271);
+    expect(rows[2].startMs).toBe(10);
+    expect(rows[3].input).toBe(0.487153);
   });
 
-  test("stale RAF timestamps cannot roll a newer display/input timestamp backward", () => {
+  for (const [label, fixture] of Object.entries(clocks.cases)) {
+    if (fixture.kind !== "hero") continue;
+    test(`cached source parent clock: ${label}`, () => {
+      const clock = createHeroWorldClock();
+      clock.wake(0);
+      for (const action of fixture.rows) {
+        if (action.kind === "target") clock.retarget(action.to!, action.wall);
+        else if (action.kind === "sleep") clock.sleep();
+        else if (action.kind === "snap") clock.snap(action.to!, action.wall);
+        // The owner reads wall time INSIDE its callback; RAF stamp is deliberately
+        // older than input in beforeRAF/reversal/callbackDelay fixtures.
+        else clock.sample(action.wall, false);
+        const raw = heroInputFromWorldProgress(clock.pose(false).progress, false);
+        expect(Math.abs(raw - action.input)).toBeLessThan(0.000002);
+      }
+    });
+  }
+
+  test("monotonic callback time preserves parent advancement across input receipts", () => {
     const clock = createHeroWorldClock();
     clock.retarget(1, 0);
     const displayed = clock.sample(40, false);
     expect(clock.sample(25, false)).toEqual(displayed);
     clock.retarget(0.6, 55);
-    expect(clock.sample(50, false)).toEqual(displayed);
+    const atReceipt = clock.sample(50, false);
+    expect(atReceipt.progress).toBeCloseTo(worldProgressFromInput(heroWorldScrub(0.784, 0.6, 15), false), 14);
+    expect(clock.sample(45, false)).toEqual(atReceipt);
     const next = clock.sample(70, false);
     expect(clock.sample(60, false)).toEqual(next);
     clock.snap(0.3, 80);
@@ -76,6 +93,7 @@ describe("source raw hero trigger clock", () => {
     const clock = createHeroWorldClock(), fixture = source.cases[0];
     clock.retarget(1, 0);
     const beforeMenu = clock.sample(40, false);
+    clock.sleep();
     clock.resume(2040);
     expect(clock.sample(2040, false)).toEqual(beforeMenu);
     expect(clock.sample(2140, false).progress).toBeCloseTo(1, 14);
@@ -84,6 +102,20 @@ describe("source raw hero trigger clock", () => {
     clock.snap(0.784); // Source's raw displayed value at 40ms, not mapped .8538.
     expect(clock.pose(false).progress).toBeCloseTo(fixture.samples[3].progress, 14);
     expect(clock.sample(6000, false)).toEqual(clock.pose(false));
+  });
+
+  test("fractional targets settle exactly so an idle owner can stop", () => {
+    const clock = createHeroWorldClock();
+    clock.snap(0.9);
+    clock.retarget(0.1, 0);
+    clock.sample(100, false);
+    expect(clock.settled).toBe(true);
+    clock.sleep();
+    clock.retarget(0.2, 2000);
+    expect(clock.sample(2000, false).progress).toBeCloseTo(worldProgressFromInput(0.1, false), 14);
+    expect(clock.settled).toBe(false);
+    clock.sample(2100, false);
+    expect(clock.settled).toBe(true);
   });
 });
 

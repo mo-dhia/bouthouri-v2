@@ -282,13 +282,19 @@ export function mountJourney(root: HTMLElement) {
     };
     const tick = () => {
       frameId = null;
-      if (disposed || document.hidden) return;
+      if (disposed || document.hidden) {
+        clock.sleep();
+        return;
+      }
       render(clock.sample(performance.now()));
       if (clock.value !== clock.target) frameId = requestAnimationFrame(tick);
+      else clock.sleep();
     };
     const request = () => {
-      if (frameId === null && !document.hidden)
+      if (frameId === null && !document.hidden) {
+        clock.wake(performance.now());
         frameId = requestAnimationFrame(tick);
+      }
     };
     const pauseOrResume = () => {
       const now = performance.now();
@@ -307,6 +313,7 @@ export function mountJourney(root: HTMLElement) {
       frameId = null;
       clock.snap(progress, performance.now());
       if (document.hidden) clock.pause(performance.now());
+      else clock.sleep();
       render(clock.value);
     };
     settleModePosition = () => {

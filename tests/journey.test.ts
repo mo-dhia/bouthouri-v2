@@ -6,6 +6,7 @@ import {
 } from "../src/sections/landing/3-journey/journey-clock";
 import { staticSystemsPaths } from "../src/sections/landing/3-journey/systems-geometry.js";
 import { createJourneyScrubClock, journeyScrub } from "../src/sections/landing/3-journey/journey-scrub";
+import clocks from "./fixtures/home-clock-source-r14.json";
 
 describe("source scrub timing", () => {
   test("matches the recovered Expo.out samples and finishes after 480ms", () => {
@@ -20,28 +21,29 @@ describe("source scrub timing", () => {
     expect(journeyScrub(0.2, 0.8, 700)).toBe(0.8);
     expect(journeyScrub(0.2, 0.8, -1)).toBe(0.2);
   });
-  test("continuous and reversed input preserves progress between presentation frames", () => {
-    // Executed cached GSAP 3.15.0 + ScrollTrigger's render-before-resetTo rule.
-    // Targets at 30/46/62ms arrive between the 16/32/48/64ms presentation frames.
-    const source: [number, number | null, number][] = [
-      [0, .2, 0], [16, null, .041112], [30, .4, .069935],
-      [32, null, .079326], [46, .05, .137783], [48, null, .135285],
-      [62, .3, .119739], [64, null, .124868], [80, null, .160838],
-      [542, null, .3],
-    ];
-    const clock = createJourneyScrubClock();
-    for (const [now, target, value] of source) {
-      const actual = target === null ? clock.sample(now) : clock.retarget(target, now);
-      expect(actual).toBeCloseTo(value, 5);
-    }
-  });
-  test("a stale RAF timestamp cannot undo a more recent input transaction", () => {
+  for (const [label, fixture] of Object.entries(clocks.cases)) {
+    if (fixture.kind !== "journey") continue;
+    test(`cached source parent clock: ${label}`, () => {
+      const clock = createJourneyScrubClock();
+      clock.wake(0);
+      for (const action of fixture.rows) {
+        if (action.kind === "target") clock.retarget(action.to!, action.wall, "immediate" in action && action.immediate === true);
+        else if (action.kind === "sleep") clock.sleep();
+        else if (action.kind === "snap") clock.snap(action.to!, action.wall);
+        else clock.sample(action.wall);
+        expect(Math.abs(clock.value - action.input)).toBeLessThan(0.000002);
+      }
+    });
+  }
+  test("input pre-render uses parent time; callback wall time stays monotonic", () => {
     const clock = createJourneyScrubClock();
     clock.retarget(1, 0);
-    clock.sample(16);
+    const previous = clock.sample(16);
     const atInput = clock.retarget(.5, 30);
-    expect(clock.sample(24)).toBe(atInput);
-    expect(clock.sample(32)).toBeGreaterThan(atInput);
+    expect(atInput).toBe(previous);
+    const next = clock.sample(32);
+    expect(next).toBeGreaterThan(atInput);
+    expect(clock.sample(24)).toBe(next);
   });
   test("visibility pauses freeze the scrub and refresh snaps replace unfinished movement", () => {
     const clock = createJourneyScrubClock();
