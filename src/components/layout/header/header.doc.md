@@ -141,3 +141,43 @@ moving MENU outside the LTR utilities made its logical end resolve to the left.
 The reading frame now explicitly keeps that same LTR placement coordinate
 system. The menu button retains its existing Arabic font and ink shaping.
 Fresh paired wide/narrow review remains required for this R12 correction.
+
+R13 header hotpath caching follows the cached source's element/height cache and
+unchanged-progress guard (`2gz902oulp4x8.js:4557–4563,4627–4649`). Pose application
+now reads cached geometry and skips identical full-precision progress. Ordinary
+native scroll never replays an older published or rounded dataset pose; motion
+events and initial/layout replay prefer the current hero WeakMap publication.
+Reading still derives raw native progress from the measured hero document top
+and height. A synchronous world event cannot measure geometry during another
+owner's mode transition, and stale motion cleanup cannot override reading.
+
+Mount, resize, font readiness, effective reading-mode changes, geometry-ready /
+restore events and observed hero/chapter/utility size changes refresh geometry.
+Identity and chapter references are refreshed in those transactions; bounded
+mutation discovery handles an absent/replaced stage and observes enhancement /
+reading ownership attributes and locale changes, without observing animated
+styles or progress datasets. Duplicate stage side controls are queried during
+measurement and suppressed once per element, with their original style, inert
+and ARIA attributes restored on teardown. Observers/listeners are disconnected
+and a late font promise does no work after cleanup.
+
+Only measurement positions the absolute reading viewport/frame. It still moves
+the actual MENU, retains the LTR frame and existing ink/width calculation, and
+leaves persistent utilities fixed. Native document scrolling moves that viewport
+without per-scroll bounds reads or offscreen inertness. Returning to motion or
+tearing down restores the original MENU location and removes its single wrapper.
+Menu, audio, clipboard, focus, curves and the RAF owners are unchanged.
+
+Header-scoped regression coverage exercises the mounted controller's counted DOM
+operations, precision/authority, raw reading progress, mode and geometry
+invalidations, late stage/font readiness, duplicate restoration and teardown.
+It supplies layout values explicitly and does not assert browser CSS parity or
+performance duration. Root owns production rebuild, paired EN/AR wide/narrow
+reading/focus review and reprofiling. The R13 OS-unfocused synthetic method-repeat
+counts are intercepted calls, not exhaustive browser work or causal milliseconds;
+this bounded change does not close whole-HOME smoothness acceptance.
+
+Focused verification: `bun test src/components/layout/header/header.logic.test.ts`
+passes 3 tests / 63 assertions; scoped ESLint, plain
+`tsc --noEmit --incremental false` (without type generation) and the header diff
+whitespace check pass. Production/browser validation remains with root.

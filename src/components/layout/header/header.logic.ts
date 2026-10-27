@@ -37,7 +37,6 @@ export function mountHeader(root: HTMLElement): () => void {
   if (!dialog || !utilities || !hero || !persistent) return () => {};
   const detachAudio = attachAudioLifecycle();
   const stage = document.querySelector<HTMLElement>("#top");
-  const chapter = document.querySelector<HTMLElement>(".glasses-chapter");
   const detachWhispers = stage
     ? attachSectionWhispers(stage, root.dataset.locale === "ar" ? "ar" : "en")
     : () => {};
@@ -58,11 +57,22 @@ export function mountHeader(root: HTMLElement): () => void {
   const sideRoll = side?.querySelector<HTMLElement>("[data-nav-side-roll]");
   const sideHome = document.createComment("chapter menu home");
   side?.before(sideHome);
+  let identity: HTMLElement | null = null;
+  let chapter: HTMLElement | null = null;
+  let readingMode = reduced();
+  let identityTop = 0;
+  let identityHeight = 1;
+  let navHeight = 120;
+  let appliedProgress: number | undefined;
   let readingViewport: HTMLElement | undefined;
   let readingFrame: HTMLElement | undefined;
-  const positionSideMenu = () => {
+  const positionSideMenu = (
+    chapterTop: number,
+    rowTop: string,
+    rowHeight: number,
+  ) => {
     if (!side) return;
-    if (!reduced() || !chapter) {
+    if (!readingMode || !chapter) {
       if (readingViewport) {
         sideHome.after(side);
         readingViewport.remove();
@@ -82,9 +92,9 @@ export function mountHeader(root: HTMLElement): () => void {
       root.append(readingViewport);
       readingFrame.append(side);
     }
-    readingViewport.style.top = `${chapter.getBoundingClientRect().top - root.getBoundingClientRect().top}px`;
-    readingFrame!.style.top = getComputedStyle(utilities).top;
-    readingFrame!.style.height = `${utilities.getBoundingClientRect().height}px`;
+    readingViewport.style.top = `${chapterTop}px`;
+    readingFrame!.style.top = rowTop;
+    readingFrame!.style.height = `${rowHeight}px`;
   };
   const animations = new Set<Animation>();
   const activeAnimations = new Map<Element, Animation>();
@@ -450,13 +460,11 @@ export function mountHeader(root: HTMLElement): () => void {
 
   const applyNavigation = (pose: HeroWorldPose) => {
     lastPose = pose;
-    const height =
-      parseFloat(getComputedStyle(utilities).top) +
-      (utilities.firstElementChild?.clientHeight ?? 44) +
-      12;
+    if (appliedProgress === pose.progress) return;
+    appliedProgress = pose.progress;
     const heroVisible = pose.navTravel < 1 && pose.navOpacity > 0.015;
     const persistentVisible = pose.persistentY.some((y) => y < 100);
-    hero.style.transform = `translate3d(0,${-pose.navTravel * height}px,0)`;
+    hero.style.transform = `translate3d(0,${-pose.navTravel * navHeight}px,0)`;
     hero.style.opacity = String(pose.navOpacity);
     hero.style.visibility = heroVisible ? "inherit" : "hidden";
     hero.inert = !heroVisible;
@@ -469,27 +477,11 @@ export function mountHeader(root: HTMLElement): () => void {
     persistent.setAttribute("aria-hidden", String(persistent.inert));
     const sideVisible = pose.sideY < 100;
     if (side && sideRoll) {
-      positionSideMenu();
       side.style.visibility = sideVisible ? "visible" : "hidden";
       side.inert = !sideVisible;
       side.setAttribute("aria-hidden", String(!sideVisible));
       sideRoll.style.transform = `translateY(${pose.sideY}%)`;
     }
-    // The source stage keeps its semantic masthead. The shell supplies the styled
-    // control because the stage deliberately loads only its own scoped CSS.
-    document
-      .querySelectorAll<HTMLElement>(".masthead .chapter-side")
-      .forEach((original) => {
-        if (!sourceSides.has(original))
-          sourceSides.set(original, {
-            style: original.getAttribute("style"),
-            inert: original.inert,
-            hidden: original.getAttribute("aria-hidden"),
-          });
-        original.style.visibility = "hidden";
-        original.inert = true;
-        original.setAttribute("aria-hidden", "true");
-      });
     utilities.dataset.navMode =
       pose.progress === 0
         ? "hero"
@@ -503,10 +495,18 @@ export function mountHeader(root: HTMLElement): () => void {
         : "none";
   };
   const onWorld = (event: Event) => {
-    if (reduced()) { onQuietScroll(); return; }
+    // Mode listeners own measurement. A synchronous publication during another
+    // owner's mode transaction must not insert reads after its hero writes.
+    if (readingMode !== reduced()) return;
+    if (readingMode) {
+      onQuietScroll();
+      return;
+    }
     const detail = (event as CustomEvent<{ progress: number }>).detail;
     if (detail && Number.isFinite(detail.progress))
-      applyNavigation(heroWorldPose(detail.progress));
+      applyNavigation(
+        readHeroWorldPose(identity) ?? heroWorldPose(detail.progress),
+      );
   };
   window.addEventListener(heroWorldEvent, onWorld);
   const measureInk = () => {
@@ -533,38 +533,122 @@ export function mountHeader(root: HTMLElement): () => void {
       ink.style.translate = `0 ${((bounds.top + bounds.bottom) / 2 - center).toFixed(3)}px`;
     });
   };
+  const onQuietScroll = () => {
+    if (readingMode !== reduced()) return;
+    if (identity && readingMode)
+      applyNavigation(heroWorldPose((scrollY - identityTop) / identityHeight));
+    // The native event precedes the hero's next publication. Replaying its old
+    // pose here can overwrite a newer event pose (or lose precision to dataset).
+    else if (
+      !readHeroWorldPose(identity) &&
+      !identity?.hasAttribute("data-enhanced") &&
+      identity?.dataset.heroReading !== "true"
+    )
+      applyNavigation(
+        heroWorldPose(identity && scrollY >= identityTop + identityHeight ? 1 : 0),
+      );
+  };
+  const replayNavigation = () => {
+    const published = readHeroWorldPose(identity);
+    if (
+      identity && !readingMode &&
+      (published || identity.hasAttribute("data-enhanced") || identity.dataset.heroReading === "true")
+    ) {
+      // Deep restore may finish before the lazy shell mounts. Prefer the live
+      // full-precision owner; data is only an initial/layout fallback.
+      const progress = Number(identity.dataset.heroWorld);
+      applyNavigation(
+        published ?? (Number.isFinite(progress) ? heroWorldPose(progress) : lastPose),
+      );
+    } else onQuietScroll();
+  };
+  const geometryTargets = new Set<Element>();
+  const resizeObserver = typeof ResizeObserver === "undefined"
+    ? undefined
+    : new ResizeObserver(() => measureNavigation());
+  const measureNavigation = () => {
+    if (disposed) return;
+    const previousIdentity = identity;
+    identity = document.querySelector<HTMLElement>("#identity");
+    chapter = document.querySelector<HTMLElement>(".glasses-chapter");
+    if (identity && identity !== previousIdentity)
+      mutationObserver?.observe(identity, {
+        attributes: true,
+        attributeFilter: ["data-enhanced", "data-hero-reading"],
+      });
+    readingMode = reduced();
+    const entrance = utilities.firstElementChild;
+    const targets = new Set<Element>([root, utilities]);
+    for (const element of [identity, chapter, entrance])
+      if (element) targets.add(element);
+    geometryTargets.forEach((element) => {
+      if (!targets.has(element)) {
+        resizeObserver?.unobserve(element);
+        geometryTargets.delete(element);
+      }
+    });
+    targets.forEach((element) => {
+      if (!geometryTargets.has(element)) {
+        resizeObserver?.observe(element);
+        geometryTargets.add(element);
+      }
+    });
+    // Source measure/progress guard (2gz902oulp4x8.js:4627–4649). Read the
+    // geometry together, before moving the reading control or applying a pose.
+    const rowTop = getComputedStyle(utilities).top;
+    navHeight = parseFloat(rowTop) + (entrance?.clientHeight ?? 44) + 12;
+    identityTop = identity ? identity.getBoundingClientRect().top + scrollY : 0;
+    identityHeight = Math.max(1, identity?.offsetHeight ?? 1);
+    const documentChapter = readingMode && side ? chapter : null;
+    const chapterTop = documentChapter
+      ? documentChapter.getBoundingClientRect().top - root.getBoundingClientRect().top
+      : 0;
+    const rowHeight = documentChapter ? utilities.getBoundingClientRect().height : 0;
+    positionSideMenu(chapterTop, rowTop, rowHeight);
+    // Keep the semantic stage, suppress each duplicate once, and retain the
+    // original attributes for teardown. Late stage nodes are found on measure.
+    document.querySelectorAll<HTMLElement>(".masthead .chapter-side").forEach((original) => {
+      if (sourceSides.has(original)) return;
+      sourceSides.set(original, {
+        style: original.getAttribute("style"),
+        inert: original.inert,
+        hidden: original.getAttribute("aria-hidden"),
+      });
+      original.style.visibility = "hidden";
+      original.inert = true;
+      original.setAttribute("aria-hidden", "true");
+    });
+    appliedProgress = undefined;
+    replayNavigation();
+  };
   const onResize = () => {
-    onQuietScroll();
+    measureNavigation();
     measureInk();
   };
-  window.addEventListener("resize", onResize, { passive: true });
-  void document.fonts.ready.then(measureInk);
-  const onQuietScroll = () => {
-    const identity = document.querySelector<HTMLElement>("#identity");
-    const progress = Number(identity?.dataset.heroWorld);
-    if (identity && reduced()) {
-      const top = identity.getBoundingClientRect().top + scrollY;
-      applyNavigation(heroWorldPose((scrollY - top) / Math.max(1, identity.offsetHeight)));
-    } else if (identity?.hasAttribute("data-enhanced") || identity?.dataset.heroReading === "true") {
-      const published = readHeroWorldPose(identity);
-      if (published) applyNavigation(published);
-      else if (Number.isFinite(progress)) applyNavigation(heroWorldPose(progress));
-    } else {
-      const top = identity ? identity.getBoundingClientRect().top + scrollY : 0;
-      applyNavigation(
-        heroWorldPose(
-          identity && scrollY >= top + identity.offsetHeight ? 1 : 0,
-        ),
-      );
-    }
+  const onNavigationState = () => {
+    if (readingMode !== reduced()) onResize();
+    else onQuietScroll();
   };
-  // The hero may have completed a deep restore before this lazy shell chunk
-  // mounts. Replay its current pose rather than waiting for a changed frame.
-  applyNavigation(lastPose);
-  onQuietScroll();
-  const unsubscribeNavigation = uiStore.subscribe(onQuietScroll);
+  // Size changes cover real hero/chapter/utility layout changes, without
+  // observing animated style/dataset writes. Child-list observation only wakes
+  // discovery for absent/replaced stage nodes; ordinary text updates do no work.
+  const mutationObserver = typeof MutationObserver === "undefined"
+    ? undefined
+    : new MutationObserver((records) => {
+      if (!identity?.isConnected || !chapter?.isConnected || records.some((record) => record.type === "attributes")) onResize();
+    });
+  mutationObserver?.observe(document.body, { childList: true, subtree: true });
+  mutationObserver?.observe(root, { attributes: true, attributeFilter: ["data-locale"] });
+  resizeObserver?.observe(document.documentElement);
+  measureNavigation();
+  const onGeometryReady = onResize;
+  window.addEventListener("resize", onResize, { passive: true });
+  window.addEventListener("home-navigation-ready", onGeometryReady);
+  window.addEventListener("home-navigation-restore", onGeometryReady);
+  void document.fonts.ready.then(() => { if (!disposed) onGeometryReady(); });
+  const unsubscribeNavigation = uiStore.subscribe(onNavigationState);
   window.addEventListener("scroll", onQuietScroll, { passive: true });
-  query.addEventListener("change", onQuietScroll);
+  query.addEventListener("change", onNavigationState);
 
   const onHover = (event: PointerEvent) => {
     if (
@@ -641,12 +725,17 @@ export function mountHeader(root: HTMLElement): () => void {
     document.removeEventListener("pointerover", onHover);
     dialog.removeEventListener("cancel", onCancel);
     window.removeEventListener(heroWorldEvent, onWorld);
+    resizeObserver?.disconnect();
+    mutationObserver?.disconnect();
+    geometryTargets.clear();
     window.removeEventListener("resize", onResize);
+    window.removeEventListener("home-navigation-ready", onGeometryReady);
+    window.removeEventListener("home-navigation-restore", onGeometryReady);
     window.removeEventListener("scroll", onQuietScroll);
     document.removeEventListener("visibilitychange", syncWave);
     document.removeEventListener("visibilitychange", updateClock);
     query.removeEventListener("change", syncWave);
-    query.removeEventListener("change", onQuietScroll);
+    query.removeEventListener("change", onNavigationState);
     if (side && readingViewport) sideHome.after(side);
     readingViewport?.remove();
     sideHome.remove();
@@ -663,6 +752,7 @@ export function mountHeader(root: HTMLElement): () => void {
       if (previous.hidden === null) element.removeAttribute("aria-hidden");
       else element.setAttribute("aria-hidden", previous.hidden);
     });
+    sourceSides.clear();
     delete utilities.dataset.navMode;
     delete utilities.dataset.navContext;
     utilities.style.removeProperty("--nav-right-label");
