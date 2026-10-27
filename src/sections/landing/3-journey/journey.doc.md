@@ -128,3 +128,16 @@ tests/journey.test.ts` passed 23 tests / 2,477 assertions. Scoped ESLint of the
 controller/helper/test, plain `tsc --noEmit --incremental false`, and
 `git diff --check` passed. Full check/typegen/build/SSR, production reprofile,
 browser verification and commits remain with the parent.
+## Background submission handoff (R15 follow-up)
+
+`journey-render-owner.ts` holds only per-stage pending/publication ownership, not
+animation progress or another clock. `request()` announces pending ownership
+before its existing RAF registration. A tick publishes the unchanged frame
+inside that scope after optical/work/systems/control writes. The background
+then submits the current score once, yielding its independent physical-tail
+RAF while ticks remain pending. The final tick, hidden pause, synchronous snap
+or motion cleanup releases it. No easing, retarget timestamp, cutoff, reading
+geometry, restoration policy or event ordering within a rendered pose changes.
+This corrects the intermediate demand-only background's proven one-publication
+lag; actual source uniform/order evidence is in `home-residual-cost-r15.md`.
+Production phase/cadence and full moving acceptance remain required.

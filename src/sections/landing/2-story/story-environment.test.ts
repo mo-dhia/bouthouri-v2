@@ -9,6 +9,7 @@ import type { createEnvironmentPointer } from "./story-environment-pointer";
 import type { StoryEnvironmentController } from "./story-environment.animate";
 import { createMaterialProtection } from "./story-material-protection";
 import * as score from "./story-score";
+import * as journeyRender from "../3-journey/journey-render-owner";
 
 // Execute the real controller/input code against a CPU renderer and event surface.
 // No browser, WebGL context, source bundle execution or global module mocks.
@@ -118,6 +119,7 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   const loaded = evaluate("./story-environment.animate.ts", context, {
     three: { ...three, WebGLRenderer: Renderer }, "./story-score": score,
     "../1-hero/hero-world": heroWorld,
+    "../3-journey/journey-render-owner": journeyRender,
     "./story-environment-pointer": { createEnvironmentPointer(wake: () => void) {
       const pointer = pointerModule.createEnvironmentPointer(wake); pointers.push(pointer); return pointer;
     } },
@@ -141,7 +143,16 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
     controller, module: loaded, stage, work, owner, fields, pointers, surfaces, backgroundDraws, dimensions, rafs, timers, errors,
     get stats() { return { creations, renders, rendererDisposals, contextLosses }; },
     get canvas() { return owner.children[0].children[0]; },
-    step(dt = 1 / 60, after?: () => void) { now += dt * 1000; const pending = [...rafs.values()]; rafs.clear(); for (const callback of pending) callback(now); after?.(); },
+    step(dt = 1 / 60, after?: () => void) {
+      now += dt * 1000;
+      const pending = [...rafs];
+      for (const [id, callback] of pending) {
+        if (!rafs.has(id)) continue;
+        rafs.delete(id); callback(now);
+      }
+      after?.();
+    },
+    requestAnimationFrame,
     timer() { const [id, timer] = timers.entries().next().value!; timers.delete(id); timer.callback(); },
     event,
     hero(progress: number) { publisher.publish(heroWorld.heroWorldPose(progress)); },
@@ -162,7 +173,7 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   };
 }
 
-test("journey and physical settling share one demand submission and preserve the newest precise pose", () => {
+test("external publications coalesce into one demand draw when the journey ticker is asleep", () => {
   const h = environmentHarness();
   h.frame(98.123456789); h.frame(174.987654321);
   expect(h.backgroundDraws).toHaveLength(0); expect(h.rafs.size).toBe(1);
@@ -183,6 +194,51 @@ test("journey and physical settling share one demand submission and preserve the
   expect(h.rafs.size + h.timers.size).toBe(0); expect(h.backgroundDraws).toHaveLength(3);
   h.hidden(false); h.step(); expect(h.backgroundDraws).toHaveLength(4);
   expect(h.backgroundDraws[3].stage).toBeCloseTo(score.sampleStoryScore({ time: 40, openingTime: 26, progress: 0 }).environment, 14);
+  h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
+});
+
+test("recurring journey ticks submit the current pose once, preempt old settling and release idle ownership", () => {
+  const h = environmentHarness(); h.step();
+  const field = h.fields[0];
+  expect(h.backgroundDraws).toHaveLength(1); expect(h.rafs.size).toBe(1);
+  const owner = journeyRender.createJourneyRenderOwner(h.stage as unknown as HTMLElement);
+  const samples = [128.123456789, 136.4753, 142.4567, 159.3256, 151.75, 135.25, 128.5];
+  let cursor = 0;
+  const tick = () => {
+    const time = samples[cursor++];
+    owner.render(() => {
+      const before = h.backgroundDraws.length;
+      h.work.dataset.travel = String(-1.35 + cursor * 0.01);
+      h.frame(time);
+      expect(h.backgroundDraws).toHaveLength(before + 1);
+      expect(h.backgroundDraws.at(-1)!.stage).toBeCloseTo(score.sampleStoryScore({ time, openingTime: 26, progress: 0 }).environment, 14);
+      expect(h.rafs.size + h.timers.size).toBe(0);
+    });
+    if (cursor < samples.length) h.requestAnimationFrame(tick);
+    else owner.setPending(false);
+  };
+  // First real scroll preempts the RAF already queued by the physical tail,
+  // before the parent's first callback; no stale old-pose draw can run first.
+  owner.setPending(true); expect(h.rafs.size + h.timers.size).toBe(0);
+  h.requestAnimationFrame(tick);
+  let lastTime = h.backgroundDraws.at(-1)!.time;
+  for (let i = 0; i < samples.length; i++) {
+    const advances = field.advances;
+    h.step();
+    expect(h.backgroundDraws).toHaveLength(i + 2); expect(field.advances).toBe(advances + 1);
+    const time = h.backgroundDraws.at(-1)!.time;
+    expect(time - lastTime).toBeCloseTo(1 / 60, 12); lastTime = time;
+    expect(h.rafs.size).toBe(1); expect(h.timers.size).toBe(0);
+  }
+  // Only the final parent tick releases a standalone physical-settling draw.
+  h.step(); expect(h.backgroundDraws).toHaveLength(samples.length + 2);
+  owner.setPending(true); h.hidden(true);
+  const before = h.backgroundDraws.length;
+  owner.render(() => h.frame(174));
+  expect(h.backgroundDraws).toHaveLength(before); expect(h.rafs.size + h.timers.size).toBe(0);
+  h.hidden(false); expect(h.rafs.size).toBe(0);
+  owner.dispose(); expect(h.rafs.size).toBe(1); h.step();
+  expect(h.backgroundDraws.at(-1)!.stage).toBeCloseTo(score.sampleStoryScore({ time: 174, openingTime: 26, progress: 0 }).environment, 14);
   h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
 });
 

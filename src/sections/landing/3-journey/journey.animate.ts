@@ -22,6 +22,7 @@ import { readingNavigation } from "./reading-navigation";
 import { getSettledStoryOrigin } from "../2-story/story-origin";
 import { createJourneyScrubClock } from "./journey-scrub";
 import { createJourneyPresentation } from "./journey-presentation";
+import { createJourneyRenderOwner } from "./journey-render-owner";
 
 export function mountJourney(root: HTMLElement) {
   const stage = root.querySelector<HTMLElement>("#top")!;
@@ -142,6 +143,7 @@ export function mountJourney(root: HTMLElement) {
     };
     stage.addEventListener("story-origin", onOrigin);
     const clock = createJourneyScrubClock();
+    const renderOwner = createJourneyRenderOwner(stage);
     let frameId: number | null = null, disposed = false;
     const render = (progress: number) => {
       const frame = frameFromProgress(
@@ -162,15 +164,17 @@ export function mountJourney(root: HTMLElement) {
       frameId = null;
       if (disposed || document.hidden) {
         clock.sleep();
+        renderOwner.setPending(false);
         return;
       }
-      render(clock.sample(performance.now()));
+      renderOwner.render(() => render(clock.sample(performance.now())));
       if (clock.value !== clock.target) frameId = requestAnimationFrame(tick);
-      else clock.sleep();
+      else { clock.sleep(); renderOwner.setPending(false); }
     };
     const request = () => {
       if (frameId === null && !document.hidden) {
         clock.wake(performance.now());
+        renderOwner.setPending(true);
         frameId = requestAnimationFrame(tick);
       }
     };
@@ -180,6 +184,7 @@ export function mountJourney(root: HTMLElement) {
         clock.pause(now);
         if (frameId !== null) cancelAnimationFrame(frameId);
         frameId = null;
+        renderOwner.setPending(false);
       } else {
         clock.resume(now);
         request();
@@ -189,6 +194,7 @@ export function mountJourney(root: HTMLElement) {
     const snap = (progress: number) => {
       if (frameId !== null) cancelAnimationFrame(frameId);
       frameId = null;
+      renderOwner.setPending(false);
       clock.snap(progress, performance.now());
       if (document.hidden) clock.pause(performance.now());
       else clock.sleep();
@@ -289,6 +295,7 @@ export function mountJourney(root: HTMLElement) {
       snapRestore = undefined;
       pinDistance = 0;
       if (frameId !== null) cancelAnimationFrame(frameId);
+      renderOwner.dispose();
       trigger.removeInstance("home-lens-story");
       work.dispose();
       systems.dispose();

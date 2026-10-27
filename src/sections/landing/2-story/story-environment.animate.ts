@@ -5,6 +5,7 @@ import { createEnvironmentPointer } from "./story-environment-pointer";
 import { environmentFragment, environmentVertex } from "./story-environment-shaders";
 import { clamp, sampleStoryScore, smooth, type StoryFrame } from "./story-score";
 import styles from "./story-scene.module.css";
+import { isJourneyRendering, journeyOwnsRender, journeyRenderOwnerEvent } from "../3-journey/journey-render-owner";
 
 export type SceneGuard = { x: number; y: number; rx: number; ry: number; weight: number };
 export type SceneInteraction = { guards: SceneGuard[]; grabbed: boolean };
@@ -61,9 +62,10 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   let frame = readFrame(), refreshFrame = false;
   let guards: SceneGuard[] = [];
   const active = () => !disposed && !lost && visible && !document.hidden && !menuOpen;
-  const cancel = () => { if (frameId) cancelAnimationFrame(frameId); if (timer) clearTimeout(timer); frameId = timer = 0; last = 0; };
+  const park = () => { if (frameId) cancelAnimationFrame(frameId); if (timer) clearTimeout(timer); frameId = timer = 0; };
+  const cancel = () => { park(); last = 0; };
   function wake() {
-    if (!active() || frameId) return;
+    if (!active() || frameId || journeyOwnsRender(stage)) return;
     if (timer) { clearTimeout(timer); timer = 0; }
     frameId = requestAnimationFrame(render);
   }
@@ -71,7 +73,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   const fail = () => { lost = true; cancel(); host.style.visibility = "hidden"; stage.dataset.storyEnvironment = "failed"; };
   function render(now: number) {
     frameId = 0;
-    if (!active()) return;
+    if (!active() || (journeyOwnsRender(stage) && !isJourneyRendering(stage))) return;
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60); last = now; time += dt * (reduced ? 0.035 : 1);
     if (!reduced && refreshFrame) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = false; }
     // Source resets initialNarrative on reading entry independently of DOM time.
@@ -125,6 +127,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     canvas.dataset.pressureScale = input.pressureScale.toFixed(4);
     canvas.dataset.footerInfluence = input.footerInfluence.toFixed(4);
     canvas.dataset.contextStrength = input.contextStrength.toFixed(4);
+    if (journeyOwnsRender(stage)) return;
     // The studio normal drift is intentional source content even at rest.
     if (pointerMoving || energetic || remaining > 4.5) wake();
     else if (remaining > 0) timer = window.setTimeout(() => { timer = 0; wake(); }, 1000 / 30);
@@ -155,11 +158,13 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     if (!next || !Number.isFinite(next.time)) return;
     frame = next; refreshFrame = false;
     workTravel = readWorkTravel();
-    // Keep the parent's latest precise pose, but let the existing demand RAF
-    // submit it. A settling draw may already have run in this refresh; another
-    // synchronous draw here would submit the old and new poses in one cycle.
-    wake();
+    // The journey parks our idle/settling RAF before requesting its first tick.
+    // Submit after its DOM/work publication in that same tick, never before it.
+    // Non-RAF restores/measurements still coalesce into our demand scheduler.
+    if (isJourneyRendering(stage)) render(performance.now());
+    else wake();
   };
+  const renderOwnership = () => { if (journeyOwnsRender(stage)) park(); else wake(); };
   const interaction = (event: Event) => {
     const detail = (event as CustomEvent<SceneInteraction>).detail;
     if (!detail) return; guards = detail.guards; pointer.setGrabbed(detail.grabbed);
@@ -184,6 +189,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   });
   menu.observe(document.documentElement, { attributes: true, attributeFilter: ["data-menu-open"] });
   stage.addEventListener("journey-frame", onFrame); stage.addEventListener("journey-scene-interaction", interaction);
+  stage.addEventListener(journeyRenderOwnerEvent, renderOwnership);
   window.addEventListener("resize", measure, { passive: true }); window.addEventListener(heroWorldEvent, hero);
   document.addEventListener("visibilitychange", visibility); canvas.addEventListener("webglcontextlost", contextLost); canvas.addEventListener("webglcontextrestored", restored);
   measure();
@@ -204,6 +210,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     if (disposed) return;
     disposed = true; cancel(); observer.disconnect(); menu.disconnect(); pointer.dispose();
     stage.removeEventListener("journey-frame", onFrame); stage.removeEventListener("journey-scene-interaction", interaction);
+    stage.removeEventListener(journeyRenderOwnerEvent, renderOwnership);
     window.removeEventListener("resize", measure); window.removeEventListener(heroWorldEvent, hero);
     document.removeEventListener("visibilitychange", visibility); canvas.removeEventListener("webglcontextlost", contextLost); canvas.removeEventListener("webglcontextrestored", restored);
     field.dispose(); mesh.geometry.dispose(); material.dispose(); zero.dispose(); renderer.dispose(); renderer.forceContextLoss(); host.remove(); delete stage.dataset.storyEnvironment;

@@ -59,17 +59,30 @@ while paused. Disposal is idempotent and releases the field, plane, material,
 fallback texture, renderer/context, listeners, pointer owner and scheduled work.
 
 R15's native draw trace (`docs/home-residual-cost-r15.md`) found two background
-default-framebuffer submissions in 444 local document-timeline bins, versus none
+default-framebuffer submissions in444 local document-timeline bins, versus none
 in source. A settling callback drew an older pose before the parent's journey
-callback synchronously drew again. Journey events now store the newest precise
-score and associated travel, then invalidate the existing demand RAF. Multiple
-events share its pending draw; if the settling draw already ran, the newest pose
-remains pending for the next refresh. Hero, pointer, resize and mode changes use
-that same scheduler. This follows source's demand-root ownership without
-discarding a newer pose or changing field resolution, equations, quality or idle
-cadence. The focused regression exercises both callback orders and hidden-state
-resume. Native submission counts and whole-route moving parity require a new
-production review; no presented-FPS claim follows from the CPU harness.
+callback synchronously drew again. The first demand-only correction removed
+duplicates but introduced a recurring previous-publication phase: actual source
+uniforms matched the final same-bin score in90/90 forward and90/90 reverse draws;
+local matched0/89 and0/90. That intermediate build is not accepted.
+
+The corrected handoff is explicit. The existing journey owner announces its
+pending tick before requesting RAF. Background parks its independent RAF/timer
+without resetting material time, stroke/travel history or the last draw time.
+After the journey applies its current DOM/work/systems pose, its frame event
+submits the background once inside that same tick. The pending flag prevents a
+second physical-tail draw. The last tick, pause, snap or disposal releases the
+owner; ordinary idle/settling/reading work resumes through the existing demand
+RAF/timer. Non-RAF restore/measure publications coalesce there too. Late mounts
+read the per-stage WeakMap owner; a superseded motion mount cannot clear a newer
+one. The handoff has no clock, independent RAF, DOM attribute writes or React
+state. Hero/pointer/resize wakeups retain their latest inputs while parked.
+
+Regressions exercise repeated forward/reverse ticks, initial preemption of an
+already queued old-pose draw, one field step per tick, current exact score,
+hidden resume, ownership release/remount and the unchanged standalone idle
+cadences. Native submission counts and whole-route moving parity still require
+a fresh production review; no presented-FPS claim follows from the CPU harness.
 
 `story-environment.test.ts` executes the real controller and native pointer code
 in an isolated event/renderer harness. It checks allocation identity and disposal,
