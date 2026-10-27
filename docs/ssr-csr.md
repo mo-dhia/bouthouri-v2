@@ -36,8 +36,10 @@ The working example is `src/sections/landing/1-hero/`:
 </section>
 ```
 
-The small gate returns `null`. Its logic calls `useDeferredMotion("#identity", load)`.
-`load` imports only the controller. The controller accepts the server-owned
+The small gate renders no content. Optional motion logic uses
+`useDeferredMotion(selector, load)`; `load` imports only its controller. The
+actual HOME hero needs restoration-aware immediate mounting and a lightweight
+reading path, as documented in [animations.md](animations.md). Its controller accepts the server-owned
 element and returns a function that reverses every mutation it made.
 Persistent fixed layers also need restoration-aware activation: a Back/Forward
 or locale handoff can begin below their ordinary viewport observation range.
@@ -62,3 +64,10 @@ The local Storio patch provides a stable initial server snapshot.
 Keep current scroll position, mesh transforms, and animation velocity in refs
 or imperative controllers. Storio is for UI state rather than per-frame values.
 Do not make the document read client state to decide its initial language.
+
+The content-owning Landing/Hero/Journey, Header/Footer and schema modules are
+explicitly guarded by `server-only`. `bun run check:architecture` follows static
+client imports, excluding type-only edges, and rejects server dictionaries,
+heavy graphics or imperative animation/audio controllers in that initial graph.
+It also checks the server content graph up to its client boundaries. Raw HTML
+verification remains the separate production SSR audit.

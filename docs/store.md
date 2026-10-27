@@ -2,7 +2,7 @@
 
 Storio 1.0.6 remains the shared state library. React is already provided by the
 application. Use `dimensionsStore` for viewport measurements and `uiStore` for
-menu, quiet-view, and sound state. Subscribe to primitive or stable reference
+menu, quiet-view, sound, entry phase and the shared HOME failure signal. Subscribe to primitive or stable reference
 slices. A selector returning a fresh object on every call is not a cached
 `useSyncExternalStore` snapshot.
 
@@ -29,7 +29,9 @@ const isDesktop = useDimensionsStore((state) => state.vw > 1024);
 
 Use breakpoint selectors when the component only needs a breakpoint. Pixel
 geometry consumers may subscribe to width/height and refresh appropriately.
-Breakpoints are non-overlapping: mobile ≤600, tablet >600 and ≤1024, desktop >1024.
+The generic helpers are non-overlapping: mobile ≤600, tablet >600 and ≤1024,
+desktop >1024. They do not replace reference-specific CSS/controller thresholds
+such as the measured 700px hero/journey switch.
 
 Call the `useUIStore` / `useDimensionsStore` aliases when subscribing in a React
 component or hook. React Compiler identifies hooks by the `use` prefix; calling
@@ -41,3 +43,10 @@ Do not put per-frame scroll progress, velocity, or mesh rotation in a React
 subscription. Keep those in controllers/refs and update React only on meaningful
 UI transitions. Stores here are client UI state; do not put request-specific
 server data in these module singletons. SSR dictionaries are separate.
+
+HOME entry/failure flags are shared UI transitions used by the shell and scene
+owners. Their resets belong to those owners, not to the store module. Semantic
+route checkpoints stay in `src/lib/navigation`; frame values and retained scene
+resources stay in imperative controllers. Stores contain no route mapping or
+animation clock. The architecture audit rejects React calls through the
+non-hook `uiStore(...)`/`dimensionsStore(...)` names.

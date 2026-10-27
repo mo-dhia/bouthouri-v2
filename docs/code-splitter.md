@@ -42,6 +42,12 @@ to locate a DOM node. Give the section stable IDs/data attributes. Controls get
 the minimum labels/serializable data as props. Heavy runtime imports remain
 inside a section's deferred graph, never the root layout or initializer.
 
+The persistent shell, hero and pin/navigation gates must also operate in
+reading/restored states. Their colocated hooks dynamically import on mount;
+`useDeferredMotion` is reserved for optional viewport-owned behavior. Scene
+activation/boot slots and nested material imports defer heavy work separately.
+See [the current scheduler map](animations.md).
+
 ## CSS and content
 
 Use CSS Modules and one-line selector declarations with logical properties for
@@ -49,6 +55,15 @@ RTL. Keep static layout out of inline styles; dynamic transforms, measurements,
 and CSS variables can remain inline. Match the reference's actual responsive
 geometry; do not import TFM's colors, content, breakpoints, or default animation
 bands blindly. Content belongs in server dictionaries/data or server JSX.
+Gazzar's measured fixed units, clamps and 700px breakpoint take precedence over
+blanket vw conversion. Preserve physical coordinates for deliberately LTR
+viewport controls in Arabic; use logical properties where they preserve geometry.
+
+`bun run format:css` formats one selector per line and checks the ordered CSS AST
+before writing. It preserves units, cascade and embedded URL payloads. URLs
+containing quoted XML are kept verbatim instead of changing string escapes.
+`bun run check:architecture` enforces this format and the initial import boundary.
+PostCSS is a development tool only, not a browser dependency.
 
 ## Cleanup and verification
 

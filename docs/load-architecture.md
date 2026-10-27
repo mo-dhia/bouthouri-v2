@@ -43,9 +43,14 @@ journey layout without replacing the browser's scrolling policy.
 ## P3 — Section motion
 
 The server section renders its complete contents and a null-rendering client
-gate. That gate uses `useDeferredMotion` to observe the actual, unclipped server
-section and import its `.animate.ts` controller near the viewport. The controller
-receives the element, registers the custom engine, and returns cleanup.
+gate. For optional viewport motion, its `.logic.ts` uses `useDeferredMotion` to
+observe the actual, unclipped server section and import its controller nearby.
+The controller receives the element, registers the custom engine, and returns
+cleanup. HOME shell, fixed hero and pin/navigation coordinators instead import
+on mount: they must establish geometry, reading behavior and restoration even
+when their ordinary viewport range is offscreen. This does not move Three,
+Canvas contours or audio into the initial client graph. The actual owner map is
+in [animations.md](animations.md).
 
 - Keep the import function at module scope so ordinary renders do not reload motion.
 - One RAF owner: core batching with synchronous callbacks, or `useRAF: false`
@@ -74,7 +79,10 @@ section that needs them. Use a stable SSR poster or reserved aspect-ratio box
 while they load. `useSceneActivation` separates near-viewport mounting from actual
 on-screen activity; `useSceneBootSlot` serializes scene startup.
 
-- Render on demand; stop when settled, offscreen, or the tab is hidden.
+- Render on demand; stop unneeded work offscreen or when the tab is hidden.
+  Visible source-authored ambient drift and the background MENU quiet tail are
+  intentional content with their own cadence; reading retains static resources
+  and finite redraws. See the scene/background contracts, not a generic idle loop.
 - Bound pixel ratio and handle WebGL/context failures with the static fallback.
 - Clone shared model scenes before mutating; dispose owned GPU resources on teardown.
 - Respect quiet/reduced motion. Audio begins only after the reader enables it.
@@ -97,7 +105,8 @@ not be added around pinned/sticky scenes indiscriminately.
 1. Audit raw response HTML after excluding scripts and serialized Flight payloads.
 2. Test initial content with JS disabled and with animation chunks blocked.
 3. Check locale direction before hydration and after navigation.
-4. Check native, smooth, quiet, and reduced-motion scrolling.
+4. Check native wheel/touch scrolling, explicit native smooth cue actions,
+   quiet view and reduced-motion behavior; do not install a wheel smoother.
 5. Test cold content availability, first scene activation, and repeat scrolling separately.
 6. Compare reference/local at matching viewport, DPR, section progress, and cache state.
 7. RAF spacing is not presented-frame FPS or isolated engine cost. Avoid ranking
