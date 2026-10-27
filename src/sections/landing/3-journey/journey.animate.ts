@@ -7,7 +7,6 @@ import {
   frameFromProgress,
   journeyDistance,
   progressFromStoryTime,
-  smoothRange,
   type JourneyFrame,
 } from "./journey-clock";
 import { createHorizontalRenderer } from "./work-renderer.js";
@@ -22,89 +21,7 @@ import {
 import { readingNavigation } from "./reading-navigation";
 import { getSettledStoryOrigin } from "../2-story/story-origin";
 import { createJourneyScrubClock } from "./journey-scrub";
-
-const beatWindows = [
-  [14, 19, 25, 30],
-  [26, 30, 36, 41],
-  [37, 41, 47, 52],
-  [48, 52, 57, 62],
-];
-const chapters = [
-  "PERSPECTIVE",
-  "LOOK CLOSER",
-  "BEYOND",
-  "PERSPECTIVE",
-  "CLARITY",
-  "DIRECTION",
-  "PUT TO WORK",
-  "CLARITY",
-  "STRUCTURE, SET FREE",
-];
-const arabicChapters = [
-  "منظور",
-  "انظر أقرب",
-  "أبعد",
-  "منظور",
-  "وضوح",
-  "اتجاه",
-  "أفكار تعمل",
-  "وضوح",
-  "بِنْيَة بلا قيود",
-];
-
-function optical(root: HTMLElement, time: number) {
-  root
-    .querySelectorAll<HTMLElement>(".optical-beat")
-    .forEach((element, index) => {
-      const [a, b, c, d] = beatWindows[index];
-      const enter = smoothRange(a, b, time),
-        exit = smoothRange(c, d, time);
-      element.style.opacity = String(enter * (1 - exit));
-      element.style.filter = `blur(${12 * (1 - enter) + 10 * exit}px)`;
-      element.style.transform = `translate3d(0,${16 * (1 - enter) - 8 * exit}px,0)`;
-      element.style.setProperty(
-        "--focus-tracking",
-        `${0.018 * (1 - enter) + 0.025 * exit}em`,
-      );
-      element.setAttribute("aria-hidden", String(enter * (1 - exit) < 0.45));
-    });
-  root
-    .querySelectorAll<HTMLElement>(".post-concept,.post-extension")
-    .forEach((panel, index) => {
-      const begin = index ? 93 : 76,
-        clear = index ? 109 : 107;
-      panel.style.visibility =
-        time >= begin && time < clear + 16 ? "visible" : "hidden";
-      panel.style.opacity = "1";
-      panel.querySelectorAll<HTMLElement>(".post-line").forEach((line, i) => {
-        const enter = smoothRange(begin + 2 * i, begin + 8 + 2 * i, time),
-          exit = smoothRange(clear + i, clear + 14 + i, time);
-        line.style.transform = `translate3d(0,${112 * (1 - enter) - 112 * exit}%,0)`;
-        line.style.setProperty(
-          "--focus-tracking",
-          `${0.015 * (1 - enter) + 0.012 * exit}em`,
-        );
-      });
-    });
-  const context = root.querySelector<HTMLElement>(".post-context");
-  if (context)
-    context.style.opacity = String(
-      smoothRange(78, 86, time) * (1 - smoothRange(105, 122, time)),
-    );
-  const opening = root.querySelector<HTMLElement>(".glasses-opening");
-  if (opening) {
-    const ease = (x: number) =>
-      0.5 - 0.5 * Math.cos(Math.PI * Math.max(0, Math.min(1, x)));
-    const focus = ease((time - 23) / 25);
-    let distance = time < 23 ? 9.8 - 0.4 * ease(time / 22) : 9.4 - 6.2 * focus;
-    if (time >= 48)
-      distance =
-        3.2 - (3.2 - 0.035) * Math.pow(Math.min(1, (time - 48) / 22), 3);
-    const clarity = 0.6 * smoothRange(9.8, 9.4, distance) + 0.4 * focus;
-    opening.style.opacity = String(1 - smoothRange(0.03, 0.88, clarity));
-    opening.style.filter = `blur(${36 * Math.pow(clarity, 1.6)}px) contrast(${1 - 0.32 * clarity})`;
-  }
-}
+import { createJourneyPresentation } from "./journey-presentation";
 
 export function mountJourney(root: HTMLElement) {
   const stage = root.querySelector<HTMLElement>("#top")!;
@@ -144,7 +61,8 @@ export function mountJourney(root: HTMLElement) {
     currentQuiet = quiet;
     disposeMotion?.();
     disposeMotion = undefined;
-    experience.classList.toggle("is-reduced", quiet);
+    if (experience.classList.contains("is-reduced") !== quiet)
+      experience.classList.toggle("is-reduced", quiet);
     if (quiet) {
       delete root.dataset.enhanced;
       stage.dataset.storyTime = "0.0000";
@@ -152,7 +70,7 @@ export function mountJourney(root: HTMLElement) {
       stage.dataset.progress = "0.00000";
       const label = root.querySelector<HTMLElement>(".chapter");
       if (label) {
-        label.textContent = document.documentElement.lang === "ar" ? arabicChapters[0] : chapters[0];
+        label.textContent = document.documentElement.lang === "ar" ? "منظور" : "PERSPECTIVE";
         label.setAttribute("aria-hidden", "false");
       }
       const header = root.querySelector<HTMLElement>(".chapter-header");
@@ -208,6 +126,7 @@ export function mountJourney(root: HTMLElement) {
       () => document.documentElement.lang === "ar",
     );
     const systems = createSystemsRenderer(root, () => work.pen);
+    const presentation = createJourneyPresentation(root, stage);
     const onOrigin = (event: Event) => {
       const value = (
         event as CustomEvent<{
@@ -229,53 +148,12 @@ export function mountJourney(root: HTMLElement) {
         progress,
         100 / (innerWidth <= 700 ? 5.8 : 6.8),
       );
-      const { time, openingTime } = frame;
-      stage.dataset.progress = frame.progress.toFixed(5);
-      stage.dataset.storyTime = time.toFixed(4);
-      stage.dataset.openingTime = openingTime.toFixed(4);
-      optical(root, time);
+      const { time } = frame;
+      presentation.frame(frame);
+      presentation.optical(time);
       work.update(time);
       systems.update(time);
-      const boundaries = [28, 73, 124, 168, 211, 241, 282, 445, 541, Infinity];
-      const slots = [0, 1, 2, 3, 4, 5, 6, null, 7, 8];
-      const index = slots[boundaries.findIndex((end) => time < end)];
-      const labels =
-        document.documentElement.lang === "ar" ? arabicChapters : chapters;
-      const label = root.querySelector<HTMLElement>(".chapter");
-      if (label) label.textContent = index === null ? "" : labels[index];
-      const header = root.querySelector<HTMLElement>(".chapter-header");
-      const concepts = time >= 124 && time < 241;
-      const conceptPosition =
-        smoothRange(165, 171, time) + smoothRange(208, 214, time);
-      if (header) header.dataset.concepts = String(concepts);
-      label?.setAttribute("aria-hidden", String(concepts));
-      root
-        .querySelector(".concept-step-window")
-        ?.setAttribute("aria-hidden", String(!concepts));
-      root
-        .querySelectorAll<HTMLElement>("[data-concept-step]")
-        .forEach((step, i) => {
-          step.style.transform = `translate3d(0,${(i - conceptPosition) * 112}%,0)`;
-          step.setAttribute(
-            "aria-hidden",
-            String(!concepts || i !== Math.round(conceptPosition)),
-          );
-        });
-      const number = root.querySelector<HTMLElement>(".progress-number");
-      if (number)
-        number.textContent = String(
-          Math.round(((openingTime + time) / 740) * 100),
-        ).padStart(2, "0");
-      const fill = root.querySelector<HTMLElement>(".progress-fill");
-      if (fill) fill.style.transform = `scaleX(${(openingTime + time) / 740})`;
-      const atEnd = time >= 710;
-      root.querySelectorAll<HTMLElement>(".cue-label,.cue-echo").forEach((label) => {
-        label.textContent = document.documentElement.lang === "ar"
-          ? atEnd ? "عودة إلى البداية" : "مرّر للاستكشاف"
-          : atEnd ? "BACK TO THE START" : "SCROLL TO EXPLORE";
-      });
-      const loadStatus = root.querySelector<HTMLElement>(".load-status");
-      if (loadStatus) loadStatus.style.display = time >= 306 ? "none" : "";
+      presentation.controls(frame);
       stage.dispatchEvent(
         new CustomEvent<JourneyFrame>("journey-frame", { detail: frame }),
       );
@@ -333,6 +211,7 @@ export function mountJourney(root: HTMLElement) {
       const distance = Math.round(chapter.getBoundingClientRect().height - stage.offsetHeight);
       pinDistance = distance;
       opening.measure();
+      presentation.refresh();
       const start = chapter.getBoundingClientRect().top + scrollY;
       trigger.createInstance("home-lens-story", chapter, {
         values: [[0, 1]],
@@ -420,14 +299,7 @@ export function mountJourney(root: HTMLElement) {
       document.removeEventListener("visibilitychange", visibility);
       explore?.removeEventListener("click", move);
       skip?.removeEventListener("click", skipToIntroduction);
-      root
-        .querySelectorAll<HTMLElement>(
-          ".optical-beat,.post-concept,.post-extension,.post-line,.post-context,.glasses-opening,.load-status",
-        )
-        .forEach((el) => {
-          el.removeAttribute("style");
-          el.removeAttribute("aria-hidden");
-        });
+      presentation.dispose();
       root.style.removeProperty("--journey-distance");
       delete root.dataset.enhanced;
     };

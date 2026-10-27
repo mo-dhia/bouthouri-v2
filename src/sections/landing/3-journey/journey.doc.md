@@ -95,3 +95,36 @@ This implementation is being compared in review rounds; matching the scroll
 extent alone does not establish full visual/interaction parity. Reference tabs
 must be active before capturing a settled frame: their ticker pauses while
 hidden, even if the native scroll position has changed.
+
+R15 presentation cache: `journey-presentation.ts` owns only the optical and
+chapter/progress/cue/load-status DOM presentation previously in the controller.
+Its references belong to one motion mount; `measure()` refreshes the topology
+after the opening fitter, before the existing geometry snap. Replaced optical
+nodes receive the same unconditional style/ARIA cleanup as disposal. Disposal
+releases the references and guarded-style cache; reading and a later HOME mount
+continue to initialize from their own semantic DOM.
+
+The public cached source `2gz902oulp4x8.js:7635–7674` caches chapter/progress/cue
+references and skips unchanged labels. This extends that source-supported cache
+contract to the local optical/post presentation: text and attributes compare
+their current values; styles retain requested and CSSOM-normalized values and
+also detect external clears. A repeated score therefore avoids redundant writes
+without preventing a geometry refresh or restore from repainting presentation.
+Module constants replace the per-render chapter arrays and easing closure.
+The existing source curves, blur, letter spacing, ARIA/visibility thresholds,
+copy and HTML are unchanged. Stage attributes → optical → work → systems →
+controls → `journey-frame` remain in that order on every controller render;
+no equal-score return suppresses the other owners or independent opening time.
+
+Focused inline-DOM tests in `tests/journey-presentation.test.ts` cover accepted
+poses, EN/AR forward/reverse boundaries, unchanged writes and zero render-time
+queries, independent opening progress, refreshed topology, external clears and
+disposal/remounts. They do not measure browser layout or presented frames. R14's
+remaining early-story/footer cadence deficit and its unresolved CPU attribution
+remain open; this cache change makes no whole-route cure or FPS claim.
+
+After the profiling release, `bun test tests/journey-presentation.test.ts
+tests/journey.test.ts` passed 23 tests / 2,477 assertions. Scoped ESLint of the
+controller/helper/test, plain `tsc --noEmit --incremental false`, and
+`git diff --check` passed. Full check/typegen/build/SSR, production reprofile,
+browser verification and commits remain with the parent.
