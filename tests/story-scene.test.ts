@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { Matrix4, PerspectiveCamera } from "three";
+import { Color, Matrix4, Mesh, MeshBasicMaterial, PerspectiveCamera, SRGBColorSpace, WebGLCoordinateSystem, type Scene, type WebGLRenderer } from "three";
+import { createStoryEnvironments } from "../src/sections/landing/2-story/story-assets";
+import { createStoryCameraHistory } from "../src/sections/landing/2-story/story-camera-history";
+import { sampleStoryScore } from "../src/sections/landing/2-story/story-score";
 import { createMaterialProtection } from "../src/sections/landing/2-story/story-material-protection";
 import { projectTerminalGlyph, terminalGlyph } from "../src/sections/landing/2-story/story-text-metrics";
 import { getSettledStoryOrigin } from "../src/sections/landing/2-story/story-origin";
@@ -7,6 +10,62 @@ import en from "../src/sections/landing/3-journey/journey-en.json";
 import ar from "../src/sections/landing/3-journey/journey-ar.json";
 import latinCoverage from "../public/assets/textures/questrial-studio-coverage.json";
 import arabicCoverage from "../public/assets/textures/cairo-studio-coverage.json";
+
+test("source studio keeps sRGB softboxes and refreshes only changed geometry", () => {
+  let draws = 0, targetDisposals = 0, materialDisposals = 0;
+  const materials = new Set<MeshBasicMaterial>();
+  const mock = {
+    coordinateSystem: WebGLCoordinateSystem, autoClear: false, xr: { enabled: true },
+    getRenderTarget: () => null, getActiveCubeFace: () => 0, getActiveMipmapLevel: () => 0,
+    setRenderTarget() {},
+    render(scene: Scene) { draws++; scene.updateMatrixWorld(); scene.traverse((object) => {
+      if (object instanceof Mesh && object.material instanceof MeshBasicMaterial) materials.add(object.material);
+    }); },
+  };
+  const studio = createStoryEnvironments(mock as unknown as WebGLRenderer, true, 1912, 1009);
+  expect(draws).toBe(12);
+  expect(mock.autoClear).toBe(false); expect(mock.xr.enabled).toBe(true);
+  const mapped = [...materials].filter((m) => m.map);
+  expect(mapped).toHaveLength(5);
+  for (const material of mapped) {
+    if (!material.map) throw new Error("Missing source softbox.");
+    expect(material.map.colorSpace).toBe(SRGBColorSpace);
+  }
+  // R3F's source unsigned-byte map conversion: encoded midpoint is not .502 linear.
+  expect(new Color().setRGB(128 / 255, 128 / 255, 128 / 255, SRGBColorSpace).r).toBeCloseTo(0.21586050010324417, 14);
+  expect(studio.measure(1912, 1009)).toBe(false); expect(draws).toBe(12);
+  expect(studio.measure(1910, 1009)).toBe(true); expect(draws).toBe(24);
+  expect(studio.measure(1912, 1009)).toBe(true); expect(draws).toBe(36);
+  expect(studio.measure(1912, 1007)).toBe(true); expect(draws).toBe(48);
+  studio.glasses.addEventListener("dispose", () => targetDisposals++);
+  studio.sculpture!.addEventListener("dispose", () => targetDisposals++);
+  for (const material of materials) material.addEventListener("dispose", () => materialDisposals++);
+  studio.dispose(); studio.dispose();
+  expect(targetDisposals).toBe(2); expect(materialDisposals).toBe(9);
+  expect(studio.measure(1912, 1009)).toBe(false); expect(draws).toBe(48);
+});
+
+test("camera refresh preserves source future-start history without changing authored sampling", () => {
+  const frame = (time: number) => ({ time, openingTime: 26, progress: (26 + time) / 740 });
+  const continuous = createStoryCameraHistory();
+  continuous.sample(frame(0), false); continuous.sample(frame(40.000852), false);
+  const normal = continuous.sample(frame(59.997161), false);
+  expect(normal.distance).toBeCloseTo(2.686736, 6);
+  continuous.sample(frame(74.994497), false);
+  expect(continuous.sample(frame(66.993056), false).distance).toBeCloseTo(1.163473, 6);
+  const refreshed = createStoryCameraHistory();
+  refreshed.sample(frame(0), false); refreshed.sample(frame(40.000852), false); refreshed.refresh();
+  const close = refreshed.sample(frame(59.997161), false);
+  expect(close.distance).toBeCloseTo(3.892087, 6);
+  expect(close.rx).toBeCloseTo(0.000889, 6); expect(close.ry).toBeCloseTo(-0.002477, 6); expect(close.rz).toBeCloseTo(0.009281, 6);
+  expect(refreshed.sample(frame(71), false).distance).toBeCloseTo(3.662926, 6);
+  refreshed.sample(frame(40.000852), false); refreshed.refresh();
+  expect(refreshed.sample(frame(59.997161), false).distance).toBeCloseTo(close.distance, 12);
+  const restored = createStoryCameraHistory(); restored.sample(frame(40.000852), false);
+  expect(restored.sample(frame(59.997161), false).distance).toBeCloseTo(close.distance, 12);
+  const remounted = createStoryCameraHistory(); remounted.sample(frame(0), false);
+  expect(remounted.sample(frame(59.997161), false).distance).toBeCloseTo(sampleStoryScore(frame(59.997161)).distance, 12);
+});
 
 describe("shared material protection", () => {
   test("releasing either owner retains the other owner's pressure protection", () => {

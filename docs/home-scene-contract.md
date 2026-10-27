@@ -104,6 +104,24 @@ The camera target blends [0,.12,0] toward the rotated/transformed Lens_L center
 by focus; camera position adds the compensated distance to target Z. After 75,
 camera resets to [0,0,10*max(1,.88/aspect)] looking at the origin.
 
+`story-score.ts` remains the authored, history-free sampler. The small
+`story-camera-history.ts` adapter preserves an observed source refresh rule:
+ScrollTrigger's 200ms resize refresh initializes still-uninitialized camera
+tweens from the displayed pose, retaining already-initialized starts. At score
+40.000852, refresh captures distance 4.638657 and rotation
+[.001061,-.002956,.011078] for both future 48..70 and 70..75 camera tweens.
+Without that refresh, a normal forward scrub crossing 48 captures authored
+distance 3.2 / rotation [.018,-.025,.025], and crossing 70 captures .035.
+Reverse preserves those cached starts. A restored first frame captures the
+remaining starts; a new HOME/motion mount resets the adapter. No camera offset
+is tuned and no general timeline/GSAP runtime is emulated.
+
+Every shared `journey-frame` is sampled before GPU readiness, including hidden
+or offscreen frames. The resize timer reads that current numeric pose and is
+cancelled with its listener on cleanup. A same-size resize can affect future
+camera starts while leaving environment capture untouched: these are separate
+source behaviors.
+
 ## Sculpture and text contract
 
 Original `Logo_Part_01_Finished`, `02`, and `03` become `Logo_Part_01..03` on
@@ -177,13 +195,80 @@ mode. A stationary fine-pointer hover retains the original .024 forcing.
 Hidden, offscreen and menu-open states cancel RAF and timers; close/visibility
 resume wakes the material. The object canvas continues to stop when settled.
 
+## R4-01 material correction
+
+The original unsigned-byte RGBA softbox is **sRGB**. Source R3F `applyProps`
+automatically marks material maps that way; plain Three `DataTexture` defaults
+to no color space. `softboxTexture()` must retain its explicit
+`SRGBColorSpace` assignment. Removing it brightens the sculpture capture and
+also changes the scratch field sampled by later glasses refreshes. The lens
+material constants and authored light-card constants were unchanged in this fix.
+
+The source's glasses 256px and private sculpture 512px raw cubes share one
+renderer-owned r180 CubeUV/PMREM cache. A later refresh of the existing 256px
+target retains the 512px scratch layout. Separate one-shot PMREM generators
+produced a different visible field despite identical model/material constants.
+The owned controller now uses the native shared cache, with a finite clean
+256px boot refresh before the sculpture cache initializes. It preserves the
+source transparent-transmission clear state during compilation. Both raw cubes
+recapture only when measured stage width or height actually changes. No-op
+measurements, idle rendering and scroll frames do not recapture them.
+
+Studio cards, raw cube targets and their texture maps are owned per mount and
+explicitly disposed. Model cleanup excludes those externally owned environment
+textures. The renderer owns its derived CubeUV targets/scratch; renderer
+disposal and the existing context release retire that whole isolated cache.
+There are no node_modules changes or hidden recapture loops.
+
+Measured using only the loaned main-window source5/local11 at **1912x1009/DPR1**:
+
+| Geometry history | Source/local red Float32-bit FNV-1a | Source/local mean red |
+| --- | --- | --- |
+| Cold HOME, before geometry change | 1985076677 / 1985076677 | .2260496046918282 / .2260496046918282 |
+| Same-size window resize | unchanged | unchanged |
+| Canvas width 1912→1910→1912 | 1639153093 / 1639153093 | .1720630727537961 / .1720630727537961 |
+| Canvas height 1009→1007→1009 | 1639153093 / 1639153093 | .1720630727537961 / .1720630727537961 |
+
+Those hashes describe the GPU atlas on this driver, including unused texels;
+they are diagnostic fixtures, not cross-GPU pixel guarantees. Source raw/cached
+versions were 6/6 cold, 10/10 after width, 12/12 after height; own versions were
+2/2, 4/4 and 6/6. Source performs extra equivalent captures during React layout;
+the resulting fields match. Both cold sharp-card and refreshed broad-charcoal
+states were checked, rather than forcing the latter at every boot.
+
+After the width cycle, settled score-40 crop mean RGB source/local was
+19.6297/19.5793 at (30,300)-(160,440), 24.1940/24.3841 at
+(850,330)-(1100,570), and 22.4161/22.6717 at (1200,400)-(1280,620).
+Crop MAEs were .0937, .1901 and .2556 respectively. The R4 pre-fix baseline at
+its different 1360x1000 viewport was 22.5690/12.7096 in its recorded lens crop.
+
+With matched refresh/camera history, the (200,180)-(1500,800) optical crop MAE
+was .1551 at 60, .0135 at 67 and .2080 at 71 (8-bit RGB levels); p99 absolute
+error was 1 at all three. The same atlas persisted through the crossing and
+reverse to 40. Sculpture 128/174 were rechecked; the 512px GPU atlas matched
+source hash 2799271365 / mean .010923630587058142. A cold/remounted 174 capture
+retained the complete CLARITY title. Intermediate HMR captures are not used as
+cold acceptance evidence.
+
+Paired images, geometry/cube-version history and optical metadata are indexed
+under `/tmp/gazzar-scene-pass3/evidence.json` and `camera-evidence.json`.
+
+The quiet/motion round trip kept one ready static glasses canvas without a
+512px studio, then created a fresh motion renderer/history. Normal forward
+scrub, reverse, future-start refresh, restored-frame scalar fixtures and cleanup
+are covered by the focused tests. A separate **OPEN root flow check** remains:
+hard reload from y5263 restarted source entry at 0 while local restored score40.
+Those were unlike boot histories and were not graded as matching camera images.
+The next independent review must control URL/session/entry completion to assess
+that route/restore behavior; this scene pass does not change root navigation.
+
 ## Verification and remaining scope
 
 Verified on 2026-10-27 using owned Vaelix tabs, at 1400x950 CSS pixels / DPR 1:
 
 - Original asset SHA-256 values match the independent home audit.
 - Scoped ESLint, `tsc --noEmit --incremental false`, and
-  `bun test tests/story-scene.test.ts` pass (5 tests, 381 assertions). Full
+  `bun test tests/story-scene.test.ts` pass (7 tests, 413 assertions). Full
   build/typegen and production SSR auditing remain parent-owned, as requested.
 - Compared 205,800 route/sample values against the actual public source at
   aspects .42/.88/1.47/1.85, both directions, all three pieces and score steps
@@ -226,7 +311,8 @@ Live source fixture values (stage sizes, not necessarily viewport sizes):
 | 844x600 | EN | .8749433619431227 | .7087184771846298 | 6.562339747950105 |
 | 844x600 | AR | .149323879595268 | .7474329737969402 | 4.664220211789373 |
 
-No known open scene defect remains from the focused pass-2 cases above. This is
+No known open scene defect remains from the focused pass-2 cases and R4-01
+material/camera checks above. This is
 not full-home pixel-parity acceptance: the parent still owns the fresh production
 visual adversary. Physical coarse-touch hardware, other GPU/browser combinations
 and a comprehensive DPR/breakpoint screenshot sweep remain unverified coverage.

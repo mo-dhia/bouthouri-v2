@@ -12,6 +12,9 @@ one initial glasses pose without sculptures, SDF text or an object idle loop.
 An object failure latches the shared HOME reading fallback until route unmount.
 
 `story-score.ts` and `story-paths.ts` contain the recovered numerical data.
+`story-camera-history.ts` adds only the source's future-camera-start initialization
+on its 200ms resize refresh and restored first frame; it does not alter the pure
+sampler. Shared frames are recorded before models/fonts/GPU boot completes.
 `story-glasses.ts`, `story-shadow.ts`, `story-logo.ts` and `story-type.ts` own
 their specific visual responsibilities. `story-assets.ts` caches network bytes
 only, parses a fresh model graph per mount and clones materials before mutation.
@@ -36,6 +39,13 @@ or the shell-owned footer material. Visible ambient drift continues at its
 intentional source cadence; hidden/offscreen/menu states stop all scheduled work.
 `story-material-protection.ts` combines independent portrait/footer protection
 publishers using the explicit window event documented in the scene contract.
+
+The reflection studios retain raw 256px/512px cubes on the renderer's native
+shared r180 CubeUV cache. Real size changes recapture them; same-size measures
+do not. The softbox `DataTexture` must stay explicitly **sRGB**, matching source
+R3F's automatic material-map conversion. Linear decoding and independent PMREM
+generators were the two causes of R4-01. Lens constants remain unchanged.
+The scene contract records exact cold/refreshed GPU fields and optical crops.
 
 Original assets are local at `/assets/models/` and `/assets/textures/`:
 

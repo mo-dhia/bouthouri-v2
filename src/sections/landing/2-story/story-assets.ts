@@ -1,7 +1,7 @@
 import {
   BufferGeometry, ClampToEdgeWrapping, Color, CubeCamera, DataTexture, DoubleSide, FloatType,
   HalfFloatType, LinearFilter, Material, Mesh, MeshBasicMaterial, NearestFilter,
-  Object3D, PlaneGeometry, PMREMGenerator, RGBAFormat, Scene, Texture, UniformsLib,
+  Object3D, PlaneGeometry, RGBAFormat, Scene, SRGBColorSpace, Texture, UniformsLib,
   UVMapping, WebGLCubeRenderTarget, type WebGLRenderer,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -19,7 +19,7 @@ function loadBytes(url: string) {
   return pending;
 }
 
-export function disposeObject(root: Object3D) {
+export function disposeObject(root: Object3D, externalTextures: ReadonlySet<Texture> = new Set()) {
   const geometry = new Set<BufferGeometry>();
   const materials = new Set<Material>();
   const textures = new Set<Texture>();
@@ -29,7 +29,7 @@ export function disposeObject(root: Object3D) {
     geometry.add(object.geometry);
     for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
       materials.add(material);
-      for (const value of Object.values(material)) if (value instanceof Texture) textures.add(value);
+      for (const value of Object.values(material)) if (value instanceof Texture && !externalTextures.has(value)) textures.add(value);
     }
   });
   for (const material of materials) material.dispose();
@@ -85,15 +85,19 @@ function softboxTexture() {
     data[i] = data[i + 1] = data[i + 2] = value; data[i + 3] = 255;
   }
   const texture = new DataTexture(data, 64, 64);
+  // R3F applyProps marks unsigned-byte RGBA material maps sRGB in the source.
+  // DataTexture defaults to no color space in plain Three, which changes both
+  // the sculpture field and the shared PMREM scratch sampled by glasses refresh.
+  texture.colorSpace = SRGBColorSpace;
   texture.magFilter = texture.minFilter = LinearFilter;
   texture.needsUpdate = true;
   return texture;
 }
 
-/** Original studio light cards, captured once, replacing only Drei's wrapper. */
-export function createStoryEnvironment(renderer: WebGLRenderer, type: "glasses" | "sculpture") {
+/** An owned equivalent of the reference Environment portal and Lightformers. */
+function createStudioCube(renderer: WebGLRenderer, type: "glasses" | "sculpture") {
   const studio = new Scene();
-  studio.background = new Color(0);
+  if (type === "sculpture") studio.background = new Color(0);
   const texture = type === "sculpture" ? softboxTexture() : null;
   for (const card of type === "glasses" ? glassesCards : sculptureCards) {
     const mesh = new Mesh(new PlaneGeometry(1, 1), new MeshBasicMaterial({
@@ -105,15 +109,39 @@ export function createStoryEnvironment(renderer: WebGLRenderer, type: "glasses" 
     else mesh.lookAt(0, 0, 0);
     studio.add(mesh);
   }
-  const cube = new WebGLCubeRenderTarget(type === "glasses" ? 256 : 512, { type: HalfFloatType });
-  const camera = new CubeCamera(0.1, 1000, cube);
-  const generator = new PMREMGenerator(renderer);
-  try {
-    camera.update(renderer, studio);
-    return generator.fromCubemap(cube.texture);
-  } finally {
-    generator.dispose(); cube.dispose(); disposeObject(studio);
-  }
+  const target = new WebGLCubeRenderTarget(type === "glasses" ? 256 : 512, { type: HalfFloatType });
+  const camera = new CubeCamera(0.1, 1000, target);
+  const capture = () => {
+    const autoClear = renderer.autoClear;
+    try { renderer.autoClear = true; camera.update(renderer, studio); }
+    finally { renderer.autoClear = autoClear; }
+  };
+  try { capture(); }
+  catch (error) { target.dispose(); disposeObject(studio); throw error; }
+  return { target, capture, dispose() { target.dispose(); disposeObject(studio); } };
+}
+
+/** Keep both raw cubes on r180's ONE renderer-owned CubeUV cache, like source.
+ * The 256px glasses cube refreshes only after a real stage geometry change.
+ * Its cached target then uses the 512px sculpture scratch layout: this recurring
+ * source behavior is visibly different from separate one-shot PMREM generators.
+ */
+export function createStoryEnvironments(renderer: WebGLRenderer, sculpture: boolean, width: number, height: number) {
+  const glasses = createStudioCube(renderer, "glasses");
+  let logo: ReturnType<typeof createStudioCube> | undefined;
+  try { if (sculpture) logo = createStudioCube(renderer, "sculpture"); }
+  catch (error) { glasses.dispose(); throw error; }
+  let disposed = false;
+  return {
+    glasses: glasses.target, sculpture: logo?.target,
+    measure(nextWidth: number, nextHeight: number) {
+      if (disposed || nextWidth === width && nextHeight === height) return false;
+      width = nextWidth; height = nextHeight;
+      logo?.capture(); glasses.capture();
+      return true;
+    },
+    dispose() { if (disposed) return; disposed = true; glasses.dispose(); logo?.dispose(); },
+  };
 }
 
 const ltcNames = ["LTC_FLOAT_1", "LTC_FLOAT_2", "LTC_HALF_1", "LTC_HALF_2"] as const;
