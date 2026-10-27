@@ -3,8 +3,10 @@
 `public/assets/{images,models,textures,sounds,fonts}` is reserved for local
 assets needed by the identical Gazzar clone. The original portrait, logo, favicon,
 Questrial, and Cairo fonts are local. Their provenance is in
-[reference-assets.md](reference-assets.md). Models, textures, project media, and
-sound still need to be acquired and wired as their sections are implemented.
+[reference-assets.md](reference-assets.md). The home additionally uses the
+original folded glasses, sculpture model/texture, LTC tables, scene fonts,
+fallback poster, ambient audio and localized whisper stems. Home work marks are
+local SVG drawings. Media for the remaining routes is outside the home pass.
 
 Record a local asset's source, role, dimensions, format, and version when adding
 it. Preserve the reference's crop, typography, material, and composition. Keep

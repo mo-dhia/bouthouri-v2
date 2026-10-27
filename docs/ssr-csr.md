@@ -30,15 +30,18 @@ The working example is `src/sections/landing/1-hero/`:
 
 ```tsx
 // Server section: content never depends on the gate.
-<section id="top">
+<section id="identity">
   <HeroAnimateGate />
   <h1 data-hero-title>Server-rendered title</h1>
 </section>
 ```
 
-The small gate returns `null`. Its logic calls `useDeferredMotion("#top", load)`.
+The small gate returns `null`. Its logic calls `useDeferredMotion("#identity", load)`.
 `load` imports only the controller. The controller accepts the server-owned
 element and returns a function that reverses every mutation it made.
+Persistent fixed layers also need restoration-aware activation: a Back/Forward
+or locale handoff can begin below their ordinary viewport observation range.
+Their inactive server appearance must remain within their own section.
 
 Passing server-rendered children into a client wrapper can also preserve SSR,
 but a null gate avoids hydrating an unnecessary wrapper around static content.

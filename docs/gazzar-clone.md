@@ -4,8 +4,9 @@ Target: https://www.thisisgazzar.com/en and its Arabic experience.
 The objective is an identical clone, as Artifact reproduced AM-ARC: the same
 text, animations, logos, assets, layouts, routes, and responsive/Arabic behavior,
 implemented with our own technology. Bouthouri is only the directory name; this
-is not a rebrand or a design inspired by Gazzar. This foundation is not the
-completed clone; replace temporary structure as each reference section is built.
+is not a rebrand or a design inspired by Gazzar. The HOME implementation is now
+integrated and undergoing adversarial parity review. Additional routes are
+still pending; see [the current review status](home-parity-status.md).
 
 ## Fixed decisions
 
@@ -45,6 +46,7 @@ the route-by-route interaction and locale inventory before claiming full coverag
 - [ ] Compare screenshots and motion against the live reference at matching viewport/DPR/progress.
 - [ ] Audit raw HTML, metadata, schema, links, sitemap, broken assets, hydration, and cleanup.
 
-The current setup completes the architecture, engine integration, locale shell,
-developer commands, and regression checks. It does not mark the reference
-visuals or full route inventory as completed.
+The architecture, engine, server content, EN/AR home shell, original assets,
+native SVG journey and deferred scenes are implemented. Review records distinguish
+measured matches from remaining visual/interaction gaps. The full route inventory
+and unreviewed visuals are not marked completed by passing a build.

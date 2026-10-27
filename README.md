@@ -1,16 +1,19 @@
 # Gazzar clone
 
-Foundation for a faithful [Gazzar](https://www.thisisgazzar.com/en) clone using
+An ongoing faithful [Gazzar](https://www.thisisgazzar.com/en) clone using
 Next.js App Router, Storio, and the custom scroll-interaction library.
 
 The site retains Gazzar's identity: the same text, animations, logos, assets,
 layouts, and routes. Bouthouri is only the directory name.
 
 The setup reuses Artifact's motion/scene-loading infrastructure and TFM Site
-Entry's server-first section architecture. The current page is a working
-foundation with the reference portrait, logo, fonts, and initial EN/AR copy;
-the remaining visuals, assets, routes, and choreography are
-tracked in [the clone checklist](docs/gazzar-clone.md).
+Entry's server-first section architecture. The English and Arabic home now
+include the identity entry, portrait, pinned glasses/sculpture journey, project
+drawings, systems narrative, menu, footer and localized audio. The home is still
+under visual and interaction review; full parity is not yet asserted. Follow
+[the review status](docs/home-parity-status.md) and
+[the broader clone checklist](docs/gazzar-clone.md). Additional route pages are
+not implemented yet.
 
 ## Start
 
@@ -48,7 +51,7 @@ src/lib/scrollInteraction/ Custom scroll engine and animation utilities
 src/lib/scene/           Deferred scene activation, boot gate, GLTF cache
 public/assets/           Fonts, images, models, textures, and sounds
 patches/                 Reproducible Storio compatibility patch
-tests/                   Store and animation lifecycle regression tests
+tests/                   Store, scroll, shared-clock and navigation regressions
 docs/                    Maintained architecture and clone implementation notes
 assistant/               Local working guides; intentionally untracked
 ```
@@ -58,7 +61,8 @@ assistant/               Local working guides; intentionally untracked
 - Text and semantic structure render on the server, including below the fold.
 - Tiny client islands attach interactions after HTML exists.
 - `useDeferredMotion` loads section-owned `.animate.ts` modules near the viewport.
-- Quiet view and OS reduced-motion preferences suppress optional motion.
+- Quiet reading and OS reduced-motion preferences remove pinning and continuous
+  scene motion while retaining static visuals and complete server content.
 - Lenis is imported only when smooth scrolling is allowed; the custom engine
   follows the resulting native scroll position. The maintained `lenis` package
   replaces Artifact's legacy `@studio-freight/lenis` import.
