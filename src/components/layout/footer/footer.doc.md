@@ -135,3 +135,8 @@ read per element per tick, fresh pointer coordinates, resize/DPR invalidation,
 reset and cleanup. These establish redundant geometry/paint elimination under
 the harness, not browser frame-time, presented-FPS or whole-HOME parity results.
 Parent owns integrated production validation and live comparison.
+
+The null gate view delegates mounting and teardown to
+`footer-animate-gate.logic.ts`. Footer markup is guarded by `server-only`.
+The small clock/eligibility controller mounts independently of reading mode;
+contour data and the interactive Canvas material remain behind its dynamic import.

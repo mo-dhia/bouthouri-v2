@@ -1,3 +1,5 @@
+import "server-only";
+
 import { site } from "@/config/site";
 import { locales, type Locale } from "@/i18n/routing";
 

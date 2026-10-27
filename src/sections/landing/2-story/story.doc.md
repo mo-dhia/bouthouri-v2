@@ -109,3 +109,8 @@ Source rendering references:
 
 No GSAP, R3F, Drei or original application bundle is shipped. The optional graph
 uses plain Three r180, its native GLTF loader and focused Troika SDF text only.
+
+The null gate view now delegates failure lifetime and retained controller hooks
+to `story-scene-gate.logic.ts`. Type-only controller imports do not load Three.
+The existing near-viewport boot slot, idle material import, latest-mode refs,
+failure latch and cleanup ownership remain the same.

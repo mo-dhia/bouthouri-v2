@@ -181,3 +181,8 @@ Focused verification: `bun test src/components/layout/header/header.logic.test.t
 passes 3 tests / 63 assertions; scoped ESLint, plain
 `tsc --noEmit --incremental false` (without type generation) and the header diff
 whitespace check pass. Production/browser validation remains with root.
+
+The null gate view delegates deferred mounting and teardown to
+`header-animate-gate.logic.ts`. Shell markup is guarded by `server-only`;
+`header.logic.ts` remains dynamically imported because navigation must work
+independently of animation preferences and viewport position.

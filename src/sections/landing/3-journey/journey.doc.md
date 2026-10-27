@@ -141,3 +141,9 @@ geometry, restoration policy or event ordering within a rendered pose changes.
 This corrects the intermediate demand-only background's proven one-publication
 lag; actual source uniform/order evidence is in `home-residual-cost-r15.md`.
 Production phase/cadence and full moving acceptance remain required.
+
+The server section is guarded by `server-only`. Its null gate delegates
+mounting and cleanup to `journey-gate.logic.ts`; the controller import is
+module-scoped. This baseline geometry/navigation owner also runs in reading
+mode, so disabling it through `useDeferredMotion` would break restoration and
+the reading cue. Heavy visuals remain in the separate scene gate.

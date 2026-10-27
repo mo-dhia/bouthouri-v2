@@ -1,3 +1,5 @@
+import "server-only";
+
 import Image from "next/image";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";

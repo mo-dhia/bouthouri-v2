@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createElement, type CSSProperties } from "react";
 import type { Locale } from "@/i18n/routing";
 import Footer from "@/components/layout/footer/footer";

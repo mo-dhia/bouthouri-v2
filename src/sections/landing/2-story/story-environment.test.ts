@@ -521,7 +521,7 @@ function gateHarness() {
     window: { requestIdleCallback(callback: () => void) { const key = ++id; idle.set(key, callback); return key; }, cancelIdleCallback(key: number) { idle.delete(key); } },
     document: { getElementById: () => stage }, console,
   });
-  const { value: mount } = evaluate("./story-scene-gate.tsx", context, {
+  const { value: mount } = evaluate("./story-scene-gate.logic.ts", context, {
     react: hooks, "react/jsx-runtime": {},
     "@/lib/scene/sceneActivation": { useSceneActivation: () => ({ shouldMount: false }) },
     "@/lib/scene/sceneBootGate": { useSceneBootSlot: () => false },
@@ -529,7 +529,7 @@ function gateHarness() {
     "./story-environment.animate": { createStoryEnvironment(_stage: unknown, { reduced }: { reduced: boolean }) {
       calls++; modes.push(reduced); return { setReducedMode(mode: boolean) { modes.push(mode); }, dispose() { disposals++; } };
     } },
-  }, "return StorySceneMount;") as { value: (props: { staticMode: boolean; onFailure(): void }) => null };
+  }, "return useStorySceneMount;") as { value: (props: { staticMode: boolean; onFailure(): void }) => void };
   return {
     modes, idle,
     get calls() { return calls; }, get disposals() { return disposals; },

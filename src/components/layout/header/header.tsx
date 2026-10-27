@@ -1,3 +1,5 @@
+import "server-only";
+
 import Link from "next/link";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
@@ -261,7 +263,6 @@ export default function Header({
         aria-labelledby="menu-heading"
         dir={locale === "ar" ? "rtl" : "ltr"}
         lang={locale}
-        data-lenis-prevent="true"
       >
         <div className={menu["menu-surface"]} data-menu-surface="true" />
         <div className={menu["menu-scroller"]} data-menu-scroll="true">

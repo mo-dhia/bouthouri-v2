@@ -1,3 +1,5 @@
+import "server-only";
+
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
 import Header from "@/components/layout/header/header";
