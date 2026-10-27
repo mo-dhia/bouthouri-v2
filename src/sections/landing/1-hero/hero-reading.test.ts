@@ -5,6 +5,7 @@ import ts from "typescript";
 import type { HeroWorldPose } from "./hero-world";
 import type { ReadingPortraitState } from "./hero-reading-portrait";
 
+const cssKey = (key: string) => key.startsWith("--") ? key : key.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase());
 class Surface extends EventTarget {
   dataset: Record<string, string> = {};
   inert = false;
@@ -14,8 +15,8 @@ class Surface extends EventTarget {
   values: Record<string, string> = {};
   selectors = new Map<string, Surface>();
   style = new Proxy({
-    setProperty: (key: string, value: string) => { this.values[key] = value; this.writes++; },
-    removeProperty: (key: string) => { delete this.values[key]; this.writes++; },
+    setProperty: (key: string, value: string) => { this.values[cssKey(key)] = value; this.writes++; },
+    removeProperty: (key: string) => { delete this.values[cssKey(key)]; this.writes++; },
   } as Record<string, unknown>, {
     get: (target, key: string) => target[key] ?? this.values[key] ?? "",
     set: (_, key: string, value: string) => { this.values[key] = value; this.writes++; return true; },
@@ -31,7 +32,7 @@ class Surface extends EventTarget {
 function harness(initialY = 0, initialHeight = 1392, initialTop = 0) {
   const root = new Surface(), signature = new Surface();
   const elements = Object.fromEntries([
-    "identity-hero", "hero-world", "hero-portrait", "hero-marquee", "hero-marquee-track",
+    "identity-hero", "hero-world", "hero-portrait", "portrait-entrance", "hero-marquee", "hero-marquee-track",
     "hero-identity", "hero-copy-exit", "hero-bottom", "marquee-pause",
   ].map((name) => [name, new Surface()]));
   for (const [name, element] of Object.entries(elements)) root.selectors.set(`[data-${name}]`, element);
@@ -76,6 +77,7 @@ function harness(initialY = 0, initialHeight = 1392, initialTop = 0) {
   const { mountHeroReading } = evaluate("./hero-reading.ts", {
     "./hero-world": world,
     "./hero-reading-portrait": evaluate("./hero-reading-portrait.ts", {}),
+    "./hero-portrait-mask": evaluate("./hero-portrait-mask.ts", { "./hero-world": world }),
     "./hero-portrait": { mountHeroPortrait: (_root: unknown, options: { signal: AbortSignal; reading: ReadingPortraitState }) =>
       new Promise<PreparedPortrait>((ready) => { graphics.push({ ...options, ready }); }) },
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe(listener: () => void) { listeners.add(listener); return () => listeners.delete(listener); } } },
@@ -95,6 +97,30 @@ function harness(initialY = 0, initialHeight = 1392, initialTop = 0) {
 }
 
 async function flushReading() { for (let i = 0; i < 12; i++) await Promise.resolve(); }
+
+test("reading context-loss fallback follows the next native wake, including unchanged pose and recovery", async () => {
+  const h = harness(696), entrance = h.elements["portrait-entrance"];
+  entrance.style.maskImage = "linear-gradient(black, transparent)";
+  entrance.dataset.portraitReady = "true";
+  const dispose = h.mount();
+  await flushReading();
+  expect(entrance.style.maskImage).toBe("");
+  entrance.dataset.portraitReady = "false";
+  h.root.dispatchEvent(new Event("hero-portrait-wake"));
+  expect(entrance.style.maskImage).toBe(""); // Source loss itself does not sample.
+  h.scroll(697);
+  expect(entrance.style.maskImage).toBe("linear-gradient(to bottom, rgb(0 0 0 / 1.00000) 6.491%, rgb(0 0 0 / 0.84400) 24.491%, rgb(0 0 0 / 0.50000) 42.491%, rgb(0 0 0 / 0.15600) 60.491%, transparent 78.491%)");
+  const writes = entrance.writes;
+  h.scroll(697);
+  expect(entrance.writes).toBe(writes);
+  entrance.dataset.portraitReady = "true";
+  h.root.dispatchEvent(new Event("hero-portrait-wake"));
+  expect(entrance.style.maskImage).not.toBe("");
+  h.scroll(697); // Body pose is cached, but readiness still removes the mask.
+  expect(entrance.style.maskImage).toBe("");
+  dispose();
+  expect(entrance.style.maskImage).toBe("linear-gradient(black, transparent)");
+});
 
 test("deferred portrait readiness preserves pending native samples and never fabricates a body wake", async () => {
   const h = harness(), dispose = h.mount();

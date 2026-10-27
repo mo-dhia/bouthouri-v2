@@ -165,6 +165,16 @@ The separately reported ordinary navigation flicker/scroll stutter remains open.
 
 ## Geometry and typography
 
+R13-01 response (prepared after reviewer release; not yet served): reading
+native samples now synchronize the source five-stop fallback mask on the
+portrait entrance before the body hidden/cached-pose return. Reading uses zero
+translation/unit scale. Context loss or readiness alone does not fabricate a
+body wake; the next native sample applies or removes the mask, including at an
+unchanged world pose. The entrance's prior inline styles are restored on cleanup.
+The regression retains the live source697px stops6.491/24.491/42.491/60.491/78.491%.
+Validation and fresh production comparison remain pending while the separate
+whole-experience smoothness baseline keeps the served31f4beb candidate frozen.
+
 The original 700px portrait breakpoint, 900px shell breakpoint, 6/5 tablet
 aspect rule, short-height rules and original clamps are retained. Desktop photo
 width is `max(100vw,150svh)` centered at 50%/50%. Mobile uses

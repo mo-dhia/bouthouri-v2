@@ -1,6 +1,7 @@
 import { uiStore } from "@/store/uiStore";
 import { createHeroWorldPublisher, heroWorldPose } from "./hero-world";
 import { createReadingPortraitState } from "./hero-reading-portrait";
+import { portraitFallbackMask } from "./hero-portrait-mask";
 import type { PortraitController } from "./hero-portrait";
 
 /** Source reduced tU: one body sample per wake, then stop; no animation clock. */
@@ -8,6 +9,7 @@ export function mountHeroReading(root: HTMLElement): () => void {
   const scene = root.querySelector<HTMLElement>("[data-identity-hero]");
   const world = root.querySelector<HTMLElement>("[data-hero-world]");
   const portrait = root.querySelector<HTMLElement>("[data-hero-portrait]");
+  const portraitEntrance = root.querySelector<HTMLElement>("[data-portrait-entrance]");
   const image = portrait?.querySelector<HTMLImageElement>("img");
   const marquee = root.querySelector<HTMLElement>("[data-hero-marquee]");
   const track = root.querySelector<HTMLElement>("[data-hero-marquee-track]");
@@ -18,7 +20,7 @@ export function mountHeroReading(root: HTMLElement): () => void {
   const pause = root.querySelector<HTMLButtonElement>("[data-marquee-pause]");
   if (!scene || !world || !portrait || !marquee || !track || !identity || !copy || !signature || !bottom)
     return () => {};
-  const touched = [scene, world, portrait, marquee, track, identity, copy, signature, bottom];
+  const touched = [scene, world, portrait, marquee, track, identity, copy, signature, bottom, ...(portraitEntrance ? [portraitEntrance] : [])];
   const styles = touched.map((element) => [element, element.getAttribute("style")] as const);
   const attributes = ["data-hero-reading", "data-hero-world", "data-hero-departing"].map(
     (key) => [key, root.getAttribute(key)] as const,
@@ -31,6 +33,7 @@ export function mountHeroReading(root: HTMLElement): () => void {
   let disposed = false, bodyPending = false, published = false;
   let pose = heroWorldPose(0), bodyProgress = -1;
   let height = 1, top = 0;
+  let previousMask: string | null | undefined;
 
   const render = () => {
     // Source tU leaves the body untouched while hidden/menu-open. A wake during
@@ -41,6 +44,18 @@ export function mountHeroReading(root: HTMLElement): () => void {
     // During the deferred preparation this also preserves the !en resolve cache.
     portraitState.sample({ resolve: 1, exit: pose.exit, pointer: pose.pointer, active: !pose.hidden });
     portraitController?.render(0, 1, pose.exit, pose.pointer, !pose.hidden);
+    // Source reduced portrait updates its fallback before the body cache/hidden
+    // return. Readiness alone is not a wake; the next native sample adds or
+    // removes the mask even when the displayed world pose has not changed.
+    if (portraitEntrance) {
+      const mask = portraitEntrance.dataset.portraitReady === "true"
+        ? null : portraitFallbackMask(pose.exit, 0, 1, height);
+      if (mask !== previousMask) {
+        previousMask = mask;
+        if (mask === null) portraitEntrance.style.removeProperty("mask-image");
+        else portraitEntrance.style.maskImage = mask;
+      }
+    }
     scene.style.visibility = pose.hidden ? "hidden" : "visible";
     scene.style.opacity = pose.hidden ? "0" : "1";
     scene.inert = pose.hidden || pose.identityOpacity <= 0.01;
