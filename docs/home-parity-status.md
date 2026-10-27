@@ -65,8 +65,15 @@ complete CLARITY on cold entry and motion remount, with source capture instabili
 recorded separately. A subsequent production reload from40 exposed a late native
 scroll replay: entry ready at y5263/story40 despite no pending return records.
 The source-backed fix in9a5dd77 retains manual document restoration and a guarded
-one-shot pageshow reset. Two dev reload repetitions and HOME history pass;
-full check85tests/3228assertions passes. Fresh production R7 remains required.
+one-shot pageshow reset. Full check85tests/3228assertions passes. R7 independently
+passed both reload repetitions, complete CLARITY cold/remount, the original R6
+foreground/hidden controls and both HOME return histories in production.
+
+One P2 remains after R7: hidden entry→sharp40→same-size resize→2px canvas bounds
+change with an immediate jump to174→restore bounds→reverse40 gives darker local
+lenses. The reviewer reproduced it twice and measured continuing60/67 differences
+with nearly identical cameras. The exact256/512 conversion order remains under
+scene-owner investigation; no new universal material or camera tuning is justified.
 
 | Round | Result |
 | --- | --- |
@@ -76,7 +83,7 @@ full check85tests/3228assertions passes. Fresh production R7 remains required.
 | 4 | Stopped after confirmed R4-01 to transfer the sole permitted tab pair. Scene fix now matches cold/remeasured reflection atlases and refreshed optical camera samples; independent retest remains required. |
 | 5 | Corrected lens/camera/sculpture/Ideas and sampled reading layouts pass bounded checks. Open P2s: ordinary reload entry, restored-mount layout lifetime, footer keyboard resolve220ms, and source-reversed menu close. |
 | 6 | All four R5 triggers and the sampled integrated matrix pass. Two P2s remain: reload-specific reflection capture history and clean Back's pending generic HOME return. See `home-parity-review-r6.md`. |
-| 7 | Pending fresh review of9a5dd77: R6 bounds/readiness and HOME return fixes, late reload-race correction, and complete-title production controls. |
+| 7 | R6 fixes, late reload race, CLARITY and both HOME return histories pass. One new P2 remains in the bounds/direct-sculpture/reverse optical branch; see `home-parity-review-r7.md`. |
 
 R5 implementation responses: ordinary reload now explicitly starts fresh once
 per document; locale-restored mounts retain their initial semantic intent across
