@@ -7,7 +7,9 @@ import {
 import {
   HOME_HISTORY_STATE_KEY, HOME_HISTORY_LIMIT, HOME_LOCALE_MAX_AGE, HOME_LOCALE_RETURN_KEY,
   HOME_POSITIONS_KEY, HOME_WORK_MAX_AGE, HOME_WORK_RETURN_KEY,
-  homeCheckpointFromState, homeLinkIntent, parseHomeLocaleReturn, parseHomeWorkReturn,
+  HOME_RETURN_KEY, HOME_RETURN_MAX_AGE, HOME_HANDOFF_KEY, HOME_HANDOFF_MAX_AGE,
+  homeCheckpointFromState, homeLinkIntent, parseHomeLocaleReturn, parseHomeWorkReturn, parseHomeReturn, parseHomeHandoff,
+  homeDocumentStartsFresh,
   resolveHomeRestoreIntent, serializeHomeCheckpoints,
   type HomeCheckpoint, type HomeRestoreContext,
 } from "../src/lib/navigation/home-navigation-state";
@@ -23,6 +25,8 @@ const now = 1_800_000_000_000;
 const position: HomePosition = { section: "work", progress: 0.43 };
 const localeRecord = (overrides = {}) => JSON.stringify({ version: 1, from: "/en", to: "/ar", created: now, position, ...overrides });
 const workRecord = (overrides = {}) => JSON.stringify({ version: 1, home: "/en", slug: "wujhat", created: now, position, pending: true, ...overrides });
+const homeRecord = (overrides = {}) => JSON.stringify({ version: 1, home: "/en", created: now, position, ...overrides });
+const handoffRecord = (overrides = {}) => JSON.stringify({ version: 1, to: "/ar", created: now, ...overrides });
 const checkpoint = (overrides: Partial<HomeCheckpoint> = {}): HomeCheckpoint => ({ version: 1, id: "entry-1", path: "/en", created: now, position, scrollY: 14000, ...overrides });
 const context = (overrides: Partial<HomeRestoreContext> = {}): HomeRestoreContext => ({
   href: "https://local.test/en", navigationType: "navigate", historyState: null,
@@ -96,6 +100,40 @@ describe("HOME semantic score mapping", () => {
 });
 
 describe("HOME handoff expiry and entry selection", () => {
+  test("generic HOME return is path-scoped, accepts every semantic scene, and expires after thirty minutes", () => {
+    expect(parseHomeReturn(homeRecord({ created: now - HOME_RETURN_MAX_AGE }), "/en", now)?.position).toEqual(position);
+    for (const section of ["hero", "footer", "work"] as const) {
+      expect(parseHomeReturn(homeRecord({ position: { section, progress: 0.5 } }), "/en", now)?.position.section).toBe(section);
+    }
+    for (const raw of [homeRecord({ created: now - HOME_RETURN_MAX_AGE - 1 }), homeRecord({ created: now + 1 }),
+      homeRecord({ home: "/ar" }), homeRecord({ version: 2 }), homeRecord({ position: { section: "bad", progress: 0 } }),
+      homeRecord({ position: { section: "work", progress: -0.1 } }), "{"])
+      expect(parseHomeReturn(raw, "/en", now)).toBeNull();
+  });
+
+  test("source precedence distinguishes explicit router pixels, generic HOME return, work, locale and history fallback", () => {
+    const all = context({ navigationType: "back_forward", homeReturn: homeRecord(), workReturn: workRecord(),
+      localeReturn: localeRecord({ from: "/ar", to: "/en", position: { section: "curve", progress: 0.3 } }),
+      historyState: { [HOME_HISTORY_STATE_KEY]: checkpoint({ scrollY: 16362 }) } });
+    expect(resolveHomeRestoreIntent({ ...all, historyTarget: 0 })).toMatchObject({ kind: "history", scrollY: 0 });
+    expect(resolveHomeRestoreIntent(all)).toMatchObject({ kind: "home-return", position });
+    expect(resolveHomeRestoreIntent({ ...all, homeReturn: null })?.kind).toBe("work-return");
+    expect(resolveHomeRestoreIntent({ ...all, homeReturn: null, workReturn: null })?.kind).toBe("locale");
+    expect(resolveHomeRestoreIntent({ ...all, homeReturn: null, workReturn: null, localeReturn: null })?.kind).toBe("history");
+    expect(resolveHomeRestoreIntent({ ...all, href: "https://local.test/en?work=wujhat" })?.kind).toBe("home-return");
+  });
+
+  test("first-document fresh guard accepts only an exact destination handoff younger than thirty seconds", () => {
+    expect(homeDocumentStartsFresh("https://local.test/en", "navigate", null, now)).toBe(true);
+    expect(homeDocumentStartsFresh("https://local.test/en", "reload", null, now)).toBe(true);
+    expect(homeDocumentStartsFresh("https://local.test/en", "back_forward", null, now)).toBe(false);
+    expect(homeDocumentStartsFresh("https://local.test/ar", "navigate", handoffRecord({ created: now - HOME_HANDOFF_MAX_AGE + 1 }), now)).toBe(false);
+    expect(homeDocumentStartsFresh("https://local.test/ar", "navigate", handoffRecord({ created: now - HOME_HANDOFF_MAX_AGE }), now)).toBe(true);
+    expect(homeDocumentStartsFresh("https://local.test/en", "navigate", handoffRecord(), now)).toBe(true);
+    expect(homeDocumentStartsFresh("https://local.test/ar", "navigate", handoffRecord({ created: now + 1 }), now)).toBe(true);
+    expect(parseHomeHandoff(handoffRecord(), "/ar/projects", now)).toBeNull();
+  });
+
   test("locale handoff accepts the source two-minute boundary and rejects expired/future/wrong-path records", () => {
     expect(parseHomeLocaleReturn(localeRecord({ created: now - HOME_LOCALE_MAX_AGE }), "/ar", now)?.position).toEqual(position);
     for (const record of [
@@ -135,7 +173,8 @@ describe("HOME handoff expiry and entry selection", () => {
   });
 
   test("locale semantics win over native pixels and query return supports each exact slug", () => {
-    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/ar?work=wujhat", localeReturn: localeRecord(), nativeScrollY: 15000 }))?.kind).toBe("locale");
+    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/ar", localeReturn: localeRecord(), nativeScrollY: 15000 }))?.kind).toBe("locale");
+    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/ar?work=wujhat", localeReturn: localeRecord(), nativeScrollY: 15000 }))?.kind).toBe("work-query");
     for (const slug of Object.keys(HOME_WORK_MOMENTS) as (keyof typeof HOME_WORK_MOMENTS)[]) {
       const result = resolveHomeRestoreIntent(context({ href: `https://local.test/en?work=${slug}` }));
       expect(result).toMatchObject({ kind: "work-query", slug, skipEntry: true });
@@ -196,7 +235,7 @@ describe("native link guards", () => {
       { href: "/ar", target: "_blank" }, { href: "/ar", target: "case" }, { href: "/ar", download: true },
       { href: "/ar", inert: true }, { href: "https://www.thisisgazzar.com/ar" }, { href: "mailto:hello@example.com" },
       { href: "javascript:void(0)" }, { href: "/en" }, { href: "#beyond" }, { href: "/en/projects/unknown" },
-      { href: "/en/projects" }, { href: "/ar/projects/wujhat" }, { href: "http://[" },
+      { href: "/ar/projects/wujhat" }, { href: "http://[" },
     ]) expect(homeLinkIntent(click, link, "https://local.test/en")).toBeNull();
     expect(homeLinkIntent(click, { href: "/ar", target: "_SELF" }, "https://local.test/en")?.kind).toBe("locale");
   });
@@ -279,12 +318,134 @@ function browser(href = "https://local.test/en") {
     cleanups.push(cleanup); return cleanup;
   };
   const capture = () => runtime.dispatchEvent(new Event("scrollend"));
+  const setLocaleReturn = (raw: string) => {
+    storage.set(HOME_LOCALE_RETURN_KEY, raw);
+    storage.set(HOME_HANDOFF_KEY, handoffRecord({ to: JSON.parse(raw).to, created: Date.now() }));
+  };
   return { runtime, win, root, document, storage, frames, timers, scrolls, details, settle, mount, capture,
+    setLocaleReturn,
     notifyLayout: () => { for (const callback of observers) callback(); }, observers,
     setGeometry: (value: HomeGeometry | null) => { geometry = value; } };
 }
 
 describe("HOME browser lifecycle", () => {
+  test("first document clears all stale return records, while direct work query and hash remain explicit URL intents", () => {
+    for (const type of ["navigate", "reload"] as const) {
+      for (const suffix of ["", "?work=wujhat", "#beyond"]) {
+        const b = browser(`https://local.test/ar${suffix}`);
+        b.runtime.performance.getEntriesByType = () => [{ type }];
+        b.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now() }));
+        b.storage.set(HOME_WORK_RETURN_KEY, workRecord({ created: Date.now() }));
+        b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ created: Date.now() }));
+        const intent = getHomeRestoreIntent(b.win);
+        expect(intent?.kind ?? null).toBe(suffix.startsWith("?") ? "work-query" : suffix ? "native" : null);
+        for (const key of [HOME_RETURN_KEY, HOME_WORK_RETURN_KEY, HOME_LOCALE_RETURN_KEY]) expect(b.storage.has(key)).toBe(false);
+      }
+    }
+  });
+
+  test("matching hard locale handoff preserves mismatched HOME return until successful matching Back apply", () => {
+    const b = browser("https://local.test/ar");
+    const raw = homeRecord({ created: Date.now(), position: homeWorkPosition("wujhat") });
+    b.storage.set(HOME_RETURN_KEY, raw); b.setLocaleReturn(localeRecord({ created: Date.now() }));
+    expect(getHomeRestoreIntent(b.win)?.kind).toBe("locale");
+    expect(b.storage.has(HOME_HANDOFF_KEY)).toBe(false);
+    b.mount(); b.settle();
+    expect(b.storage.get(HOME_RETURN_KEY)).toBe(raw); // AR must not consume EN.
+    b.runtime.location = new URL("https://local.test/en");
+    b.runtime.history.state = { [HOME_HISTORY_STATE_KEY]: checkpoint({ created: Date.now() }) };
+    b.setGeometry(null); b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(getHomeRestoreIntent(b.win)?.kind).toBe("home-return");
+    expect(b.storage.get(HOME_RETURN_KEY)).toBe(raw); // Getter/geometry wait are non-consuming.
+    b.setGeometry(mobile); b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
+    expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
+    expect(b.details.at(-1)?.frame?.time).toBeCloseTo(308, 8);
+  });
+
+  test("generic HOME return drives pristine EN312→AR/narrow/footer→Back312, while Forward uses the saved AR footer", () => {
+    const b = browser();
+    const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
+    const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
+    b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
+    let dispose: () => void;
+    const decisions: ReturnType<typeof getHomeRestoreIntent>[] = [];
+    const next = () => { dispose(); decisions.push(getHomeRestoreIntent(b.win)); dispose = b.mount(); };
+    b.runtime.addEventListener("popstate", next, true); // Earlier Next capture tears down HOME first.
+    dispose = b.mount(); b.settle();
+    b.runtime.scrollY = 16362; b.capture();
+    b.document.dispatchEvent({ type: "click", target: new LinkStub("https://local.test/ar"), ...click } as unknown as Event);
+    const english = b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint;
+    const home = b.storage.get(HOME_RETURN_KEY)!;
+    expect(JSON.parse(home).home).toBe("/en");
+    expect(homeScoreFromPosition(JSON.parse(home).position)).toBeCloseTo(312.0114, 3);
+    b.runtime.location = new URL("https://local.test/ar"); b.runtime.history.state = { __NA: true };
+    dispose(); dispose = b.mount(); b.settle();
+    expect(b.storage.get(HOME_RETURN_KEY)).toBe(home);
+    expect(b.storage.has(HOME_HANDOFF_KEY)).toBe(false);
+    b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
+    b.runtime.dispatchEvent(new Event("resize")); b.settle();
+    expect(b.scrolls.at(-1)).toBeCloseTo(12091.398, 2);
+    b.runtime.scrollY = 21772; b.capture();
+    const arabic = b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint;
+    expect(b.storage.get(HOME_RETURN_KEY)).toBe(home);
+    b.runtime.location = new URL("https://local.test/en"); b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: english };
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(decisions[0]?.kind).toBe("home-return");
+    expect(b.details.at(-1)?.intent.kind).toBe("home-return");
+    expect(b.scrolls.at(-1)).toBeCloseTo(12091.398, 2);
+    expect(b.details.at(-1)?.frame?.time).toBeCloseTo(312.0114, 3);
+    expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
+    b.runtime.location = new URL("https://local.test/ar"); b.runtime.history.state = { __NA: true, [HOME_HISTORY_STATE_KEY]: arabic };
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(decisions[1]?.kind).toBe("history");
+    expect(b.runtime.scrollY).toBe(21772);
+    expect(b.details.at(-1)?.frame?.time).toBeCloseTo(714, 8);
+    dispose!(); b.runtime.removeEventListener("popstate", next, true);
+  });
+
+  test("extra fresh AR document clears EN semantic return, so later EN Back takes the saved-pixel fallback", () => {
+    const fresh = browser("https://local.test/ar");
+    fresh.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now(), position: { section: "work", progress: 6 / 142 } }));
+    expect(getHomeRestoreIntent(fresh.win)).toBeNull();
+    expect(fresh.storage.has(HOME_RETURN_KEY)).toBe(false);
+    const back = browser("https://local.test/en");
+    back.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
+    for (const [key, value] of fresh.storage) back.storage.set(key, value);
+    back.runtime.history.state[HOME_HISTORY_STATE_KEY] = checkpoint({ created: Date.now(), scrollY: 16362 });
+    back.setGeometry({ start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 });
+    back.mount(); back.settle();
+    expect(back.details[0].intent.kind).toBe("history");
+    expect(back.runtime.scrollY).toBe(16362);
+    expect(back.details[0].frame?.time).toBeCloseTo(489.3488, 3);
+  });
+
+  test("route-remount guard does not run a late document clear, and explicit router target remains stronger than HOME return", () => {
+    const b = browser("https://local.test/ar");
+    b.runtime.performance.getEntriesByType = () => [{ type: "reload", name: "https://local.test/en" }];
+    const raw = homeRecord({ created: Date.now() }); b.storage.set(HOME_RETURN_KEY, raw);
+    b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ created: Date.now() }));
+    expect(getHomeRestoreIntent(b.win)?.kind).toBe("locale");
+    b.mount(); b.settle();
+    expect(b.storage.get(HOME_RETURN_KEY)).toBe(raw);
+    const explicit = browser("https://local.test/en");
+    explicit.storage.set(HOME_RETURN_KEY, raw);
+    expect(parseHomeReturn(raw, "/en", Date.now())).not.toBeNull();
+    explicit.mount({ historyTarget: 0 }); explicit.settle();
+    expect(explicit.details[0].intent.kind).toBe("history");
+    expect(explicit.scrolls).toEqual([0]);
+    expect(explicit.storage.has(HOME_RETURN_KEY)).toBe(false);
+  });
+
+  test("denied storage after HOME intent capture cannot block application or native link behavior", () => {
+    const b = browser(); b.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
+    b.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now() }));
+    expect(getHomeRestoreIntent(b.win)?.kind).toBe("home-return");
+    Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
+    b.mount(); b.settle();
+    expect(b.details[0].intent.kind).toBe("home-return");
+    expect(b.scrolls[0]).toBeCloseTo(homeScrollTarget(position, desktop)!, 8);
+  });
+
   test("fresh reload reset precedes hero entry selection and runs only once per document", () => {
     const b = browser();
     b.runtime.performance.getEntriesByType = () => [{ type: "reload" }];
@@ -321,7 +482,7 @@ describe("HOME browser lifecycle", () => {
     for (const href of ["https://local.test/en?work=wujhat", "https://local.test/en#beyond", "https://local.test/ar"]) {
       const b = browser(href);
       b.runtime.performance.getEntriesByType = () => [{ type: "reload" }]; b.runtime.scrollY = 5263;
-      if (href.endsWith("/ar")) b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ created: Date.now() }));
+      if (href.endsWith("/ar")) b.setLocaleReturn(localeRecord({ created: Date.now() }));
       expect(prepareHomeFreshEntry(b.win)).toBe(false);
       expect(b.scrolls).toHaveLength(0);
     }
@@ -343,6 +504,7 @@ describe("HOME browser lifecycle", () => {
     link.download = true; b.document.dispatchEvent(event()); link.download = false;
     link.inert = true; b.document.dispatchEvent(event()); link.inert = false;
     expect(b.storage.has(HOME_WORK_RETURN_KEY)).toBe(false);
+    expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
     b.document.dispatchEvent(event());
     const saved = JSON.parse(b.storage.get(HOME_WORK_RETURN_KEY)!);
     expect(saved.slug).toBe("wujhat");
@@ -357,7 +519,7 @@ describe("HOME browser lifecycle", () => {
 
   test("intent is synchronous and non-consuming; no apply until ready, then exactly one immediate restore", () => {
     const b = browser("https://local.test/ar");
-    const raw = localeRecord({ created: Date.now() }); b.storage.set(HOME_LOCALE_RETURN_KEY, raw);
+    const raw = localeRecord({ created: Date.now() }); b.setLocaleReturn(raw);
     b.setGeometry(null);
     expect(getHomeRestoreIntent(b.win)?.skipEntry).toBe(true);
     expect(getHomeRestoreIntent(b.win)?.position).toEqual(position);
@@ -419,7 +581,7 @@ describe("HOME browser lifecycle", () => {
     const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
     const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
     b.setGeometry(wide); b.runtime.innerWidth = 1912; b.runtime.innerHeight = 1009;
-    b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ position: original, created: Date.now() }));
+    b.setLocaleReturn(localeRecord({ position: original, created: Date.now() }));
     b.mount(); b.settle();
     expect(b.scrolls[0]).toBeCloseTo(16361.625, 2);
     b.runtime.scrollY = wide.start + wide.distance; b.capture();
@@ -442,7 +604,7 @@ describe("HOME browser lifecycle", () => {
     const narrow = { start: 865, distance: journeyDistance(865, true), heroInput: 100 / 5.8 };
     let reading = false;
     b.setGeometry(narrow); b.runtime.innerWidth = 392; b.runtime.innerHeight = 865;
-    b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ position: original, created: Date.now() }));
+    b.setLocaleReturn(localeRecord({ position: original, created: Date.now() }));
     b.mount({ getPosition: () => reading ? { section: "footer", progress: 0.9 } : null,
       // Source adapter: nearest project's absolute top minus 100px.
       getTarget: (saved) => reading && saved.section === "work" ? 3927 - 100 : null });
@@ -466,6 +628,7 @@ describe("HOME browser lifecycle", () => {
       const b = browser(kind === "reload" ? "https://local.test/en?work=wujhat" : "https://local.test/en");
       const original: HomePosition = { section: "work", progress: 6 / 142 };
       if (kind === "work-return") {
+        b.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
         b.storage.set(HOME_WORK_RETURN_KEY, workRecord({ position: original, created: Date.now() }));
       } else {
         b.runtime.performance.getEntriesByType = () => [{ type: kind === "history" ? "back_forward" : "reload" }];
@@ -601,7 +764,7 @@ describe("HOME browser lifecycle", () => {
 
   test("semantic reading adapters can restore without inventing pin geometry", () => {
     const b = browser("https://local.test/ar");
-    b.storage.set(HOME_LOCALE_RETURN_KEY, localeRecord({ created: Date.now() })); b.setGeometry(null);
+    b.setLocaleReturn(localeRecord({ created: Date.now() })); b.setGeometry(null);
     b.mount({ getPosition: () => position, getTarget: (saved) => saved.section === "work" ? 3400 + saved.progress * 1200 : null });
     b.settle();
     expect(b.scrolls).toEqual([3916]);

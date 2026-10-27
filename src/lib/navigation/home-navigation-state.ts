@@ -4,8 +4,12 @@ export const HOME_HISTORY_STATE_KEY = "gazzarHomeNavigation";
 export const HOME_POSITIONS_KEY = "gazzar-home-positions-v1";
 export const HOME_LOCALE_RETURN_KEY = "gazzar-home-locale-return-v1";
 export const HOME_WORK_RETURN_KEY = "gazzar-home-work-return-v1";
+export const HOME_RETURN_KEY = "gazzar-home-return-v1";
+export const HOME_HANDOFF_KEY = "gazzar-home-route-handoff-v1";
 export const HOME_LOCALE_MAX_AGE = 120_000;
 export const HOME_WORK_MAX_AGE = 1_800_000;
+export const HOME_RETURN_MAX_AGE = 1_800_000;
+export const HOME_HANDOFF_MAX_AGE = 30_000;
 export const HOME_HISTORY_LIMIT = 40;
 
 export type HomePath = "/en" | "/ar";
@@ -16,8 +20,10 @@ export type HomeCheckpoint = {
 };
 export type HomeLocaleReturn = { version: 1; from: HomePath; to: HomePath; created: number; position: HomePosition };
 export type HomeWorkReturn = { version: 1; home: HomePath; slug: HomeWorkSlug; created: number; position: HomePosition; pending: true };
+export type HomeReturn = { version: 1; home: HomePath; created: number; position: HomePosition };
+export type HomeHandoff = { version: 1; to: HomePath; created: number };
 export type HomeRestoreIntent = {
-  kind: "locale" | "work-query" | "work-return" | "history" | "reload" | "native";
+  kind: "home-return" | "locale" | "work-query" | "work-return" | "history" | "reload" | "native";
   position: HomePosition | null;
   /** History visits use saved native pixels; locale/work restoration uses semantics. */
   scrollY: number;
@@ -35,6 +41,26 @@ const object = (value: unknown): Record<string, unknown> | null =>
 const parse = (raw: string | null): unknown => { try { return JSON.parse(raw ?? "null"); } catch { return null; } };
 const validAge = (created: unknown, now: number, maxAge = Infinity): created is number =>
   typeof created === "number" && Number.isFinite(created) && created <= now && now - created <= maxAge;
+
+export function parseHomeReturn(raw: string | null, destination: HomePath, now: number): HomeReturn | null {
+  const value = object(parse(raw));
+  if (!value || value.version !== 1 || value.home !== destination ||
+    !validAge(value.created, now, HOME_RETURN_MAX_AGE) || !isHomePosition(value.position)) return null;
+  return value as HomeReturn;
+}
+
+export function parseHomeHandoff(raw: string | null, destination: string, now: number): HomeHandoff | null {
+  const value = object(parse(raw));
+  if (!value || value.version !== 1 || value.to !== destination || !homePath(destination) ||
+    !validAge(value.created, now) || now - value.created >= HOME_HANDOFF_MAX_AGE) return null;
+  return value as HomeHandoff;
+}
+
+/** The source head runs this guard once per document, never on a route remount. */
+export function homeDocumentStartsFresh(href: string, type: HomeNavigationType, handoff: string | null, now: number): boolean {
+  const url = new URL(href);
+  return !!homePath(url.pathname) && type !== "back_forward" && !parseHomeHandoff(handoff, url.pathname, now);
+}
 
 export function parseHomeLocaleReturn(raw: string | null, destination: HomePath, now: number): HomeLocaleReturn | null {
   const value = object(parse(raw));
@@ -87,6 +113,9 @@ export type HomeRestoreContext = {
   href: string; navigationType: HomeNavigationType; historyState: unknown;
   localeReturn: string | null; workReturn: string | null; positions: string | null;
   nativeScrollY: number; now: number;
+  homeReturn?: string | null;
+  /** Only a router-owned explicit target, not an inferred history checkpoint. */
+  historyTarget?: number | null;
 };
 
 /** Read-only selection: consuming belongs to the successful geometry/apply transaction. */
@@ -96,16 +125,21 @@ export function resolveHomeRestoreIntent(context: HomeRestoreContext): HomeResto
   const nativeY = Math.max(0, Number.isFinite(context.nativeScrollY) ? context.nativeScrollY : 0);
   const intent = (kind: HomeRestoreIntent["kind"], position: HomePosition | null, scrollY = nativeY): HomeRestoreIntent =>
     ({ kind, position, scrollY, skipEntry: true });
-  const locale = parseHomeLocaleReturn(context.localeReturn, path, context.now);
-  if (locale) return intent("locale", locale.position);
   const checkpoint = homeCheckpointFromState(context.historyState, context.positions, url.pathname + url.search, context.now);
+  if (typeof context.historyTarget === "number" && Number.isFinite(context.historyTarget) && context.historyTarget >= 0) {
+    return intent("history", checkpoint?.position ?? { section: "hero", progress: 0 }, context.historyTarget);
+  }
+  const home = parseHomeReturn(context.homeReturn ?? null, path, context.now);
+  if (home) return intent("home-return", home.position);
   const slug = url.searchParams.get("work");
   if (isHomeWorkSlug(slug) && checkpoint?.workQuery !== slug) return { ...intent("work-query", homeWorkPosition(slug)), slug };
+  const work = parseHomeWorkReturn(context.workReturn, path, context.now);
+  if (work) return { ...intent("work-return", work.position), slug: work.slug };
+  const locale = parseHomeLocaleReturn(context.localeReturn, path, context.now);
+  if (locale) return intent("locale", locale.position);
   // Hash-only entries belong to the browser's anchor navigation.
   if (url.hash) return intent("native", null);
   if (context.navigationType === "back_forward" && checkpoint) return intent("history", checkpoint.position, checkpoint.scrollY);
-  const work = parseHomeWorkReturn(context.workReturn, path, context.now);
-  if (work) return { ...intent("work-return", work.position), slug: work.slug };
   // A plain HOME reload starts the authored entry again. Browser-restored pixels
   // and a checkpoint alone are not return intent (R5-01). A valid work query
   // retains its existing once-per-entry semantics, including later reloads.
@@ -118,7 +152,8 @@ export function resolveHomeRestoreIntent(context: HomeRestoreContext): HomeResto
 
 export type HomeClick = Pick<MouseEvent, "button" | "defaultPrevented" | "metaKey" | "ctrlKey" | "shiftKey" | "altKey">;
 export type HomeLink = { href: string; target?: string; download?: boolean; inert?: boolean };
-export type HomeLinkIntent = { kind: "locale"; from: HomePath; to: HomePath } | { kind: "project"; home: HomePath; slug: HomeWorkSlug };
+export type HomeLinkIntent = { kind: "locale"; from: HomePath; to: HomePath } |
+  { kind: "project"; home: HomePath; slug: HomeWorkSlug } | { kind: "page"; home: HomePath };
 
 /** Classification observes eligible native clicks. It never prevents or rewrites one. */
 export function homeLinkIntent(event: HomeClick, link: HomeLink, currentHref: string): HomeLinkIntent | null {
@@ -132,5 +167,6 @@ export function homeLinkIntent(event: HomeClick, link: HomeLink, currentHref: st
   if (to && to !== from) return { kind: "locale", from, to };
   const project = target.pathname.match(/^\/(en|ar)\/projects\/([^/]+)\/?$/);
   if (project && `/${project[1]}` === from && isHomeWorkSlug(project[2])) return { kind: "project", home: from, slug: project[2] };
+  if (/^\/(en|ar)\/(vision|services|projects|contact)\/?$/.test(target.pathname)) return { kind: "page", home: from };
   return null;
 }

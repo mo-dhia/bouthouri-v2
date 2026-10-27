@@ -5,8 +5,9 @@ import {
 } from "./home-position";
 import {
   HOME_HISTORY_STATE_KEY, HOME_HISTORY_LIMIT, HOME_LOCALE_RETURN_KEY, HOME_POSITIONS_KEY, HOME_WORK_RETURN_KEY,
-  homeCheckpointFromState, homeHistoryId, homeLinkIntent, homePath,
-  parseHomeLocaleReturn, parseHomeWorkReturn, resolveHomeRestoreIntent, serializeHomeCheckpoints,
+  HOME_RETURN_KEY, HOME_HANDOFF_KEY,
+  homeCheckpointFromState, homeHistoryId, homeLinkIntent, homePath, homeDocumentStartsFresh,
+  parseHomeLocaleReturn, parseHomeWorkReturn, parseHomeReturn, parseHomeHandoff, resolveHomeRestoreIntent, serializeHomeCheckpoints,
   type HomeCheckpoint, type HomeNavigationType, type HomeRestoreContext, type HomeRestoreIntent,
 } from "./home-navigation-state";
 
@@ -31,18 +32,21 @@ export type HomeNavigationOptions = {
   getTarget?: (position: HomePosition) => number | null;
   scrollTo?: (y: number) => void;
   onRestore?: (detail: HomeRestoreDetail) => void;
+  /** Optional explicit router transaction; do not fill this from every checkpoint. */
+  historyTarget?: number | null;
   window?: BrowserWindow;
 };
 
 type RestoreState = {
   key: string; intent: HomeRestoreIntent | null; applied: boolean;
-  freshReload: boolean; layoutKey: string | null;
-  localeRaw: string | null; workRaw: string | null;
+  freshEntry: boolean; layoutKey: string | null;
+  localeRaw: string | null; workRaw: string | null; homeRaw: string | null;
 };
 const states = new WeakMap<Document, RestoreState>();
 const mounts = new WeakMap<Document, () => void>();
 const entryPrepared = new WeakSet<Document>();
 const visitedEntries = new WeakMap<Document, Map<string, string>>();
+const documentBoots = new WeakMap<Document, { fresh: boolean }>();
 const safeRead = (win: BrowserWindow, key: string) => { try { return win.sessionStorage.getItem(key); } catch { return null; } };
 const safeWrite = (win: BrowserWindow, key: string, value: string) => { try { win.sessionStorage.setItem(key, value); } catch { /* Native navigation still works. */ } };
 const safeRemove = (win: BrowserWindow, key: string) => { try { win.sessionStorage.removeItem(key); } catch { /* Optional storage. */ } };
@@ -57,13 +61,35 @@ function navigationType(win: BrowserWindow): HomeNavigationType {
   return entry?.type === "back_forward" || entry?.type === "reload" ? entry.type : "navigate";
 }
 
-function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = false): RestoreState {
+function documentBoot(win: BrowserWindow, type?: HomeNavigationType) {
+  const existing = documentBoots.get(win.document);
+  if (existing) return existing;
+  const timing = win.performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  const initial = new URL(timing?.name || win.location.href, win.location.href);
+  const atInitialURL = initial.pathname + initial.search === win.location.pathname + win.location.search;
+  const raw = safeRead(win, HOME_HANDOFF_KEY);
+  const boot = { fresh: atInitialURL && homeDocumentStartsFresh(win.location.href, type ?? navigationType(win), raw, Date.now()) };
+  documentBoots.set(win.document, boot);
+  if (boot.fresh) {
+    for (const key of [HOME_RETURN_KEY, HOME_WORK_RETURN_KEY, HOME_LOCALE_RETURN_KEY]) safeRemove(win, key);
+  }
+  if (atInitialURL) safeRemove(win, HOME_HANDOFF_KEY);
+  return boot;
+}
+
+function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = false, historyTarget?: number | null): RestoreState {
   const key = currentKey(win), previous = states.get(win.document);
   if (!reset && previous?.key === key) return previous;
+  const explicitHistory = typeof historyTarget === "number" && Number.isFinite(historyTarget) && historyTarget >= 0;
+  const boot = documentBoot(win, explicitHistory ? "back_forward" : type);
+  // Same-document locale pushes consume their short incoming handoff too, but
+  // never repeat the head's fresh-document clearing of the outgoing HOME return.
+  if (parseHomeHandoff(safeRead(win, HOME_HANDOFF_KEY), win.location.pathname, Date.now())) safeRemove(win, HOME_HANDOFF_KEY);
   const context: HomeRestoreContext = {
     href: win.location.href, navigationType: type ?? navigationType(win), historyState: win.history.state,
     localeReturn: safeRead(win, HOME_LOCALE_RETURN_KEY), workReturn: safeRead(win, HOME_WORK_RETURN_KEY),
-    positions: safeRead(win, HOME_POSITIONS_KEY), nativeScrollY: win.scrollY, now: Date.now(),
+    positions: safeRead(win, HOME_POSITIONS_KEY), homeReturn: safeRead(win, HOME_RETURN_KEY),
+    nativeScrollY: boot.fresh && !previous ? 0 : win.scrollY, now: Date.now(), historyTarget,
   };
   // Next may commit/unmount HOME in its own earlier popstate capture listener.
   // Destination hero/effects then run before our per-mount listener can run.
@@ -76,8 +102,8 @@ function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = fal
   const intent = resolveHomeRestoreIntent(context);
   const state: RestoreState = {
     key, intent, applied: false, layoutKey: null,
-    freshReload: !!homePath(win.location.pathname) && context.navigationType === "reload" && !intent,
-    localeRaw: context.localeReturn, workRaw: context.workReturn,
+    freshEntry: boot.fresh && !previous && !intent,
+    localeRaw: context.localeReturn, workRaw: context.workReturn, homeRaw: context.homeReturn ?? null,
   };
   states.set(win.document, state);
   return state;
@@ -97,15 +123,15 @@ function scrollHomeImmediately(win: BrowserWindow, y: number) {
 }
 
 /**
- * Hero's first entry selection in this document owns the fresh reload reset.
+ * Hero's first entry selection in this document owns the ordinary fresh reset.
  * Remounts (quiet/motion, Strict Mode) never reset the reader's later position.
- * Returns true only for that first fresh reload selection, even if native scroll
+ * Returns true only for that first fresh document selection, even if native scroll
  * restoration had already put the browser below the hero before hydration.
  */
 export function prepareHomeFreshEntry(win = browserWindow()): boolean {
   if (!win || entryPrepared.has(win.document)) return false;
   entryPrepared.add(win.document);
-  if (!restoreState(win).freshReload) return false;
+  if (!restoreState(win).freshEntry) return false;
   const previous = win.history.scrollRestoration;
   win.history.scrollRestoration = "manual";
   scrollHomeImmediately(win, 0);
@@ -126,7 +152,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   if (!win || !homePath(win.location.pathname)) return () => {};
   const doc = win.document;
   mounts.get(doc)?.();
-  let state = restoreState(win), disposed = false, suspended = false;
+  let state = restoreState(win, undefined, options.historyTarget !== undefined, options.historyTarget), disposed = false, suspended = false;
   let path = win.location.pathname + win.location.search;
   let entryId = homeHistoryId(win.history.state) ?? win.crypto.randomUUID();
   let checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now());
@@ -217,6 +243,8 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   };
   const consume = () => {
     const destination = homePath(win.location.pathname)!;
+    if (state.homeRaw && safeRead(win, HOME_RETURN_KEY) === state.homeRaw &&
+      parseHomeReturn(state.homeRaw, destination, Date.now())) safeRemove(win, HOME_RETURN_KEY);
     if (state.localeRaw && safeRead(win, HOME_LOCALE_RETURN_KEY) === state.localeRaw &&
       parseHomeLocaleReturn(state.localeRaw, destination, Date.now())) safeRemove(win, HOME_LOCALE_RETURN_KEY);
     if (state.workRaw && safeRead(win, HOME_WORK_RETURN_KEY) === state.workRaw &&
@@ -239,8 +267,9 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     if (!intent && !measured && !options.getPosition) return;
     const extent = Math.max(0, Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight ?? 0) - win.innerHeight);
     const initialHistory = intent?.kind === "history" && state.layoutKey === null;
-    // Source history visits select saved pixels, including after viewport changes.
-    // This differs from reapplying a locale anchor within its restored mount.
+    // With no stronger HOME/work/locale return or explicit router target, this
+    // history fallback uses saved pixels. A pristine locale Back has HOME_RETURN
+    // and takes the semantic branch instead (source boot c before pixel T).
     const target = initialHistory ? Math.min(intent.scrollY, extent) : intent?.position
       ? readingTarget ?? (measured ? homeScrollTarget(intent.position, measured) : null)
       : win.scrollY;
@@ -312,9 +341,12 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     const current = position();
     if (!current) return;
     save(true, current);
+    const home = homePath(win.location.pathname)!;
+    safeWrite(win, HOME_RETURN_KEY, JSON.stringify({ version: 1, home, created: Date.now(), position: current }));
     if (intent.kind === "locale") {
       safeWrite(win, HOME_LOCALE_RETURN_KEY, JSON.stringify({ version: 1, from: intent.from, to: intent.to, created: Date.now(), position: current }));
-    } else {
+      safeWrite(win, HOME_HANDOFF_KEY, JSON.stringify({ version: 1, to: intent.to, created: Date.now() }));
+    } else if (intent.kind === "project") {
       safeWrite(win, HOME_WORK_RETURN_KEY, JSON.stringify({
         version: 1, home: intent.home, slug: intent.slug, created: Date.now(), pending: true,
         position: current.section === "work" ? current : homeWorkPosition(intent.slug),
