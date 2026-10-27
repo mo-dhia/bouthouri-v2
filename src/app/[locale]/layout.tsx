@@ -30,7 +30,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   return (
-    <html lang={locale} dir={localeDirection(locale)}>
+    <html lang={locale} dir={localeDirection(locale)} data-typography="questrial-cairo">
       <head><link rel="preload" href={`/assets/fonts/${locale === "ar" ? "cairo-variable" : "questrial-regular"}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" /></head>
       <body><SiteSchema locale={locale} /><Initializer />{children}</body>
     </html>

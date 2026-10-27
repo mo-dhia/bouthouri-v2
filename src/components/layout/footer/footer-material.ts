@@ -1,0 +1,923 @@
+import {
+  playMaterialSound,
+  setFooterFriction,
+} from "@/lib/audio/material-audio";
+import { FooterPaths } from "./footer-paths";
+import { footerGlyphBoxes } from "./footer-geometry";
+import { FooterThoughts } from "./footer-thoughts";
+import {
+  createIdleTargets,
+  elasticWeight,
+  FooterIdleEpisodes,
+  FooterRefractionWaves,
+  type MaterialContours,
+} from "./footer-material-field";
+import { emitMaterialProtection } from "../header/material-protection";
+
+export type FooterMaterial = {
+  measure: () => void;
+  reset: () => void;
+  setActive: (value: boolean) => void;
+  dispose: () => void;
+};
+const clamp = (n: number) => Math.max(0, Math.min(1, n));
+const ease = (n: number) => {
+  const t = clamp(n);
+  return t * t * t * (t * (6 * t - 15) + 10);
+};
+const thoughts = {
+  en: [
+    ["PERSPECTIVE", "A detail means more\nwhen you see what surrounds it."],
+    ["CLARITY", "Less to untangle.\nMore to understand."],
+    ["DIRECTION", "Choose what matters.\nThen move it forward."],
+  ],
+  ar: [
+    ["منظور", "تتضح التفاصيل\nحين ترى مكانها في الصورة"],
+    ["وضوح", "حين يقل التعقيد\nيتضح المعنى"],
+    ["اتجاه", "حدد ما يهم\nواجعله نقطة البداية"],
+  ],
+};
+
+/** Native outline morph: six original Questrial glyphs become the three identity parts. */
+export function mountFooterMaterial(
+  root: HTMLElement,
+  reduced: () => boolean,
+): FooterMaterial {
+  const mask = root.querySelector<HTMLElement>(
+    "[data-footer-grab],.footer-word-mask",
+  )!;
+  const word = root.querySelector<HTMLElement>(
+    "[data-footer-word],.footer-word-text",
+  )!;
+  const announcement = root.querySelector<HTMLElement>("[data-footer-thought]");
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
+  canvas.dataset.footerMaterial = "native-paths";
+  canvas.style.cssText =
+    "position:fixed;inset:0;inline-size:100%;block-size:100%;pointer-events:none;z-index:13;visibility:hidden;";
+  document.body.append(canvas);
+  const context = canvas.getContext("2d");
+  if (!context) {
+    canvas.remove();
+    return { measure() {}, reset() {}, setActive() {}, dispose() {} };
+  }
+  const ctx = context,
+    labels = thoughts[root.lang === "ar" ? "ar" : "en"],
+    rtl = root.lang === "ar";
+  let disposed = false,
+    frame = 0,
+    last = 0,
+    phase: "word" | "pull" | "to-logo" | "logo" | "clearing" | "to-word" =
+      "word",
+    age = 0;
+  let editorial: FooterThoughts | undefined;
+  let paths: FooterPaths | undefined,
+    width = 1,
+    height = 1,
+    dpr = 1,
+    grab: number | null = null,
+    startX = 0,
+    startY = 0,
+    startScroll = 0,
+    startAt = 0,
+    dx = 0,
+    dy = 0,
+    pullX = 0,
+    pullY = 0,
+    pulledGlyph = -1,
+    threshold = 36,
+    touch = false;
+  let concept = 0,
+    nextConcept = 0,
+    thoughtAge = 0,
+    thoughtPhase: "settle" | "form" | "read" | "retract" | "handoff" = "settle",
+    thoughtReveal = 0,
+    clearFrom = 0,
+    engaged = 0,
+    candidate = -1,
+    candidateAge = 0;
+  let drawn: Path2D[] = [];
+  let drawnContours: MaterialContours = [],
+    idleTargets: MaterialContours[] = [];
+  const idle = new FooterIdleEpisodes(),
+    waves = new FooterRefractionWaves();
+  const fine = matchMedia("(hover: hover) and (pointer: fine)");
+  let enabled = false,
+    hovered = -1,
+    hovering = false,
+    hoverStrength = 0;
+  let pointerX = 0,
+    pointerY = 0,
+    velocityX = 0,
+    velocityY = 0,
+    pointerAt = 0,
+    pointerClientX = 0,
+    pointerClientY = 0;
+  let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  let transfer: MaterialContours | undefined,
+    transferAge = 0;
+  let releaseDelta: MaterialContours | undefined,
+    returnDelta: MaterialContours | undefined;
+  let silkX = 0,
+    silkY = 0;
+  const partMap = [0, 1, 1, 1, 1, 2];
+  const canInteract = () =>
+    !root.inert &&
+    root.getAttribute("aria-hidden") !== "true" &&
+    !document.hidden &&
+    document.documentElement.dataset.menuOpen !== "true";
+  const restore = () => {
+    word.style.visibility = "";
+    canvas.style.visibility = "hidden";
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+  const measure = () => {
+    if (disposed) return;
+    width = mask.getBoundingClientRect().width;
+    height = word.offsetHeight;
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = Math.ceil(innerWidth * dpr);
+    canvas.height = Math.ceil(innerHeight * dpr);
+    paths = new FooterPaths(footerGlyphBoxes(word, ctx), width);
+    idleTargets = createIdleTargets(paths.source, paths.boxes);
+    idle.reset();
+    waves.clear();
+    transfer = undefined;
+    editorial?.dispose();
+    const family =
+      getComputedStyle(root)
+        .getPropertyValue(rtl ? "--font-arabic" : "--font-latin")
+        .trim() || (rtl ? "Cairo" : "Questrial");
+    editorial = new FooterThoughts(width, height, rtl, labels, family);
+    drawn = [];
+    if (enabled || phase !== "word") wake();
+  };
+  const announce = () => {
+    if (announcement && thoughtReveal > 0.95) {
+      announcement.textContent =
+        labels[concept][0] + ". " + labels[concept][1].replace("\n", " ");
+      announcement.lang = root.lang;
+    }
+  };
+  const chooseConcept = (index: number) => {
+    if (
+      index === concept &&
+      thoughtPhase !== "retract" &&
+      thoughtPhase !== "handoff"
+    )
+      return;
+    nextConcept = index;
+    if (thoughtPhase !== "retract" && thoughtPhase !== "handoff") {
+      clearFrom = thoughtReveal;
+      thoughtPhase = "retract";
+      thoughtAge = 0;
+    }
+  };
+  const drawThought = () => {
+    if (!editorial || !paths || thoughtReveal <= 0) return;
+    const part = paths.parts[concept];
+    const origin = editorial.mobile
+      ? {
+          x: part.x + part.width * (concept === 0 ? 0.35 : 0.5),
+          y: part.y + 0.94 * part.height,
+        }
+      : { x: part.x + 0.13 * part.width, y: part.y + 0.5 * part.height };
+    const target = {
+      x:
+        editorial.x +
+        width *
+          (editorial.mobile ? 0.88 : 0.425) *
+          (editorial.mobile ? 0.5 : Number(!rtl)),
+      y: editorial.y + 0.5 * editorial.titleSize,
+    };
+    const distance = Math.max(
+      1,
+      Math.hypot(target.x - origin.x, target.y - origin.y),
+    );
+    const impulse =
+      phase === "logo"
+        ? Math.sin(Math.PI * thoughtReveal) *
+          (reduced() ? 2 : Math.min(14, 0.016 * width))
+        : 0;
+    origin.x += ((target.x - origin.x) / distance) * impulse;
+    origin.y += ((target.y - origin.y) / distance) * impulse;
+    editorial.draw(
+      ctx,
+      concept,
+      thoughtReveal,
+      origin,
+      phase === "clearing" || thoughtPhase === "retract",
+      reduced(),
+    );
+    announce();
+  };
+  const thoughtImpulse = () => {
+    if (!paths || !editorial || phase !== "logo") return undefined;
+    const part = paths.parts[concept];
+    const origin = editorial.mobile
+      ? {
+          x: part.x + part.width * (concept === 0 ? 0.35 : 0.5),
+          y: part.y + 0.94 * part.height,
+        }
+      : { x: part.x + 0.13 * part.width, y: part.y + 0.5 * part.height };
+    const target = {
+      x:
+        editorial.x +
+        width *
+          (editorial.mobile ? 0.88 : 0.425) *
+          (editorial.mobile ? 0.5 : Number(!rtl)),
+      y: editorial.y + 0.5 * editorial.titleSize,
+    };
+    const distance = Math.max(
+      1,
+      Math.hypot(target.x - origin.x, target.y - origin.y),
+    );
+    return {
+      origin,
+      x: (target.x - origin.x) / distance,
+      y: (target.y - origin.y) / distance,
+      radius: Math.max(30, 0.75 * part.height),
+      amount:
+        Math.sin(Math.PI * thoughtReveal) *
+        (reduced() ? 2 : Math.min(14, 0.016 * width)),
+    };
+  };
+  const draw = () => {
+    if (!paths) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const rect = mask.getBoundingClientRect();
+    const shift = word.getBoundingClientRect().top - rect.top;
+    ctx.setTransform(dpr, 0, 0, dpr, rect.left * dpr, (rect.top + shift) * dpr);
+    const raw =
+      phase === "to-logo"
+        ? clamp(age / (reduced() ? 0.48 : 2.24))
+        : phase === "to-word"
+          ? clamp(age / (reduced() ? 0.42 : 2.04))
+          : phase === "word" || phase === "pull"
+            ? 0
+            : 1;
+    const contours = paths.contours(raw, phase === "to-word");
+    const impulse = thoughtImpulse();
+    drawn = [];
+    drawnContours = [];
+    const wordMode = phase === "word" || phase === "pull";
+    const handoff = transfer ? Math.min(1, transferAge / 0.24) : 1;
+    const handoffEase = handoff * handoff * (3 - 2 * handoff);
+    if (handoff === 1) transfer = undefined;
+    if (shift > 0.01) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, -shift, width, height);
+      ctx.clip();
+    }
+    contours.forEach((glyph, index) => {
+      const path = new Path2D();
+      const glyphPoints: MaterialContours[number] = [];
+      glyph.forEach((contour, contourIndex) => {
+        const points: MaterialContours[number][number] = [];
+        glyphPoints.push(points);
+        contour.forEach((point, i) => {
+          let x = point.x,
+            y = point.y;
+          if (phase === "to-logo" && releaseDelta) {
+            const t = Math.max(0, 1 - raw / 0.21),
+              weight = t * t * (3 - 2 * t),
+              offset = releaseDelta[index][contourIndex][i];
+            x += offset.x * weight;
+            y += offset.y * weight;
+          }
+          if (phase === "to-word" && returnDelta) {
+            const t = Math.max(0, 1 - raw / 0.22),
+              weight = t * t * (3 - 2 * t),
+              offset = returnDelta[index][contourIndex][i];
+            x += offset.x * weight;
+            y += offset.y * weight;
+          }
+          if (wordMode) {
+            const target =
+              idleTargets[idle.kind]?.[index][contourIndex][i] ?? point;
+            x += (target.x - point.x) * idle.amount;
+            y += (target.y - point.y) * idle.amount;
+            const previous = transfer?.[index][contourIndex][i];
+            if (previous) {
+              x = previous.x + (point.x - previous.x) * handoffEase;
+              y = previous.y + (point.y - previous.y) * handoffEase;
+            }
+            if (idle.amount === 0) {
+              const dx = point.x - pointerX,
+                dy = point.y - pointerY;
+              const weight =
+                elasticWeight(
+                  Math.hypot(dx, dy),
+                  Math.max(42, Math.min(155, 0.58 * height)),
+                ) * hoverStrength;
+              x += (-0.025 * dx + 0.002 * velocityX) * weight;
+              y += (-0.025 * dy + 0.002 * velocityY) * weight;
+            }
+          }
+          if (impulse && partMap[index] === concept) {
+            const distance =
+              Math.hypot(x - impulse.origin.x, y - impulse.origin.y) /
+              impulse.radius;
+            const weight =
+              Math.pow(Math.max(0, 1 - distance), 4) *
+              (1 + 4 * distance) *
+              impulse.amount;
+            x += impulse.x * weight;
+            y += impulse.y * weight;
+          }
+          if (
+            index === pulledGlyph &&
+            (phase === "pull" ||
+              phase === "word" ||
+              (phase === "to-logo" && age < 0.5))
+          ) {
+            const radius = Math.max(70, 0.84 * paths!.boxes[index].height),
+              r = Math.hypot(x - pullX, y - pullY) / radius;
+            const elastic =
+              Math.pow(Math.max(0, 1 - r), 4) *
+              (1 + 4 * r) *
+              (phase === "to-logo" ? 1 - ease(age / 0.5) : 1);
+            x += silkX * elastic;
+            y += silkY * elastic;
+          }
+          if (!reduced() && (wordMode || phase === "logo")) {
+            const wave = waves.offset(point, index, phase === "logo");
+            x += wave.x;
+            y += wave.y;
+          }
+          points.push({ x, y });
+          if (i === 0) path.moveTo(x, y);
+          else path.lineTo(x, y);
+          if (i === contour.length - 1) path.closePath();
+        });
+      });
+      drawnContours.push(glyphPoints);
+      drawn.push(path);
+      ctx.fillStyle =
+        phase === "logo" && partMap[index] === concept ? "#e1ded6" : "#dbd8d0";
+      ctx.fill(path, "evenodd");
+    });
+    if (shift > 0.01) ctx.restore();
+    if (phase === "logo" || phase === "clearing") drawThought();
+    if (phase === "pull" && Math.hypot(dx, dy) > 3) {
+      const length = Math.hypot(dx, dy),
+        x = dx / length,
+        y = dy / length;
+      const tx = pullX + x * threshold,
+        ty = pullY + y * threshold;
+      const ready = length >= threshold;
+      ctx.save();
+      ctx.strokeStyle = ctx.fillStyle = ready ? "#e1ded6" : "#aaa69a";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(tx - 5 * y, ty + 5 * x);
+      ctx.lineTo(tx + 5 * y, ty - 5 * x);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(tx, ty, ready ? 2.5 : 1.5, 0, Math.PI * 2);
+      if (ready) ctx.fill();
+      else ctx.stroke();
+      ctx.restore();
+    }
+  };
+  const tick = (now: number) => {
+    frame = 0;
+    if (disposed || document.hidden) return;
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
+    last = now;
+    age += dt;
+    engaged = Math.max(0, engaged - dt);
+    if (!enabled || !canInteract()) {
+      reset();
+      return;
+    }
+    const wordMode = phase === "word" || phase === "pull";
+    if (wordMode || phase === "logo") waves.advance(dt);
+    const fullWord =
+      Math.abs(
+        word.getBoundingClientRect().top - mask.getBoundingClientRect().top,
+      ) <
+      height * 0.02;
+    if (wordMode)
+      idle.advance(
+        dt,
+        hovering ||
+          waves.active ||
+          Math.hypot(silkX, silkY) > 0.001 ||
+          !fullWord,
+        reduced(),
+      );
+    if (transfer) transferAge += dt;
+    const targetHover =
+      hovering && phase === "word" ? (reduced() ? 0.16 : 0.6) : 0;
+    hoverStrength += (targetHover - hoverStrength) * (1 - Math.exp(-12 * dt));
+    if (Math.abs(hoverStrength - targetHover) < 0.001)
+      hoverStrength = targetHover;
+    const pullLength = Math.hypot(dx, dy),
+      limit =
+        (paths
+          ? Math.min(
+              58,
+              Math.max(17, 0.23 * (paths.boxes[pulledGlyph]?.height ?? 160)),
+            )
+          : 30) * (reduced() ? 0.45 : 1);
+    const pullAmount =
+      phase === "pull" ? limit * (1 - Math.exp(-pullLength / limit)) : 0;
+    const goalX = pullLength ? (dx / pullLength) * pullAmount : 0,
+      goalY = pullLength ? (dy / pullLength) * pullAmount : 0;
+    if (phase !== "to-logo") {
+      silkX += (goalX - silkX) * (1 - Math.exp(-32 * dt));
+      silkY += (goalY - silkY) * (1 - Math.exp(-32 * dt));
+      if (Math.hypot(silkX, silkY) < 0.001 && pullAmount === 0) {
+        silkX = silkY = 0;
+        pulledGlyph = -1;
+      }
+    }
+    if (phase === "to-logo" && age >= (reduced() ? 0.48 : 2.24)) {
+      phase = "logo";
+      age = thoughtAge = 0;
+      thoughtPhase = "settle";
+      concept = 0;
+      mask.dataset.mode = "logo";
+      announce();
+    } else if (phase === "to-word" && age >= (reduced() ? 0.42 : 2.04)) {
+      reset();
+      return;
+    } else if (phase === "clearing") {
+      thoughtReveal = clearFrom * (1 - ease(age / (reduced() ? 0.22 : 0.68)));
+      if (age >= (reduced() ? 0.38 : 0.88)) {
+        phase = "to-word";
+        age = 0;
+      }
+    }
+    if (phase === "logo") {
+      thoughtAge += dt;
+      if (candidate >= 0) {
+        candidateAge += dt;
+        if (candidateAge >= 0.13) {
+          engaged = 1.1;
+          chooseConcept(candidate);
+        }
+      }
+      if (
+        thoughtPhase === "settle" &&
+        thoughtAge >= (reduced() ? 0.12 : 0.24)
+      ) {
+        thoughtPhase = "form";
+        thoughtAge = 0;
+      } else if (thoughtPhase === "form") {
+        thoughtReveal = ease(thoughtAge / (reduced() ? 0.32 : 1.18));
+        if (thoughtReveal === 1) {
+          thoughtPhase = "read";
+          thoughtAge = 0;
+        }
+      } else if (
+        thoughtPhase === "read" &&
+        thoughtAge >= 2.55 &&
+        engaged === 0
+      ) {
+        if (concept === 2) toWord();
+        else chooseConcept(concept + 1);
+      } else if (thoughtPhase === "retract") {
+        thoughtReveal =
+          clearFrom * (1 - ease(thoughtAge / (reduced() ? 0.22 : 0.68)));
+        if (thoughtAge >= (reduced() ? 0.22 : 0.68)) {
+          thoughtPhase = "handoff";
+          thoughtAge = 0;
+        }
+      } else if (thoughtPhase === "handoff" && thoughtAge >= 0.1) {
+        concept = nextConcept;
+        thoughtPhase = "form";
+        thoughtAge = 0;
+        announce();
+      }
+    }
+    canvas.style.visibility = "visible";
+    word.style.visibility = "hidden";
+    draw();
+    const raw =
+      phase === "to-logo"
+        ? clamp(age / (reduced() ? 0.48 : 2.24))
+        : phase === "to-word"
+          ? 1 - clamp(age / (reduced() ? 0.42 : 2.04))
+          : 0;
+    const friction = reduced()
+      ? 0
+      : phase === "pull"
+        ? (Math.hypot(silkX, silkY) / 60) * 0.13
+        : phase === "to-logo" || phase === "to-word"
+          ? 0.2 * Math.sin(Math.PI * raw)
+          : 0.05 * waves.energy;
+    setFooterFriction(
+      friction,
+      phase === "to-logo" || phase === "to-word"
+        ? 0.25
+        : 0.1 * Math.min(1, Math.hypot(velocityX, velocityY) / 850),
+      (pointerClientX / innerWidth - 0.5) * 0.35,
+    );
+    mask.dataset.idleKind = String(idle.kind);
+    mask.dataset.idleAmount = idle.amount.toFixed(5);
+    mask.dataset.waveEnergy = waves.energy.toFixed(5);
+    const moving =
+      phase !== "word" ||
+      idle.kind >= 0 ||
+      waves.active ||
+      transfer ||
+      Math.abs(hoverStrength - targetHover) > 0.001 ||
+      Math.hypot(silkX - goalX, silkY - goalY) > 0.001;
+    if (moving) wake();
+    else if (fullWord && !hovering && !reduced() && idle.wait > 0) {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        idleTimer = undefined;
+        if (enabled && canInteract() && !hovering && !reduced()) {
+          idle.wakeFromWait();
+          last = 0;
+          wake();
+        }
+      }, idle.wait * 1000);
+    }
+  };
+  function wake() {
+    if (!disposed && !frame && !document.hidden)
+      frame = requestAnimationFrame(tick);
+  }
+  const activate = () => {
+    if (paths && drawnContours.length)
+      releaseDelta = drawnContours.map((glyph, g) =>
+        glyph.map((contour, c) =>
+          contour.map((p, i) => ({
+            x: p.x - paths!.source[g][c][i].x,
+            y: p.y - paths!.source[g][c][i].y,
+          })),
+        ),
+      );
+    enabled = true;
+    clearTimeout(idleTimer);
+    idle.reset();
+    waves.clear();
+    transfer = undefined;
+    phase = "to-logo";
+    age = 0;
+    last = 0;
+    concept = 0;
+    thoughtReveal = 0;
+    thoughtPhase = "settle";
+    canvas.style.visibility = "visible";
+    word.style.visibility = "hidden";
+    mask.dataset.mode = "to-logo";
+    mask.setAttribute("aria-pressed", "true");
+    playMaterialSound("click");
+    wake();
+  };
+  const toWord = () => {
+    if (phase !== "word") {
+      if (paths && drawnContours.length) {
+        const rest = paths.contours(1);
+        returnDelta = drawnContours.map((glyph, g) =>
+          glyph.map((contour, c) =>
+            contour.map((p, i) => ({
+              x: p.x - rest[g][c][i].x,
+              y: p.y - rest[g][c][i].y,
+            })),
+          ),
+        );
+      }
+      clearFrom = thoughtReveal;
+      phase = "clearing";
+      age = 0;
+      last = 0;
+      wake();
+    }
+  };
+  const reset = () => {
+    clearTimeout(idleTimer);
+    idleTimer = undefined;
+    waves.clear();
+    idle.reset();
+    transfer = undefined;
+    releaseDelta = returnDelta = undefined;
+    hovering = false;
+    hovered = -1;
+    hoverStrength = 0;
+    silkX = silkY = 0;
+    emitMaterialProtection({
+      source: "footer",
+      active: false,
+      pressureScale: 1,
+      influence: 0,
+      clientX: pointerClientX,
+      clientY: pointerClientY,
+    });
+    if (grab !== null && mask.hasPointerCapture(grab))
+      mask.releasePointerCapture(grab);
+    grab = null;
+    dx = dy = 0;
+    phase = "word";
+    age = thoughtReveal = 0;
+    candidate = -1;
+    cancelAnimationFrame(frame);
+    frame = 0;
+    mask.dataset.held = "false";
+    mask.dataset.mode = "word";
+    mask.setAttribute("aria-pressed", "false");
+    restore();
+  };
+  const setActive = (value: boolean) => {
+    const changed = value !== enabled;
+    enabled = value;
+    if (!value) {
+      if (changed || frame || phase !== "word") reset();
+      return;
+    }
+    if (changed || phase !== "word" || !idleTimer) wake();
+  };
+  const hit = (event: PointerEvent) => {
+    if (!paths) return -1;
+    const rect = mask.getBoundingClientRect(),
+      x = event.clientX - rect.left,
+      y = event.clientY - word.getBoundingClientRect().top;
+    if (!drawn.length) draw();
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const tolerance = Math.max(7, Math.min(14, 0.045 * height));
+    ctx.lineWidth = 2 * tolerance;
+    ctx.lineJoin = "round";
+    const index = drawn.findIndex(
+      (path) =>
+        ctx.isPointInPath(path, x, y, "evenodd") ||
+        ctx.isPointInStroke(path, x, y),
+    );
+    const filled =
+      index >= 0 && ctx.isPointInPath(drawn[index], x, y, "evenodd");
+    ctx.restore();
+    pointerX = x;
+    pointerY = y;
+    if (index >= 0 && !filled) {
+      let best = Infinity;
+      drawnContours[index]?.forEach((contour) =>
+        contour.forEach((a, i) => {
+          const b = contour[(i + 1) % contour.length],
+            dx = b.x - a.x,
+            dy = b.y - a.y,
+            t = clamp(
+              ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy || 1),
+            ),
+            px = a.x + t * dx,
+            py = a.y + t * dy,
+            d = (x - px) ** 2 + (y - py) ** 2;
+          if (d < best) {
+            best = d;
+            pointerX = px;
+            pointerY = py;
+          }
+        }),
+      );
+    }
+    return index;
+  };
+  const protection = (active: boolean) =>
+    emitMaterialProtection({
+      source: "footer",
+      active,
+      pressureScale: 1,
+      influence: active ? 0.75 : 0,
+      clientX: pointerClientX,
+      clientY: pointerClientY,
+    });
+  const down = (event: PointerEvent) => {
+    if (
+      event.button !== 0 ||
+      grab !== null ||
+      !canInteract() ||
+      (event.target instanceof Element &&
+        event.target.closest(
+          "a,button,input,nav,[data-nav-layer],[data-shell-side-menu]",
+        ))
+    )
+      return;
+    const glyph = hit(event);
+    if (glyph < 0) return;
+    if (phase === "logo") {
+      grab = event.pointerId;
+      startX = event.clientX;
+      startY = event.clientY;
+      startScroll = scrollY;
+      pointerClientX = event.clientX;
+      pointerClientY = event.clientY;
+      engaged = 1.1;
+      protection(true);
+      return;
+    }
+    if (phase !== "word") return;
+    clearTimeout(idleTimer);
+    idleTimer = undefined;
+    if (idle.kind >= 0) {
+      transfer = drawnContours.map((glyph) =>
+        glyph.map((contour) => contour.map((p) => ({ ...p }))),
+      );
+      transferAge = 0;
+      idle.reset();
+      waves.clear();
+    }
+    const rect = mask.getBoundingClientRect();
+    grab = event.pointerId;
+    touch = event.pointerType === "touch";
+    startX = event.clientX;
+    startY = event.clientY;
+    startScroll = scrollY;
+    startAt = event.timeStamp;
+    pullX = event.clientX - rect.left;
+    pullY = event.clientY - word.getBoundingClientRect().top;
+    pulledGlyph = glyph;
+    threshold = Math.max(24, Math.min(64, 0.24 * paths!.boxes[glyph].height));
+    dx = 0;
+    dy = -1.5;
+    phase = "pull";
+    canvas.style.visibility = "visible";
+    word.style.visibility = "hidden";
+    mask.dataset.held = "true";
+    mask.dataset.focusOrigin = "pointer";
+    if (!touch) {
+      mask.setPointerCapture(event.pointerId);
+      mask.focus({ preventScroll: true });
+      event.preventDefault();
+    }
+    draw();
+    protection(true);
+    wake();
+  };
+  const move = (event: PointerEvent) => {
+    const oldX = pointerClientX,
+      oldY = pointerClientY,
+      dt = Math.max(0.008, (event.timeStamp - pointerAt) / 1000);
+    pointerClientX = event.clientX;
+    pointerClientY = event.clientY;
+    velocityX = pointerAt
+      ? Math.max(-1400, Math.min(1400, (event.clientX - oldX) / dt))
+      : 0;
+    velocityY = pointerAt
+      ? Math.max(-1400, Math.min(1400, (event.clientY - oldY) / dt))
+      : 0;
+    pointerAt = event.timeStamp;
+    if ((phase === "word" || phase === "logo") && enabled && canInteract()) {
+      const blocked =
+        event.target instanceof Element &&
+        event.target.closest(
+          "a,button,input,nav,[data-nav-layer],[data-shell-side-menu]",
+        );
+      hovered =
+        event.pointerType === "mouse" && fine.matches && !blocked
+          ? hit(event)
+          : -1;
+      hovering = hovered >= 0;
+      mask.dataset.grabbable = String(hovering);
+      protection(hovering || grab !== null);
+      if (hovering) {
+        clearTimeout(idleTimer);
+        idleTimer = undefined;
+        if (idle.kind >= 0) {
+          transfer = drawnContours.map((glyph) =>
+            glyph.map((contour) => contour.map((p) => ({ ...p }))),
+          );
+          transferAge = 0;
+          idle.reset();
+          waves.clear();
+        }
+        if (!reduced())
+          waves.contact(
+            { x: pointerX, y: pointerY },
+            hovered,
+            { x: velocityX, y: velocityY },
+            phase === "logo"
+              ? Math.max(
+                  paths!.parts[partMap[hovered]].height,
+                  0.6 * paths!.parts[partMap[hovered]].width,
+                )
+              : paths!.boxes[hovered].height,
+          );
+      }
+      wake();
+    }
+    if (phase === "logo") {
+      const glyph = hit(event),
+        part = glyph < 0 ? -1 : partMap[glyph];
+      if (part !== candidate) {
+        candidate = part;
+        candidateAge = 0;
+      }
+      if (glyph >= 0) {
+        engaged = 1.1;
+      }
+    }
+    if (event.pointerId !== grab) return;
+    dx = event.clientX - startX;
+    dy = event.clientY - startY;
+    if (
+      !canInteract() ||
+      Math.abs(scrollY - startScroll) > 6 ||
+      (touch && Math.hypot(dx, dy) > 10)
+    ) {
+      reset();
+      return;
+    }
+    if (phase === "logo") {
+      engaged = 1.1;
+      return;
+    }
+    mask.dataset.thresholdReady = String(Math.hypot(dx, dy) >= threshold);
+    protection(true);
+    wake();
+  };
+  const up = (event: PointerEvent) => {
+    if (event.pointerId !== grab) return;
+    const id = grab;
+    grab = null;
+    if (mask.hasPointerCapture(id)) mask.releasePointerCapture(id);
+    mask.dataset.held = "false";
+    if (phase === "logo") {
+      if (Math.hypot(event.clientX - startX, event.clientY - startY) <= 10)
+        toWord();
+      return;
+    }
+    const shortTap =
+      touch && Math.hypot(dx, dy) <= 10 && event.timeStamp - startAt < 650;
+    if (
+      canInteract() &&
+      Math.abs(scrollY - startScroll) < 6 &&
+      (shortTap || (!touch && Math.hypot(dx, dy) >= threshold))
+    )
+      activate();
+    else {
+      phase = "word";
+      dx = dy = 0;
+      hovering = false;
+      protection(false);
+      wake();
+    }
+  };
+  const key = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      if (phase === "logo") toWord();
+      else if (phase === "pull") reset();
+      return;
+    }
+    if (event.key !== " " && event.key !== "Enter") return;
+    event.preventDefault();
+    delete mask.dataset.focusOrigin;
+    if (phase === "logo") toWord();
+    else if (phase === "word") activate();
+  };
+  const visibility = () => {
+    if (document.hidden) reset();
+    else if (enabled) wake();
+  };
+  const cancel = (event: PointerEvent) => {
+    if (event.pointerId === grab || grab === null) reset();
+  };
+  document.addEventListener("pointerdown", down, true);
+  window.addEventListener("pointermove", move, {
+    passive: true,
+    capture: true,
+  });
+  window.addEventListener("pointerup", up);
+  window.addEventListener("pointercancel", cancel);
+  mask.addEventListener("keydown", key);
+  window.addEventListener("blur", reset);
+  mask.addEventListener("blur", reset);
+  window.addEventListener("resize", reset);
+  document.addEventListener("visibilitychange", visibility);
+  window.addEventListener("portfolio-route-start", reset);
+  mask.dataset.grabbable = "true";
+  measure();
+  restore();
+  return {
+    measure,
+    reset,
+    setActive,
+    dispose() {
+      if (disposed) return;
+      reset();
+      disposed = true;
+      editorial?.dispose();
+      canvas.remove();
+      document.removeEventListener("pointerdown", down, true);
+      window.removeEventListener("pointermove", move, true);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", cancel);
+      mask.removeEventListener("keydown", key);
+      window.removeEventListener("blur", reset);
+      mask.removeEventListener("blur", reset);
+      window.removeEventListener("resize", reset);
+      document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("portfolio-route-start", reset);
+      delete mask.dataset.grabbable;
+      delete mask.dataset.mode;
+      delete mask.dataset.held;
+      delete mask.dataset.focusOrigin;
+      mask.removeAttribute("aria-pressed");
+    },
+  };
+}
