@@ -50,6 +50,16 @@ project moment and lands 100px above that project; hero/opening/perspective map
 to the chapter start, with hero retaining its fraction; other sections use
 `#beyond`. It does not interpolate a work fraction across the reading track.
 
+Reading mode keeps its own opening fitter active, including resize/font-ready
+measurements and RTL masks. Its reveal paints fully open rather than following
+hero-world motion. Score/opening/progress attributes and chapter/concept/cue UI
+reset to the source reading pose (0/0/0, PERSPECTIVE00), while actual scroll
+preservation and semantic restoration stay with the existing navigation adapter.
+EN1912×1009 opening rows and fit.8101939248682843 match source exactly; AR392×865
+rows and fit.9774 also match, with document9406 and native8541 preserved through
+mode toggles. Evidence: `/tmp/gazzar-reading-ui-root/evidence.json`. The static
+lens environment is a separate scene-lifetime concern and is not certified here.
+
 Mode changes preserve the native offset, clamped to the newly measured document,
 then snap target/displayed score through the shared render path. This mirrors
 the source's native-position behavior rather than seeking the previous semantic

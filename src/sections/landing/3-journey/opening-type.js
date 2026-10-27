@@ -210,16 +210,17 @@ export function createOpeningType(root) {
     }
   };
   function paint() {
+    const value = e.closest(".is-reduced") ? 1 : progress;
     groups.forEach((words, index) => {
       const duration =
           (0.995 - 0.745) / (1 + Math.max(0, groups.length - 1) * 0.55),
         start = 0.745 + index * duration * 0.55;
-      const y = 155 * (1 - smoothRange(start, start + duration, progress));
+      const y = 155 * (1 - smoothRange(start, start + duration, value));
       words.forEach(
         (word) => (word.style.transform = "translate3d(0," + y + "%,0)"),
       );
     });
-    const clip = 112 * (1 - smoothRange(0.72, 0.79, progress));
+    const clip = 112 * (1 - smoothRange(0.72, 0.79, value));
     root
       .querySelectorAll(".scene-footer,.progress-track")
       .forEach((node) => (node.style.clipPath = "inset(" + clip + "% 0 0)"));

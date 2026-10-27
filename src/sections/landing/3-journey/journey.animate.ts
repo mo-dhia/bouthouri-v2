@@ -147,6 +147,38 @@ export function mountJourney(root: HTMLElement) {
     experience.classList.toggle("is-reduced", quiet);
     if (quiet) {
       delete root.dataset.enhanced;
+      stage.dataset.storyTime = "0.0000";
+      stage.dataset.openingTime = "0.0000";
+      stage.dataset.progress = "0.00000";
+      const label = root.querySelector<HTMLElement>(".chapter");
+      if (label) {
+        label.textContent = document.documentElement.lang === "ar" ? arabicChapters[0] : chapters[0];
+        label.setAttribute("aria-hidden", "false");
+      }
+      const header = root.querySelector<HTMLElement>(".chapter-header");
+      if (header) header.dataset.concepts = "false";
+      root.querySelector(".concept-step-window")?.setAttribute("aria-hidden", "true");
+      root.querySelectorAll<HTMLElement>("[data-concept-step]").forEach((step, index) => {
+        step.style.transform = `translate3d(0,${index * 112}%,0)`;
+        step.setAttribute("aria-hidden", "true");
+      });
+      const number = root.querySelector<HTMLElement>(".progress-number");
+      if (number) number.textContent = "00";
+      const fill = root.querySelector<HTMLElement>(".progress-fill");
+      if (fill) fill.style.transform = "scaleX(0)";
+      root.querySelectorAll<HTMLElement>(".cue-label,.cue-echo").forEach((cue) => {
+        cue.textContent = document.documentElement.lang === "ar" ? "مرّر للاستكشاف" : "SCROLL TO EXPLORE";
+      });
+      const opening = createOpeningType(root);
+      let readingDisposed = false;
+      const measureOpening = () => opening.measure();
+      window.addEventListener("resize", measureOpening, { passive: true });
+      void document.fonts.ready.then(() => { if (!readingDisposed) measureOpening(); });
+      disposeMotion = () => {
+        readingDisposed = true;
+        window.removeEventListener("resize", measureOpening);
+        opening.dispose();
+      };
       finishModeChange();
       window.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT));
       return;

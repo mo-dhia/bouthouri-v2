@@ -84,6 +84,13 @@ integration/history gaps, not claims from the completed R7 adversary. Parent
 will handle reading chrome/fitting after the current scene slot; retained-field
 behavior needs a focused source comparison. No static pixel-parity claim is made.
 
+Parent reading UI correction now passes source/dev comparisons: EN opening fit
+and every row coordinate/font match exactly; AR narrow does too, with PERSPECTIVE00
+(منظور00), zero DOM score/opening/progress and unchanged reading document extents.
+AR8541→motion164.58→reading8541 retains the offset in both. Full check86tests/
+3254assertions passes. Retained static lens environment remains open and will be
+handled as a separate scene resource-lifetime task before R8.
+
 | Round | Result |
 | --- | --- |
 | 1 | Reference inventory and acceptance checklist; see `home-parity-review-r1.md` |
