@@ -139,3 +139,12 @@ one temporary viewer tab, with local saving only. No profiler capture, preferenc
 change, new browser surface or external profile upload has been authorized or
 performed by this record. See `home-native-profiler-plan-r18.md`. Existing menu
 QA proceeds independently.
+
+The user subsequently authorized autonomous full-machine/computer use while
+away. Root can therefore configure/start/capture the native profiler through
+the existing browser's OS UI and use the required temporary viewer tab, without
+asking the user to operate it. This supersedes the preceding manual-action and
+no-extra-viewer restriction for this diagnostic only. Keep captures short and
+bounded in memory, save locally without publishing, close temporary viewers
+after export, and wait for the current MENU review's explicit browser release
+before changing focus or profiler state. Vawzen remains the page-control route.
