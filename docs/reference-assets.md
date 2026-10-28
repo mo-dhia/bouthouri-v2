@@ -34,3 +34,16 @@ Three, text rendering, models, lighting and audio remain in deferred controller
 graphs. None of the original application bundles are shipped. Detailed model
 fingerprints and the measured reference inventory are in
 [the reference map](home-reference-map.md).
+
+
+## User-approved rebranding assets — 2026-10-28
+
+| Local path | User source | Role |
+| --- | --- | --- |
+| `public/assets/images/hero-portrait-rebrand.webp` | `bouthouri-hero-natural-glasses-refined.png`, supplied from the user's T3 imagegen output directory | Active hero photograph and deferred portrait texture,1536×1024,lossless WebP with alpha |
+
+Source PNG SHA-256: `850fc0bfecc4df353b00d6f72e1a6ca66257fb44e593ceef342a94680703940a`. Visible RGB samples and all alpha samples are
+verified unchanged after conversion; only RGB under fully transparent pixels
+may be normalized by the encoder. The original Gazzar photograph is retained
+but is no longer the active hero image. This replacement changes no crop,
+width profile, loading boundary, shader or animation timing.

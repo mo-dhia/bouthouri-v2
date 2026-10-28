@@ -14,6 +14,25 @@ controller. This is directly imported by the gate and starts no RAF, timer or
 entry runtime. Its optional portrait graphics are a separate dynamic import;
 the server photograph remains useful while that enhancement loads or fails.
 
+## Rebranding portrait (2026-10-28)
+
+The active semantic image is now`/assets/images/hero-portrait-rebrand.webp`,
+a lossless WebP derived from the user-supplied
+`bouthouri-hero-natural-glasses-refined.png` (1536×1024, with alpha). The SSR
+poster and the deferred Three photograph texture share this same image node.
+EN/AR alt text describes the new portrait without retaining the original
+person's identity. Width-based crops, masks, entry, pointer distortion and
+scroll departure are unchanged. Original portrait assets and prior Gazzar
+parity captures remain reference evidence; the photograph is now an intentional
+user-approved branding difference. See[asset provenance](../../../../docs/reference-assets.md).
+
+Verified the live enhanced hero in EN/AR at1920×1080,768×1024 and412×915/DPR1.
+All six screenshots show the replacement and a ready portrait Canvas. Visible
+RGB and all alpha samples match the supplied PNG after lossless conversion.
+Scoped ESLint, architecture audit, static EN/AR production build and production
+SSR/13-asset audit pass. Evidence is under`.artifacts/rebrand-hero-20261028/`.
+A full reload was used to replace the previous dev/HMR Canvas texture.
+
 ## Fixed design profiles (2026-10-28)
 
 The current sizing policy uses one composition per width category: desktop
@@ -250,7 +269,7 @@ and 1.3s total writing time. Scroll unlocks at .48s; sequence ends at 2.5s.
 The 8s continue control and Escape provide a loading bypass.
 
 `hero-portrait.ts` is a separate dynamic import and is the only hero Three
-import. It uses the original portrait unchanged at rest, a nearest-filtered
+import. It uses the active semantic portrait unchanged at rest, a nearest-filtered
 34×34 displacement field, deterministic boot offsets, alpha hit testing, face
 attenuation, pointer impulses, and the measured departure alpha field. The
 source subpixel correction uses exit velocity filtered at rate 35, a .18 velocity

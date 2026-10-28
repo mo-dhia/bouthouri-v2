@@ -181,7 +181,7 @@ export default function Hero({
               data-portrait-entrance="true"
             >
               <Image
-                src="/assets/images/hero-portrait.webp"
+                src="/assets/images/hero-portrait-rebrand.webp"
                 alt={copy.portraitAlt}
                 width={1536}
                 height={1024}

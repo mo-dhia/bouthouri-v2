@@ -1,7 +1,9 @@
 # Reference assets and media
 
 `public/assets/{images,models,textures,sounds,fonts}` is reserved for local
-assets needed by the identical Gazzar clone. The original portrait, logo, favicon,
+assets for the Gazzar-derived experience and user-directed rebranding. The
+active hero portrait is now the user-supplied image, converted to lossless WebP;
+the original portrait remains as reference evidence. The original logo, favicon,
 Questrial, and Cairo fonts are local. Their provenance is in
 [reference-assets.md](reference-assets.md). The home additionally uses the
 original folded glasses, sculpture model/texture, LTC tables, scene fonts,

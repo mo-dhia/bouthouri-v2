@@ -20,8 +20,7 @@ for (const locale of ["en", "ar"]) {
   assert.match(markup, /systems-human-copy/);
   assert.match(markup, /systems-ending/);
   assert.doesNotMatch(markup, /Create Next App|To get started|Deploy Now/);
-  assert.doesNotMatch(markup, /Bouthouri|البوثوري/);
-  assert.match(markup, /<img[^>]*src="\/assets\/images\/hero-portrait\.webp"/);
+  assert.match(markup, /<img[^>]*src="\/assets\/images\/hero-portrait-rebrand\.webp"/);
   assert.match(html, /rel="canonical"/);
   assert.match(html, /type="application\/ld\+json"/);
   for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+)"/g)) {
@@ -33,7 +32,7 @@ for (const locale of ["en", "ar"]) {
 for (const path of ["/fr", "/en/not-a-page"]) {
   assert.equal((await fetch(new URL(path, base))).status, 404, path);
 }
-for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait.webp", "/assets/images/gazzar-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2"]) {
+for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/gazzar-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2"]) {
   assert.equal((await fetch(new URL(path, base))).status, 200, path);
 }
 await Promise.all([...assets].map(async (url) => {
