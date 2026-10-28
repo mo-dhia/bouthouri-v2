@@ -17,8 +17,5 @@ export function mountEditorial(root: HTMLElement) {
     if (disposed) return;
     material = createStoryEnvironment(root, { reduced: reduced(), pose: () => ({ time: 448, environment: .28, surfaceQuiet: root.dataset.editorialPage === "contact" ? main.dataset.contactFocused === "true" ? 1 : .9 : .65 }) });
   }).catch(() => {});
-  // Source entry owns this page-local event; semantic text was already in HTML.
-  const hero = main.querySelector<HTMLElement>("[data-route-hero]");
-  const entry = requestAnimationFrame(() => hero?.dispatchEvent(new Event("practice-hero-enter")));
-  return () => { disposed = true; cancelAnimationFrame(entry); focus.disconnect(); unsubscribe(); media.removeEventListener("change", change); material?.dispose(); };
+  return () => { disposed = true; focus.disconnect(); unsubscribe(); media.removeEventListener("change", change); material?.dispose(); };
 }

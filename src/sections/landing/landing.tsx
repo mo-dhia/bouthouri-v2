@@ -11,7 +11,7 @@ export default function Landing({ locale, dictionary: copy }: { locale: Locale; 
     <>
       <a className="skip-link" href="#beyond">{copy.navigation.skip}</a>
       <Header locale={locale} dictionary={copy} />
-      <main id="content" data-page="landing">
+      <main id="content" data-page="landing" data-route-path={`/${locale}`}>
         <Hero copy={copy.hero} locale={locale} />
         <Journey locale={locale} dictionary={copy} />
       </main>

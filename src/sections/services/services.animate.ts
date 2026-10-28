@@ -6,12 +6,13 @@ import { createServiceIndex } from "./3-index/service-index.animate";
 import { clamp, range } from "./2-opening/opening-score";
 import { createMaskedReveal } from "./masked-reveal";
 import type { PracticeObjects } from "../vision/1-opening/practice-objects";
+import { pageEntryPath, routeEntries, skipPageEntry } from "@/lib/navigation/route-entry";
 
 /** One presentation RAF owns Services scroll, finite entry, gate springs and object poses. */
 export function mountServices(root: HTMLElement, reduced: boolean) {
   let alive = true, ready = false, raf = 0, previousTime = 0, needsMeasure = true, dirty = true;
-  let scroll = window.scrollY, seconds = 0, entryAge = scroll > 80 || reduced ? 3 : 0, heroTop = 0, heroWidth = 1, heroHeight = 1;
-  let renderer: PracticeObjects | null = null, rendererFailed = false, pointerTargetX = 0, pointerTargetY = 0, pointerX = 0, pointerY = 0, lastObjectTime = -1;
+  let scroll = window.scrollY, seconds = 0, entryAge = 0, entryStarted = false, heroTop = 0, heroWidth = 1, heroHeight = 1;
+  let renderer: PracticeObjects | null = null, rendererFailed = false, routeDrawPublished = false, pointerTargetX = 0, pointerTargetY = 0, pointerX = 0, pointerY = 0, lastObjectTime = -1;
   const hero = root.querySelector<HTMLElement>(".practice-opening")!, canvas = hero.querySelector<HTMLCanvasElement>("canvas")!;
   const abort = new AbortController();
   const entry = new Map([...hero.querySelectorAll<HTMLElement>("[data-masked-reveal]")].map((element) => [element.dataset.maskedReveal!, createMaskedReveal(element, .18)]));
@@ -22,13 +23,18 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
   const wake = () => { dirty = true; schedule(); };
   const opening = createServicesOpening(root, wake, reduced), index = createServiceIndex(root, reduced);
   const key = "services-page-presentation";
+  const arrival = routeEntries(root.ownerDocument ?? document).register(root, pageEntryPath(root, "services"), {
+    start(skip) { entryStarted = true; if (skip || skipPageEntry(reduced, window)) entryAge = 3; presentEntry(0); wake(); },
+    finish() { entryStarted = true; entryAge = 3; presentEntry(0); },
+    assetsReady: () => reduced || rendererFailed || canvas.dataset.heroRendered === "true" || window.scrollY >= heroTop + heroHeight || window.scrollY + window.innerHeight <= heroTop,
+  });
   function failRenderer() {
     if (!alive) return;
     rendererFailed = true;
     const failed = renderer; renderer = null;
     // GPU teardown must not interrupt the independent text/gate transaction.
     try { failed?.dispose(); } catch { /* A lost renderer may also reject disposal. */ }
-    canvas.hidden = true; root.dataset.depthFallback = "true"; lastObjectTime = -1;
+    canvas.hidden = true; root.dataset.depthFallback = "true"; lastObjectTime = -1; arrival.presented();
     wake();
   }
   function resizeRenderer() {
@@ -46,11 +52,13 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
     entry.forEach((reveal) => reveal.measure()); scroll = window.scrollY; dirty = true;
   }
   function presentEntry(delta: number) {
-    entryAge = reduced ? 3 : Math.min(3, entryAge + delta);
-    entry.get("hero-index")!.set(range(entryAge, .1, .65), reduced);
-    [...entry.keys()].filter((name) => name.startsWith("hero-title-")).forEach((name, i) => entry.get(name)!.set(range(entryAge, .18 + .13 * i, 1.1 + .13 * i), reduced));
-    entry.get("hero-copy")!.set(range(entryAge, .69, 1.65), reduced); entry.get("hero-action")!.set(range(entryAge, 1.15, 1.72), reduced);
-    hero.dataset.heroEntry = String(range(entryAge, 0, 1.6)); return reduced ? 1 : range(entryAge, 0, 1.6);
+    entryAge = reduced ? 3 : Math.min(3, entryAge + (entryStarted ? delta : 0));
+    const age = entryStarted ? entryAge : 3;
+    entry.get("hero-index")!.set(range(age, .1, .65), reduced);
+    [...entry.keys()].filter((name) => name.startsWith("hero-title-")).forEach((name, i) => entry.get(name)!.set(range(age, .18 + .13 * i, 1.1 + .13 * i), reduced));
+    entry.get("hero-copy")!.set(range(age, .69, 1.65), reduced); entry.get("hero-action")!.set(range(age, 1.15, 1.72), reduced);
+    const progress = reduced ? 1 : entryStarted ? range(age, 0, 1.6) : 0;
+    hero.dataset.heroEntry = String(progress); return progress;
   }
   function frame(time: number) {
     raf = 0;
@@ -73,10 +81,10 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
     if (heroVisible && !reduced) { seconds += delta; const ease = 1 - Math.exp(-9 * delta); pointerX += (pointerTargetX - pointerX) * ease; pointerY += (pointerTargetY - pointerY) * ease; } else pointerX = pointerY = pointerTargetX = pointerTargetY = 0;
     const cadence = viewportDesign(window.innerWidth).key === "desktop" ? 1 / 60 : 1 / 30;
     if (heroVisible && renderer && (reduced ? lastObjectTime < 0 : time / 1000 - lastObjectTime >= cadence - .001 || entryAge < 2 || movingPointer)) {
-      try { renderer.render(response.score.heroExit, pointerX, pointerY, reduced, seconds, entryProgress); lastObjectTime = time / 1000; }
+      try { renderer.render(response.score.heroExit, pointerX, pointerY, reduced, seconds, entryProgress); lastObjectTime = time / 1000; if (!routeDrawPublished && canvas.dataset.heroRendered === "true") { routeDrawPublished = true; arrival.presented(); } }
       catch { failRenderer(); }
     }
-    if (entryAge < 2 || response.active || heroVisible && !reduced && !rendererFailed) schedule();
+    if (entryStarted && entryAge < 2 || response.active || heroVisible && !reduced && !rendererFailed) schedule();
     else previousTime = 0;
   }
   const onScroll = () => { scroll = window.scrollY; wake(); };
@@ -100,18 +108,19 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
 
   root.dataset.servicesEnhanced = "true"; root.dataset.practiceReduced = String(reduced);
   scrollManager.createInstance(key, onScroll, { useRAF: false }); window.addEventListener("resize", resize); hero.addEventListener("pointermove", pointer, { passive: true }); hero.addEventListener("pointerleave", leave); document.addEventListener("visibilitychange", visibility); advanceLink.addEventListener("click", advance); document.fonts.addEventListener("loadingdone", fontsChanged); observer.observe(root);
-  void document.fonts.ready.then(() => {
+  const initialize = () => {
     if (!alive) return;
-    ready = true; measure(); root.dataset.practiceReady = "true"; wake();
+    ready = true; measure(); root.dataset.practiceReady = "true"; arrival.ready(reduced); wake();
     // Only the object renderer crosses this later boundary; body copy never does.
     void import("../vision/1-opening/practice-objects").then((module) => module.createPracticeObjects(canvas, "services", abort.signal)).then((objects) => {
       if (!alive) { objects?.dispose(); return; }
       renderer = objects; if (!objects) { failRenderer(); return; }
       resizeRenderer(); lastObjectTime = -1; wake();
     }).catch(failRenderer);
-  });
+  };
+  void (document.fonts?.ready ?? Promise.resolve()).then(initialize, initialize);
   return () => {
-    alive = false; abort.abort(); if (raf) cancelAnimationFrame(raf); scrollManager.removeInstance(key); unsubscribe(); observer.disconnect(); window.removeEventListener("resize", resize); hero.removeEventListener("pointermove", pointer); hero.removeEventListener("pointerleave", leave); document.removeEventListener("visibilitychange", visibility); advanceLink.removeEventListener("click", advance); document.fonts.removeEventListener("loadingdone", fontsChanged);
+    alive = false; arrival.dispose(); abort.abort(); if (raf) cancelAnimationFrame(raf); scrollManager.removeInstance(key); unsubscribe(); observer.disconnect(); window.removeEventListener("resize", resize); hero.removeEventListener("pointermove", pointer); hero.removeEventListener("pointerleave", leave); document.removeEventListener("visibilitychange", visibility); advanceLink.removeEventListener("click", advance); document.fonts.removeEventListener("loadingdone", fontsChanged);
     renderer?.dispose(); opening.dispose(); index.dispose(); entry.forEach((reveal) => reveal.dispose()); compositions.forEach((composition) => composition.layers.forEach((layer) => layer.element.style.removeProperty("transform")));
     hero.querySelector<HTMLElement>(".practice-hero-geometry")!.style.removeProperty("height"); delete hero.dataset.heroEntry; canvas.hidden = false;
     delete root.dataset.servicesEnhanced; delete root.dataset.practiceReady; delete root.dataset.practiceReduced; delete root.dataset.depthFallback;

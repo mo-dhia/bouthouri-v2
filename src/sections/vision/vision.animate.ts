@@ -7,6 +7,7 @@ import { createSystemPassage } from './2-perspective/system.animate';
 import { editorialOffset, range, viewportProgress } from './2-perspective/system-geometry';
 import { createVisionNarrative } from './3-narrative/narrative.animate';
 import { createMaskedReveal } from './masked-reveal';
+import { pageEntryPath, routeEntries, skipPageEntry } from '@/lib/navigation/route-entry';
 
 const loadObjects = () => import('./1-opening/practice-objects');
 
@@ -22,17 +23,23 @@ export function mountVision(root: HTMLElement) {
   let disposed = false, frame = 0, previousTime = 0, measureDirty = true, scrollDirty = true, reduced = motion.matches || uiStore.getState().quietMode;
   let objects: PracticeObjects | null = null, objectPending = false, objectsFailed = false, width = 1920, height = 1080, scale = 1, top = 0, left = 0, actualWidth = 1920, extent = 1080;
   let entryStarted = false, entryDone = false, entrySeconds = 0, ambient = 0, pointerX = 0, pointerY = 0, targetX = 0, targetY = 0, lastHeroDraw = -Infinity, forceDraw = true;
+  let fontsReady = !document.fonts, routeDrawPublished = false;
+  const arrival = routeEntries(root.ownerDocument ?? document).register(root, pageEntryPath(root, 'vision'), {
+    start(skip) { entryStarted = true; if (skip || skipPageEntry(reduced, window)) { entryDone = true; entrySeconds = 3; } heroEntry(0); wake(); },
+    finish() { entryStarted = entryDone = true; entrySeconds = 3; heroEntry(0); },
+    assetsReady: () => reduced || objectsFailed || canvas.dataset.heroRendered === 'true' || window.scrollY >= top + extent || window.scrollY + window.innerHeight <= top,
+  });
   const savedInline = [...root.querySelectorAll<HTMLElement | SVGElement>('*')].map(element => ({ element, style: element.getAttribute('style') }));
   const revealHero = (id: string, progress: number) => heroMasks.get(id)?.set(progress, reduced);
   const heroEntry = (dt: number) => {
-    if (!entryStarted && (scrollY > 80 || !document.documentElement.dataset.routeBusy)) { entryStarted = true; if (scrollY > 80) { entryDone = true; entrySeconds = 3; } }
     if (entryStarted && !entryDone) entrySeconds += Math.min(dt, .05);
     if (reduced) { entryDone = true; entrySeconds = 3; }
-    revealHero('hero-index', range(entrySeconds, .1, .65)); revealHero('hero-identity', range(entrySeconds, .14, .69));
-    [...heroMasks.keys()].filter(id => id.startsWith('hero-title-')).forEach((id, index) => revealHero(id, range(entrySeconds, .18 + .13 * index, 1.1 + .13 * index)));
-    revealHero('hero-copy', range(entrySeconds, .69, 1.65)); revealHero('hero-action', range(entrySeconds, 1.15, 1.72));
+    const age = entryStarted ? entrySeconds : 3;
+    revealHero('hero-index', range(age, .1, .65)); revealHero('hero-identity', range(age, .14, .69));
+    [...heroMasks.keys()].filter(id => id.startsWith('hero-title-')).forEach((id, index) => revealHero(id, range(age, .18 + .13 * index, 1.1 + .13 * index)));
+    revealHero('hero-copy', range(age, .69, 1.65)); revealHero('hero-action', range(age, 1.15, 1.72));
     if (entrySeconds >= 2) entryDone = true;
-    const progress = reduced ? 1 : range(entrySeconds, 0, 1.6); opening.dataset.heroEntry = String(progress); return progress;
+    const progress = reduced ? 1 : entryStarted ? range(age, 0, 1.6) : 0; opening.dataset.heroEntry = String(progress); return progress;
   };
   const measure = () => {
     const design = viewportDesign(innerWidth); width = design.width; height = design.height; scale = innerWidth / width;
@@ -44,6 +51,7 @@ export function mountVision(root: HTMLElement) {
     const layout = practiceHeroLayout('about', width, height); opening.style.setProperty('--hero-copy-start', pixelsToVw(Math.max(.34 * width, layout.x + .12 * layout.size) * scale, innerWidth));
     extent = objects?.resize(actualWidth, height * scale) ?? height * scale;
     forceDraw = true; scrollDirty = true; measureDirty = false;
+    if (fontsReady) { root.dataset.practiceReady = 'true'; arrival.ready(reduced); }
   };
   function wake() {
     if (disposed || frame || document.hidden || uiStore.getState().menuOpen) return;
@@ -51,13 +59,13 @@ export function mountVision(root: HTMLElement) {
   }
   const fail = () => {
     if (disposed) return;
-    objectsFailed = true; objects?.dispose(); objects = null; opening.dataset.depthFallback = 'true'; forceDraw = false;
+    objectsFailed = true; arrival.presented(); objects?.dispose(); objects = null; opening.dataset.depthFallback = 'true'; forceDraw = false;
   };
   const requestObjects = () => {
     if (disposed || objectPending || objects || objectsFailed) return;
     objectPending = true;
     void loadObjects().then(module => disposed ? null : module.createPracticeObjects(canvas, 'about', abort.signal)).then(renderer => {
-      objectPending = false; if (!renderer) return;
+      objectPending = false; if (!renderer) { fail(); return; }
       if (disposed) { renderer.dispose(); return; }
       objects = renderer; extent = renderer.resize(actualWidth, height * scale); forceDraw = true; wake();
     }).catch(fail);
@@ -83,10 +91,10 @@ export function mountVision(root: HTMLElement) {
       system.render(nativeScroll, reduced); narrative.render(nativeScroll, reduced); scrollDirty = false;
     }
     if (visible && objects && (forceDraw || !entryDone || !reduced && time - lastHeroDraw >= (portrait ? 1000 / 30 : 1000 / 60) - 1)) {
-      try { objects.render(clamp01((nativeScroll - top) / extent), pointerX, pointerY, reduced, ambient, entry); lastHeroDraw = time; forceDraw = false; }
+      try { objects.render(clamp01((nativeScroll - top) / extent), pointerX, pointerY, reduced, ambient, entry); lastHeroDraw = time; forceDraw = false; if (!routeDrawPublished && canvas.dataset.heroRendered === 'true') { routeDrawPublished = true; arrival.presented(); } }
       catch { fail(); }
     }
-    if (!entryDone || visible && !reduced && !objectsFailed || Math.abs(pointerX - targetX) + Math.abs(pointerY - targetY) > .0005) wake();
+    if (entryStarted && !entryDone || visible && !reduced && !objectsFailed || Math.abs(pointerX - targetX) + Math.abs(pointerY - targetY) > .0005) wake();
     else previousTime = 0;
   }
   const onScroll = () => { scrollDirty = true; forceDraw = true; wake(); };
@@ -96,7 +104,6 @@ export function mountVision(root: HTMLElement) {
     const pointer = practiceHeroPointer('about', width, height, (event.clientX - left) / scale, (event.clientY + scrollY - top) / scale); targetX = pointer.x; targetY = pointer.y; wake();
   };
   const onLeave = () => { targetX = targetY = 0; wake(); };
-  const onEntry = () => { if (!entryStarted) { entryStarted = true; entrySeconds = 0; } wake(); };
   const onVisibility = () => { previousTime = 0; if (frame) cancelAnimationFrame(frame); frame = 0; forceDraw = true; scrollDirty = true; wake(); };
   const sync = () => {
     const next = motion.matches || uiStore.getState().quietMode;
@@ -113,18 +120,19 @@ export function mountVision(root: HTMLElement) {
     window.scrollTo({ top: Math.max(0, Math.min(destination, start)), behavior: reduced ? 'instant' : 'smooth' });
   };
   scrollManager.createInstance(key, onScroll, { useRAF: false });
-  root.addEventListener('pointermove', onPointer, { passive: true }); root.addEventListener('pointerleave', onLeave); opening.addEventListener('practice-hero-enter', onEntry); advance?.addEventListener('click', onAdvance);
+  root.addEventListener('pointermove', onPointer, { passive: true }); root.addEventListener('pointerleave', onLeave); advance?.addEventListener('click', onAdvance);
   window.addEventListener('resize', onResize, { passive: true }); window.addEventListener('pageshow', onResize); motion.addEventListener('change', sync); document.addEventListener('visibilitychange', onVisibility); document.fonts.addEventListener('loadingdone', onResize);
   const unsubscribe = uiStore.subscribe(sync);
   const near = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) requestObjects(); }, { rootMargin: '50%' }); near.observe(opening);
-  void document.fonts.ready.then(() => { if (!disposed) { measureDirty = true; wake(); } });
+  const onFonts = () => { if (!disposed) { fontsReady = true; measureDirty = true; wake(); } };
+  void (document.fonts?.ready ?? Promise.resolve()).then(onFonts, onFonts);
   root.dataset.motion = reduced ? 'reading' : 'true'; wake();
   return () => {
-    disposed = true; abort.abort(); if (frame) cancelAnimationFrame(frame); frame = 0; near.disconnect(); unsubscribe(); scrollManager.removeInstance(key);
-    root.removeEventListener('pointermove', onPointer); root.removeEventListener('pointerleave', onLeave); opening.removeEventListener('practice-hero-enter', onEntry); advance?.removeEventListener('click', onAdvance);
+    disposed = true; arrival.dispose(); abort.abort(); if (frame) cancelAnimationFrame(frame); frame = 0; near.disconnect(); unsubscribe(); scrollManager.removeInstance(key);
+    root.removeEventListener('pointermove', onPointer); root.removeEventListener('pointerleave', onLeave); advance?.removeEventListener('click', onAdvance);
     window.removeEventListener('resize', onResize); window.removeEventListener('pageshow', onResize); motion.removeEventListener('change', sync); document.removeEventListener('visibilitychange', onVisibility); document.fonts.removeEventListener('loadingdone', onResize);
     system.dispose(); narrative.dispose(); heroMasks.forEach(mask => mask.dispose()); objects?.dispose();
     savedInline.forEach(({ element, style }) => { if (style === null) element.removeAttribute('style'); else element.setAttribute('style', style); });
-    delete root.dataset.motion; delete opening.dataset.depthFallback; delete opening.dataset.heroEntry;
+    delete root.dataset.motion; delete root.dataset.practiceReady; delete opening.dataset.depthFallback; delete opening.dataset.heroEntry;
   };
 }

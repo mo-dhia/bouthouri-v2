@@ -4,6 +4,7 @@ import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import * as viewport from "@/lib/viewport-design";
 import * as motion from "./contact-motion";
+import * as routeEntry from "@/lib/navigation/route-entry";
 
 function harness({ locale = "en", restored = 0 } = {}) {
   let y = restored, now = 0, fontReady!: () => void;
@@ -17,6 +18,7 @@ function harness({ locale = "en", restored = 0 } = {}) {
     height = 0;
     querySelector(selector: string) { return this.one.get(selector) ?? null; }
     querySelectorAll(selector: string) { return this.many.get(selector) ?? []; }
+    closest() { return null; }
     getBoundingClientRect() { return { top: this.top - y, bottom: this.top + this.height - y }; }
   }
   const root = new Surface(), opening = new Surface(), alternative = new Surface(), axis = new Surface();
@@ -57,6 +59,7 @@ function harness({ locale = "en", restored = 0 } = {}) {
   runInContext(`(function(require, module, exports) { ${compiled}\n })`, context)((key: string) => {
     if (key === "./contact-motion") return motion;
     if (key === "@/lib/viewport-design") return viewport;
+    if (key === "@/lib/navigation/route-entry") return routeEntry;
     if (key === "@/lib/scrollInteraction/scrollManager") return { default: {
       createInstance: (key: string, callback: () => void, options: { useRAF: boolean }) => keys.set(key, { callback, options }),
       removeInstance: (key: string) => keys.delete(key),

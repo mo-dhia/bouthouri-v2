@@ -67,10 +67,13 @@ scheduler. Geometry reads are cached on mount, resize, fonts and content resize.
   .055s stagger and the same300ms scrub.
 - Generic Contact entry: after fonts, line delay .05s, duration .4s, stagger
   .06s, power3.out (quartic); support delay .17s, duration .3s, stagger .045s,
-  power2.out, y10→0 and opacity0→1. Root dispatches `practice-hero-enter` only;
-  deferred import adopts early dispatch by autostart. Arrival is one-shot for
-  the route element, skipped at restored positions beyond reference80px, and
-  never replayed by quiet/reduced toggles.
+  power2.out, y10→0 and opacity0→1. The retained route-entry registry releases
+  the current physical page owner after fonts/measurement and shared cover
+  readiness. Contact keeps the finite entry on its existing RAF and publishes
+  its completion. A failed or late controller adopts the readable completed
+  pose. Arrival is one-shot for the route element, skipped for history/reduced
+  arrivals or restored positions beyond reference80px, and never replayed by
+  quiet/reduced toggles. See the shared route-surface contract.
 - Quiet, reduced or failed optional enhancement retains readable static HTML.
   Controllers restore owned transforms, listeners, observers and engine keys;
   pending font resolution cannot initialize a disposed controller. Hidden

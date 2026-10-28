@@ -1,6 +1,7 @@
 import scrollManager from "@/lib/scrollInteraction/scrollManager";
 import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
 import { ContactScrub, contactEntryPose, contactLineOffset, contactRangeProgress } from "./contact-motion";
+import { pageEntryPath, routeEntries, skipPageEntry } from "@/lib/navigation/route-entry";
 
 let serial = 0;
 
@@ -33,6 +34,11 @@ export function mountContactMotion(root: HTMLElement) {
   let lastReveal = Number.NaN;
   let entryStarted = false;
   let entryStart: number | undefined;
+  let finishEntryPromise: (() => void) | undefined;
+  const arrival = routeEntries(root.ownerDocument ?? document).register(root, pageEntryPath(root, "contact"), {
+    start: startEntry,
+    finish() { entryStarted = true; root.dataset.contactEntered = "true"; entryStart = undefined; restoreEntry(); finishEntryPromise?.(); finishEntryPromise = undefined; },
+  });
 
   function restoreEntry() {
     entryLines.forEach((line, index) => { line.style.transform = originalEntry[index]; });
@@ -54,18 +60,19 @@ export function mountContactMotion(root: HTMLElement) {
       element.style.opacity = String(pose.opacity);
     });
     const end = Math.max(450 + Math.max(0, entryLines.length - 1) * 60, 470 + Math.max(0, support.length - 1) * 45);
-    if (elapsed >= end) { entryStart = undefined; restoreEntry(); }
+    if (elapsed >= end) { entryStart = undefined; restoreEntry(); finishEntryPromise?.(); finishEntryPromise = undefined; }
   }
-  function startEntry() {
+  function startEntry(skip = false) {
     if (entryStarted || !initialized || !alive) return;
     entryStarted = true;
     if (root.dataset.contactEntered === "true") return;
     root.dataset.contactEntered = "true";
-    if (window.scrollY > designPixels(80, window.innerWidth)) return;
+    if (skip || skipPageEntry(false, window)) return;
     entryStart = performance.now();
     opening!.dataset.routeEntering = "true";
     presentEntry(entryStart);
     wake();
+    return new Promise<void>(resolve => { finishEntryPromise = resolve; });
   }
 
   function present() {
@@ -142,17 +149,14 @@ export function mountContactMotion(root: HTMLElement) {
       observer.observe(opening!);
     }
     root.dataset.contactMotionReady = "true";
-    // Root may have dispatched its entry event before this deferred import.
-    // Autostart after font readiness adopts that same one-shot transaction.
-    startEntry();
+    arrival.ready();
   }
   // Source waits for fonts before creating its Contact timelines. Until then,
   // the server heading/copy remain fully readable and links work natively.
-  void (document.fonts?.ready ?? Promise.resolve()).then(initialize);
-  opening.addEventListener("practice-hero-enter", startEntry);
+  void (document.fonts?.ready ?? Promise.resolve()).then(initialize, initialize);
 
   return () => {
-    alive = false;
+    alive = false; arrival.dispose();
     cancelAnimationFrame(raf);
     scrollManager.removeInstance(key);
     observer?.disconnect();
@@ -160,7 +164,6 @@ export function mountContactMotion(root: HTMLElement) {
     window.removeEventListener("pageshow", measure);
     document.removeEventListener("visibilitychange", visibility);
     document.fonts?.removeEventListener("loadingdone", measure);
-    opening.removeEventListener("practice-hero-enter", startEntry);
     lastTitleLine.style.transform = originalTitleTransform;
     axis.style.transform = originalAxisTransform;
     revealLines.forEach((line, index) => { line.style.transform = originalRevealTransforms[index]; });

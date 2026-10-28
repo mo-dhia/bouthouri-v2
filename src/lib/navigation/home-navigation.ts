@@ -54,6 +54,8 @@ const entryPrepared = new WeakSet<Document>();
 const visitedEntries = new WeakMap<Document, Map<string, string>>();
 const retainedCheckpoints = new WeakMap<Document, Map<string, HomeCheckpoint>>();
 const documentBoots = new WeakMap<Document, { fresh: boolean }>();
+const routePushes = new WeakMap<Document, { to: string; created: number }>();
+const routeHistoryTargets = new WeakMap<Document, { key: string; target: number }>();
 const safeRead = (win: BrowserWindow, key: string) => { try { return win.sessionStorage.getItem(key); } catch { return null; } };
 const safeWrite = (win: BrowserWindow, key: string, value: string) => { try { win.sessionStorage.setItem(key, value); } catch { /* Native navigation still works. */ } };
 const safeRemove = (win: BrowserWindow, key: string) => { try { win.sessionStorage.removeItem(key); } catch { /* Optional storage. */ } };
@@ -69,6 +71,41 @@ function rememberEntry(doc: Document, id: string, path: string) {
 
 function browserWindow(): BrowserWindow | undefined {
   return typeof window === "undefined" ? undefined : window;
+}
+
+/** A covered, same-locale editorial PUSH is an explicit top arrival, not a return. */
+export function prepareHomeRoutePush(href: string, win = browserWindow()): boolean {
+  if (!win) return false;
+  let target: URL;
+  try { target = new URL(href, win.location.href); } catch { return false; }
+  const destination = homePath(target.pathname), source = win.location.pathname.match(/^\/(en|ar)\/(vision|services|contact)\/?$/);
+  if (!destination || !source || destination !== `/${source[1]}` || target.origin !== win.location.origin || target.hash || target.searchParams.has("work")) return false;
+  safeRemove(win, HOME_RETURN_KEY); safeRemove(win, HOME_WORK_RETURN_KEY);
+  routePushes.set(win.document, { to: target.pathname + target.search, created: Date.now() });
+  scrollHomeImmediately(win, 0);
+  return true;
+}
+
+/** Only a real same-locale editorial→HOME traversal can supply this override. */
+export function prepareHomeRouteHistory(fromPath: string, href: string, id: string, target: number, win = browserWindow()): boolean {
+  if (!win || !Number.isFinite(target) || target < 0 || homeHistoryId(win.history.state) !== id) return false;
+  let destination: URL;
+  try { destination = new URL(href, win.location.href); } catch { return false; }
+  const source = fromPath.match(/^\/(en|ar)\/(vision|services|contact)\/?$/);
+  if (!source || homePath(destination.pathname) !== `/${source[1]}` || destination.href !== win.location.href || destination.hash) return false;
+  routeHistoryTargets.set(win.document, { key: currentKey(win), target });
+  states.delete(win.document);
+  return true;
+}
+
+/** Discard only an unconsumed adapter belonging to the canceled route target. */
+export function cancelHomeRouteArrival(href: string, win = browserWindow()) {
+  if (!win) return;
+  let target: URL;
+  try { target = new URL(href, win.location.href); } catch { return; }
+  if (target.origin !== win.location.origin) return;
+  if (routePushes.get(win.document)?.to === target.pathname + target.search) routePushes.delete(win.document);
+  if (routeHistoryTargets.get(win.document)?.key.startsWith(`${target.href}|`)) routeHistoryTargets.delete(win.document);
 }
 
 function navigationType(win: BrowserWindow): HomeNavigationType {
@@ -95,6 +132,10 @@ function documentBoot(win: BrowserWindow, type?: HomeNavigationType) {
 function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = false, historyTarget?: number | null): RestoreState {
   const key = currentKey(win), previous = states.get(win.document);
   if (!reset && previous?.key === key) return previous;
+  const routedHistory = routeHistoryTargets.get(win.document);
+  if (historyTarget === undefined && routedHistory?.key === key) historyTarget = routedHistory.target;
+  const push = routePushes.get(win.document);
+  const freshPush = !!push && push.to === win.location.pathname + win.location.search && Date.now() >= push.created && Date.now() - push.created < 8000;
   const explicitHistory = typeof historyTarget === "number" && Number.isFinite(historyTarget) && historyTarget >= 0;
   const boot = documentBoot(win, explicitHistory ? "back_forward" : type);
   // Same-document locale pushes consume their short incoming handoff too, but
@@ -120,11 +161,13 @@ function restoreState(win: BrowserWindow, type?: HomeNavigationType, reset = fal
     (id !== previous.entryId && homeCheckpointFromState(context.historyState, context.positions, path, context.now, context.retainedCheckpoint)))) {
     context.navigationType = "back_forward";
   }
-  const intent = resolveHomeRestoreIntent(context);
+  const intent: HomeRestoreIntent | null = freshPush ? { kind: "native", position: { section: "hero", progress: 0 }, scrollY: 0, skipEntry: true } : resolveHomeRestoreIntent(context);
+  if (freshPush) routePushes.delete(win.document);
+  if (routedHistory?.key === key) routeHistoryTargets.delete(win.document);
   const state: RestoreState = {
     key, intent, entryId: id, applied: false, appliedOwner: null, layoutKey: null,
     freshEntry: boot.fresh && !previous && !intent,
-    localeRaw: context.localeReturn, workRaw: context.workReturn, homeRaw: context.homeReturn ?? null,
+    localeRaw: freshPush ? null : context.localeReturn, workRaw: context.workReturn, homeRaw: context.homeReturn ?? null,
   };
   states.set(win.document, state);
   return state;

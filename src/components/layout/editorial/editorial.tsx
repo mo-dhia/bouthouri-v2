@@ -14,7 +14,7 @@ export default async function Editorial({ locale, page, children }: { locale: Lo
   return <div className={styles.root} data-editorial-page={page} key={`${locale}/${page}`}>
     <EditorialAnimateGate page={page} />
     <Header locale={locale} variant="editorial" route={`/${page}`} navigation={<EditorialNavigation locale={locale} route={`/${page}`} />} />
-    <main className={`editorial-page ${classes[page]}`} data-page={page} dir={locale === "ar" ? "rtl" : "ltr"}>{children}</main>
+    <main className={`editorial-page ${classes[page]}`} data-page={page} data-route-path={`/${locale}/${page}`} dir={locale === "ar" ? "rtl" : "ltr"}>{children}</main>
     <Footer locale={locale} copy={dictionary.footer} variant="standard" />
   </div>;
 }

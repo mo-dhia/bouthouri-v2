@@ -15,7 +15,7 @@ import {
 } from "../src/lib/navigation/home-navigation-state";
 import {
   HOME_NAVIGATION_READY_EVENT, HOME_NAVIGATION_RESTORE_EVENT,
-  getHomeRestoreIntent, prepareHomeFreshEntry, mountHomeNavigation, type HomeNavigationOptions, type HomeRestoreDetail,
+  getHomeRestoreIntent, prepareHomeFreshEntry, prepareHomeRoutePush, prepareHomeRouteHistory, cancelHomeRouteArrival, mountHomeNavigation, type HomeNavigationOptions, type HomeRestoreDetail,
 } from "../src/lib/navigation/home-navigation";
 import { frameFromProgress, journeyDistance, progressFromStoryTime } from "../src/sections/landing/3-journey/journey-clock";
 import { readingNavigation } from "../src/sections/landing/3-journey/reading-navigation";
@@ -36,6 +36,56 @@ const context = (overrides: Partial<HomeRestoreContext> = {}): HomeRestoreContex
   localeReturn: null, workReturn: null, positions: null, nativeScrollY: 0, now, ...overrides,
 });
 const click = { button: 0, defaultPrevented: false, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false };
+
+describe("explicit shared-route HOME adapters", () => {
+  test("canceled push preparation cannot override a later semantic return", () => {
+    const b = browser("https://local.test/en/contact"); getHomeRestoreIntent(b.win);
+    expect(prepareHomeRoutePush("/en", b.win)).toBe(true);
+    cancelHomeRouteArrival("/en", b.win);
+    b.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now() }));
+    b.runtime.location = new URL("https://local.test/en");
+    expect(getHomeRestoreIntent(b.win)?.kind).toBe("home-return");
+  });
+  test("a covered ordinary push selects top before hero and clears only generic/work returns", () => {
+    const b = browser("https://local.test/en/contact");
+    b.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now() }));
+    b.storage.set(HOME_WORK_RETURN_KEY, workRecord({ created: Date.now() }));
+    b.storage.set("unrelated", "retained"); b.runtime.scrollY = 4000;
+    const writes = b.historyWrites.length;
+    expect(prepareHomeRoutePush("/en", b.win)).toBe(true);
+    expect(b.runtime.scrollY).toBe(0);
+    expect(b.storage.has(HOME_RETURN_KEY)).toBe(false); expect(b.storage.has(HOME_WORK_RETURN_KEY)).toBe(false);
+    expect(b.storage.get("unrelated")).toBe("retained");
+    b.runtime.location = new URL("https://local.test/en");
+    expect(getHomeRestoreIntent(b.win)).toMatchObject({ skipEntry: true, position: { section: "hero", progress: 0 }, scrollY: 0 });
+    expect(b.historyWrites.length).toBe(writes);
+  });
+  test("HOME locale pushes cannot clear the accepted generic work312 return", () => {
+    const b = browser("https://local.test/en"), semantic = { section: "work", progress: 6 / 142 };
+    // Establish this as an existing HOME Document before the locale navigation.
+    getHomeRestoreIntent(b.win);
+    b.storage.set(HOME_RETURN_KEY, homeRecord({ home: "/ar", position: semantic, created: Date.now() }));
+    expect(prepareHomeRoutePush("/ar", b.win)).toBe(false);
+    expect(prepareHomeRoutePush("/en?work=wujhat", b.win)).toBe(false);
+    b.runtime.location = new URL("https://local.test/ar");
+    expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "home-return", position: semantic });
+    expect(b.storage.has(HOME_RETURN_KEY)).toBe(true);
+  });
+  test("only an actual selected same-locale editorial history entry supplies native priority", () => {
+    const b = browser("https://local.test/en/contact"); getHomeRestoreIntent(b.win);
+    const saved = checkpoint({ id: "home-history", created: Date.now() });
+    b.runtime.location = new URL("https://local.test/en"); b.runtime.history.state[HOME_HISTORY_STATE_KEY] = saved;
+    b.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now() }));
+    expect(prepareHomeRouteHistory("/ar/vision", b.runtime.location.href, saved.id, 2000, b.win)).toBe(false);
+    expect(prepareHomeRouteHistory("/en/contact", b.runtime.location.href, "wrong-entry", 2000, b.win)).toBe(false);
+    expect(prepareHomeRouteHistory("/en/contact", b.runtime.location.href, saved.id, Number.NaN, b.win)).toBe(false);
+    expect(prepareHomeRouteHistory("/en/contact", b.runtime.location.href, saved.id, 2000, b.win)).toBe(true);
+    expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "history", scrollY: 2000 });
+    const writes = b.historyWrites.length;
+    expect(getHomeRestoreIntent(b.win)?.scrollY).toBe(2000);
+    expect(b.historyWrites.length).toBe(writes);
+  });
+});
 
 describe("HOME semantic score mapping", () => {
   test("matches the measured Wujhat position instead of treating display progress as pin progress", () => {

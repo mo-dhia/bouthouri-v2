@@ -10,6 +10,7 @@ import menuStyles from "./menu.module.css";
 import styles from "./header.module.css";
 import { shellEmail } from "./shell-copy";
 import { createMenuTimeline } from "./menu-timeline";
+import { ROUTE_ABORT_EVENT, ROUTE_COVERED_EVENT } from "@/lib/navigation/route-navigation-state";
 import {
   heroWorldEvent,
   heroWorldPose,
@@ -308,7 +309,8 @@ export function mountHeader(root: HTMLElement): () => void {
   });
   setMenuPhase("closed");
   setMenuInteractive(false);
-  const finishClose = () => {
+  let routeDeparted = false;
+  const finishClose = (restoreFocus = true) => {
     menuTimeline.pause(0);
     setMenuPhase("closed");
     setMenuInteractive(false);
@@ -322,7 +324,7 @@ export function mountHeader(root: HTMLElement): () => void {
       if (!button.hasAttribute("data-menu-close"))
         button.setAttribute("aria-expanded", "false");
     });
-    if (opener?.isConnected && !opener.closest("[inert]"))
+    if (restoreFocus && !routeDeparted && opener?.isConnected && !opener.closest("[inert]"))
       opener.focus({ preventScroll: true });
     cancelAnimations();
   };
@@ -344,6 +346,7 @@ export function mountHeader(root: HTMLElement): () => void {
   };
   const open = (button: HTMLElement) => {
     if (!dialog.open) {
+      routeDeparted = false;
       opener = button;
       lockedX = scrollX;
       lockedY = scrollY;
@@ -425,6 +428,16 @@ export function mountHeader(root: HTMLElement): () => void {
       close(true);
   };
   document.addEventListener("click", onClick);
+  const onRouteCovered = (event: Event) => {
+    const shell = (event as CustomEvent<{ shell: HTMLElement | null }>).detail?.shell;
+    // Only the outgoing shell may release its own lock. The new shell must not
+    // restore stale overflow or focus when old async cleanup finally runs.
+    if (shell !== root) return;
+    if (!dialog.open) return;
+    routeDeparted = true; finishClose(false);
+  };
+  window.addEventListener(ROUTE_COVERED_EVENT, onRouteCovered);
+  window.addEventListener(ROUTE_ABORT_EVENT, onRouteCovered);
   const keepMenuPosition = () => {
     if (
       dialog.open &&
@@ -741,6 +754,8 @@ export function mountHeader(root: HTMLElement): () => void {
     detachAudio();
     disposers.forEach((dispose) => dispose());
     document.removeEventListener("click", onClick);
+    window.removeEventListener(ROUTE_COVERED_EVENT, onRouteCovered);
+    window.removeEventListener(ROUTE_ABORT_EVENT, onRouteCovered);
     window.removeEventListener("scroll", keepMenuPosition);
     document.removeEventListener("pointerover", onHover);
     dialog.removeEventListener("cancel", onCancel);

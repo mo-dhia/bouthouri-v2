@@ -17,6 +17,7 @@ class FixtureElement extends EventTarget {
   onAppend = () => {};
   querySelector(selector: string): FixtureElement | null { const value = this.selections.get(selector); return Array.isArray(value) ? value[0] ?? null : value ?? null; }
   querySelectorAll(selector: string): FixtureElement[] { const value = this.selections.get(selector); return Array.isArray(value) ? value : value ? [value] : []; }
+  closest() { return null; }
   getBoundingClientRect() { const rect = this.rectangle(); return { ...rect, right: rect.left + rect.width, bottom: rect.top + rect.height }; }
   setAttribute(key: string, value: string) { this.attributes.set(key, value); if (key.startsWith("data-")) this.dataset[key.slice(5).replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase())] = value; }
   removeAttribute(key: string) { this.attributes.delete(key); }

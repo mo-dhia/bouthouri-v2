@@ -4,11 +4,13 @@ import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import * as heroWorld from "@/sections/landing/1-hero/hero-world";
 import * as viewport from "@/lib/viewport-design";
+import { ROUTE_ABORT_EVENT, ROUTE_COVERED_EVENT } from "@/lib/navigation/route-navigation-state";
 
 // Exercise the mounted controller with counted DOM operations. Layout values
 // are supplied explicitly; this checks ownership/invalidation, not CSS parity.
 function harness({ reading = false, late = false, locale = "en", width = 1920, physicalHeight = 1080, menu = false, editorial = false } = {}) {
   const counts = { queries: 0, geometry: 0, writes: 0 };
+  const focusTargets: object[] = [], nativeScrolls: number[] = [];
   let y = 0;
   class Surface extends EventTarget {
     attributes = new Map<string, string>();
@@ -47,6 +49,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     before(child: Surface) { child.remove(); child.parent = this.parent; this.parent?.children.splice(this.parent.children.indexOf(this), 0, child); }
     after(child: Surface) { child.remove(); child.parent = this.parent; this.parent?.children.splice(this.parent.children.indexOf(this) + 1, 0, child); }
     remove() { if (this.parent) this.parent.children.splice(this.parent.children.indexOf(this), 1); this.parent = undefined; }
+    focus() { focusTargets.push(this); }
   }
   const body = new Surface(), root = new Surface(), utilities = new Surface(), entrance = new Surface();
   const dialog = Object.assign(new Surface(), {
@@ -107,7 +110,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     createElement: () => Object.assign(new Surface(), { getContext: () => null }),
   });
   const motion = Object.assign(new EventTarget(), { matches: false });
-  const window = Object.assign(new EventTarget(), { matchMedia: () => motion });
+  const window = Object.assign(new EventTarget(), { matchMedia: () => motion, scrollTo({ top }: { top: number }) { y = top; nativeScrolls.push(top); } });
   const state = { quietMode: reading, homeSceneFailed: false, soundEnabled: false, menuOpen: false, setMenuOpen(value: boolean) { this.menuOpen = value; } };
   const subscribers = new Set<() => void>();
   let resize!: () => void, mutate!: (records: { type: string }[]) => void;
@@ -142,6 +145,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     } },
     "@/sections/landing/1-hero/hero-world": heroWorld,
     "@/lib/viewport-design": viewport,
+    "@/lib/navigation/route-navigation-state": { ROUTE_ABORT_EVENT, ROUTE_COVERED_EVENT },
   };
   const source = readFileSync(new URL("./header.logic.ts", import.meta.url), "utf8");
   const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
@@ -151,7 +155,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     return dependencies[name];
   }, evaluated, evaluated.exports);
   return {
-    counts, root, utilities, entrance, hero, side, identity, chapter, original, motion, window, menuItems, menuDescriptions, menuRail, dialog,
+    counts, root, utilities, entrance, hero, side, identity, chapter, original, motion, window, document, menuControl, menuItems, menuDescriptions, menuRail, dialog, focusTargets, nativeScrolls,
     finishMenuReverse: () => finishMenuReverse(),
     toggleMenu() {
       const event = new Event("click");
@@ -349,4 +353,36 @@ test("editorial shell keeps its fixed navigation while sharing menu lifecycle an
   h.toggleMenu(); expect(h.dialog.open).toBe(true);
   h.toggleMenu(); h.finishMenuReverse(); expect(h.dialog.open).toBe(false);
   dispose();
+});
+
+test("covered/aborted route signals close only their Header owner, release its lock and suppress opener focus", () => {
+  for (const name of [ROUTE_COVERED_EVENT, ROUTE_ABORT_EVENT]) {
+    const h = harness({ editorial: true, menu: true });
+    h.menuControl.connected = true;
+    h.document.documentElement.style.overflow = "clip";
+    h.document.documentElement.style.scrollbarGutter = "auto";
+    const dispose = h.mount(); h.toggleMenu();
+    expect(h.dialog.open).toBe(true); expect(h.document.documentElement.style.overflow).toBe("hidden");
+    h.window.dispatchEvent(new CustomEvent(name, { detail: { shell: {} } }));
+    expect(h.dialog.open).toBe(true);
+    h.scroll(200); expect(h.nativeScrolls).toEqual([0]);
+    h.window.dispatchEvent(new CustomEvent(name, { detail: { shell: h.root } }));
+    expect(h.dialog.open).toBe(false);
+    expect(h.document.documentElement.style.overflow).toBe("clip");
+    expect(h.document.documentElement.style.scrollbarGutter).toBe("auto");
+    expect(h.document.documentElement.dataset.menuOpen).toBeUndefined(); expect(h.focusTargets).toHaveLength(0);
+    h.scroll(320); expect(h.nativeScrolls).toEqual([0]);
+    // A later manual open/close still owns ordinary opener restoration.
+    h.toggleMenu(); h.toggleMenu(); h.finishMenuReverse();
+    expect(h.focusTargets).toEqual([h.menuControl]);
+    // Already-closed outgoing cleanup cannot overwrite a new owner's lock.
+    h.document.documentElement.style.overflow = "hidden";
+    h.document.documentElement.style.scrollbarGutter = "stable";
+    dispose();
+    expect(h.document.documentElement.style.overflow).toBe("hidden");
+    expect(h.document.documentElement.style.scrollbarGutter).toBe("stable");
+    expect(h.focusTargets).toHaveLength(1);
+    h.window.dispatchEvent(new CustomEvent(name, { detail: { shell: h.root } }));
+    expect(h.document.documentElement.style.overflow).toBe("hidden");
+  }
 });

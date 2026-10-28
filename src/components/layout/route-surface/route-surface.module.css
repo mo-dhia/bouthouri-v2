@@ -1,0 +1,4 @@
+.surface { position: fixed; inset: 0; width: auto; height: auto; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; z-index: 10000; pointer-events: none; visibility: hidden; overflow: hidden }
+.surface::backdrop { pointer-events: none; background: transparent }
+.surface[data-active='true'] { visibility: visible }
+.surface [data-route-field] { position: absolute; inset: 0; background: #050505; opacity: 0; pointer-events: none }
