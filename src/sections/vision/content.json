@@ -1,0 +1,260 @@
+{
+  "en": {
+    "index": "VISION / A WAY OF WORKING",
+    "name": "MED D. BOUTHOURI",
+    "hero": [
+      "I START WITH",
+      "A DIFFERENT",
+      "POINT OF VIEW."
+    ],
+    "intro": "If it works but feels wrong,\nit isn’t finished.",
+    "read": "FOLLOW THE THOUGHT",
+    "note": "DIFFERENT PARTS. ONE CONVERSATION.",
+    "study": {
+      "label": "HOW I THINK",
+      "moments": [
+        {
+          "id": "system",
+          "label": "01 / STEP BACK",
+          "title": [
+            "FIRST, THE",
+            "WHOLE SYSTEM."
+          ],
+          "copy": "Product engineering starts with the whole thing: what needs to happen, what depends on what, and what needs to hold up as the product grows.",
+          "metadata": [
+            "PRODUCT LOGIC",
+            "DEPENDENCIES",
+            "TRADE-OFFS"
+          ]
+        },
+        {
+          "id": "detail",
+          "label": "02 / LOOK CLOSER",
+          "title": [
+            "THEN I GET PICKY",
+            "ABOUT THE DETAILS."
+          ],
+          "copy": "The spacing. The timing. The state nobody thought about. The extra click that shouldn’t be there.",
+          "metadata": [
+            "UI DESIGN",
+            "USABILITY",
+            "INTERACTION"
+          ]
+        },
+        {
+          "id": "context",
+          "label": "03 / SEE IT TOGETHER",
+          "title": [
+            "THE PARTS HAVE TO",
+            "WORK TOGETHER."
+          ],
+          "copy": "Then I step back again. Does it work as one product, and does it make sense to the person using it?",
+          "metadata": [
+            "STRUCTURE",
+            "EXPERIENCE",
+            "ONE PRODUCT"
+          ]
+        }
+      ]
+    },
+    "underneath": {
+      "id": "underneath",
+      "label": "THE WHOLE PRODUCT",
+      "title": [
+        "THE OTHER SIDE",
+        "OF THE DECISION."
+      ],
+      "aside": "The interface and the system behind it have to agree.",
+      "copy": "Usability lives on the surface. Speed and reliability often start underneath it. The product only feels right when both sides work together.",
+      "metadata": []
+    },
+    "communication": {
+      "label": "A THOUGHT IN MOTION",
+      "thoughts": [
+        {
+          "id": "call",
+          "title": [
+            "A DECISION ISN’T DONE",
+            "WHEN IT’S MADE."
+          ]
+        },
+        {
+          "id": "reason",
+          "title": [
+            "THE REASONING",
+            "HAS TO TRAVEL WITH IT."
+          ]
+        },
+        {
+          "id": "context",
+          "title": [
+            "WHAT CHANGED.",
+            "WHY THIS.",
+            "WHAT HAPPENS NEXT."
+          ]
+        },
+        {
+          "id": "move",
+          "title": [
+            "ENOUGH CONTEXT",
+            "TO KEEP MOVING."
+          ]
+        }
+      ]
+    },
+    "leadership": {
+      "id": "leadership",
+      "label": "",
+      "title": [
+        "DIRECTION STARTS WITH LISTENING.",
+        "RESPONSIBILITY STARTS WITH CHOOSING."
+      ],
+      "copy": "Listen to what people depend on. Be clear about what can wait and what gets left out. Then choose a direction and take responsibility for it.",
+      "metadata": [],
+      "questions": [
+        "What needs to happen now?",
+        "What can wait?",
+        "Who depends on this decision?",
+        "What are we choosing not to do?"
+      ]
+    },
+    "end": {
+      "label": "",
+      "title": [
+        "SO, WHAT’S",
+        "THE PROBLEM?"
+      ],
+      "copy": "That’s usually where the useful conversation starts",
+      "action": "WHERE I CAN HELP",
+      "contact": "START A CONVERSATION"
+    }
+  },
+  "ar": {
+    "index": "الرؤية / طريقة في العمل",
+    "name": "محمد ضياء بوثوري",
+    "hero": [
+      "ابدأ بنظرة",
+      "من زاوية مختلفة"
+    ],
+    "intro": "إن كانت تعمل ولكن تجربتها لا تبدو صحيحة، فالعمل لم يكتمل بعد",
+    "read": "تتبّع الفكرة",
+    "note": "أجزاء مختلفة. حوار واحد.",
+    "study": {
+      "label": "كيف أفكّر",
+      "moments": [
+        {
+          "id": "system",
+          "label": "01 / خطوة للخلف",
+          "title": [
+            "أبدأ من",
+            "الصورة الكبيرة."
+          ],
+          "copy": "أبدأ هندسة المنتج بفهم الصورة كاملة: ما الذي يجب أن يحدث، وكيف تعتمد أجزاؤه على بعضها، وما الذي يحافظ على كفاءته مع نموّه.",
+          "metadata": [
+            "منطق المنتج",
+            "العلاقات",
+            "المفاضلات"
+          ]
+        },
+        {
+          "id": "detail",
+          "label": "02 / نظرة أقرب",
+          "title": [
+            "ثم أمنح التفاصيل",
+            "ما تستحقّه."
+          ],
+          "copy": "المسافات. التوقيت. الحالة التي أغفلناها. والخطوة الزائدة التي لا يحتاجها المستخدم.",
+          "metadata": [
+            "تصميم الواجهات",
+            "سهولة الاستخدام",
+            "التفاعل"
+          ]
+        },
+        {
+          "id": "context",
+          "label": "03 / نرى الصورة كاملة",
+          "title": [
+            "كل جزء",
+            "يُكمل الآخر."
+          ],
+          "copy": "ثم أعود إلى الصورة كاملة. هل تعمل الأجزاء كمنتج واحد؟ وهل تبدو التجربة واضحة لمن يستخدمها؟",
+          "metadata": [
+            "البناء",
+            "التجربة",
+            "منتج واحد"
+          ]
+        }
+      ]
+    },
+    "underneath": {
+      "id": "underneath",
+      "label": "المنتج ككل",
+      "title": [
+        "الجانب الآخر",
+        "من القرار."
+      ],
+      "aside": "الواجهة والنظام خلفها يكمل أحدهما الآخر.",
+      "copy": "تظهر سهولة الاستخدام في الواجهة، لكن السرعة والموثوقية تبدآن غالبًا في النظام خلفها. تستقيم التجربة حين يعمل الجانبان معًا.",
+      "metadata": []
+    },
+    "communication": {
+      "label": "الفكرة تنتقل",
+      "thoughts": [
+        {
+          "id": "call",
+          "title": [
+            "لا ينتهي القرار",
+            "لحظة اتخاذه"
+          ]
+        },
+        {
+          "id": "reason",
+          "title": [
+            "تنتقل معه",
+            "أسباب اختياره"
+          ]
+        },
+        {
+          "id": "context",
+          "title": [
+            "ما الذي تغيّر.",
+            "ولماذا هذا الاختيار.",
+            "وما الخطوة التالية."
+          ]
+        },
+        {
+          "id": "move",
+          "title": [
+            "فهمٌ كافٍ",
+            "لنواصل العمل."
+          ]
+        }
+      ]
+    },
+    "leadership": {
+      "id": "leadership",
+      "label": "",
+      "title": [
+        "الاتجاه يبدأ بالاستماع.",
+        "والمسؤولية تبدأ بالاختيار."
+      ],
+      "copy": "أستمع إلى من سيتأثرون بالقرار، وأوضح ما يمكن تأجيله وما سنستبعده. ثم أختار اتجاهًا وأتحمّل مسؤوليته.",
+      "metadata": [],
+      "questions": [
+        "ما الذي يجب فعله الآن؟",
+        "ما الذي يمكن تأجيله؟",
+        "من سيتأثر بهذا القرار؟",
+        "ما الذي نختار استبعاده؟"
+      ]
+    },
+    "end": {
+      "label": "",
+      "title": [
+        "من أين نبدأ؟"
+      ],
+      "copy": "غالبًا ما تبدأ المحادثة المفيدة بفهم المشكلة جيدًا",
+      "action": "أين أستطيع المساعدة",
+      "contact": "لنبدأ حوارًا"
+    }
+  }
+}

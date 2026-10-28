@@ -1,0 +1,790 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  :global(html[data-typography=questrial-cairo][lang=en]) :where(.vision) :global(.about-moving-thought h2) { letter-spacing: -.036em }
+  :global(html[data-typography=questrial-cairo][lang=ar]) :where(.vision) :global(:is(.masked-text-line, .editorial-line)) { margin-block: -.19em; padding-block: .19em }
+  .vision { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; font-family: var(--font-latin), sans-serif; color: var(--ed-ink); --nav-compact: 1; background: #10100f38; position: relative; overflow: clip }
+  .vision :global(:is(h1, h2, h3, p)) { margin: 0 }
+  .vision :global(:is(h1, h2, h3)) { font-weight: var(--weight-440, 440) }
+  .vision :global(a) { color: inherit; text-decoration: none }
+  .vision :global(:is(a, button, input, textarea):focus-visible) { outline-offset: 0.260417vw; outline: 1px solid #c2bdb0 }
+  :where(.vision) :global(.editorial-action) { min-height: 2.5vw; font-size: calc(0.572917vw * var(--type-scale, 1)); letter-spacing: calc(.08em * var(--tracking-scale, 1)); color: var(--ed-ink); font-weight: var(--weight-450, 450); align-items: center; gap: 1.45834vw; padding-block: 0.520834vw; display: inline-flex }
+  :where(.vision) :global(.editorial-action-window) { padding-block: .12em; line-height: 1.65; display: grid; overflow: hidden }
+  :where(.vision) :global(.editorial-action-window>span) { grid-area: 1/1; transition: transform .4s cubic-bezier(.65, 0, .25, 1); display: block }
+  :where(.vision) :global(.editorial-action-window>span+span) { transform: translateY(135%) }
+  :where(.vision) :global(.editorial-action:is(:hover, :focus-visible) .editorial-action-window>span:first-child) { transform: translateY(-135%) }
+  :where(.vision) :global(.editorial-action:is(:hover, :focus-visible) .editorial-action-window>span+span) { transform: translateY(0) }
+  :where(.vision) :global(.editorial-action>i), :where(.vision) :global(.editorial-text-link i) { background: #969286; width: 1.77084vw; height: 0.0520834vw; transition: width .35s; display: block }
+  :where(.vision) :global(.editorial-action:hover>i) { width: 2.91667vw }
+  :where(.vision) :global(.editorial-kicker) { font-size: calc(0.46875vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #aaa597; justify-content: space-between; align-items: baseline; gap: 1.25vw; display: flex }
+  :where(.vision) :global(.editorial-eyebrow) { font-size: calc(0.46875vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #a09d91; line-height: 1.6; display: block }
+  :where(.vision) :global(.editorial-line) { margin-block: -.07em; padding-block: .07em; display: block; overflow: clip }
+  :where(.vision) :global(.editorial-line>span) { display: block }
+  :where(.vision) :global(.editorial-text-link) { font-size: calc(0.46875vw * var(--type-scale, 1)); min-height: 2.29167vw; letter-spacing: calc(.09em * var(--tracking-scale, 1)); align-items: center; gap: 1.25vw; display: flex }
+  :where(.vision) :global(.editorial-text-link:hover i) { width: 2.8125vw }
+  :global(html[lang=ar]) .vision { font-family: var(--font-arabic), sans-serif; --ed-gutter: 6vw }
+  :global(html[lang=ar]) .vision :global(:is(h1, h2, h3)) { letter-spacing: 0; line-height: 1.3; font-weight: var(--weight-500, 500) }
+  :global(html[lang=ar]) :where(.vision) :global(.editorial-line) { margin-block: -.13em; padding-block: .13em }
+  @media (prefers-reduced-motion:reduce) {
+    .vision :global(*), .vision :global(:after) { scroll-behavior: auto !important; transition: none !important; animation: none !important }
+    :where(.vision) :global(.editorial-line>span) { transform: none !important }
+  }
+  .vision { isolation: isolate; --practice-title: 5.3vw; background: 0 0 }
+  .vision :global(:is(h1, h2)) { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08 }
+  .vision :global(.editorial-line) { overflow: visible }
+  :where(.vision) :global(.practice-opening) { height: 56.25vw; min-height: 38.5417vw; padding: 10.125vw var(--ed-gutter) 3.9375vw; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
+  :where(.vision) :global(.practice-hero-geometry) { z-index: -1; pointer-events: none; height: 100%; position: absolute; inset: 0 0 auto; overflow: visible }
+  :where(.vision) :global(.practice-depth) { width: 100%; height: 100%; display: block }
+  :where(.vision) :global(.practice-opening .editorial-kicker) { position: relative }
+  :where(.vision) :global(.practice-opening h1) { font-size: calc(6.59983vw * var(--type-scale, 1)); max-width: 64%; margin-top: 5.625vw; position: relative }
+  .vision :global(.practice-opening h1 .editorial-line:last-child) { color: #aaa69d }
+  :where(.vision) :global(.practice-opening-foot) { justify-content: space-between; align-items: end; gap: 2.60417vw; max-width: 64%; margin-top: auto; padding-top: 1.82292vw; display: flex; position: relative }
+  :where(.vision) :global(.practice-opening-foot>p) { max-width: 17.1875vw; font-size: calc(1.14584vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); color: #b4b0a5; line-height: 1.65 }
+  :where(.vision) :global(.practice-natural) { padding: 9vw var(--ed-gutter); isolation: isolate; align-items: center; gap: 5vw; min-height: 45vw; display: flex; position: relative }
+  :where(.vision) :global(.practice-reading) { width: 100%; position: relative }
+  :where(.vision) :global(.practice-natural h2) { font-size: calc(var(--practice-title) * var(--type-scale, 1)); max-width: 90%; margin-top: 1.45834vw }
+  :where(.vision) :global(.practice-copy) { font-size: calc(1.09375vw * var(--type-scale, 1)); color: #b2aea2; letter-spacing: calc(-.015em * var(--tracking-scale, 1)); max-width: 21.3542vw; line-height: 1.8; margin-top: 2.08334vw !important }
+  :where(.vision) :global(.practice-metadata) { max-width: 26.0417vw; font-size: calc(0.416667vw * var(--type-scale, 1)); letter-spacing: calc(.075em * var(--tracking-scale, 1)); color: #908c82; flex-wrap: wrap; gap: 0.520834vw 1.14584vw; margin-top: 2.34375vw; padding: 0; line-height: 1.7; list-style: none; display: flex }
+  :where(.vision) :global(.thought-detail) { min-height: 43.875vw; padding-inline-start: 15% }
+  :where(.vision) :global(.thought-context) { min-height: 47.8125vw }
+  :where(.vision) :global(.thought-context .practice-copy) { margin-inline-start: 28% }
+  :where(.vision) :global(.practice-end) { padding: 10.6875vw var(--ed-gutter) 12.9375vw; min-height: 56.25vw; position: relative }
+  :where(.vision) :global(.practice-end h2) { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08; font-size: calc(8vw * var(--type-scale, 1)); margin-top: 3.125vw }
+  :where(.vision) :global(.practice-end .editorial-action) { margin-top: 2.34375vw }
+  :where(.vision) :global(.practice-end-actions) { gap: 7vw; display: flex }
+  :global(html[lang=ar]) .vision :global(:is(h1, h2)) { letter-spacing: 0; line-height: 1.35; font-weight: var(--weight-400, 400) }
+  :global(html[lang=ar]) .vision :global(.editorial-eyebrow) { font-size: calc(0.625vw * var(--type-scale, 1)); letter-spacing: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening h1) { font-size: calc(6.75vw * var(--type-scale, 1)); max-width: 64%; margin-top: 4.5vw; line-height: 1.28 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(1.04167vw * var(--type-scale, 1)); max-width: 19.2709vw }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-natural h2) { font-size: calc(5.79948vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-copy) { font-size: calc(0.989584vw * var(--type-scale, 1)); letter-spacing: 0; max-width: 22.3959vw; line-height: 1.9 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-metadata) { font-size: calc(0.572917vw * var(--type-scale, 1)); letter-spacing: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-end h2) { font-size: calc(8.33334vw * var(--type-scale, 1)) }
+  @media (prefers-reduced-motion:reduce) {
+    .vision :global([data-editorial-layer]) { transform: none !important }
+    :where(.vision) :global(.chapter-visual path) { stroke-dashoffset: 0 }
+  }
+  :where(.vision) :global(.practice-chapter) { isolation: isolate; scroll-margin-top: 4.6875vw; position: relative }
+  :where(.vision) :global(.chapter-content) { z-index: 1; position: relative }
+  :where(.vision) :global(.chapter-visual-rail) { pointer-events: none; z-index: 0; padding-block: 5.625vw; position: absolute; inset: 0 0 0 51% }
+  :where(.vision) :global(.chapter-visual) { color: #c4c0b3; opacity: .78; height: 29.1667vw; position: sticky; top: 15.75vw }
+  :where(.vision) :global(.chapter-visual svg) { stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; width: 100%; height: 100%; display: block; overflow: hidden }
+  :where(.vision) :global(.chapter-visual path) { stroke-dasharray: 1 1; stroke-dashoffset: 1 }
+  :where(.vision) :global(.practice-chapter .practice-natural) { min-height: 49.5vw }
+  :where(.vision) :global(.practice-chapter .practice-copy), :where(.vision) :global(.practice-chapter .practice-metadata) { max-width: 42%; margin-inline-start: 0 }
+  :where(.vision) :global(.practice-chapter .practice-reading) { margin-inline-start: 0 }
+  :where(.vision) :global(.practice-chapter .thought-detail) { padding-inline-start: var(--ed-gutter) }
+  :global(html[lang=ar]) :where(.vision) :global(.chapter-visual-rail) { inset-inline: 51% 0; left: 0; right: 51% }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-chapter .practice-copy) { max-width: 42% }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.chapter-visual) { position: relative; top: 0; transform: none !important }
+    :where(.vision) :global(.chapter-visual-rail) { padding-top: 11.25vw }
+    :where(.vision) :global(.chapter-visual path) { stroke-dashoffset: 0 }
+  }
+  :where(.vision) :global([data-system-word]) { white-space: nowrap }
+  :where(.vision) :global([data-system-details-passage]) { padding-bottom: var(--system-details-distance, 0vw) }
+  :where(.vision) :global([data-system-details-reading]) { will-change: transform }
+  :where(.vision) :global(.chapter-perspective .chapter-visual) { visibility: hidden }
+  :where(.vision) :global(.system-details-field) { pointer-events: none; z-index: 2; width: 100%; height: 100%; color: var(--ed-ink); visibility: hidden; display: none; position: absolute; inset: 0; overflow: visible }
+  :where(.vision) :global(.chapter-perspective[data-system-details-ready=true] .system-details-field) { display: block }
+  :where(.vision) :global(.system-details-stroke) { stroke: #c4c0b3; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; fill: none; visibility: hidden }
+  :where(.vision) :global(.system-details-edge) { visibility: visible }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.chapter-perspective .chapter-visual) { visibility: visible }
+    :where(.vision) :global(.system-details-field) { display: none !important }
+  }
+  :where(.vision) :global(.practice-opening) { height: 56.25vw; min-height: 36.4584vw; overflow: hidden }
+  :where(.vision) :global(.practice-hero-type) { left: var(--hero-copy-start, 34%); right: var(--ed-gutter); position: absolute; top: 50%; transform: translateY(-38%) }
+  :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(5.83334vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.08 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot) { gap: 1.45834vw; max-width: none; margin-top: 1.66667vw; padding: 0 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot>p) { max-width: 16.6667vw; font-size: calc(1.04167vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.practice-opening .editorial-text-link) { flex-shrink: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(6.77084vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.32 }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { text-align: right; top: 49%; left: 37%; right: 12% }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(1.09375vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { left: var(--hero-copy-start, 34%); width: 36%; max-width: 31.25vw; right: auto }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot) { margin-top: 1.25vw; display: block }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot>p) { max-width: 20.3125vw; margin-inline-start: auto }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot .editorial-text-link) { margin-top: 1.04167vw }
+  :where(.vision) :global(.practice-opening .editorial-kicker>span:only-child) { text-align: start; max-width: 100% }
+  .vision :global(.thought-context h2) { max-width: 90% }
+  :where(.vision) :global(.about-other-side) { min-height: 61.875vw; padding: 9.5625vw var(--ed-gutter); text-align: center; flex-direction: column; justify-content: center; align-items: center; display: flex; position: relative }
+  :where(.vision) :global(.about-other-side h2) { font-size: calc(9.375vw * var(--type-scale, 1)); width: 100%; margin-top: 4.5vw; line-height: 1.04 !important }
+  :where(.vision) :global(.about-underneath-copy) { width: min(100%, 30.7292vw); margin: 4.5vw auto 0 }
+  :where(.vision) :global(.about-aside) { font-size: calc(1.77084vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: var(--ed-ink) }
+  :where(.vision) :global(.about-underneath-copy .practice-copy) { width: 100%; max-width: 48ch; margin: 1.25vw auto 0 !important }
+  :where(.vision) :global(.about-thought-motion) { isolation: isolate; height: 163.125vw; position: relative }
+  :where(.vision) :global(.about-thought-stage) { height: 56.25vw; min-height: 32.2917vw; position: sticky; top: 0; overflow: clip }
+  :where(.vision) :global(.about-moving-thought) { transform-origin: 0 0; will-change: transform; text-align: start; width: max-content; max-width: 86%; position: absolute; top: 0; left: 0 }
+  :where(.vision) :global(.about-moving-thought h2) { font-size: calc(5.83334vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.14 }
+  :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(5.10417vw * var(--type-scale, 1)) }
+  .vision :global(.practice-end) { min-height: 56.25vw; padding-block: 10.6875vw 12.9375vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-other-side h2) { font-size: calc(9.47917vw * var(--type-scale, 1)); line-height: 1.25 !important }
+  :global(html[lang=ar]) :where(.vision) :global(.about-underneath-copy .practice-copy) { max-width: none }
+  :global(html[lang=ar]) :where(.vision) :global(.about-aside) { letter-spacing: 0; font-size: calc(1.875vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought h2) { font-size: calc(6.39931vw * var(--type-scale, 1)); letter-spacing: 0; line-height: 1.45 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(5.5vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.about-invitation-end .practice-end-actions) { gap: 5vw }
+  :where(.vision) :global(.about-invitation-end .editorial-action) { margin-top: 0; padding-block: 0.729167vw }
+  :where(.vision) :global(.about-invitation-end .about-cta-explore) { color: #979387 }
+  :where(.vision) :global(.about-invitation-end .about-cta-contact) { color: #e1ddd0 }
+  :where(.vision) :global(.about-invitation-end .about-cta-contact .editorial-action) { border-bottom: 1px solid #787469 }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.about-thought-motion) { height: auto }
+    :where(.vision) :global(.about-thought-stage) { height: auto; min-height: 0; padding: 6.75vw var(--ed-gutter); flex-direction: column; gap: 5.0625vw; display: flex; position: relative; overflow: visible }
+    :where(.vision) :global(.about-moving-thought) { will-change: auto; width: 100%; max-width: 100%; position: relative; transform: none !important }
+  }
+  :where(.vision) :global(.about-leadership) { isolation: isolate; --lead-safe-top: 6.77084vw; --voice-ink: 1; position: relative }
+  :where(.vision) :global(.about-leadership-stage) { position: relative }
+  :where(.vision) :global(.about-leadership-safe) { padding: 7.3125vw var(--ed-gutter) 9vw; grid-template-columns: 1fr 1fr; gap: 2.29167vw 8%; display: grid; position: relative }
+  :where(.vision) :global(.about-leadership-core) { text-align: center; grid-area: 2/1/auto/-1; align-self: center; width: min(100%, 57.2917vw); margin-inline: auto }
+  :where(.vision) :global(.about-leadership h2) { font-size: calc(3.33334vw * var(--type-scale, 1)); line-height: 1.22 }
+  :where(.vision) :global(.about-leadership .practice-copy) { text-align: center; width: min(100%, 26.5625vw); font-size: calc(1.04167vw * var(--type-scale, 1)); margin: 1.25vw auto 0 !important }
+  :where(.vision) :global(.about-voices) { display: contents }
+  :where(.vision) :global(.about-voice) { width: max-content; max-width: 100%; opacity: var(--voice-ink); direction: ltr; grid-template-columns: 3.33334vw minmax(0, 1fr); align-items: center; gap: 0.833334vw; display: grid }
+  :where(.vision) :global(.about-voice-form) { stroke: #aaa69a; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; width: 3.33334vw; height: auto; overflow: visible }
+  :where(.vision) :global(.about-voice-form path) { stroke-dasharray: 0 2; visibility: hidden }
+  :where(.vision) :global(.about-voice-sentence) { font-size: calc(0.989584vw * var(--type-scale, 1)); color: #c9c5b9; letter-spacing: 0; text-align: left; white-space: nowrap; width: max-content; max-width: none; line-height: 1.55 }
+  :where(.vision) :global(.about-voice-sentence>[data-voice-word]) { opacity: 0; filter: blur(2.4px); display: inline-block; transform: translateY(0.15625vw) }
+  :where(.vision) :global(.about-voice-0) { grid-area: 1/1; align-self: end; margin-left: 2% }
+  :where(.vision) :global(.about-voice-1) { grid-area: 1/2; place-self: start end; margin-top: -0.833334vw; margin-right: 3% }
+  :where(.vision) :global(.about-voice-2) { grid-area: 3/1; align-self: start; margin-left: 12% }
+  :where(.vision) :global(.about-voice-3) { grid-area: 3/2; place-self: end; margin-top: 0.833334vw; margin-right: 1% }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: minmax(0, 1fr) 3.33334vw }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-form) { grid-area: 1/2 }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-sentence) { text-align: right; grid-area: 1/1; justify-self: end }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership h2) { font-size: calc(3.59375vw * var(--type-scale, 1)); line-height: 1.42 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership .practice-copy) { max-width: 34ch; font-size: calc(1.14584vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-sentence) { text-align: right; letter-spacing: 0; font-size: calc(1.09375vw * var(--type-scale, 1)); direction: rtl; line-height: 1.8 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-0) { margin-left: 0; margin-right: 2% }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-1) { margin-left: 3%; margin-right: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-2) { margin-left: 0; margin-right: 12% }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-3) { margin-left: 1%; margin-right: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2)) { grid-template-columns: minmax(0, 1fr) 3.33334vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2) .about-voice-form) { grid-area: 1/2 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2) .about-voice-sentence) { grid-area: 1/1 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: 3.33334vw minmax(0, 1fr) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-form) { grid-column: 1 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-sentence) { grid-column: 2 }
+  @media (prefers-reduced-motion:no-preference) {
+    :where(.vision) :global(.about-leadership) { height: 180vw }
+    :where(.vision) :global(.about-leadership-stage) { height: 56.25vw; position: sticky; top: 0 }
+    :where(.vision) :global(.about-leadership-safe) { inset: var(--lead-safe-top) 6% 2.25vw; grid-template-rows: auto 1fr auto; gap: 1.45834vw 8%; padding: 0; position: absolute }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.about-voice-form path) { stroke-dasharray: 1 1; visibility: visible }
+    :where(.vision) :global(.about-voice-sentence>[data-voice-word]) { opacity: 1 !important; filter: none !important; transform: none !important }
+  }
+  .vision :global([data-masked-reveal=hero-action]) { flex: none; width: max-content; max-width: 100% }
+  .vision :global([data-masked-reveal=hero-action] .masked-text-line) { margin-inline: -0.208334vw; padding-inline: 0.208334vw }
+  .vision :global(.practice-opening .editorial-text-link) { white-space: nowrap; text-align: start; line-height: 1.8 }
+  .vision :global(.practice-opening .editorial-text-link i) { transform-origin: 0; flex: none; width: 2.8125vw; transition: transform .35s; transform: scaleX(.63) }
+  .vision :global(.practice-opening .editorial-text-link:is(:hover, :focus-visible) i) { transform: scaleX(1) }
+  .vision :global(.practice-opening .editorial-text-link:focus-visible) { outline: 1px solid var(--paper); outline-offset: 0.104167vw }
+  .vision :global([data-masked-reveal=hero-copy] .editorial-line) { white-space: nowrap }
+  :global(html[lang=ar]) .vision :global(.practice-opening .editorial-text-link i) { transform-origin: 100% }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { right: var(--ed-gutter); width: auto; max-width: none }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type h1 .editorial-line) { white-space: nowrap }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot>p), :global(html[lang=ar]) .vision :global([data-masked-reveal=hero-action]) { margin-inline: 0 auto }
+  :global(html[lang=ar]) .vision :global(.practice-copy [data-reveal-source]) { text-wrap: pretty }
+  :where(.vision) :global(.masked-text), :where(.vision) :global(.masked-text [data-reveal-source]) { display: block }
+  :where(.vision) :global(.masked-text .masked-rendered-line) { white-space: nowrap; display: block !important }
+  :where(.vision) :global(.masked-text .masked-rendered-line-mask) { background: 0 0; overflow: clip !important }
+  .vision :global(.masked-text .masked-text-line) { background: 0 0; margin-block: -.09em; padding-block: .09em; display: block; overflow: clip }
+  :where(.vision) :global(.masked-text [data-reveal-piece]) { will-change: transform; display: block }
+  :global(html[lang=ar]) :where(.vision) :global(.masked-text .masked-text-line) { margin-block: -.14em; padding-block: .14em }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.masked-text [data-reveal-piece]) { will-change: auto }
+    :where(.vision) :global(.masked-text[data-rendered-lines]) { visibility: visible !important }
+  }
+  .vision { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; color: var(--ed-ink); position: relative }
+  .vision :global(.practice-hero-poster) { width: 100%; height: 100%; position: absolute; inset: 0; display: none }
+  .vision :global(.poster-desktop) { display: block }
+  .vision :global(.practice-depth) { position: relative; opacity: 0 }
+  .vision :global(.practice-depth[data-hero-rendered='true']) { opacity: 1 }
+  .vision :global(.practice-hero-geometry:has([data-hero-rendered='true']) .practice-hero-poster) { visibility: hidden }
+  .vision :global(.about-voice-sentence [data-voice-word]) { display: inline-block }
+  .vision:not([data-motion='true']) :global(.about-thought-motion) { height: auto }
+  .vision:not([data-motion='true']) :global(.about-thought-stage) { height: auto; min-height: 0; padding: 6.75vw var(--ed-gutter); display: flex; flex-direction: column; gap: 5.0625vw; position: relative; overflow: visible }
+  .vision:not([data-motion='true']) :global(.about-moving-thought) { position: relative; transform: none; width: 100%; max-width: 100%; will-change: auto }
+  .vision:not([data-motion='true']) :global(.about-leadership) { height: auto }
+  .vision:not([data-motion='true']) :global(.about-leadership-stage) { height: auto; position: relative }
+  .vision:not([data-motion='true']) :global(.about-leadership-safe) { position: relative; inset: auto; padding: 7.3125vw var(--ed-gutter) 9vw }
+  .vision:not([data-motion='true']) :global(.about-voice-form path) { stroke-dasharray: 1 1; visibility: visible }
+  .vision:not([data-motion='true']) :global(.about-voice-sentence [data-voice-word]) { opacity: 1; filter: none; transform: none }
+  .vision:not([data-motion='true']) :global(.chapter-perspective .chapter-visual) { visibility: visible }
+  .vision:not([data-motion='true']) :global([data-reveal-piece]) { transform: none }
+  .vision[data-motion='true'] :global(.masked-text [data-reveal-piece]) { will-change: transform }
+  .vision :global(.system-details-stroke), .vision :global(.chapter-visual svg) { stroke-width: 0.052083333333333336vw }
+  .vision :global(.about-voice-form) { stroke-width: 0.06510416666666667vw }
+}
+@media (600px < width <= 1024px) {
+  :global(html[data-typography=questrial-cairo][lang=en]) :where(.vision) :global(.about-moving-thought h2) { letter-spacing: -.036em }
+  :global(html[data-typography=questrial-cairo][lang=ar]) :where(.vision) :global(:is(.masked-text-line, .editorial-line)) { margin-block: -.19em; padding-block: .19em }
+  .vision { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; font-family: var(--font-latin), sans-serif; color: var(--ed-ink); --nav-compact: 1; background: #10100f38; position: relative; overflow: clip }
+  .vision :global(:is(h1, h2, h3, p)) { margin: 0 }
+  .vision :global(:is(h1, h2, h3)) { font-weight: var(--weight-440, 440) }
+  .vision :global(a) { color: inherit; text-decoration: none }
+  .vision :global(:is(a, button, input, textarea):focus-visible) { outline-offset: 0.651042vw; outline: 1px solid #c2bdb0 }
+  :where(.vision) :global(.editorial-action) { min-height: 6.25vw; font-size: calc(1.4323vw * var(--type-scale, 1)); letter-spacing: calc(.08em * var(--tracking-scale, 1)); color: var(--ed-ink); font-weight: var(--weight-450, 450); align-items: center; gap: 3.64584vw; padding-block: 1.30209vw; display: inline-flex }
+  :where(.vision) :global(.editorial-action-window) { padding-block: .12em; line-height: 1.65; display: grid; overflow: hidden }
+  :where(.vision) :global(.editorial-action-window>span) { grid-area: 1/1; transition: transform .4s cubic-bezier(.65, 0, .25, 1); display: block }
+  :where(.vision) :global(.editorial-action-window>span+span) { transform: translateY(135%) }
+  :where(.vision) :global(.editorial-action:is(:hover, :focus-visible) .editorial-action-window>span:first-child) { transform: translateY(-135%) }
+  :where(.vision) :global(.editorial-action:is(:hover, :focus-visible) .editorial-action-window>span+span) { transform: translateY(0) }
+  :where(.vision) :global(.editorial-action>i), :where(.vision) :global(.editorial-text-link i) { background: #969286; width: 4.42709vw; height: 0.130209vw; transition: width .35s; display: block }
+  :where(.vision) :global(.editorial-action:hover>i) { width: 7.29167vw }
+  :where(.vision) :global(.editorial-kicker) { font-size: calc(1.17188vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #aaa597; justify-content: space-between; align-items: baseline; gap: 3.125vw; display: flex }
+  :where(.vision) :global(.editorial-eyebrow) { font-size: calc(1.17188vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #a09d91; line-height: 1.6; display: block }
+  :where(.vision) :global(.editorial-line) { margin-block: -.07em; padding-block: .07em; display: block; overflow: clip }
+  :where(.vision) :global(.editorial-line>span) { display: block }
+  :where(.vision) :global(.editorial-text-link) { font-size: calc(1.17188vw * var(--type-scale, 1)); min-height: 5.72917vw; letter-spacing: calc(.09em * var(--tracking-scale, 1)); align-items: center; gap: 3.125vw; display: flex }
+  :where(.vision) :global(.editorial-text-link:hover i) { width: 7.03125vw }
+  :global(html[lang=ar]) .vision { font-family: var(--font-arabic), sans-serif; --ed-gutter: 6vw }
+  :global(html[lang=ar]) .vision :global(:is(h1, h2, h3)) { letter-spacing: 0; line-height: 1.3; font-weight: var(--weight-500, 500) }
+  :global(html[lang=ar]) :where(.vision) :global(.editorial-line) { margin-block: -.13em; padding-block: .13em }
+  @media (prefers-reduced-motion:reduce) {
+    .vision :global(*), .vision :global(:after) { scroll-behavior: auto !important; transition: none !important; animation: none !important }
+    :where(.vision) :global(.editorial-line>span) { transform: none !important }
+  }
+  .vision { isolation: isolate; --practice-title: 5.46875vw; background: 0 0 }
+  .vision :global(:is(h1, h2)) { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08 }
+  .vision :global(.editorial-line) { overflow: visible }
+  :where(.vision) :global(.practice-opening) { height: 133.334vw; min-height: 96.3542vw; padding: 24vw var(--ed-gutter) 9.33334vw; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
+  :where(.vision) :global(.practice-hero-geometry) { z-index: -1; pointer-events: none; height: 100%; position: absolute; inset: 0 0 auto; overflow: visible }
+  :where(.vision) :global(.practice-depth) { width: 100%; height: 100%; display: block }
+  :where(.vision) :global(.practice-opening .editorial-kicker) { position: relative }
+  :where(.vision) :global(.practice-opening h1) { font-size: calc(7.03125vw * var(--type-scale, 1)); max-width: 64%; margin-top: 13.3334vw; position: relative }
+  .vision :global(.practice-opening h1 .editorial-line:last-child) { color: #aaa69d }
+  :where(.vision) :global(.practice-opening-foot) { justify-content: space-between; align-items: end; gap: 6.51042vw; max-width: 64%; margin-top: auto; padding-top: 4.5573vw; display: flex; position: relative }
+  :where(.vision) :global(.practice-opening-foot>p) { max-width: 42.9688vw; font-size: calc(2.08334vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); color: #b4b0a5; line-height: 1.65 }
+  :where(.vision) :global(.practice-natural) { padding: 21.3334vw var(--ed-gutter); isolation: isolate; align-items: center; gap: 5vw; min-height: 106.667vw; display: flex; position: relative }
+  :where(.vision) :global(.practice-reading) { width: 100%; position: relative }
+  :where(.vision) :global(.practice-natural h2) { font-size: calc(var(--practice-title) * var(--type-scale, 1)); max-width: 90%; margin-top: 3.64584vw }
+  :where(.vision) :global(.practice-copy) { font-size: calc(2.08334vw * var(--type-scale, 1)); color: #b2aea2; letter-spacing: calc(-.015em * var(--tracking-scale, 1)); max-width: 53.3855vw; line-height: 1.8; margin-top: 5.20834vw !important }
+  :where(.vision) :global(.practice-metadata) { max-width: 65.1042vw; font-size: calc(1.04167vw * var(--type-scale, 1)); letter-spacing: calc(.075em * var(--tracking-scale, 1)); color: #908c82; flex-wrap: wrap; gap: 1.30209vw 2.86459vw; margin-top: 5.85938vw; padding: 0; line-height: 1.7; list-style: none; display: flex }
+  :where(.vision) :global(.thought-detail) { min-height: 104vw; padding-inline-start: 15% }
+  :where(.vision) :global(.thought-context) { min-height: 113.334vw }
+  :where(.vision) :global(.thought-context .practice-copy) { margin-inline-start: 28% }
+  :where(.vision) :global(.practice-end) { padding: 25.3334vw var(--ed-gutter) 30.6667vw; min-height: 133.334vw; position: relative }
+  :where(.vision) :global(.practice-end h2) { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08; font-size: calc(7.99914vw * var(--type-scale, 1)); margin-top: 7.8125vw }
+  :where(.vision) :global(.practice-end .editorial-action) { margin-top: 5.85938vw }
+  :where(.vision) :global(.practice-end-actions) { gap: 7vw; display: flex }
+  :global(html[lang=ar]) .vision :global(:is(h1, h2)) { letter-spacing: 0; line-height: 1.35; font-weight: var(--weight-400, 400) }
+  :global(html[lang=ar]) .vision :global(.editorial-eyebrow) { font-size: calc(1.5625vw * var(--type-scale, 1)); letter-spacing: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening h1) { font-size: calc(7.8125vw * var(--type-scale, 1)); max-width: 64%; margin-top: 10.6667vw; line-height: 1.28 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(2.60417vw * var(--type-scale, 1)); max-width: 48.1771vw }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-natural h2) { font-size: calc(5.79862vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-copy) { font-size: calc(2.47396vw * var(--type-scale, 1)); letter-spacing: 0; max-width: 55.9896vw; line-height: 1.9 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-metadata) { font-size: calc(1.4323vw * var(--type-scale, 1)); letter-spacing: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-end h2) { font-size: calc(8.99957vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.practice-opening h1) { font-size: calc(6.4vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.practice-natural) { min-height: 100vw }
+  .vision { --ed-gutter: 7vw; --practice-title: 7.7vw }
+  :where(.vision) :global(.practice-opening) { height: auto; min-height: 133.334vw; padding-top: 20.8334vw; padding-bottom: 9.33334vw }
+  :where(.vision) :global(.practice-opening h1) { font-size: calc(10.1997vw * var(--type-scale, 1)); max-width: 100%; margin-top: 37.3334vw; line-height: 1.08 }
+  :where(.vision) :global(.practice-opening-foot) { max-width: 100%; margin-top: 3.90625vw; padding-top: 0; display: block }
+  :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(2.08334vw * var(--type-scale, 1)); max-width: 44.2709vw }
+  :where(.vision) :global(.practice-opening-foot .editorial-text-link) { margin-top: 3.125vw }
+  :where(.vision) :global(.practice-opening .editorial-kicker) { font-size: calc(1.04167vw * var(--type-scale, 1)); gap: 2.08334vw }
+  :where(.vision) :global(.practice-opening .editorial-kicker>span:last-child) { text-align: end; max-width: 45% }
+  :where(.vision) :global(.practice-natural) { padding: 17.3334vw var(--ed-gutter); min-height: 0; display: block }
+  :where(.vision) :global(.practice-natural h2) { font-size: calc(var(--practice-title) * var(--type-scale, 1)); max-width: 100%; line-height: 1.15 }
+  :where(.vision) :global(.practice-copy) { font-size: calc(1.95313vw * var(--type-scale, 1)); max-width: 46.875vw; line-height: 1.8; margin-top: 4.16667vw !important }
+  :where(.vision) :global(.practice-metadata) { font-size: calc(1.04167vw * var(--type-scale, 1)); gap: 1.04167vw 2.08334vw; margin-top: 4.5573vw }
+  :where(.vision) :global(.thought-context .practice-copy) { margin-inline-start: 0 }
+  :where(.vision) :global(.practice-end) { min-height: 114.667vw; padding: 22.6667vw var(--ed-gutter) 26.6667vw }
+  :where(.vision) :global(.practice-end h2) { font-size: calc(9.2vw * var(--type-scale, 1)); margin-top: 4.94792vw }
+  :where(.vision) :global(.practice-end-actions) { flex-direction: column; gap: 0 }
+  :where(.vision) :global(.practice-end .editorial-action) { margin-top: 3.125vw }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening h1) { font-size: calc(10.9983vw * var(--type-scale, 1)); max-width: 100%; margin-top: 34.6667vw; line-height: 1.3 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(2.34375vw * var(--type-scale, 1)); max-width: 46.875vw }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-natural h2) { font-size: calc(9.1vw * var(--type-scale, 1)); line-height: 1.4 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-copy) { font-size: calc(2.21355vw * var(--type-scale, 1)); max-width: 46.875vw; line-height: 1.85 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-metadata) { font-size: calc(1.30209vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-end h2) { font-size: calc(12vw * var(--type-scale, 1)) }
+  @media (prefers-reduced-motion:reduce) {
+    .vision :global([data-editorial-layer]) { transform: none !important }
+    :where(.vision) :global(.chapter-visual path) { stroke-dashoffset: 0 }
+  }
+  :where(.vision) :global(.practice-chapter) { isolation: isolate; scroll-margin-top: 11.7188vw; position: relative }
+  :where(.vision) :global(.chapter-content) { z-index: 1; position: relative }
+  :where(.vision) :global(.chapter-visual-rail) { pointer-events: none; z-index: 0; padding-block: 13.3334vw; position: absolute; inset: 0 0 0 51% }
+  :where(.vision) :global(.chapter-visual) { color: #c4c0b3; opacity: .78; height: 72.9167vw; position: sticky; top: 37.3334vw }
+  :where(.vision) :global(.chapter-visual svg) { stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; width: 100%; height: 100%; display: block; overflow: hidden }
+  :where(.vision) :global(.chapter-visual path) { stroke-dasharray: 1 1; stroke-dashoffset: 1 }
+  :where(.vision) :global(.practice-chapter .practice-natural) { min-height: 117.334vw }
+  :where(.vision) :global(.practice-chapter .practice-copy), :where(.vision) :global(.practice-chapter .practice-metadata) { max-width: 42%; margin-inline-start: 0 }
+  :where(.vision) :global(.practice-chapter .practice-reading) { margin-inline-start: 0 }
+  :where(.vision) :global(.practice-chapter .thought-detail) { padding-inline-start: var(--ed-gutter) }
+  :global(html[lang=ar]) :where(.vision) :global(.chapter-visual-rail) { inset-inline: 51% 0; left: 0; right: 51% }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-chapter .practice-copy) { max-width: 42% }
+  :where(.vision) :global(.chapter-visual-rail) { inset-inline-start: 49% }
+  :where(.vision) :global(.practice-chapter .practice-copy), :where(.vision) :global(.practice-chapter .practice-metadata) { max-width: 46% }
+  :where(.vision) :global(.practice-chapter .practice-natural) { min-height: 104vw; padding-block: 20vw }
+  :where(.vision) :global(.chapter-visual-rail) { padding-block: 29.3334vw 16vw; inset: 0 -18% 0 19% }
+  :where(.vision) :global(.chapter-visual) { opacity: .28; height: 49.3334vw; top: 70.6667vw }
+  :where(.vision) :global(.chapter-visual path:nth-child(3)) { opacity: .15 }
+  :where(.vision) :global(.practice-chapter .practice-copy), :where(.vision) :global(.practice-chapter .practice-metadata), :global(html[lang=ar]) :where(.vision) :global(.practice-chapter .practice-copy) { max-width: 100% }
+  :global(html[lang=ar]) :where(.vision) :global(.chapter-visual-rail) { inset-inline: 19% -18%; left: -18%; right: 19% }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.chapter-visual) { position: relative; top: 0; transform: none !important }
+    :where(.vision) :global(.chapter-visual-rail) { padding-top: 26.6667vw }
+    :where(.vision) :global(.chapter-visual path) { stroke-dashoffset: 0 }
+  }
+  :where(.vision) :global([data-system-word]) { white-space: nowrap }
+  :where(.vision) :global([data-system-details-passage]) { padding-bottom: var(--system-details-distance, 0vw) }
+  :where(.vision) :global([data-system-details-reading]) { will-change: transform }
+  :where(.vision) :global(.chapter-perspective .chapter-visual) { visibility: hidden }
+  :where(.vision) :global(.system-details-field) { pointer-events: none; z-index: 2; width: 100%; height: 100%; color: var(--ed-ink); visibility: hidden; display: none; position: absolute; inset: 0; overflow: visible }
+  :where(.vision) :global(.chapter-perspective[data-system-details-ready=true] .system-details-field) { display: block }
+  :where(.vision) :global(.system-details-stroke) { stroke: #c4c0b3; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; fill: none; visibility: hidden }
+  :where(.vision) :global(.system-details-edge) { visibility: visible }
+  :where(.vision) :global(.system-details-stroke) { stroke: #8f8c82 }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.chapter-perspective .chapter-visual) { visibility: visible }
+    :where(.vision) :global(.system-details-field) { display: none !important }
+  }
+  :where(.vision) :global(.practice-opening) { height: 133.334vw; min-height: 91.1459vw; overflow: hidden }
+  :where(.vision) :global(.practice-hero-type) { left: var(--hero-copy-start, 34%); right: var(--ed-gutter); position: absolute; top: 50%; transform: translateY(-38%) }
+  :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(6.1198vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.08 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot) { gap: 3.64584vw; max-width: none; margin-top: 4.16667vw; padding: 0 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot>p) { max-width: 41.6667vw; font-size: calc(1.95313vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.practice-opening .editorial-text-link) { flex-shrink: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(7.16146vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.32 }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { text-align: right; top: 49%; left: 37%; right: 12% }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(2.21355vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.practice-opening) { height: 133.334vw; min-height: 91.1459vw; padding-top: 20.8334vw }
+  :where(.vision) :global(.practice-hero-type) { top: 36%; left: 48%; right: 5%; transform: none }
+  :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(7.3481vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.15 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot) { margin-top: 3.90625vw; display: block }
+  .vision :global(.practice-opening-foot) { margin: 0; position: absolute; top: 45.3959vw; left: -41vw; right: 0 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot>p) { font-size: calc(2.08334vw * var(--type-scale, 1)); max-width: 39.0625vw }
+  :where(.vision) :global(.practice-opening .practice-opening-foot .editorial-text-link) { margin-top: 2.86459vw }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { top: 34%; left: 48%; right: 7%; transform: none }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(7.99914vw * var(--type-scale, 1)); line-height: 1.4 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening .practice-opening-foot>p) { font-size: calc(2.34375vw * var(--type-scale, 1)); max-width: 40.3646vw }
+  :where(.vision) :global(.practice-opening .editorial-kicker>span:only-child) { text-align: start; max-width: 100% }
+  .vision :global(.thought-context h2) { max-width: 90% }
+  :where(.vision) :global(.about-other-side) { min-height: 146.667vw; padding: 22.6667vw var(--ed-gutter); text-align: center; flex-direction: column; justify-content: center; align-items: center; display: flex; position: relative }
+  :where(.vision) :global(.about-other-side h2) { font-size: calc(9.39888vw * var(--type-scale, 1)); width: 100%; margin-top: 10.6667vw; line-height: 1.04 !important }
+  :where(.vision) :global(.about-underneath-copy) { width: min(100%, 76.823vw); margin: 10.6667vw auto 0 }
+  :where(.vision) :global(.about-aside) { font-size: calc(2.73438vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: var(--ed-ink) }
+  :where(.vision) :global(.about-underneath-copy .practice-copy) { width: 100%; max-width: 48ch; margin: 3.125vw auto 0 !important }
+  :where(.vision) :global(.about-thought-motion) { isolation: isolate; height: 386.667vw; position: relative }
+  :where(.vision) :global(.about-thought-stage) { height: 133.334vw; min-height: 80.7292vw; position: sticky; top: 0; overflow: clip }
+  :where(.vision) :global(.about-moving-thought) { transform-origin: 0 0; will-change: transform; text-align: start; width: max-content; max-width: 86%; position: absolute; top: 0; left: 0 }
+  :where(.vision) :global(.about-moving-thought h2) { font-size: calc(5.89844vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.14 }
+  :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(5.19966vw * var(--type-scale, 1)) }
+  .vision :global(.practice-end) { min-height: 133.334vw; padding-block: 25.3334vw 30.6667vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-other-side h2) { font-size: calc(9.79818vw * var(--type-scale, 1)); line-height: 1.25 !important }
+  :global(html[lang=ar]) :where(.vision) :global(.about-underneath-copy .practice-copy) { max-width: none }
+  :global(html[lang=ar]) :where(.vision) :global(.about-aside) { letter-spacing: 0; font-size: calc(2.9948vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought h2) { font-size: calc(6.39974vw * var(--type-scale, 1)); letter-spacing: 0; line-height: 1.45 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(5.49914vw * var(--type-scale, 1)) }
+  .vision :global(.thought-context h2) { max-width: 100% }
+  :where(.vision) :global(.about-other-side) { min-height: 133.334vw; padding-block: 20vw }
+  :where(.vision) :global(.about-other-side h2) { font-size: calc(10.3vw * var(--type-scale, 1)); margin-top: 9.33334vw; line-height: 1.12 !important }
+  :where(.vision) :global(.about-underneath-copy) { text-align: center; width: 90%; margin-top: 9.33334vw }
+  :where(.vision) :global(.about-aside) { font-size: calc(2.73438vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.about-thought-motion) { height: 373.334vw }
+  :where(.vision) :global(.about-thought-stage) { min-height: 85.9375vw }
+  :where(.vision) :global(.about-moving-thought h2) { font-size: calc(7.7vw * var(--type-scale, 1)); line-height: 1.25 }
+  :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(7.4vw * var(--type-scale, 1)) }
+  .vision :global(.practice-end) { min-height: 114.667vw; padding-block: 22.6667vw 26.6667vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-other-side h2) { font-size: calc(13vw * var(--type-scale, 1)); line-height: 1.35 !important }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought h2) { font-size: calc(9vw * var(--type-scale, 1)); line-height: 1.5 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(8.5vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.about-invitation-end .practice-end-actions) { gap: 5vw }
+  :where(.vision) :global(.about-invitation-end .editorial-action) { margin-top: 0; padding-block: 1.82292vw }
+  :where(.vision) :global(.about-invitation-end .about-cta-explore) { color: #979387 }
+  :where(.vision) :global(.about-invitation-end .about-cta-contact) { color: #e1ddd0 }
+  :where(.vision) :global(.about-invitation-end .about-cta-contact .editorial-action) { border-bottom: 1px solid #787469 }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.about-thought-motion) { height: auto }
+    :where(.vision) :global(.about-thought-stage) { height: auto; min-height: 0; padding: 16vw var(--ed-gutter); flex-direction: column; gap: 12vw; display: flex; position: relative; overflow: visible }
+    :where(.vision) :global(.about-moving-thought) { will-change: auto; width: 100%; max-width: 100%; position: relative; transform: none !important }
+  }
+  :where(.vision) :global(.about-leadership) { isolation: isolate; --lead-safe-top: 16.9271vw; --voice-ink: 1; position: relative }
+  :where(.vision) :global(.about-leadership-stage) { position: relative }
+  :where(.vision) :global(.about-leadership-safe) { padding: 17.3334vw var(--ed-gutter) 21.3334vw; grid-template-columns: 1fr 1fr; gap: 5.72917vw 8%; display: grid; position: relative }
+  :where(.vision) :global(.about-leadership-core) { text-align: center; grid-area: 2/1/auto/-1; align-self: center; width: min(100%, 143.23vw); margin-inline: auto }
+  :where(.vision) :global(.about-leadership h2) { font-size: calc(3.64584vw * var(--type-scale, 1)); line-height: 1.22 }
+  :where(.vision) :global(.about-leadership .practice-copy) { text-align: center; width: min(100%, 66.4063vw); font-size: calc(2.08334vw * var(--type-scale, 1)); margin: 3.125vw auto 0 !important }
+  :where(.vision) :global(.about-voices) { display: contents }
+  :where(.vision) :global(.about-voice) { width: max-content; max-width: 100%; opacity: var(--voice-ink); direction: ltr; grid-template-columns: 8.33334vw minmax(0, 1fr); align-items: center; gap: 2.08334vw; display: grid }
+  :where(.vision) :global(.about-voice-form) { stroke: #aaa69a; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; width: 8.33334vw; height: auto; overflow: visible }
+  :where(.vision) :global(.about-voice-form path) { stroke-dasharray: 0 2; visibility: hidden }
+  :where(.vision) :global(.about-voice-sentence) { font-size: calc(1.82292vw * var(--type-scale, 1)); color: #c9c5b9; letter-spacing: 0; text-align: left; white-space: nowrap; width: max-content; max-width: none; line-height: 1.55 }
+  :where(.vision) :global(.about-voice-sentence>[data-voice-word]) { opacity: 0; filter: blur(2.4px); display: inline-block; transform: translateY(0.390625vw) }
+  :where(.vision) :global(.about-voice-0) { grid-area: 1/1; align-self: end; margin-left: 2% }
+  :where(.vision) :global(.about-voice-1) { grid-area: 1/2; place-self: start end; margin-top: -2.08334vw; margin-right: 3% }
+  :where(.vision) :global(.about-voice-2) { grid-area: 3/1; align-self: start; margin-left: 12% }
+  :where(.vision) :global(.about-voice-3) { grid-area: 3/2; place-self: end; margin-top: 2.08334vw; margin-right: 1% }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: minmax(0, 1fr) 8.33334vw }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-form) { grid-area: 1/2 }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-sentence) { text-align: right; grid-area: 1/1; justify-self: end }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership h2) { font-size: calc(4.16667vw * var(--type-scale, 1)); line-height: 1.42 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership .practice-copy) { max-width: 34ch; font-size: calc(2.21355vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-sentence) { text-align: right; letter-spacing: 0; font-size: calc(2.08334vw * var(--type-scale, 1)); direction: rtl; line-height: 1.8 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-0) { margin-left: 0; margin-right: 2% }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-1) { margin-left: 3%; margin-right: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-2) { margin-left: 0; margin-right: 12% }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-3) { margin-left: 1%; margin-right: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2)) { grid-template-columns: minmax(0, 1fr) 8.33334vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2) .about-voice-form) { grid-area: 1/2 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2) .about-voice-sentence) { grid-area: 1/1 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: 8.33334vw minmax(0, 1fr) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-form) { grid-column: 1 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-sentence) { grid-column: 2 }
+  @media (prefers-reduced-motion:no-preference) {
+    :where(.vision) :global(.about-leadership) { height: 426.667vw }
+    :where(.vision) :global(.about-leadership-stage) { height: 133.334vw; position: sticky; top: 0 }
+    :where(.vision) :global(.about-leadership-safe) { inset: var(--lead-safe-top) 6% 5.33334vw; grid-template-rows: auto 1fr auto; gap: 3.64584vw 8%; padding: 0; position: absolute }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.about-voice-form path) { stroke-dasharray: 1 1; visibility: visible }
+    :where(.vision) :global(.about-voice-sentence>[data-voice-word]) { opacity: 1 !important; filter: none !important; transform: none !important }
+  }
+  .vision :global([data-masked-reveal=hero-action]) { flex: none; width: max-content; max-width: 100% }
+  .vision :global([data-masked-reveal=hero-action] .masked-text-line) { margin-inline: -0.520834vw; padding-inline: 0.520834vw }
+  .vision :global(.practice-opening .editorial-text-link) { white-space: nowrap; text-align: start; line-height: 1.8 }
+  .vision :global(.practice-opening .editorial-text-link i) { transform-origin: 0; flex: none; width: 7.03125vw; transition: transform .35s; transform: scaleX(.63) }
+  .vision :global(.practice-opening .editorial-text-link:is(:hover, :focus-visible) i) { transform: scaleX(1) }
+  .vision :global(.practice-opening .editorial-text-link:focus-visible) { outline: 1px solid var(--paper); outline-offset: 0.260417vw }
+  .vision :global([data-masked-reveal=hero-copy] .editorial-line) { white-space: nowrap }
+  :global(html[lang=ar]) .vision :global(.practice-opening .editorial-text-link i) { transform-origin: 100% }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type h1 .editorial-line) { white-space: nowrap }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { left: 19%; right: 7% }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot) { left: -12vw; right: 0 }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot>p), :global(html[lang=ar]) .vision :global([data-masked-reveal=hero-action]) { margin-inline: 0 auto }
+  :global(html[lang=ar]) .vision :global(.practice-copy [data-reveal-source]) { text-wrap: pretty }
+  :where(.vision) :global(.masked-text), :where(.vision) :global(.masked-text [data-reveal-source]) { display: block }
+  :where(.vision) :global(.masked-text .masked-rendered-line) { white-space: nowrap; display: block !important }
+  :where(.vision) :global(.masked-text .masked-rendered-line-mask) { background: 0 0; overflow: clip !important }
+  .vision :global(.masked-text .masked-text-line) { background: 0 0; margin-block: -.09em; padding-block: .09em; display: block; overflow: clip }
+  :where(.vision) :global(.masked-text [data-reveal-piece]) { will-change: transform; display: block }
+  :global(html[lang=ar]) :where(.vision) :global(.masked-text .masked-text-line) { margin-block: -.14em; padding-block: .14em }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.masked-text [data-reveal-piece]) { will-change: auto }
+    :where(.vision) :global(.masked-text[data-rendered-lines]) { visibility: visible !important }
+  }
+  .vision { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; color: var(--ed-ink); position: relative }
+  .vision :global(.practice-hero-poster) { width: 100%; height: 100%; position: absolute; inset: 0; display: none }
+  .vision :global(.poster-tablet) { display: block }
+  .vision :global(.practice-depth) { position: relative; opacity: 0 }
+  .vision :global(.practice-depth[data-hero-rendered='true']) { opacity: 1 }
+  .vision :global(.practice-hero-geometry:has([data-hero-rendered='true']) .practice-hero-poster) { visibility: hidden }
+  .vision :global(.about-voice-sentence [data-voice-word]) { display: inline-block }
+  .vision:not([data-motion='true']) :global(.about-thought-motion) { height: auto }
+  .vision:not([data-motion='true']) :global(.about-thought-stage) { height: auto; min-height: 0; padding: 16vw var(--ed-gutter); display: flex; flex-direction: column; gap: 12vw; position: relative; overflow: visible }
+  .vision:not([data-motion='true']) :global(.about-moving-thought) { position: relative; transform: none; width: 100%; max-width: 100%; will-change: auto }
+  .vision:not([data-motion='true']) :global(.about-leadership) { height: auto }
+  .vision:not([data-motion='true']) :global(.about-leadership-stage) { height: auto; position: relative }
+  .vision:not([data-motion='true']) :global(.about-leadership-safe) { position: relative; inset: auto; padding: 17.3334vw var(--ed-gutter) 21.3334vw }
+  .vision:not([data-motion='true']) :global(.about-voice-form path) { stroke-dasharray: 1 1; visibility: visible }
+  .vision:not([data-motion='true']) :global(.about-voice-sentence [data-voice-word]) { opacity: 1; filter: none; transform: none }
+  .vision:not([data-motion='true']) :global(.chapter-perspective .chapter-visual) { visibility: visible }
+  .vision:not([data-motion='true']) :global([data-reveal-piece]) { transform: none }
+  .vision[data-motion='true'] :global(.masked-text [data-reveal-piece]) { will-change: transform }
+  .vision { --ed-gutter: 7vw }
+  .vision :global(.system-details-stroke), .vision :global(.chapter-visual svg) { stroke-width: 0.13020833333333334vw }
+  .vision :global(.about-voice-form) { stroke-width: 0.16276041666666666vw }
+}
+@media (width <= 600px) {
+  :global(html[data-typography=questrial-cairo][lang=en]) :where(.vision) :global(.about-moving-thought h2) { letter-spacing: -.036em }
+  :global(html[data-typography=questrial-cairo][lang=ar]) :where(.vision) :global(:is(.masked-text-line, .editorial-line)) { margin-block: -.19em; padding-block: .19em }
+  .vision { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; font-family: var(--font-latin), sans-serif; color: var(--ed-ink); --nav-compact: 1; background: #10100f38; position: relative; overflow: clip }
+  .vision :global(:is(h1, h2, h3, p)) { margin: 0 }
+  .vision :global(:is(h1, h2, h3)) { font-weight: var(--weight-440, 440) }
+  .vision :global(a) { color: inherit; text-decoration: none }
+  .vision :global(:is(a, button, input, textarea):focus-visible) { outline-offset: 1.2136vw; outline: 1px solid #c2bdb0 }
+  :where(.vision) :global(.editorial-action) { min-height: 11.6505vw; font-size: calc(2.66991vw * var(--type-scale, 1)); letter-spacing: calc(.08em * var(--tracking-scale, 1)); color: var(--ed-ink); font-weight: var(--weight-450, 450); align-items: center; gap: 6.79612vw; padding-block: 2.42719vw; display: inline-flex }
+  :where(.vision) :global(.editorial-action-window) { padding-block: .12em; line-height: 1.65; display: grid; overflow: hidden }
+  :where(.vision) :global(.editorial-action-window>span) { grid-area: 1/1; transition: transform .4s cubic-bezier(.65, 0, .25, 1); display: block }
+  :where(.vision) :global(.editorial-action-window>span+span) { transform: translateY(135%) }
+  :where(.vision) :global(.editorial-action:is(:hover, :focus-visible) .editorial-action-window>span:first-child) { transform: translateY(-135%) }
+  :where(.vision) :global(.editorial-action:is(:hover, :focus-visible) .editorial-action-window>span+span) { transform: translateY(0) }
+  :where(.vision) :global(.editorial-action>i), :where(.vision) :global(.editorial-text-link i) { background: #969286; width: 8.25243vw; height: 0.242719vw; transition: width .35s; display: block }
+  :where(.vision) :global(.editorial-action:hover>i) { width: 13.5923vw }
+  :where(.vision) :global(.editorial-kicker) { font-size: calc(2.18447vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #aaa597; justify-content: space-between; align-items: baseline; gap: 5.82525vw; display: flex }
+  :where(.vision) :global(.editorial-eyebrow) { font-size: calc(2.18447vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #a09d91; line-height: 1.6; display: block }
+  :where(.vision) :global(.editorial-line) { margin-block: -.07em; padding-block: .07em; display: block; overflow: clip }
+  :where(.vision) :global(.editorial-line>span) { display: block }
+  :where(.vision) :global(.editorial-text-link) { font-size: calc(2.18447vw * var(--type-scale, 1)); min-height: 10.6797vw; letter-spacing: calc(.09em * var(--tracking-scale, 1)); align-items: center; gap: 5.82525vw; display: flex }
+  :where(.vision) :global(.editorial-text-link:hover i) { width: 13.1068vw }
+  :global(html[lang=ar]) .vision { font-family: var(--font-arabic), sans-serif; --ed-gutter: 6vw }
+  :global(html[lang=ar]) .vision :global(:is(h1, h2, h3)) { letter-spacing: 0; line-height: 1.3; font-weight: var(--weight-500, 500) }
+  :global(html[lang=ar]) :where(.vision) :global(.editorial-line) { margin-block: -.13em; padding-block: .13em }
+  .vision { --ed-gutter: 6vw }
+  :where(.vision) :global(.editorial-kicker) { font-size: calc(1.94175vw * var(--type-scale, 1)); gap: 4.85437vw; line-height: 1.7 }
+  :where(.vision) :global(.editorial-kicker>span:last-child) { text-align: end; max-width: 23.0583vw }
+  :where(.vision) :global(.editorial-text-link) { margin-top: 5.82525vw }
+  :where(.vision) :global(.editorial-action) { font-size: calc(2.42719vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.editorial-kicker) { font-size: calc(2.42719vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.editorial-eyebrow) { font-size: calc(2.66991vw * var(--type-scale, 1)) }
+  @media (prefers-reduced-motion:reduce) {
+    .vision :global(*), .vision :global(:after) { scroll-behavior: auto !important; transition: none !important; animation: none !important }
+    :where(.vision) :global(.editorial-line>span) { transform: none !important }
+  }
+  .vision { isolation: isolate; --practice-title: 10.1942vw; background: 0 0 }
+  .vision :global(:is(h1, h2)) { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08 }
+  .vision :global(.editorial-line) { overflow: visible }
+  :where(.vision) :global(.practice-opening) { height: 222.088vw; min-height: 179.612vw; padding: 39.9758vw var(--ed-gutter) 15.5462vw; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
+  :where(.vision) :global(.practice-hero-geometry) { z-index: -1; pointer-events: none; height: 100%; position: absolute; inset: 0 0 auto; overflow: visible }
+  :where(.vision) :global(.practice-depth) { width: 100%; height: 100%; display: block }
+  :where(.vision) :global(.practice-opening .editorial-kicker) { position: relative }
+  :where(.vision) :global(.practice-opening h1) { font-size: calc(13.1068vw * var(--type-scale, 1)); max-width: 64%; margin-top: 22.2088vw; position: relative }
+  .vision :global(.practice-opening h1 .editorial-line:last-child) { color: #aaa69d }
+  :where(.vision) :global(.practice-opening-foot) { justify-content: space-between; align-items: end; gap: 12.136vw; max-width: 64%; margin-top: auto; padding-top: 8.49515vw; display: flex; position: relative }
+  :where(.vision) :global(.practice-opening-foot>p) { max-width: 80.0971vw; font-size: calc(3.8835vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); color: #b4b0a5; line-height: 1.65 }
+  :where(.vision) :global(.practice-natural) { padding: 35.534vw var(--ed-gutter); isolation: isolate; align-items: center; gap: 5vw; min-height: 177.67vw; display: flex; position: relative }
+  :where(.vision) :global(.practice-reading) { width: 100%; position: relative }
+  :where(.vision) :global(.practice-natural h2) { font-size: calc(var(--practice-title) * var(--type-scale, 1)); max-width: 90%; margin-top: 6.79612vw }
+  :where(.vision) :global(.practice-copy) { font-size: calc(3.8835vw * var(--type-scale, 1)); color: #b2aea2; letter-spacing: calc(-.015em * var(--tracking-scale, 1)); max-width: 99.5146vw; line-height: 1.8; margin-top: 9.70874vw !important }
+  :where(.vision) :global(.practice-metadata) { max-width: 121.36vw; font-size: calc(1.94175vw * var(--type-scale, 1)); letter-spacing: calc(.075em * var(--tracking-scale, 1)); color: #908c82; flex-wrap: wrap; gap: 2.42719vw 5.33981vw; margin-top: 10.9224vw; padding: 0; line-height: 1.7; list-style: none; display: flex }
+  :where(.vision) :global(.thought-detail) { min-height: 173.229vw; padding-inline-start: 15% }
+  :where(.vision) :global(.thought-context) { min-height: 188.775vw }
+  :where(.vision) :global(.thought-context .practice-copy) { margin-inline-start: 28% }
+  :where(.vision) :global(.practice-end) { padding: 42.1967vw var(--ed-gutter) 51.0801vw; min-height: 222.088vw; position: relative }
+  :where(.vision) :global(.practice-end h2) { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08; font-size: calc(13.3496vw * var(--type-scale, 1)); margin-top: 14.5632vw }
+  :where(.vision) :global(.practice-end .editorial-action) { margin-top: 10.9224vw }
+  :where(.vision) :global(.practice-end-actions) { gap: 7vw; display: flex }
+  :global(html[lang=ar]) .vision :global(:is(h1, h2)) { letter-spacing: 0; line-height: 1.35; font-weight: var(--weight-400, 400) }
+  :global(html[lang=ar]) .vision :global(.editorial-eyebrow) { font-size: calc(2.91263vw * var(--type-scale, 1)); letter-spacing: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening h1) { font-size: calc(14.5632vw * var(--type-scale, 1)); max-width: 64%; margin-top: 17.767vw; line-height: 1.28 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(4.85437vw * var(--type-scale, 1)); max-width: 89.8059vw }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-natural h2) { font-size: calc(9.70874vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-copy) { font-size: calc(4.61166vw * var(--type-scale, 1)); letter-spacing: 0; max-width: 104.369vw; line-height: 1.9 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-metadata) { font-size: calc(2.66991vw * var(--type-scale, 1)); letter-spacing: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-end h2) { font-size: calc(14.5632vw * var(--type-scale, 1)) }
+  .vision { --ed-gutter: 7vw; --practice-title: 7.7vw }
+  :where(.vision) :global(.practice-opening) { height: auto; min-height: 222.088vw; padding-top: 35.534vw; padding-bottom: 15.5462vw }
+  :where(.vision) :global(.practice-opening h1) { font-size: calc(10.1983vw * var(--type-scale, 1)); max-width: 100%; margin-top: 62.1845vw; line-height: 1.08 }
+  :where(.vision) :global(.practice-opening-foot) { max-width: 100%; margin-top: 7.28156vw; padding-top: 0; display: block }
+  :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(3.8835vw * var(--type-scale, 1)); max-width: 82.5243vw }
+  :where(.vision) :global(.practice-opening-foot .editorial-text-link) { margin-top: 5.82525vw }
+  :where(.vision) :global(.practice-opening .editorial-kicker) { font-size: calc(1.94175vw * var(--type-scale, 1)); gap: 3.8835vw }
+  :where(.vision) :global(.practice-opening .editorial-kicker>span:last-child) { text-align: end; max-width: 45% }
+  :where(.vision) :global(.practice-natural) { padding: 28.8714vw var(--ed-gutter); min-height: 0; display: block }
+  :where(.vision) :global(.practice-natural h2) { font-size: calc(var(--practice-title) * var(--type-scale, 1)); max-width: 100%; line-height: 1.15 }
+  :where(.vision) :global(.practice-copy) { font-size: calc(3.64078vw * var(--type-scale, 1)); max-width: 87.3787vw; line-height: 1.8; margin-top: 7.767vw !important }
+  :where(.vision) :global(.practice-metadata) { font-size: calc(1.94175vw * var(--type-scale, 1)); gap: 1.94175vw 3.8835vw; margin-top: 8.49515vw }
+  :where(.vision) :global(.thought-context .practice-copy) { margin-inline-start: 0 }
+  :where(.vision) :global(.practice-end) { min-height: 190.996vw; padding: 37.7549vw var(--ed-gutter) 44.4175vw }
+  :where(.vision) :global(.practice-end h2) { font-size: calc(9.2vw * var(--type-scale, 1)); margin-top: 9.22331vw }
+  :where(.vision) :global(.practice-end-actions) { flex-direction: column; gap: 0 }
+  :where(.vision) :global(.practice-end .editorial-action) { margin-top: 5.82525vw }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening h1) { font-size: calc(10.9992vw * var(--type-scale, 1)); max-width: 100%; margin-top: 57.7428vw; line-height: 1.3 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(4.36894vw * var(--type-scale, 1)); max-width: 87.3787vw }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-natural h2) { font-size: calc(9.1vw * var(--type-scale, 1)); line-height: 1.4 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-copy) { font-size: calc(4.12622vw * var(--type-scale, 1)); max-width: 87.3787vw; line-height: 1.85 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-metadata) { font-size: calc(2.42719vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-end h2) { font-size: calc(12vw * var(--type-scale, 1)) }
+  @media (prefers-reduced-motion:reduce) {
+    .vision :global([data-editorial-layer]) { transform: none !important }
+    :where(.vision) :global(.chapter-visual path) { stroke-dashoffset: 0 }
+  }
+  :where(.vision) :global(.practice-chapter) { isolation: isolate; scroll-margin-top: 21.8447vw; position: relative }
+  :where(.vision) :global(.chapter-content) { z-index: 1; position: relative }
+  :where(.vision) :global(.chapter-visual-rail) { pointer-events: none; z-index: 0; padding-block: 22.2088vw; position: absolute; inset: 0 0 0 51% }
+  :where(.vision) :global(.chapter-visual) { color: #c4c0b3; opacity: .78; height: 135.923vw; position: sticky; top: 62.1845vw }
+  :where(.vision) :global(.chapter-visual svg) { stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; width: 100%; height: 100%; display: block; overflow: hidden }
+  :where(.vision) :global(.chapter-visual path) { stroke-dasharray: 1 1; stroke-dashoffset: 1 }
+  :where(.vision) :global(.practice-chapter .practice-natural) { min-height: 195.437vw }
+  :where(.vision) :global(.practice-chapter .practice-copy), :where(.vision) :global(.practice-chapter .practice-metadata) { max-width: 42%; margin-inline-start: 0 }
+  :where(.vision) :global(.practice-chapter .practice-reading) { margin-inline-start: 0 }
+  :where(.vision) :global(.practice-chapter .thought-detail) { padding-inline-start: var(--ed-gutter) }
+  :global(html[lang=ar]) :where(.vision) :global(.chapter-visual-rail) { inset-inline: 51% 0; left: 0; right: 51% }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-chapter .practice-copy) { max-width: 42% }
+  :where(.vision) :global(.practice-chapter .practice-natural) { min-height: 173.229vw; padding-block: 33.3132vw }
+  :where(.vision) :global(.chapter-visual-rail) { padding-block: 48.8593vw 26.6505vw; inset: 0 -18% 0 19% }
+  :where(.vision) :global(.chapter-visual) { opacity: .28; height: 82.1724vw; top: 117.707vw }
+  :where(.vision) :global(.chapter-visual path:nth-child(3)) { opacity: .15 }
+  :where(.vision) :global(.practice-chapter .practice-copy), :where(.vision) :global(.practice-chapter .practice-metadata), :global(html[lang=ar]) :where(.vision) :global(.practice-chapter .practice-copy) { max-width: 100% }
+  :global(html[lang=ar]) :where(.vision) :global(.chapter-visual-rail) { inset-inline: 19% -18%; left: -18%; right: 19% }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.chapter-visual) { position: relative; top: 0; transform: none !important }
+    :where(.vision) :global(.chapter-visual-rail) { padding-top: 44.4175vw }
+    :where(.vision) :global(.chapter-visual path) { stroke-dashoffset: 0 }
+  }
+  :where(.vision) :global([data-system-word]) { white-space: nowrap }
+  :where(.vision) :global([data-system-details-passage]) { padding-bottom: var(--system-details-distance, 0vw) }
+  :where(.vision) :global([data-system-details-reading]) { will-change: transform }
+  :where(.vision) :global(.chapter-perspective .chapter-visual) { visibility: hidden }
+  :where(.vision) :global(.system-details-field) { pointer-events: none; z-index: 2; width: 100%; height: 100%; color: var(--ed-ink); visibility: hidden; display: none; position: absolute; inset: 0; overflow: visible }
+  :where(.vision) :global(.chapter-perspective[data-system-details-ready=true] .system-details-field) { display: block }
+  :where(.vision) :global(.system-details-stroke) { stroke: #c4c0b3; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; fill: none; visibility: hidden }
+  :where(.vision) :global(.system-details-edge) { visibility: visible }
+  :where(.vision) :global(.system-details-stroke) { stroke: #8f8c82 }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.chapter-perspective .chapter-visual) { visibility: visible }
+    :where(.vision) :global(.system-details-field) { display: none !important }
+  }
+  :where(.vision) :global(.practice-opening) { height: 222.088vw; min-height: 169.903vw; overflow: hidden }
+  :where(.vision) :global(.practice-hero-type) { left: var(--hero-copy-start, 34%); right: var(--ed-gutter); position: absolute; top: 50%; transform: translateY(-38%) }
+  :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(11.4078vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.08 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot) { gap: 6.79612vw; max-width: none; margin-top: 7.767vw; padding: 0 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot>p) { max-width: 77.67vw; font-size: calc(3.64078vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.practice-opening .editorial-text-link) { flex-shrink: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(13.3496vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.32 }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { text-align: right; top: 49%; left: 37%; right: 12% }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening-foot>p) { font-size: calc(4.12622vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.practice-opening) { height: 222.088vw; min-height: 169.903vw; padding-top: 35.534vw }
+  :where(.vision) :global(.practice-hero-type) { top: 36%; left: 48%; right: 5%; transform: none }
+  :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(7.34628vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.15 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot) { margin-top: 7.28156vw; display: block }
+  .vision :global(.practice-opening-foot) { margin: 0; position: absolute; top: 75.0971vw; left: -41vw; right: 0 }
+  :where(.vision) :global(.practice-opening .practice-opening-foot>p) { font-size: calc(3.8835vw * var(--type-scale, 1)); max-width: 72.8156vw }
+  :where(.vision) :global(.practice-opening .practice-opening-foot .editorial-text-link) { margin-top: 5.33981vw }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { top: 34%; left: 48%; right: 7%; transform: none }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening .practice-hero-type h1) { font-size: calc(8.00971vw * var(--type-scale, 1)); line-height: 1.4 }
+  :global(html[lang=ar]) :where(.vision) :global(.practice-opening .practice-opening-foot>p) { font-size: calc(4.36894vw * var(--type-scale, 1)); max-width: 75.2428vw }
+  :where(.vision) :global(.practice-opening .editorial-kicker>span:only-child) { text-align: start; max-width: 100% }
+  .vision :global(.thought-context h2) { max-width: 90% }
+  :where(.vision) :global(.about-other-side) { min-height: 244.297vw; padding: 37.7549vw var(--ed-gutter); text-align: center; flex-direction: column; justify-content: center; align-items: center; display: flex; position: relative }
+  :where(.vision) :global(.about-other-side h2) { font-size: calc(14.0777vw * var(--type-scale, 1)); width: 100%; margin-top: 17.767vw; line-height: 1.04 !important }
+  :where(.vision) :global(.about-underneath-copy) { width: min(100%, 143.204vw); margin: 17.767vw auto 0 }
+  :where(.vision) :global(.about-aside) { font-size: calc(5.09709vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: var(--ed-ink) }
+  :where(.vision) :global(.about-underneath-copy .practice-copy) { width: 100%; max-width: 48ch; margin: 5.82525vw auto 0 !important }
+  :where(.vision) :global(.about-thought-motion) { isolation: isolate; height: 644.054vw; position: relative }
+  :where(.vision) :global(.about-thought-stage) { height: 222.088vw; min-height: 150.486vw; position: sticky; top: 0; overflow: clip }
+  :where(.vision) :global(.about-moving-thought) { transform-origin: 0 0; will-change: transform; text-align: start; width: max-content; max-width: 86%; position: absolute; top: 0; left: 0 }
+  :where(.vision) :global(.about-moving-thought h2) { font-size: calc(10.1942vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.14 }
+  :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(9.22331vw * var(--type-scale, 1)) }
+  .vision :global(.practice-end) { min-height: 222.088vw; padding-block: 42.1967vw 51.0801vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-other-side h2) { font-size: calc(15.7767vw * var(--type-scale, 1)); line-height: 1.25 !important }
+  :global(html[lang=ar]) :where(.vision) :global(.about-underneath-copy .practice-copy) { max-width: none }
+  :global(html[lang=ar]) :where(.vision) :global(.about-aside) { letter-spacing: 0; font-size: calc(5.58253vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought h2) { font-size: calc(10.9224vw * var(--type-scale, 1)); letter-spacing: 0; line-height: 1.45 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(10.1942vw * var(--type-scale, 1)) }
+  .vision :global(.thought-context h2) { max-width: 100% }
+  :where(.vision) :global(.about-other-side) { min-height: 222.088vw; padding-block: 33.3132vw }
+  :where(.vision) :global(.about-other-side h2) { font-size: calc(10.3vw * var(--type-scale, 1)); margin-top: 15.5462vw; line-height: 1.12 !important }
+  :where(.vision) :global(.about-underneath-copy) { text-align: center; width: 90%; margin-top: 15.5462vw }
+  :where(.vision) :global(.about-aside) { font-size: calc(5.09709vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.about-thought-motion) { height: 621.845vw }
+  :where(.vision) :global(.about-thought-stage) { min-height: 160.195vw }
+  :where(.vision) :global(.about-moving-thought h2) { font-size: calc(7.7vw * var(--type-scale, 1)); line-height: 1.25 }
+  :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(7.4vw * var(--type-scale, 1)) }
+  .vision :global(.practice-end) { min-height: 190.996vw; padding-block: 37.7549vw 44.4175vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-other-side h2) { font-size: calc(13vw * var(--type-scale, 1)); line-height: 1.35 !important }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought h2) { font-size: calc(9vw * var(--type-scale, 1)); line-height: 1.5 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-moving-thought.thought-state-2 h2) { font-size: calc(8.5vw * var(--type-scale, 1)) }
+  :where(.vision) :global(.about-invitation-end .practice-end-actions) { gap: 5vw }
+  :where(.vision) :global(.about-invitation-end .editorial-action) { margin-top: 0; padding-block: 3.39806vw }
+  :where(.vision) :global(.about-invitation-end .about-cta-explore) { color: #979387 }
+  :where(.vision) :global(.about-invitation-end .about-cta-contact) { color: #e1ddd0 }
+  :where(.vision) :global(.about-invitation-end .about-cta-contact .editorial-action) { border-bottom: 1px solid #787469 }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.about-thought-motion) { height: auto }
+    :where(.vision) :global(.about-thought-stage) { height: auto; min-height: 0; padding: 26.6505vw var(--ed-gutter); flex-direction: column; gap: 19.9879vw; display: flex; position: relative; overflow: visible }
+    :where(.vision) :global(.about-moving-thought) { will-change: auto; width: 100%; max-width: 100%; position: relative; transform: none !important }
+  }
+  :where(.vision) :global(.about-leadership) { isolation: isolate; --lead-safe-top: 31.5534vw; --voice-ink: 1; position: relative }
+  :where(.vision) :global(.about-leadership-stage) { position: relative }
+  :where(.vision) :global(.about-leadership-safe) { padding: 28.8714vw var(--ed-gutter) 35.534vw; grid-template-columns: 1fr 1fr; gap: 10.6797vw 8%; display: grid; position: relative }
+  :where(.vision) :global(.about-leadership-core) { text-align: center; grid-area: 2/1/auto/-1; align-self: center; width: min(100%, 266.991vw); margin-inline: auto }
+  :where(.vision) :global(.about-leadership h2) { font-size: calc(6.79612vw * var(--type-scale, 1)); line-height: 1.22 }
+  :where(.vision) :global(.about-leadership .practice-copy) { text-align: center; width: min(100%, 123.787vw); font-size: calc(3.8835vw * var(--type-scale, 1)); margin: 5.82525vw auto 0 !important }
+  :where(.vision) :global(.about-voices) { display: contents }
+  :where(.vision) :global(.about-voice) { width: max-content; max-width: 100%; opacity: var(--voice-ink); direction: ltr; grid-template-columns: 15.534vw minmax(0, 1fr); align-items: center; gap: 3.8835vw; display: grid }
+  :where(.vision) :global(.about-voice-form) { stroke: #aaa69a; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; width: 15.534vw; height: auto; overflow: visible }
+  :where(.vision) :global(.about-voice-form path) { stroke-dasharray: 0 2; visibility: hidden }
+  :where(.vision) :global(.about-voice-sentence) { font-size: calc(3.39806vw * var(--type-scale, 1)); color: #c9c5b9; letter-spacing: 0; text-align: left; white-space: nowrap; width: max-content; max-width: none; line-height: 1.55 }
+  :where(.vision) :global(.about-voice-sentence>[data-voice-word]) { opacity: 0; filter: blur(2.4px); display: inline-block; transform: translateY(0.728156vw) }
+  :where(.vision) :global(.about-voice-0) { grid-area: 1/1; align-self: end; margin-left: 2% }
+  :where(.vision) :global(.about-voice-1) { grid-area: 1/2; place-self: start end; margin-top: -3.8835vw; margin-right: 3% }
+  :where(.vision) :global(.about-voice-2) { grid-area: 3/1; align-self: start; margin-left: 12% }
+  :where(.vision) :global(.about-voice-3) { grid-area: 3/2; place-self: end; margin-top: 3.8835vw; margin-right: 1% }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: minmax(0, 1fr) 15.534vw }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-form) { grid-area: 1/2 }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-sentence) { text-align: right; grid-area: 1/1; justify-self: end }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership h2) { font-size: calc(7.767vw * var(--type-scale, 1)); line-height: 1.42 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership .practice-copy) { max-width: 34ch; font-size: calc(4.12622vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-sentence) { text-align: right; letter-spacing: 0; font-size: calc(3.8835vw * var(--type-scale, 1)); direction: rtl; line-height: 1.8 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-0) { margin-left: 0; margin-right: 2% }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-1) { margin-left: 3%; margin-right: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-2) { margin-left: 0; margin-right: 12% }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-3) { margin-left: 1%; margin-right: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2)) { grid-template-columns: minmax(0, 1fr) 15.534vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2) .about-voice-form) { grid-area: 1/2 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2) .about-voice-sentence) { grid-area: 1/1 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: 15.534vw minmax(0, 1fr) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-form) { grid-column: 1 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3) .about-voice-sentence) { grid-column: 2 }
+  @media (prefers-reduced-motion:no-preference) {
+    :where(.vision) :global(.about-leadership) { height: 710.68vw }
+    :where(.vision) :global(.about-leadership-stage) { height: 222.088vw; position: sticky; top: 0 }
+    :where(.vision) :global(.about-leadership-safe) { inset: var(--lead-safe-top) 6% 8.8835vw; grid-template-rows: auto 1fr auto; gap: 6.79612vw 8%; padding: 0; position: absolute }
+  }
+  :where(.vision) :global(.about-leadership-safe) { grid-template-columns: 1fr; gap: 4.36894vw; padding-inline: 7% }
+  :where(.vision) :global(.about-leadership-core) { grid-area: 3/1 }
+  :where(.vision) :global(.about-leadership h2) { font-size: calc(5.9992vw * var(--type-scale, 1)); line-height: 1.24 }
+  :where(.vision) :global(.about-leadership .practice-copy) { width: min(100%, 33ch); font-size: calc(3.79855vw * var(--type-scale, 1)); margin-top: 4.36894vw !important }
+  :where(.vision) :global(.about-voice) { grid-column: 1; grid-template-columns: 9.70874vw minmax(0, 1fr); gap: 2.91263vw; width: max-content; max-width: 100% }
+  :where(.vision) :global(.about-voice-form) { width: 9.70874vw }
+  :where(.vision) :global(.about-voice-0) { grid-row: 1; justify-self: start; margin: 0 }
+  :where(.vision) :global(.about-voice-1) { grid-row: 2; justify-self: end; margin: 0 }
+  :where(.vision) :global(.about-voice-2) { grid-row: 4; justify-self: start; margin: 0 0 0 4% }
+  :where(.vision) :global(.about-voice-3) { grid-row: 5; justify-self: end; margin: 0 }
+  :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: minmax(0, 1fr) 9.70874vw }
+  :where(.vision) :global(.about-voice-sentence) { font-size: calc(3.4992vw * var(--type-scale, 1)); line-height: 1.5 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership h2) { font-size: calc(6.99839vw * var(--type-scale, 1)); line-height: 1.4 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-leadership .practice-copy) { font-size: calc(4.19903vw * var(--type-scale, 1)) }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-sentence) { font-size: calc(3.99677vw * var(--type-scale, 1)); line-height: 1.65 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice) { margin-inline: 0 }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice-2) { margin-right: 4% }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-0, .about-voice-2)) { grid-template-columns: minmax(0, 1fr) 9.70874vw }
+  :global(html[lang=ar]) :where(.vision) :global(.about-voice:is(.about-voice-1, .about-voice-3)) { grid-template-columns: 9.70874vw minmax(0, 1fr) }
+  @media (prefers-reduced-motion:no-preference) {
+    :where(.vision) :global(.about-leadership-safe) { inset: var(--lead-safe-top) 7% 6.66263vw; grid-template-rows: auto auto 1fr auto auto; gap: 3.39806vw; padding: 0 }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.about-voice-form path) { stroke-dasharray: 1 1; visibility: visible }
+    :where(.vision) :global(.about-voice-sentence>[data-voice-word]) { opacity: 1 !important; filter: none !important; transform: none !important }
+  }
+  .vision :global([data-masked-reveal=hero-action]) { flex: none; width: max-content; max-width: 100% }
+  .vision :global([data-masked-reveal=hero-action] .masked-text-line) { margin-inline: -0.970874vw; padding-inline: 0.970874vw }
+  .vision :global(.practice-opening .editorial-text-link) { white-space: nowrap; text-align: start; line-height: 1.8 }
+  .vision :global(.practice-opening .editorial-text-link i) { transform-origin: 0; flex: none; width: 13.1068vw; transition: transform .35s; transform: scaleX(.63) }
+  .vision :global(.practice-opening .editorial-text-link:is(:hover, :focus-visible) i) { transform: scaleX(1) }
+  .vision :global(.practice-opening .editorial-text-link:focus-visible) { outline: 1px solid var(--paper); outline-offset: 0.485437vw }
+  .vision :global([data-masked-reveal=hero-copy] .editorial-line) { white-space: nowrap }
+  :global(html[lang=ar]) .vision :global(.practice-opening .editorial-text-link i) { transform-origin: 100% }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type h1 .editorial-line) { white-space: nowrap }
+  :global(html[lang=ar]) .vision :global(.practice-hero-type) { left: 19%; right: 7% }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot) { left: -12vw; right: 0 }
+  :global(html[lang=ar]) .vision :global(.practice-opening-foot>p), :global(html[lang=ar]) .vision :global([data-masked-reveal=hero-action]) { margin-inline: 0 auto }
+  :global(html[lang=ar]) .vision :global(.practice-copy [data-reveal-source]) { text-wrap: pretty }
+  :where(.vision) :global(.masked-text), :where(.vision) :global(.masked-text [data-reveal-source]) { display: block }
+  :where(.vision) :global(.masked-text .masked-rendered-line) { white-space: nowrap; display: block !important }
+  :where(.vision) :global(.masked-text .masked-rendered-line-mask) { background: 0 0; overflow: clip !important }
+  .vision :global(.masked-text .masked-text-line) { background: 0 0; margin-block: -.09em; padding-block: .09em; display: block; overflow: clip }
+  :where(.vision) :global(.masked-text [data-reveal-piece]) { will-change: transform; display: block }
+  :global(html[lang=ar]) :where(.vision) :global(.masked-text .masked-text-line) { margin-block: -.14em; padding-block: .14em }
+  @media (prefers-reduced-motion:reduce) {
+    :where(.vision) :global(.masked-text [data-reveal-piece]) { will-change: auto }
+    :where(.vision) :global(.masked-text[data-rendered-lines]) { visibility: visible !important }
+  }
+  .vision { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; color: var(--ed-ink); position: relative }
+  .vision :global(.practice-hero-poster) { width: 100%; height: 100%; position: absolute; inset: 0; display: none }
+  .vision :global(.poster-mobile) { display: block }
+  .vision :global(.practice-depth) { position: relative; opacity: 0 }
+  .vision :global(.practice-depth[data-hero-rendered='true']) { opacity: 1 }
+  .vision :global(.practice-hero-geometry:has([data-hero-rendered='true']) .practice-hero-poster) { visibility: hidden }
+  .vision :global(.about-voice-sentence [data-voice-word]) { display: inline-block }
+  .vision:not([data-motion='true']) :global(.about-thought-motion) { height: auto }
+  .vision:not([data-motion='true']) :global(.about-thought-stage) { height: auto; min-height: 0; padding: 26.6505vw var(--ed-gutter); display: flex; flex-direction: column; gap: 19.9879vw; position: relative; overflow: visible }
+  .vision:not([data-motion='true']) :global(.about-moving-thought) { position: relative; transform: none; width: 100%; max-width: 100%; will-change: auto }
+  .vision:not([data-motion='true']) :global(.about-leadership) { height: auto }
+  .vision:not([data-motion='true']) :global(.about-leadership-stage) { height: auto; position: relative }
+  .vision:not([data-motion='true']) :global(.about-leadership-safe) { position: relative; inset: auto; padding: 28.8714vw var(--ed-gutter) 35.534vw }
+  .vision:not([data-motion='true']) :global(.about-voice-form path) { stroke-dasharray: 1 1; visibility: visible }
+  .vision:not([data-motion='true']) :global(.about-voice-sentence [data-voice-word]) { opacity: 1; filter: none; transform: none }
+  .vision:not([data-motion='true']) :global(.chapter-perspective .chapter-visual) { visibility: visible }
+  .vision:not([data-motion='true']) :global([data-reveal-piece]) { transform: none }
+  .vision[data-motion='true'] :global(.masked-text [data-reveal-piece]) { will-change: transform }
+  .vision { --ed-gutter: 7vw }
+  .vision :global(.system-details-stroke), .vision :global(.chapter-visual svg) { stroke-width: 0.24271844660194175vw }
+  .vision :global(.about-voice-form) { stroke-width: 0.30339805825242716vw }
+}
