@@ -17,7 +17,7 @@ desktop/tablet/mobile and reduced durations. Page entry remains on each page's
 existing RAF. Readiness uses retained publisher callbacks, DOM/size observers,
 fonts and bounded160/4500/8000ms timers; there is no waiting ticker. A visible
 practice canvas must publish its successful first draw or depth fallback. Offscreen
-and reduced arrivals do not wait for that canvas;4500ms bounds asset failure. The
+arrivals do not wait for that canvas;4500ms bounds asset failure. The
 root and inner page must match the server route
 identity; late/disconnected publishers cannot complete a different destination.
 

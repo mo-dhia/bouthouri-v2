@@ -49,6 +49,12 @@ The prior reduced Vision step is absent in three fresh uninstrumented matched
 repeats, with the same approximately 66.7ms recorded contrast crossing on each side.
 No new confirmed P1/P2 was established in those controls.
 
+The independent [R9 architecture audit](pages-architecture-background-review-r9.md)
+found no new confirmed runtime P1/P2 in the reviewed SSR, deferred-loading,
+fixed-profile, ownership and branding boundaries. Its contradictory reduced-mode
+readiness sentence was corrected in the route-surface documentation. This was
+source review, with no new runtime or visual certification.
+
 These are finite visual and behavior checks. The reports retain source native-pose
 exclusions, failed controls, uninspected frames and inherited limits. They do not
 certify universal frame equality, hardware touch, native OS reduced preference or FPS.
