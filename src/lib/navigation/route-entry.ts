@@ -1,7 +1,7 @@
 import { designPixels } from "../viewport-design";
 
 type EntryHandler = { start: (skip: boolean) => void | Promise<void>; finish?: () => void; assetsReady?: () => boolean };
-type Entry<Owner> = { owner: Owner; path: string; ready: boolean; started: boolean; skip: boolean; handler?: EntryHandler; applied?: EntryHandler; done: Promise<void> };
+type Entry<Owner> = { owner: Owner; path: string; ready: boolean; started: boolean; skip: boolean; fallback: boolean; handler?: EntryHandler; applied?: EntryHandler; done: Promise<void> };
 export type RouteArrival<Owner> = { id: number; path: string; skip: boolean; owner?: Owner; released: boolean };
 
 /** Retained decisions only: no listeners, clocks, graphics or side effects at import. */
@@ -12,7 +12,7 @@ export function createRouteEntryRegistry<Owner extends object>() {
   const notify = () => listeners.forEach(listener => listener());
   const entry = (owner: Owner, path: string) => {
     let record = entries.get(owner);
-    if (!record || record.path !== path) { record = { owner, path, ready: false, started: false, skip: false, done: Promise.resolve() }; entries.set(owner, record); }
+    if (!record || record.path !== path) { record = { owner, path, ready: false, started: false, skip: false, fallback: false, done: Promise.resolve() }; entries.set(owner, record); }
     return record;
   };
   const apply = (record: Entry<Owner>) => {
@@ -47,9 +47,9 @@ export function createRouteEntryRegistry<Owner extends object>() {
     },
     started(owner: Owner) { return entries.get(owner)?.started ?? false; },
     ready(owner: Owner, path?: string) { const record = entries.get(owner); return !!record?.ready && (!path || record.path === path); },
-    assetsReady(owner: Owner) { const record = entries.get(owner); return !!record && (record.skip || !record.handler?.assetsReady || record.handler.assetsReady()); },
+    assetsReady(owner: Owner) { const record = entries.get(owner); return !!record && (record.fallback || !record.handler?.assetsReady || record.handler.assetsReady()); },
     register(owner: Owner, path: string, handler: EntryHandler) {
-      const record = entry(owner, path); record.handler = handler; record.ready = false;
+      const record = entry(owner, path); record.handler = handler; record.ready = false; record.fallback = false;
       if (current?.path === path && !current.owner) current.owner = owner;
       else if (current?.path === path && current.owner !== owner) held.add(record);
       return {
@@ -59,7 +59,7 @@ export function createRouteEntryRegistry<Owner extends object>() {
       };
     },
     fallback(owner: Owner, path: string) {
-      const record = entry(owner, path); record.ready = true; record.skip = record.started = true;
+      const record = entry(owner, path); record.ready = true; record.fallback = true; record.skip = record.started = true;
       if (current?.path === path && !current.owner) current.owner = owner;
       if (current?.owner === owner && current.path === path) { current.released = true; current.skip = true; }
       apply(record); notify();

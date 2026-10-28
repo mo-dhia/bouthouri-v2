@@ -99,6 +99,21 @@ entry completion. Server copy and native navigation stay available without the
 controller. See `docs/editorial-route-handoff-source-contract.md` for provenance
 and intentional differences from source.
 
+Skipping the entry animation is independent of asset readiness. A visible
+practice hero waits for its first static presentation or graphics failure even
+when reduced/history entry skips the animated entrance. The registry retains
+an explicit readable-fallback decision separately from `skip`; registering a
+new handler clears that fallback without replaying completed entry. Offscreen
+eligibility and the bounded asset ceiling remain. This follows source `D`'s
+assets predicate, which has no reduced-mode shortcut; it adds no polling RAF.
+
+The readiness integration passed 376 tests with 15,748 assertions, lint, types
+and architecture, followed by build `ETSBMuTNkBFMyZQ0iwhPG` and the HTTP
+SSR/20-asset audit. Five before-fix readiness failures and the passing mounted
+controller/registry regressions remain in `reduced-readiness-r6`; root validation
+logs and all 259 build-input hashes remain in the `root/*readiness-r7*` artifacts.
+The repeated reduced-mode visible-step finding still requires new-build review.
+
 The independent R10 review passed 24 mounted adversarial cases and 152 scoped
 tests without a new confirmed P1/P2. Root's combined integration passed lint,
 types, architecture and 363 tests with 15,607 assertions, then production build

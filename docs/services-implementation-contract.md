@@ -342,3 +342,70 @@ remains active. The stylesheet, generator, profile tests and contract are
 frozen for root's combined checks/rebuild and fresh visual recheck. The
 served `yWFD32LNWavnwkZN_JMni` build predates this correction. Cascade fixture
 success does not establish full pixel or continuous-motion parity.
+
+## R6 reduced readiness separation
+
+Root granted `CODE_EDIT_CLEAR` and `MEASUREMENT_CLEAR` after R5 explicitly
+released the frozen497e628 / iTxQ9za0P2IZUlsc_NBns review. Services now removes
+only the reduced-mode shortcut from its registered assets predicate. Existing
+rendererFailed, heroRendered and physical offscreen visibility cases remain.
+Object boot/render, first static presentation, ready/presented publication,
+`ready(reduced)`, skipped readable entry, renderer failure handling and the
+single presentation RAF retain their existing behavior.
+
+The cached source RouteSurface module61157, D, in
+`.artifacts/viewport-validation-20261028/source-runtime/2gz902oulp4x8.js.pretty`
+lines31–39 has no reduced readiness shortcut. After W(main), depth fallback,
+no canvas or heroRendered can pass; otherwise objectsReady/deep scroll and
+physical offscreen visibility govern its assets gate, followed by two settled
+observations. Source practice initialization in the retained
+`reference/runtime/2mzrkx5gfk3t8.js` imports createPracticeObjects after
+locale/fonts even for reduced mode. No local timing, renderer, offscreen
+policy, settlement rule or4500ms route asset ceiling was changed here.
+
+The same source review found a second bypass in the registry: ready(reduced)
+sets animation skip, and registry.assetsReady previously accepted that skip.
+Root's explicit expanded contract authorized only the internal fallback flag
+separation: false at entry creation and register(), true only on fallback().
+Assets readiness accepts explicit readable fallback, an absent assets
+predicate, or the real predicate. Entry skip, release/history, held/current
+owner and once-only starter behavior remain unchanged; there is no public API
+change. `tests/route-handoff.test.ts` covers reduced ready(true), history and
+explicit release skip, fallback with an existing false predicate, late
+registration resetting fallback while retaining consumed entry skip, and
+no-assets-handler Contact/failure readability.
+
+`test-support/services-mount.ts` extends its existing options compatibly with
+reduced mode, a managed arrival, held object boot and physical placement.
+Its real opening measurement/tick/physics/hand code remains active. The
+registration wrapper delegates to the actual registry and records the actual
+controller handler. `services-readiness.test.ts` queries both through pending
+boot, adoption without first draw and successful static presentation. It also
+covers rejected/null/draw-failed graphics, both offscreen directions, readable
+skipped entry, aborted late adoption, no stale ready/presented calls, resource
+cleanup and the one-RAF limit. Vision has equivalent actual-controller cases
+with inert passage/narrative adapters.
+
+Retained evidence under
+`.artifacts/pages-parity-20261028/reduced-readiness-r6/`:
+
+- `before-fix-first.log`:19pass/5expectedfail/224assertions against unchanged
+  runtime. Both mounted controllers exposed registered=true/assets=true while
+  boot was held; three pure registry controls exposed skip/fallback separation.
+  The existing Services body/physics/controller cases passed. No fixture error
+  or correction occurred.
+- `after-fix-first.log`: the same24tests passed,259assertions.
+- `focused-final.log`: `bun test src/sections/vision src/sections/services
+  tests/route-handoff.test.ts tests/route-surface.test.ts` passed71tests across
+  nine files,4,187assertions, including existing body, graphics, source math,
+  CSS-profile and route restoration/controller guards.
+- `scoped-lint-first.log`: installed ESLint over the three runtime files,
+  registry test, two readiness tests and three support files exited0 without
+  output. All validation jobs exited before handoff.
+
+Root owns full check/types/build/SSR, manifests, commits and a fresh independent
+production comparison. This source-contract correction and inert regression
+coverage do not establish causality or resolution of R5's repeated visible
+reduced finding, browser/GPU presentation, visual parity or presented FPS.
+No browser/native/OS input, server, package action, stage, commit or delegation
+was used. Runtime/tests/contracts are frozen for root's combined validation.

@@ -1,5 +1,6 @@
 import type { PracticeObjects } from "../../vision/1-opening/practice-objects";
 import { installGlobals, loadIsolatedModule } from "./isolated-module";
+import { createRouteEntryCapture } from "./route-entry-capture";
 
 class FixtureStyle {
   height = ""; transform = ""; fontSize = ""; clipPath = ""; opacity = "";
@@ -39,17 +40,19 @@ class FixtureCustomEvent extends Event {
   constructor(type: string, options: { detail: unknown }) { super(type); this.detail = options.detail; }
 }
 
-type FailureOptions = { importFailure?: boolean; createFailure?: boolean; nullRenderer?: boolean; drawFailureAt?: number; resizeFailureAt?: number; disposalFailure?: boolean };
+type FailureOptions = { importFailure?: boolean; createFailure?: boolean; nullRenderer?: boolean; drawFailureAt?: number; resizeFailureAt?: number; disposalFailure?: boolean; reduced?: boolean; managed?: boolean; holdObjectBoot?: boolean; initialScrollY?: number; heroTop?: number; physicalHeight?: number };
+const flush = async () => { for (let step = 0; step < 12; step++) await Promise.resolve(); };
 
 /** Real mountServices + real opening measure/tick/physics/hand; inert text/GPU adapters. */
 export async function mountServicesFixture(failures: FailureOptions = {}) {
   const window = new FixtureWindow(), fonts = Object.assign(new EventTarget(), { ready: Promise.resolve() });
+  window.scrollY = failures.initialScrollY ?? 0; window.innerHeight = failures.physicalHeight ?? 1080;
   const document = Object.assign(new EventTarget(), { hidden: false, fonts, createElement: () => new FixtureElement() });
   const root = new FixtureElement(), hero = new FixtureElement(), canvas = new FixtureElement(), geometry = new FixtureElement(), advance = new FixtureElement();
   root.dataset.locale = "en";
   const opening = new FixtureElement(), stage = new FixtureElement(), intro = new FixtureElement(), glyph = new FixtureElement(), flight = new FixtureElement(), scene = new FixtureElement(), band = new FixtureElement(), handle = new FixtureElement(), announcement = new FixtureElement();
   opening.offsetHeight = 4212;
-  hero.rectangle = () => ({ left: 0, top: -window.scrollY, width: 1920, height: 1080 });
+  hero.rectangle = () => ({ left: 0, top: (failures.heroTop ?? 0) - window.scrollY, width: 1920, height: 1080 });
   opening.rectangle = () => ({ left: 0, top: 1080 - window.scrollY, width: 1920, height: 4212 });
   stage.rectangle = () => ({ left: 0, top: Math.min(Math.max(1080 - window.scrollY, 0), 4212 - window.scrollY), width: 1920, height: 1080 });
   glyph.rectangle = () => ({ left: 450, top: stage.getBoundingClientRect().top + 350, width: 80, height: 160 });
@@ -67,6 +70,7 @@ export async function mountServicesFixture(failures: FailureOptions = {}) {
   scene.selections.set("svg", surface); scene.selections.set(".services-gate-handle", handle); scene.selections.set("[data-gate-announcement]", announcement);
   for (const selector of [".services-gate-payoff", ".services-it-works", ".services-gate-underlay", "[data-drawn-hand]", "[data-grip-contact]", "[data-gate-trajectory]", ".services-grip-annotation"]) scene.selections.set(selector, new FixtureElement());
   announcement.dataset.message = "The surface is open.";
+  const route = createRouteEntryCapture("/en/services", failures.managed);
 
   const pending = new Map<number, FrameRequestCallback>(); let id = 0, time = 0, running = false, scheduledInsideFrame = 0, maxPending = 0;
   const requestFrame = (callback: FrameRequestCallback) => { const key = ++id; pending.set(key, callback); if (running) scheduledInsideFrame++; maxPending = Math.max(maxPending, pending.size); return key; };
@@ -78,12 +82,14 @@ export async function mountServicesFixture(failures: FailureOptions = {}) {
     observe() {}
     disconnect() { this.disconnected = true; }
   }
-  let scrollCallback: (() => void) | null = null, managerRemoved = false, draws = 0, resizes = 0, disposals = 0, indexTicks = 0;
+  let scrollCallback: (() => void) | null = null, managerRemoved = false, draws = 0, resizes = 0, disposals = 0, indexTicks = 0, bootRequests = 0, bootSignal: AbortSignal | undefined;
+  let resolveObjects!: (renderer: PracticeObjects | null) => void, rejectObjects!: (reason: Error) => void;
+  const boot = new Promise<PracticeObjects | null>((resolve, reject) => { resolveObjects = resolve; rejectObjects = reject; });
   const storeListeners = new Set<() => void>(), state = { menuOpen: false };
   const reveals = new Map<FixtureElement, number>();
   const objects: PracticeObjects = {
     resize() { resizes++; if (resizes === failures.resizeFailureAt) throw new Error("Resize failed."); return 1080; },
-    render() { draws++; if (draws === failures.drawFailureAt) throw new Error("The editorial WebGL context was lost."); },
+    render() { draws++; if (draws === failures.drawFailureAt) throw new Error("The editorial WebGL context was lost."); canvas.dataset.heroRendered = "true"; },
     dispose() { disposals++; if (failures.disposalFailure) throw new Error("GPU teardown failed."); },
   };
   const restoreGlobals = installGlobals({ window, document, ResizeObserver: FixtureResizeObserver, CustomEvent: FixtureCustomEvent, requestAnimationFrame: requestFrame, cancelAnimationFrame: cancelFrame, getComputedStyle: (element: FixtureElement) => ({ fontSize: element === band ? "80px" : "150px" }) });
@@ -92,21 +98,24 @@ export async function mountServicesFixture(failures: FailureOptions = {}) {
     const substitutes: Record<string, unknown> = {
       "@/lib/scrollInteraction/scrollManager": { createInstance: (_key: string, callback: () => void) => { scrollCallback = callback; }, removeInstance: () => { managerRemoved = true; scrollCallback = null; } },
       "@/store/uiStore": { uiStore: { getState: () => state, subscribe: (listener: () => void) => { storeListeners.add(listener); return () => storeListeners.delete(listener); } } },
+      "@/lib/navigation/route-entry": route.module,
       "./masked-reveal": { createMaskedReveal: (element: FixtureElement) => ({ set: (progress: number) => reveals.set(element, progress), measure() {}, dispose() {} }) },
       "../masked-reveal": { createMaskedReveal: (element: FixtureElement) => ({ set: (progress: number) => reveals.set(element, progress), measure() {}, dispose() {} }) },
       "./3-index/service-index.animate": { createServiceIndex: () => ({ measure() {}, tick() { indexTicks++; }, dispose() {} }) },
-      "../vision/1-opening/practice-objects": { createPracticeObjects: () => failures.createFailure ? Promise.reject(new Error("Renderer creation failed.")) : Promise.resolve(failures.nullRenderer ? null : objects) },
+      "../vision/1-opening/practice-objects": { createPracticeObjects: (_canvas: unknown, _kind: unknown, signal: AbortSignal) => { bootRequests++; bootSignal = signal; return failures.createFailure ? Promise.reject(new Error("Renderer creation failed.")) : failures.holdObjectBoot ? boot : Promise.resolve(failures.nullRenderer ? null : objects); } },
     };
     if (failures.importFailure) Object.defineProperty(substitutes, "../vision/1-opening/practice-objects", { get() { throw new Error("Enhancement chunk unavailable."); } });
     const runtime = loadIsolatedModule<{ mountServices: (root: HTMLElement, reduced: boolean) => () => void }>("src/sections/services/services.animate.ts", substitutes);
-    dispose = runtime.mountServices(root as unknown as HTMLElement, false);
-    for (let step = 0; step < 12; step++) await Promise.resolve();
+    dispose = runtime.mountServices(root as unknown as HTMLElement, failures.reduced ?? false);
+    await flush();
   } catch (error) { dispose?.(); restoreGlobals(); throw error; }
   let stopped = false;
   return {
-    root, hero, opening, handle, announcement, canvas, fonts,
-    stats: () => ({ queued: pending.size, maxPending, scheduledInsideFrame, measurements, draws, resizes, disposals, indexTicks, managerRemoved, subscribers: storeListeners.size, observersDisconnected: observers.every((observer) => observer.disconnected), lastHeroAction: reveals.get(hero.querySelectorAll("[data-masked-reveal]").at(-1)!) }),
+    root, hero, opening, handle, announcement, canvas, fonts, route, flush,
+    stats: () => ({ queued: pending.size, maxPending, scheduledInsideFrame, measurements, draws, resizes, disposals, indexTicks, bootRequests, bootAborted: bootSignal?.aborted ?? false, managerRemoved, subscribers: storeListeners.size, observersDisconnected: observers.every((observer) => observer.disconnected), lastHeroAction: reveals.get(hero.querySelectorAll("[data-masked-reveal]").at(-1)!) }),
     frame() { const callbacks = [...pending.values()]; pending.clear(); time += 1000 / 60; running = true; try { callbacks.forEach((callback) => callback(time)); } finally { running = false; } },
+    async resolveBoot(result: "renderer" | "null" = "renderer") { resolveObjects(result === "null" ? null : objects); await flush(); },
+    async rejectBoot() { rejectObjects(new Error("Renderer boot rejected.")); await flush(); },
     resize() { window.dispatchEvent(new Event("resize")); },
     fontRefresh() { fonts.dispatchEvent(new Event("loadingdone")); },
     scrollTo(y: number) { window.scrollY = y; scrollCallback?.(); },

@@ -88,4 +88,47 @@ describe("retained physical-owner entry publication", () => {
     presented = true; registration.presented();
     expect(registry.assetsReady(owner)).toBe(true); expect(notifications).toBe(2);
   });
+  test("reduced entry skip does not bypass a held assets predicate", async () => {
+    const registry = createRouteEntryRegistry<object>(), owner = {}, starts: boolean[] = [];
+    const claim = registry.claim("/en/vision"); registry.adopt(claim, owner);
+    let presented = false;
+    const mount = registry.register(owner, "/en/vision", { start: skip => { starts.push(skip); }, assetsReady: () => presented });
+    mount.ready(true);
+    expect(registry.ready(owner)).toBe(true); expect(registry.assetsReady(owner)).toBe(false); expect(starts).toEqual([]);
+    await registry.release(claim); await registry.release(claim);
+    expect(starts).toEqual([true]); expect(registry.assetsReady(owner)).toBe(false);
+    presented = true; mount.presented(); expect(registry.assetsReady(owner)).toBe(true);
+  });
+  test("history and explicit release skip leave assets readiness independent", async () => {
+    for (const history of [false, true]) {
+      const registry = createRouteEntryRegistry<object>(), owner = {}, starts: boolean[] = [];
+      const claim = registry.claim("/en/services", history); registry.adopt(claim, owner);
+      registry.register(owner, "/en/services", { start: skip => { starts.push(skip); }, assetsReady: () => false }).ready();
+      expect(registry.assetsReady(owner)).toBe(false);
+      await registry.release(claim, !history);
+      expect(starts).toEqual([true]); expect(registry.assetsReady(owner)).toBe(false);
+    }
+  });
+  test("explicit fallback opens readability and late registration resets only assets fallback", async () => {
+    const registry = createRouteEntryRegistry<object>(), owner = {}, starts: boolean[] = [];
+    const claim = registry.claim("/en/vision"); registry.adopt(claim, owner);
+    const first = registry.register(owner, "/en/vision", { start: skip => { starts.push(skip); }, assetsReady: () => false });
+    first.ready(); expect(registry.assetsReady(owner)).toBe(false);
+    registry.fallback(owner, "/en/vision");
+    expect(registry.assetsReady(owner)).toBe(true); expect(starts).toEqual([true]);
+    await registry.release(claim); registry.finish(claim); first.dispose();
+    const late = registry.register(owner, "/en/vision", { start: skip => { starts.push(skip); }, assetsReady: () => false });
+    expect(registry.assetsReady(owner)).toBe(false);
+    late.ready(); late.ready(); expect(starts).toEqual([true, true]); expect(registry.assetsReady(owner)).toBe(false);
+  });
+  test("Contact without an assets handler and failed publisher fallback remain readable", async () => {
+    const registry = createRouteEntryRegistry<object>(), contact = {}, failed = {}, starts: boolean[] = [];
+    expect(registry.assetsReady(contact)).toBe(false);
+    const claim = registry.claim("/en/contact"); registry.adopt(claim, contact);
+    registry.register(contact, "/en/contact", { start: skip => { starts.push(skip); } }).ready(true);
+    expect(registry.assetsReady(contact)).toBe(true);
+    await registry.release(claim); expect(starts).toEqual([true]); registry.finish(claim);
+    registry.fallback(failed, "/ar/contact");
+    expect(registry.ready(failed, "/ar/contact")).toBe(true); expect(registry.assetsReady(failed)).toBe(true);
+  });
 });

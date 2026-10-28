@@ -115,6 +115,13 @@ Add a server identity (`data-route-path` or equivalent exact locale/page identit
 
 Use event/callback readiness and a bounded timeout, not a new polling RAF. Source's extra settled visit is evidence of sequencing, not permission to bypass HOME's own multi-frame stable-geometry transaction.
 
+Entry skip and asset readiness remain separate decisions. Reduced/history or
+already-started entry does not waive a visible practice hero's first static draw.
+An explicit readable enhancement fallback may waive it. The local registry stores
+that fallback independently, resets it when a new handler registers, and retains
+the once-only entry decision. Both practice controllers use the same readiness
+predicate in motion and reduced mode, with failure and offscreen alternatives.
+
 ## Once-only entry publisher
 
 Proposal: one very small `route-entry` registry, scoped by Document, **physical inner owner**, arrival generation and selected entry. It imports no renderer, store, React or animation runtime and runs no RAF. Events may wake it; retained state prevents missed-event races.

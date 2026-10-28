@@ -27,7 +27,7 @@ export function mountVision(root: HTMLElement) {
   const arrival = routeEntries(root.ownerDocument ?? document).register(root, pageEntryPath(root, 'vision'), {
     start(skip) { entryStarted = true; if (skip || skipPageEntry(reduced, window)) { entryDone = true; entrySeconds = 3; } heroEntry(0); wake(); },
     finish() { entryStarted = entryDone = true; entrySeconds = 3; heroEntry(0); },
-    assetsReady: () => reduced || objectsFailed || canvas.dataset.heroRendered === 'true' || window.scrollY >= top + extent || window.scrollY + window.innerHeight <= top,
+    assetsReady: () => objectsFailed || canvas.dataset.heroRendered === 'true' || window.scrollY >= top + extent || window.scrollY + window.innerHeight <= top,
   });
   const savedInline = [...root.querySelectorAll<HTMLElement | SVGElement>('*')].map(element => ({ element, style: element.getAttribute('style') }));
   const revealHero = (id: string, progress: number) => heroMasks.get(id)?.set(progress, reduced);

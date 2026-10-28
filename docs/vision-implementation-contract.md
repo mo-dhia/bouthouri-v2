@@ -65,3 +65,66 @@ Root's settled EN tablet 768×1024 measurement after the CSS corrections reports
 Final visual acceptance is outstanding. Root still owns production SSR/failure/reduced checks, matched desktop/mobile and Arabic captures, continuous native-scroll comparison, pointer/ambient history, restoration, category resize and independent adversarial review. The approximately .0667px tablet title-height quantization reported before the final geometry correction was not retuned offline. No completed continuous-motion or full EN/AR visual parity claim is made here.
 
 Application/CSS files frozen at root's production-build request; further implementation changes require coordination with root.
+
+## R6 reduced readiness separation
+
+After root's explicit `CODE_EDIT_CLEAR` and `MEASUREMENT_CLEAR` following R5
+release, Vision's registered `assetsReady` predicate no longer accepts reduced
+mode alone. It still accepts its existing failure latch, a successful
+`canvas.dataset.heroRendered` publication, or the opening's physical offscreen
+visibility. Object boot, first static draw, ready/presented publication,
+`ready(reduced)`, reduced entry skip, one demand RAF and cleanup are unchanged.
+
+The cached source RouteSurface module61157, function D in
+`.artifacts/viewport-validation-20261028/source-runtime/2gz902oulp4x8.js.pretty`
+lines31–39, first requires W(main). It accepts depth fallback, no canvas or
+heroRendered; otherwise its objectsReady/deep-scroll gate precedes physical
+offscreen acceptance. It has no reduced readiness shortcut and retains two
+settled observations. Source practice initialization in
+`reference/runtime/2mzrkx5gfk3t8.js` under the pages-parity artifact directory
+imports createPracticeObjects after locale/fonts even when reduced matches.
+This correction removes the reduced exception; it does not change the local
+offscreen policy, route settlement, clocks, durations or the4500ms asset ceiling.
+
+Source review also found that the shared registry treated entry-animation skip
+as assets readiness. Root explicitly authorized the minimal internal
+`fallback` flag in `src/lib/navigation/route-entry.ts`: initialize false, reset
+on register, set by fallback(). Assets readiness now evaluates explicit
+readable fallback, absence of an assets predicate, or the actual predicate.
+Reduced/history/already-started entry skip retains its original semantics.
+No public API or current/held owner, release or once-only start policy changed.
+
+`vision.animate.test.ts` mounts the actual Vision controller through the
+existing isolated loader. Passage/narrative/masks/DOM/GPU are inert adapters;
+object creation is held asynchronously. A registration wrapper captures the
+real handler and delegates to the actual route-entry registry. Tests query
+that registry and the handler while boot is pending, after adoption before
+first draw, and after the successful static draw. Rejection/null/draw failure,
+both physical offscreen directions, readable skipped entry, canceled late
+adoption, disposal and at most one queued RAF are covered. Shared registry
+regressions are in `tests/route-handoff.test.ts`; Services retains its real
+opening/physics/body fixture coverage.
+
+Raw logs are retained under
+`.artifacts/pages-parity-20261028/reduced-readiness-r6/`. The unchanged-runtime
+`before-fix-first.log` records19pass/5expectedfail/224assertions: both mounted
+controllers returned registered=true/assets=true during held boot, and three
+pure registry controls exposed skip/fallback separation. No fixture error or
+correction occurred. The same24tests passed after the runtime correction
+(259assertions). Final focused validation:
+
+```text
+bun test src/sections/vision src/sections/services tests/route-handoff.test.ts tests/route-surface.test.ts
+71 passed, 0 failed, 4,187 assertions across 9 files
+
+Scoped installed ESLint over the three runtime files, registry test,
+two mounted readiness tests and three test-support files
+exit0, no output
+```
+
+Every validation process exited. Root owns full check/types/build/SSR,
+candidate manifests, commits and fresh independent production review. These
+inert controller/registry results establish the readiness contract only;
+they do not establish a cause or cure for R5's visible reduced reveal finding,
+actual GPU presentation, visual parity or presented FPS. No browser/native/OS
+input, server, package operation, stage, commit or delegation was used.

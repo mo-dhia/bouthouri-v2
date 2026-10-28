@@ -26,7 +26,7 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
   const arrival = routeEntries(root.ownerDocument ?? document).register(root, pageEntryPath(root, "services"), {
     start(skip) { entryStarted = true; if (skip || skipPageEntry(reduced, window)) entryAge = 3; presentEntry(0); wake(); },
     finish() { entryStarted = true; entryAge = 3; presentEntry(0); },
-    assetsReady: () => reduced || rendererFailed || canvas.dataset.heroRendered === "true" || window.scrollY >= heroTop + heroHeight || window.scrollY + window.innerHeight <= heroTop,
+    assetsReady: () => rendererFailed || canvas.dataset.heroRendered === "true" || window.scrollY >= heroTop + heroHeight || window.scrollY + window.innerHeight <= heroTop,
   });
   function failRenderer() {
     if (!alive) return;
