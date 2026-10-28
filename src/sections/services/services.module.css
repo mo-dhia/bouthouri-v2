@@ -188,7 +188,6 @@
   .page .service-index .service-index-row>p { max-width: 47ch; line-height: 1.7 }
   :global(html[lang='ar']) .page .service-index .service-index-row>p { max-width: 42ch; font-weight: 450; line-height: 1.85 }
   .gate-edge, .gate-edge-depth, .gate-trajectory, .gate-drawn-hand, .gate-grip-contact { vector-effect: none }
-  .page { --ed-gutter: 7vw }
   @media (hover:hover) and (pointer:fine) {
     .service-index-row:focus-within h3 { color: #ece7db }
   }
@@ -411,7 +410,6 @@
   .page .service-index .service-index-row>p { max-width: 47ch; line-height: 1.7 }
   :global(html[lang='ar']) .page .service-index .service-index-row>p { max-width: 42ch; font-weight: 450; line-height: 1.85 }
   .gate-edge, .gate-edge-depth, .gate-trajectory, .gate-drawn-hand, .gate-grip-contact { vector-effect: none }
-  .page { --ed-gutter: 7vw }
   @media (hover:hover) and (pointer:fine) {
     .service-index-row:focus-within h3 { color: #ece7db }
   }

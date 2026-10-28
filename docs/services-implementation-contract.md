@@ -14,8 +14,9 @@ tests. Vision's remaining app files stay frozen and unmodified by this agent.
 
 The parent supplies `<main class="editorial-page practice-page solving-page">`
 with the correct `dir`, no content padding, source editorial colors and fonts,
-`--ed-gutter` (desktop EN 5.3vw, desktop AR 6vw), and the shared fixed
-`.editorial-nav`. The body sets its own 7vw tablet/mobile gutter. The parent
+`--ed-gutter` (EN desktop/tablet/mobile 5.3vw/7vw/7vw; AR 6vw in all profiles),
+and the shared fixed `.editorial-nav`. Services inherits that variable in all
+profiles and never redeclares it on its body wrapper. The parent
 owns the common environment pose: source time 448, environment .28,
 surfaceQuiet .65. The Services journey supplies its source opaque #080909
 surface and gate underlay #050606. Shared shell controls do not need a new
@@ -236,3 +237,58 @@ complete heading/foot after entry settles, and source/local index heights
 retune was attempted. The first local capture occurred during initial
 compilation/entry and is not an acceptance frame. AR, mobile, moving gate and
 continuous transition comparisons remain part of parent acceptance above.
+
+## Source gutter inheritance repair
+
+The root's live diagnosis on build `8HHoGLRzQ2ZvMlcWuzlyf` at `770aa24`
+identified an absent shared-main `--ed-gutter` on desktop: the header padding
+and index padding became invalid, and the auto-width hero text wrapped into
+four lines. Root's temporary main-only `--ed-gutter:5.3vw` plus the existing
+resize path restored the EN hero width to1716.5px, header padding to
+194.4px/101.75px/75.6px and index height to4452.25px versus source4452.2666px.
+This diagnostic is retained at
+`.artifacts/pages-parity-20261028/root/services-desktop-missing-gutter.json`.
+It is root's evidence, not a browser comparison performed by this agent.
+
+Root owns the shared CSS correction. Services separately removed its two
+compact `.page { --ed-gutter:7vw }` declarations and the matching generator
+fragment. A declaration on a child bypasses a parent's Arabic specificity;
+inheriting in every profile now preserves the source's EN5.3vw/7vw/7vw and
+AR6vw/6vw/6vw. Root also measured AR tablet source header/index gutter at
+46.0667px (6vw before layout quantization), versus the old local53.75px (7vw).
+No controller, entry, renderer, shared CSS, HOME or route file was changed for
+this follow-up.
+
+`services-css-profile.test.ts` retains the exact four source declarations:
+base editorial5.3vw, Arabic editorial6vw, through700px editorial6vw, and the
+source compact width/aspect practice7vw. It evaluates their specificity at
+the agreed reference canvases and reads the actual parent CSS API at
+`src/components/layout/editorial/editorial.module.css`. The regression checks
+the six locale/profile values, absence of any owned gutter shadow, all four
+body compositions consuming the inherited variable, and an explicit failure
+when the actual parent gutter declarations are removed. It supplies no copy
+of root-owned CSS or production fallback value.
+
+After root's `MEASUREMENT_CLEAR`, the actual commands/results were:
+
+```text
+bun .artifacts/pages-parity-20261028/services/prepare-css.ts
+exit0; generated CSS diff is exactly the two compact gutter deletions
+
+bun test src/sections/services/services-css-profile.test.ts
+4 passed, 0 failed, 27 assertions
+
+bunx eslint src/sections/services/services-css-profile.test.ts
+exit0, no output
+```
+
+The first test run found that PostCSS retains trailing whitespace on the
+parent's last custom-property value (`5.3vw `). The test resolver now trims
+the value before comparison. That first-run log and the final passing logs
+are retained under `.artifacts/pages-parity-20261028/services/gutter-profile-*`.
+No additional app correction resulted from that fixture-only mismatch.
+
+The stylesheet, generator, focused profile test and this contract are frozen.
+The root's earlier build does not validate the unserved CSS correction;
+root owns combined TypeScript, rebuild and renewed geometry acceptance.
+Static CSS cascade checks do not establish full pixel or moving parity.

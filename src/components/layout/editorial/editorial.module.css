@@ -34,6 +34,8 @@
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.0520834vw; height: 0.0520834vw; position: absolute; overflow: hidden }
   .root { position: relative; isolation: isolate; min-height: var(--design-height) }
   .root > main, .root > footer { position: relative; z-index: 1 }
+  .root > main { --ed-gutter: 5.3vw }
+  :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
   .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
   .navigation { --nav-hit-height: 2.29167vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 1.04167vw; min-height: 4.89584vw; padding: 1.14584vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
@@ -89,6 +91,9 @@
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.130209vw; height: 0.130209vw; position: absolute; overflow: hidden }
   .root { position: relative; isolation: isolate; min-height: var(--design-height) }
   .root > main, .root > footer { position: relative; z-index: 1 }
+  .root > main { --ed-gutter: 5.3vw }
+  :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
+  .root > main:global(.practice-page) { --ed-gutter: 7vw }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
   .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
   .navigation { --nav-hit-height: 5.72917vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 2.60417vw; min-height: 12.2396vw; padding: 2.86459vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
@@ -172,6 +177,9 @@
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.242719vw; height: 0.242719vw; position: absolute; overflow: hidden }
   .root { position: relative; isolation: isolate; min-height: var(--design-height) }
   .root > main, .root > footer { position: relative; z-index: 1 }
+  .root > main { --ed-gutter: 5.3vw }
+  :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
+  .root > main:global(.practice-page) { --ed-gutter: 7vw }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
   .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
   .root :global(.standard-footer .footer-word-text) { font-size: 17.7189vw; line-height: 24.001vw; letter-spacing: -0.531564vw; left: -1.63604vw; --footer-ink-line-height: 15.947vw; --footer-ink-offset-y: 0.76511vw }

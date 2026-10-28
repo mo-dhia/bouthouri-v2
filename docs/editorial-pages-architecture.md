@@ -8,7 +8,19 @@ The environment reuses the existing deferred pressure-field renderer with an exp
 
 The three fixed reference canvases and width-only scaling in [viewport-design.md](viewport-design.md) apply to navigation, page geometry, SVG and Three cameras, text, footer and pointer mapping. Native visibility, scroll limits and pixel buffers remain browser mechanics.
 
+The shell publishes `--ed-gutter` on its server-rendered main: English uses
+5.3vw desktop and 7vw for compact practice pages; Arabic retains 6vw at every
+profile through the source locale specificity. Services inherits this contract,
+including its hero insets and index padding. A missing custom property invalidates
+whole padding/inset declarations, so this is a layout dependency, not a cosmetic
+default. Profile fixtures cover the shared cascade.
+
 The common footer retains BOUTHOURI's approved taller/heavier outlines and the scroll-reversal correction. Standard pages use the source's distinct staged invitation/word/metadata reveal, driven by the custom native-scroll manager. HOME retains its existing shared journey ownership. The standard-footer controller independently owns a motion-only native scroll tail that supplies any physical viewport height above the fixed design height, keeping the footer endpoint reachable without recomposing it. Standard footer CSS remains visible and width-fitted before enhancement or when its chunk fails.
+
+Changes to preceding content and the native tail update the standard footer's
+cached document position without rebuilding glyph/material geometry. Only a
+changed mask or an explicit font measurement invalidates that geometry, retaining
+wave and idle history through height-only viewport updates.
 
 ## Contact delivery
 
