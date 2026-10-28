@@ -1,0 +1,192 @@
+{
+  "en": {
+    "index": "SERVICES / POINTS OF ENTRY",
+    "hero": [
+      "IT STARTS",
+      "WITH CLARITY."
+    ],
+    "intro": "Sometimes we start from zero. Sometimes we improve what’s already there. Knowing what needs to change comes before either one.",
+    "read": "FIND YOUR WAY IN",
+    "opening": {
+      "label": "A PLACE TO START",
+      "first": "START WITH",
+      "second": "WHAT’S IN THE WAY.",
+      "copy": "Sometimes it’s the interface. Sometimes it’s what happens behind it. The useful part is finding what actually needs to change.",
+      "band": "WORKING IS ONE THING.  WORKING RIGHT IS ANOTHER.",
+      "instruction": "GRAB + PULL",
+      "handle": "Grab, pull and release the surface",
+      "keyboard": "Press Enter or Space to open. Or use any arrow key to pull, then Enter or Space to release. Escape lets go.",
+      "works": "IT WORKS.",
+      "payoff": [
+        "NOW MAKE IT",
+        "WORK FOR PEOPLE."
+      ],
+      "status": "The surface is open. It works. Now make it work for people."
+    },
+    "capabilities": {
+      "title": "IN PLAIN TERMS.",
+      "hint": "What the work can actually become.",
+      "items": [
+        {
+          "id": "ui",
+          "name": "UI design & usability",
+          "context": "Your product works, but using it feels harder than it should. I reshape the interface around how people use it, making the next step clearer and the experience easier to trust."
+        },
+        {
+          "id": "frontend",
+          "name": "Frontend development",
+          "context": "You have a design, but the details get lost in the build. I turn it into a responsive interface that holds together across devices, interactions and the less obvious states."
+        },
+        {
+          "id": "backend",
+          "name": "Backend & systems",
+          "context": "The interface is only part of the problem. I connect the data, tools and business logic underneath it so the product and the work around it can run reliably."
+        },
+        {
+          "id": "product",
+          "name": "Product engineering",
+          "context": "You have an idea to build, or a product ready for its next step. I work through the design and engineering together, from the first decisions to a working system."
+        },
+        {
+          "id": "modernise",
+          "name": "Modernisation & redesign",
+          "context": "Your product has outgrown its interface or become difficult to change. I update the experience and the structure behind it, keeping what works instead of starting again."
+        },
+        {
+          "id": "direction",
+          "name": "Technical direction",
+          "context": "Your team is building, but the next decisions need a clearer direction. I help untangle architecture, priorities and trade-offs so product and engineering can move together."
+        },
+        {
+          "id": "delivery",
+          "name": "DevOps & delivery",
+          "context": "Releasing a change should not feel like a gamble. I make the path from development to production more dependable, with environments and monitoring you can rely on."
+        },
+        {
+          "id": "performance",
+          "name": "Performance",
+          "context": "The product works, but people spend too much time waiting. I find what is slowing it down and improve it where the delay begins, in the interface or deeper in the system."
+        },
+        {
+          "id": "automation",
+          "name": "Automation",
+          "context": "Your team keeps moving the same information between tools or repeating the same steps. I connect the workflow so the system handles the routine work and people handle the exceptions."
+        },
+        {
+          "id": "ai",
+          "name": "AI integration",
+          "context": "You see a place where AI might save time or make the product more useful. I test that idea, then build it into the workflow with clear limits and room for human judgement."
+        },
+        {
+          "id": "creative",
+          "name": "Creative development",
+          "context": "A launch, campaign or story needs more than a page to read. I build interactive experiences where motion and participation help people understand and remember the idea."
+        }
+      ]
+    },
+    "end": {
+      "label": "YOUR STARTING POINT",
+      "title": [
+        "TELL ME WHAT’S",
+        "NOT WORKING YET."
+      ],
+      "copy": "An idea, a sticking point, or a question is enough",
+      "action": "START A CONVERSATION"
+    }
+  },
+  "ar": {
+    "index": "الخدمات / من أين نبدأ",
+    "hero": [
+      "البداية",
+      "وضوح الصورة."
+    ],
+    "intro": "قد نبدأ من الصفر أو نطوّر ما هو قائم. في الحالتين، نحدّد أولًا ما يحتاج إلى تغيير.",
+    "read": "اكتشف نقطة البداية",
+    "opening": {
+      "label": "نقطة البداية",
+      "first": "نبدأ بإزالة",
+      "second": "عوائق الطريق.",
+      "copy": "قد يكون العائق في الواجهة أو فيما يحدث خلفها. نبدأ بتحديد ما يحتاج فعلًا إلى تغيير.",
+      "band": "أن يعمل المنتج شيء.  وأن يعمل جيدًا شيء آخر.",
+      "instruction": "أمسك واسحب",
+      "handle": "أمسك الطرف واسحبه ثم أفلته",
+      "keyboard": "اضغط Enter أو المسافة للفتح. أو استخدم الأسهم للسحب، ثم Enter أو المسافة للإفلات. اضغط Escape للتراجع.",
+      "works": "إنه يعمل.",
+      "payoff": [
+        "لنجعله الآن",
+        "مفيدًا للناس."
+      ],
+      "status": "انفتح السطح. إنه يعمل. لنجعله الآن مفيدًا للناس."
+    },
+    "capabilities": {
+      "title": "بوضوح.",
+      "hint": "ما يمكن أن نعمل عليه معًا.",
+      "items": [
+        {
+          "id": "ui",
+          "name": "تصميم الواجهات وسهولة الاستخدام",
+          "context": "المنتج يعمل، لكن استخدامه أصعب مما ينبغي. أعيد تنظيم الواجهة وفق طريقة استخدام الناس لها، لتصبح الخطوة التالية أوضح والتجربة أسهل فهمًا وأكثر موثوقية."
+        },
+        {
+          "id": "frontend",
+          "name": "تطوير الواجهات",
+          "context": "لديك تصميم، لكن تفاصيله تضيع أثناء التنفيذ. أحوّله إلى واجهة متجاوبة تحافظ على الفكرة عبر الأجهزة وحالات الاستخدام، بما فيها الحالات التي لا تظهر من النظرة الأولى."
+        },
+        {
+          "id": "backend",
+          "name": "الأنظمة وما وراء الواجهة",
+          "context": "لا تقتصر المشكلة على الواجهة. أربط البيانات والأدوات ومنطق العمل خلفها، ليعمل المنتج وما يرتبط به من عمليات بموثوقية، دون الاعتماد على حلول مؤقتة."
+        },
+        {
+          "id": "product",
+          "name": "هندسة المنتجات",
+          "context": "لديك فكرة تريد بناءها، أو منتج يستعد لخطوته التالية. أعمل على التصميم والهندسة معًا، من القرارات الأولى إلى نظام جاهز للاستخدام."
+        },
+        {
+          "id": "modernise",
+          "name": "التحديث وإعادة التصميم",
+          "context": "تجاوز المنتج حدود واجهته، أو أصبح تعديله صعبًا. أطوّر التجربة والبنية التي تدعمها، مع الحفاظ على ما ينجح بدلًا من البدء من الصفر."
+        },
+        {
+          "id": "direction",
+          "name": "التوجيه التقني",
+          "context": "الفريق يبني، لكن القرارات المقبلة تحتاج إلى اتجاه أوضح. أساعد في تحديد المعمارية والأولويات والمفاضلات، لتتقدّم قرارات المنتج والهندسة في اتجاه واحد."
+        },
+        {
+          "id": "delivery",
+          "name": "النشر والتشغيل",
+          "context": "ينبغي ألا يكون كل تحديث مصدر قلق. أجعل الانتقال من التطوير إلى التشغيل أكثر موثوقية، ببيئات واضحة ومراقبة تساعد الفريق على النشر بثقة واكتشاف المشكلات مبكرًا."
+        },
+        {
+          "id": "performance",
+          "name": "تحسين الأداء",
+          "context": "المنتج يؤدي المطلوب، لكن المستخدمين ينتظرون طويلًا. أحدّد سبب البطء وأعالجه من مصدره، سواء في الواجهة أو في النظام الذي يدعمها."
+        },
+        {
+          "id": "automation",
+          "name": "الأتمتة",
+          "context": "ينقل الفريق البيانات نفسها بين الأدوات أو يكرّر الخطوات يوميًا. أربط سير العمل ليتولّى النظام المهام المتكررة، ويتفرّغ الناس للحالات التي تحتاج إلى قرار."
+        },
+        {
+          "id": "ai",
+          "name": "دمج الذكاء الاصطناعي",
+          "context": "ترى فرصة لاستخدام الذكاء الاصطناعي لتوفير الوقت أو تحسين المنتج. أختبر الفكرة، ثم أدمجها في سير العمل بحدود واضحة ومساحة للمراجعة البشرية."
+        },
+        {
+          "id": "creative",
+          "name": "التطوير الإبداعي",
+          "context": "إطلاق أو حملة أو قصة تحتاج إلى أكثر من صفحة للقراءة. أبني تجربة تفاعلية تساعد فيها الحركة والمشاركة على فهم الفكرة وتذكّرها."
+        }
+      ]
+    },
+    "end": {
+      "label": "نقطة بدايتك",
+      "title": [
+        "ما الذي يحتاج",
+        "إلى حل؟"
+      ],
+      "copy": "فكرة، عقبة، أو سؤال. هذا يكفي لنبدأ",
+      "action": "لنبدأ حوارًا"
+    }
+  }
+}
