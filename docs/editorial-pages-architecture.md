@@ -8,6 +8,16 @@ The environment reuses the existing deferred pressure-field renderer with an exp
 
 The three fixed reference canvases and width-only scaling in [viewport-design.md](viewport-design.md) apply to navigation, page geometry, SVG and Three cameras, text, footer and pointer mapping. Native visibility, scroll limits and pixel buffers remain browser mechanics.
 
+The editorial root inherits source body weight through `var(--weight-400, 400)`:
+400 for English and 450 for Arabic with the current local typography variables.
+This keeps unweighted hero copy consistent with the source without changing
+measured text widths or the accepted HOME stylesheet. Explicit heading, control
+and paragraph weights still override that inheritance. The source declaration is
+`html[lang=ar] body { font-weight: var(--weight-400,400) }` in the retained common
+stylesheet; the scoped editorial root supplies the missing inheritance locally.
+R2's 412px Arabic Vision control reproduced the exact source line fragments by
+changing only this weight. The new production build still needs its paired recheck.
+
 The shell publishes `--ed-gutter` on its server-rendered main: English uses
 5.3vw desktop and 7vw for compact practice pages; Arabic retains 6vw at every
 profile through the source locale specificity. Services inherits this contract,

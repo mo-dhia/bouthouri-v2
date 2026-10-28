@@ -32,7 +32,7 @@
   .root :global(.global-footer .footer-label) { font-size: max(0.520834vw, calc(0.416667vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(0.520834vw, calc(0.46875vw * var(--type-scale, 1))) }
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.0520834vw; height: 0.0520834vw; position: absolute; overflow: hidden }
-  .root { position: relative; isolation: isolate; min-height: var(--design-height) }
+  .root { position: relative; isolation: isolate; min-height: var(--design-height); font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
   :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
@@ -89,7 +89,7 @@
   .root :global(.global-footer .footer-label) { font-size: max(1.30209vw, calc(1.04167vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(1.30209vw, calc(1.17188vw * var(--type-scale, 1))) }
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.130209vw; height: 0.130209vw; position: absolute; overflow: hidden }
-  .root { position: relative; isolation: isolate; min-height: var(--design-height) }
+  .root { position: relative; isolation: isolate; min-height: var(--design-height); font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
   :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
@@ -175,7 +175,7 @@
   .root :global(.global-footer .footer-label) { font-size: max(2.42719vw, calc(1.94175vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(2.42719vw, calc(2.18447vw * var(--type-scale, 1))) }
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.242719vw; height: 0.242719vw; position: absolute; overflow: hidden }
-  .root { position: relative; isolation: isolate; min-height: var(--design-height) }
+  .root { position: relative; isolation: isolate; min-height: var(--design-height); font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
   :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
