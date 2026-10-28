@@ -7,7 +7,7 @@ import * as viewport from "@/lib/viewport-design";
 
 // Exercise the mounted controller with counted DOM operations. Layout values
 // are supplied explicitly; this checks ownership/invalidation, not CSS parity.
-function harness({ reading = false, late = false, locale = "en", width = 1920, physicalHeight = 1080 } = {}) {
+function harness({ reading = false, late = false, locale = "en", width = 1920, physicalHeight = 1080, menu = false } = {}) {
   const counts = { queries: 0, geometry: 0, writes: 0 };
   let y = 0;
   class Surface extends EventTarget {
@@ -37,7 +37,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     get offsetHeight() { counts.geometry++; return this.height; }
     get offsetWidth() { counts.geometry++; return this.width; }
     getBoundingClientRect() { counts.geometry++; return { top: this.top - (this.fixed ? 0 : y), height: this.height }; }
-    querySelector(selector: string) { counts.queries++; return (this.queries.get(selector) as Surface | undefined) ?? null; }
+    querySelector(selector: string) { counts.queries++; const result = this.queries.get(selector); return (Array.isArray(result) ? result[0] : result) ?? null; }
     querySelectorAll(selector: string) { counts.queries++; return (this.queries.get(selector) as Surface[] | undefined) ?? []; }
     getAttribute(key: string) { return this.attributes.get(key) ?? null; }
     hasAttribute(key: string) { return this.attributes.has(key); }
@@ -49,7 +49,29 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     remove() { if (this.parent) this.parent.children.splice(this.parent.children.indexOf(this), 1); this.parent = undefined; }
   }
   const body = new Surface(), root = new Surface(), utilities = new Surface(), entrance = new Surface();
-  const dialog = Object.assign(new Surface(), { open: false });
+  const dialog = Object.assign(new Surface(), {
+    open: false, scrollTop: 0,
+    showModal() { this.open = true; },
+    close() { this.open = false; },
+  });
+  const menuRail = new Surface(), menuControl = new Surface();
+  const menuItems = Array.from({ length: 4 }, (_, index) => {
+    const item = new Surface();
+    item.dataset.menuItem = String(index);
+    Object.defineProperties(item, {
+      offsetTop: { get: () => { counts.geometry++; return dialog.open ? item.top : 0; } },
+      offsetHeight: { get: () => { counts.geometry++; return dialog.open ? item.height : 0; } },
+    });
+    return item;
+  });
+  Object.assign(menuControl, {
+    closest: (selector: string) => selector === "[data-menu-control]" ? menuControl : null,
+    matches: () => false,
+  });
+  if (menu) {
+    dialog.queries.set("[data-menu-item]", menuItems);
+    dialog.queries.set("[data-menu-rail]", menuRail);
+  }
   const hero = new Surface(), persistent = new Surface(), side = new Surface(), sideRoll = new Surface();
   const rolls = Array.from({ length: 4 }, () => new Surface());
   const identity = new Surface(), chapter = new Surface(), original = new Surface();
@@ -73,13 +95,13 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     body, hidden: false, documentElement: new Surface(),
     fonts: { ready: new Promise<void>((resolve) => { fontsReady = resolve; }) },
     querySelector(selector: string) { counts.queries++; return available ? selector === "#identity" ? identity : selector === ".glasses-chapter" ? chapter : null : null; },
-    querySelectorAll() { counts.queries++; return available ? [original] : []; },
+    querySelectorAll(selector: string) { counts.queries++; return selector === "[data-menu-control]" ? (menu ? [menuControl] : []) : available ? [original] : []; },
     createComment: () => new Surface(),
     createElement: () => Object.assign(new Surface(), { getContext: () => null }),
   });
   const motion = Object.assign(new EventTarget(), { matches: false });
   const window = Object.assign(new EventTarget(), { matchMedia: () => motion });
-  const state = { quietMode: reading, homeSceneFailed: false, soundEnabled: false, menuOpen: false };
+  const state = { quietMode: reading, homeSceneFailed: false, soundEnabled: false, menuOpen: false, setMenuOpen(value: boolean) { this.menuOpen = value; } };
   const subscribers = new Set<() => void>();
   let resize!: () => void, mutate!: (records: { type: string }[]) => void;
   let resizeDisconnected = false, mutationDisconnected = false, rowTop = "34px";
@@ -89,7 +111,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     get innerHeight() { return physicalHeight; },
     get scrollY() { return y; },
     getComputedStyle() { counts.geometry++; return { top: rowTop }; },
-    clearTimeout() {}, cancelAnimationFrame() {},
+    setTimeout: () => 1, clearTimeout() {}, cancelAnimationFrame() {},
     ResizeObserver: class {
       constructor(callback: () => void) { resize = callback; }
       observe() {} unobserve() {} disconnect() { resizeDisconnected = true; }
@@ -105,7 +127,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     "@/lib/audio/section-whispers": { attachSectionWhispers: () => () => {} },
     "./menu.module.css": { default: {} },
     "./header.module.css": { default: { readingNavigation: "reading-viewport", readingFrame: "reading-frame" } },
-    "./menu-timeline": { createMenuTimeline: () => ({ dispose() {} }) },
+    "./menu-timeline": { createMenuTimeline: () => ({ dispose() {}, play() {}, pause() {}, reverse() {}, time: () => 1, duration: 1 }) },
     "@/sections/landing/1-hero/hero-world": heroWorld,
     "@/lib/viewport-design": viewport,
   };
@@ -117,7 +139,12 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     return dependencies[name];
   }, evaluated, evaluated.exports);
   return {
-    counts, root, utilities, entrance, hero, side, identity, chapter, original, motion, window,
+    counts, root, utilities, entrance, hero, side, identity, chapter, original, motion, window, menuItems, menuRail, dialog,
+    toggleMenu() {
+      const event = new Event("click");
+      Object.defineProperty(event, "target", { value: menuControl });
+      document.dispatchEvent(event);
+    },
     mount: () => evaluated.exports.mountHeader(root),
     reset() { counts.queries = counts.geometry = counts.writes = 0; },
     scroll(value: number) { y = value; window.dispatchEvent(new Event("scroll")); },
@@ -228,6 +255,46 @@ test("profile navigation scales measured geometry once and ignores physical view
       expect(h.hero.style.opacity).toBe(String(referencePose.navOpacity));
       dispose();
       expect(h.clean).toBe(true);
+    }
+  }
+});
+
+
+test("menu rail measures visible rows on open and retains selection through layout, fonts and reopen", async () => {
+  for (const [width, physicalHeight, nextWidth, enCenter, arCenter] of [
+    [1920, 1080, 1440, 70, 97],
+    [768, 1024, 650, 34, 59],
+    [412, 915, 320, 29, 44],
+  ]) {
+    for (const locale of ["en", "ar"]) {
+      const h = harness({ menu: true, reading: true, locale, width, physicalHeight });
+      const center = locale === "en" ? enCenter : arCenter;
+      h.menuItems.forEach((item, index) => { item.top = index * center * 2; item.height = center * 2; });
+      const dispose = h.mount();
+      expect(h.dialog.open).toBe(false);
+      expect(h.menuRail.style.transform).toBeUndefined(); // Hidden offsets are zero.
+      expect(h.menuItems[0].dataset.selected).toBe("true");
+      h.toggleMenu();
+      expect(h.dialog.open).toBe(true);
+      expect(h.menuRail.style.transform).toBe(`translateY(${viewport.pixelsToVw(center, width)})`);
+      h.menuItems[2].dispatchEvent(new Event("pointerenter"));
+      expect(h.menuRail.style.transform).toBe(`translateY(${viewport.pixelsToVw(center * 5, width)})`);
+      h.menuItems[1].dispatchEvent(new Event("focus"));
+      expect(h.menuItems[1].dataset.selected).toBe("true");
+      const scale = nextWidth / width;
+      h.menuItems.forEach((item) => { item.top *= scale; item.height *= scale; });
+      h.resize("34px", nextWidth, physicalHeight / 2);
+      expect(h.menuRail.style.transform).toBe(`translateY(${viewport.pixelsToVw(center * 3 * scale, nextWidth)})`);
+      h.menuItems[1].height += 8 * scale;
+      h.fontsReady(); await Promise.resolve();
+      const expected = `translateY(${viewport.pixelsToVw(center * 3 * scale + 4 * scale, nextWidth)})`;
+      expect(Number.parseFloat((h.menuRail.style.transform as string).slice(11))).toBeCloseTo(Number.parseFloat(expected.slice(11)), 10);
+      const positioned = h.menuRail.style.transform;
+      h.toggleMenu(); expect(h.dialog.open).toBe(false);
+      h.toggleMenu(); expect(h.dialog.open).toBe(true);
+      expect(h.menuItems[1].dataset.selected).toBe("true");
+      expect(h.menuRail.style.transform).toBe(positioned);
+      dispose(); expect(h.clean).toBe(true);
     }
   }
 });

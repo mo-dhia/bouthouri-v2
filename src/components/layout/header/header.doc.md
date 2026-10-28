@@ -206,3 +206,14 @@ The null gate view delegates deferred mounting and teardown to
 `header-animate-gate.logic.ts`. Shell markup is guarded by `server-only`;
 `header.logic.ts` remains dynamically imported because navigation must work
 independently of animation preferences and viewport position.
+
+
+2026-10-28 final reference review found that selecting the first menu row while
+the native dialog was closed measured zero offsets. Selection is now retained
+without hidden geometry reads; after `showModal()` the rail measures the visible
+selected row and emits its center in `vw`. Pointer/focus selection, window and
+font-ready layout changes remeasure the same selected row. Reopening preserves
+selection; the dialog's native scroll reset and reversible timeline are unchanged.
+The mounted regression models zero closed offsets across EN/AR at all three
+reference widths, selection changes, proportional resize, font completion and
+reopen. No new RAF or geometry reads are added to ordinary journey frames.

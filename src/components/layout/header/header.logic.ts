@@ -115,6 +115,7 @@ export function mountHeader(root: HTMLElement): () => void {
   let copiedTimer: ReturnType<typeof setTimeout> | undefined;
   let menuPhase: "closed" | "opening" | "open" | "closing" = "closed";
   let lastPose = heroWorldPose(0);
+  let selectedMenuItem: HTMLElement | undefined;
 
   const animate = (
     element: Element | null,
@@ -278,6 +279,14 @@ export function mountHeader(root: HTMLElement): () => void {
   };
   document.addEventListener("visibilitychange", updateClock);
 
+  const positionMenuRail = () => {
+    // Closed dialogs have no layout. Measure after showModal, and again only
+    // when selection or layout changes; ordinary journey frames do no work.
+    if (!dialog.open || !selectedMenuItem) return;
+    const rail = dialog.querySelector<HTMLElement>("[data-menu-rail]");
+    if (rail)
+      rail.style.transform = `translateY(${pixelsToVw(selectedMenuItem.offsetTop + selectedMenuItem.offsetHeight / 2, viewportWidth)})`;
+  };
   const setMenuPhase = (value: typeof menuPhase) => {
     menuPhase = value;
     dialog.dataset.phase = value;
@@ -353,6 +362,7 @@ export function mountHeader(root: HTMLElement): () => void {
       const scroller = dialog.querySelector<HTMLElement>("[data-menu-scroll]");
       if (scroller) scroller.scrollTop = 0;
       measureInk();
+      positionMenuRail();
       dialog
         .querySelector<HTMLButtonElement>("[data-menu-close]")
         ?.focus({ preventScroll: true });
@@ -427,6 +437,7 @@ export function mountHeader(root: HTMLElement): () => void {
   dialog.addEventListener("cancel", onCancel);
 
   const selectMenu = (item: HTMLElement) => {
+    selectedMenuItem = item;
     const index = item.dataset.menuItem;
     dialog.querySelectorAll<HTMLElement>("[data-menu-item]").forEach((link) => {
       link.dataset.selected = String(link === item);
@@ -445,9 +456,7 @@ export function mountHeader(root: HTMLElement): () => void {
           320,
         );
       });
-    const rail = dialog.querySelector<HTMLElement>("[data-menu-rail]");
-    if (rail)
-      rail.style.transform = `translateY(${pixelsToVw(item.offsetTop + item.offsetHeight / 2, viewportWidth)})`;
+    positionMenuRail();
   };
   dialog.querySelectorAll<HTMLElement>("[data-menu-item]").forEach((item) => {
     const select = () => selectMenu(item);
@@ -626,6 +635,7 @@ export function mountHeader(root: HTMLElement): () => void {
   const onResize = () => {
     measureNavigation();
     measureInk();
+    positionMenuRail();
   };
   const onNavigationState = () => {
     if (readingMode !== reduced()) onResize();
