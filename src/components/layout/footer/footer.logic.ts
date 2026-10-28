@@ -1,3 +1,4 @@
+import { brand } from "@/config/brand";
 import { uiStore } from "@/store/uiStore";
 import { measureFooterWord } from "./footer-geometry";
 
@@ -38,7 +39,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     const now = new Date();
     if (clock) {
       clock.textContent = new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Africa/Cairo",
+        timeZone: brand.location.timeZone,
         hour: "2-digit",
         minute: "2-digit",
         hourCycle: "h23",

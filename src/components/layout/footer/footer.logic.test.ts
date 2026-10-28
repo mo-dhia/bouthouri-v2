@@ -130,6 +130,7 @@ function harness(variant = "home") {
     ResizeObserver: class { constructor(callback: () => void) { maskResize = callback; } observe() {} disconnect() {} },
   };
   const dependencies = {
+    "@/config/brand": { brand },
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe: (callback: () => void) => { subscribers.add(callback); return () => subscribers.delete(callback); } } },
     "./footer-geometry": { measureFooterWord() { wordMeasures++; } },
     "./footer-material": { mountFooterMaterial() {
@@ -162,7 +163,7 @@ function harness(variant = "home") {
       }
       now = end;
     },
-    expectedTime: () => new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(now)),
+    expectedTime: () => new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Tunis", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(now)),
     iso: () => new Date(now).toISOString(),
     get active() { return active; },
     get mounts() { return materialMounts; },
@@ -200,7 +201,7 @@ function harness(variant = "home") {
 
 const flushImports = async () => { for (let i = 0; i < 6; i++) await Promise.resolve(); };
 
-test("Cairo clock stays current when a pinned work visit becomes an already-intersecting reading footer", async () => {
+test("Tunis clock stays current when a pinned work visit becomes an already-intersecting reading footer", async () => {
   const h = harness(), dispose = h.mount();
   h.intersect(true); h.frame(714); await flushImports();
   h.frame(345.63); // The IO remains true; there will be no new crossing callback.

@@ -20,6 +20,11 @@ for (const locale of ["en", "ar"]) {
   assert.ok(visible.includes(brand.wordmark));
   assert.ok(markup.includes(`mailto:${brand.email}`));
   assert.ok(markup.includes(brand.linkedIn));
+  assert.doesNotMatch(visible, /cairo|egypt|القاهرة|مصر/i);
+  assert.ok(visible.includes(locale === "ar" ? brand.location.arabicCountry : brand.location.country.toUpperCase()));
+  assert.ok(visible.includes(locale === "ar" ? brand.location.arabicCity : brand.location.city.toUpperCase()));
+  assert.ok(markup.includes(`data-shell-clock="${brand.location.timeZone}"`));
+  assert.ok(markup.includes(`data-footer-clock="${brand.location.timeZone}"`));
   assert.ok(html.includes(brand.name), "Metadata/schema should identify the new owner");
   assert.match(markup, /<h1[^>]*id="hero-name"/);
   assert.match(markup, /id="beyond"/);

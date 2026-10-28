@@ -1,6 +1,7 @@
 import "server-only";
 
 import Link from "next/link";
+import { brand } from "@/config/brand";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
 import IdentityLogo from "./identity-logo";
@@ -430,7 +431,7 @@ export default function Header({
                   <span className={menu["menu-meta-label"]}>{copy.time}</span>
                   <div className={menu["menu-time-row"]}>
                     <span>{copy.country}</span>
-                    <time dir="ltr" data-shell-clock="Africa/Cairo">
+                    <time dir="ltr" data-shell-clock={brand.location.timeZone}>
                       --:--
                     </time>
                   </div>

@@ -55,7 +55,7 @@ export default function Footer({
         </div>
         <div className="footer-clock">
           <span className="footer-label">{labels.footerTime}</span>
-          <time dir="ltr" data-footer-clock="Africa/Cairo">
+          <time dir="ltr" data-footer-clock={brand.location.timeZone}>
             --:--
           </time>
         </div>

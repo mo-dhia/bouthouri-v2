@@ -39,22 +39,24 @@ and buffers stay paired; production review remains root-owned.
 `Footer copy={dictionary.footer}` is inserted **once inside `.systems-story`**
 by Journey, with an explicit required`locale`. It renders the original
 `.home-footer`, `.footer-information`, `.footer-word-mask`, `.footer-word-text`,
-`.footer-thought` and `.footer-colophon`, links, Cairo time and EN/AR copy. There
+`.footer-thought` and `.footer-colophon`, links, Tunis time and EN/AR copy. There
 is no second page footer. Parent's scoped source CSS and systems timeline own
 its reveal, transform, inertness and positioning. Reduced/no-JS uses the
 parent's `.experience.is-reduced` layout and keeps all footer content readable.
 
 `footer.logic.ts` exports `mountFooterInteractions(root)` for source DOM as
-well as the supplied null gate. It fits the original GAZZAR ink using Questrial
-metrics, tracks nav exclusions and footer information height, and updates Cairo
-time at minute boundaries. Clearance measures enclosing data-nav-mask boxes;
+well as the supplied null gate. It fits the BOUTHOURI ink using Questrial
+metrics, tracks nav exclusions and footer information height, and updates Tunis
+time at minute boundaries. Location labels and the `Africa/Tunis` timezone share
+the identity configuration in `src/config/brand.ts`.
+Clearance measures enclosing data-nav-mask boxes;
 the shell side-menu replaces the parent’s hidden duplicate chapter-side control.
 Mobile side-menu centers in the source 44px navigation row, giving bottom 60px
 plus 20px clearance rather than the former 82px. It listens to parent `journey-frame` for visibility;
 material data/controller load near the footer or on focus/pointer intent.
 
 R11 exposed a stale clock after work→reading when the mask stayed intersecting.
-Cairo time now follows the source foreground-document minute timer (+20ms),
+The clock follows the source foreground-document minute timer (+20ms),
 updates immediately on mount/effective reading changes and document resumption,
 and releases its timer/listeners on cleanup. Material reveal has separate
 eligibility: HOME reading keeps the source reveal at zero; a standard footer

@@ -6,4 +6,11 @@ export const brand = {
   wordmark: "BOUTHOURI",
   email: "contact@bouthouri.co",
   linkedIn: "https://www.linkedin.com/feed/",
+  location: {
+    city: "Tunis",
+    country: "Tunisia",
+    arabicCity: "تونس",
+    arabicCountry: "تونس",
+    timeZone: "Africa/Tunis",
+  },
 } as const;

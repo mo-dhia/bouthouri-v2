@@ -46,14 +46,16 @@ have an inline baseline marker and the source's measured ink-centering correctio
 Conversation links retain the rollover; background marquee cue is editorial.
 
 Menu is a server-rendered modal dialog with source labels/routes/descriptors,
-language, synchronized sound button, email/COPY feedback, LinkedIn, Cairo clock,
+language, synchronized sound button, email/COPY feedback, LinkedIn, Tunis clock,
 role and year. Surface opens 0..360ms; content unclips 360..480; links start
 400ms with 45ms stagger; secondary content starts 540ms with 45ms stagger;
 footer begins 650ms. Closing restores the invoking control. Native dialog focus
 containment, Escape handling, native document scroll lock, and scroll-position correction
 keep the background still, including programmatic scrolling. Internal menu scroll
 is native. All menu content is in initial HTML; no-JS navigation is provided.
-Cairo time updates on minute boundaries and changing menu digits roll over 360ms.
+Tunis time updates on minute boundaries and changing menu digits roll over 360ms.
+Location labels and the shared `Africa/Tunis` timezone come from
+`src/config/brand.ts`; English uses Tunis/Tunisia and Arabic uses تونس.
 Clipboard success/error feedback is implemented; the parent observed trusted
 COPY reach COPIED after its write promise resolved. A synthetic native cancel
 event closes the dialog and releases the lock. The Vaelix key path omits the
