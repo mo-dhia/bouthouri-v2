@@ -115,7 +115,7 @@ function graphicsHarness(normal = false) {
     },
     "./hero-world": { clamp: (x: number) => Math.max(0, Math.min(1, x)) },
     "@/lib/viewport-design": viewport,
-    "@/components/layout/header/material-protection": { emitMaterialProtection: normal ? () => {} : forbidden },
+    "@/components/layout/header/material-protection": { createMaterialProtectionPublisher: () => normal ? () => {} : forbidden },
     "@/lib/audio/material-audio": { playMaterialImpulse: forbidden, setMaterialMotion: normal ? () => {} : forbidden, clearMaterialMotion: normal ? () => {} : forbidden },
   };
   const source = ts.transpileModule(readFileSync(new URL("./hero-portrait.ts", import.meta.url), "utf8"), {

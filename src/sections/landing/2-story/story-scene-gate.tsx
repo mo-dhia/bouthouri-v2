@@ -1,10 +1,11 @@
 "use client";
 
-import { useStorySceneGate, useStorySceneMount, type StorySceneMountOptions } from "./story-scene-gate.logic";
+import { useHomeEnvironment, useStorySceneGate, useStorySceneMount, type StorySceneMountOptions } from "./story-scene-gate.logic";
 
 /** Optional visuals only; all copy and fallback markup remain server-owned. */
 export default function StorySceneGate() {
   const { failed, staticMode, onFailure } = useStorySceneGate();
+  useHomeEnvironment(staticMode || failed);
   return failed ? null : <StorySceneMount staticMode={staticMode} onFailure={onFailure} />;
 }
 

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { emitMaterialProtection } from "@/components/layout/header/material-protection";
+import { createMaterialProtectionPublisher } from "@/components/layout/header/material-protection";
 import { clamp } from "./hero-world";
 import { viewportDesign } from "@/lib/viewport-design";
 import type { ReadingPortraitState } from "./hero-reading-portrait";
@@ -142,6 +142,7 @@ export async function mountHeroPortrait(
   root: HTMLElement,
   options: PortraitOptions = {},
 ): Promise<PortraitController> {
+  const emitMaterialProtection = createMaterialProtectionPublisher(root);
   const container = root.querySelector<HTMLElement>(
     "[data-portrait-entrance]",
   )!;

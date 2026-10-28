@@ -1,9 +1,11 @@
 "use client";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 const load = () => import("./editorial.animate");
 export default function EditorialAnimateGate({ page }: { page: string }) {
-  useEffect(() => { let disposed = false; let cleanup: (() => void) | undefined;
-    void load().then(({ mountEditorial }) => { const root = document.querySelector<HTMLElement>(`[data-editorial-page="${page}"]`); if (!disposed && root) cleanup = mountEditorial(root); }).catch(() => {});
+  useLayoutEffect(() => { let disposed = false; let cleanup: (() => void) | undefined;
+    const path = location.pathname.replace(/\/$/, "");
+    const root = [...document.querySelectorAll<HTMLElement>(`[data-editorial-page="${page}"]`)].find(element => element.querySelector<HTMLElement>("main")?.dataset.routePath === path);
+    void load().then(({ mountEditorial }) => { if (!disposed && root?.isConnected && location.pathname.replace(/\/$/, "") === path) cleanup = mountEditorial(root); }).catch(() => {});
     return () => { disposed = true; cleanup?.(); };
   }, [page]);
   return null;

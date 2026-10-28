@@ -117,7 +117,10 @@ not be added around pinned/sticky scenes indiscriminately.
 
 Vision, Services and Contact use server-only page compositions in both locales.
 Their common editorial shell is distinct from HOME geometry, reusing the menu,
-standard footer and deferred field controller. Page-only CSS stays out of HOME's
+standard footer and deferred field controller. The locale layout owns the small
+background coordinator; supported route leases retain its resources across HOME
+and editorial navigation. Its heavy renderer still loads dynamically after an
+eligible lease. Page-only CSS stays out of HOME's
 server import graph. Page content and form controls are prerendered; controllers
 and practice-object graphics load across separate boundaries. See
 [editorial pages](editorial-pages-architecture.md) for ownership and delivery settings.

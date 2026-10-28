@@ -11,6 +11,13 @@ import { designHeight, viewportDesign } from "@/lib/viewport-design";
 export type SceneGuard = { x: number; y: number; rx: number; ry: number; weight: number };
 export type SceneInteraction = { guards: SceneGuard[]; grabbed: boolean };
 export type StoryEnvironmentController = { setReducedMode(enabled: boolean): void; dispose(): void };
+type EditorialPose = { time: number; environment: number; surfaceQuiet: number };
+export type EnvironmentBinding = { stage: HTMLElement; page: HTMLElement; owner: HTMLElement } & (
+  | { kind: "home"; heroRoot: HTMLElement | null }
+  | { kind: "editorial"; pose: () => EditorialPose }
+);
+export type EnvironmentAttachment = { invalidate(): void; release(): void };
+export type PersistentStoryEnvironmentController = StoryEnvironmentController & { bind(binding: EnvironmentBinding): EnvironmentAttachment };
 type StoryEnvironmentOptions = { reduced?: boolean; pose?: () => { time: number; environment: number; surfaceQuiet: number } };
 
 /** Cleanup-only adapter retained for imperative callers. */
@@ -18,22 +25,42 @@ export function mountStoryEnvironment(stage: HTMLElement, options: StoryEnvironm
   return createStoryEnvironment(stage, options).dispose;
 }
 
-/** One fixed material controller for the HOME lifetime, including reading mode. */
+/** Compatibility adapter for standalone imperative consumers and their focused tests. */
 export function createStoryEnvironment(stage: HTMLElement, options: StoryEnvironmentOptions = {}): StoryEnvironmentController {
-  let reduced = options.reduced ?? false;
   const page = options.pose ? stage : stage.closest<HTMLElement>("main") ?? stage.parentElement!;
   const owner = stage.closest<HTMLElement>(".experience") ?? page;
+  return createEnvironment(owner, options, options.pose
+    ? { kind: "editorial", stage, page, owner, pose: options.pose }
+    : { kind: "home", stage, page, owner, heroRoot: page.querySelector<HTMLElement>("#identity") });
+}
+
+/** Source 88009/20109: document resources persist; route attachments are leases. */
+export function createPersistentStoryEnvironment(parking: HTMLElement, options: { reduced?: boolean } = {}): PersistentStoryEnvironmentController {
+  return createEnvironment(parking, options);
+}
+
+function createEnvironment(parking: HTMLElement, options: { reduced?: boolean }, initial?: EnvironmentBinding): PersistentStoryEnvironmentController {
+  let reduced = options.reduced ?? false;
   const host = document.createElement("div");
   host.className = `global-environment ${styles.environment}`; host.setAttribute("aria-hidden", "true");
   const canvas = document.createElement("canvas"); canvas.className = styles.environmentCanvas; host.append(canvas);
-  owner.prepend(host);
+  parking.prepend(host);
   let renderer: WebGLRenderer;
   try {
     renderer = new WebGLRenderer({ canvas, alpha: false, antialias: false, powerPreference: "low-power" });
     renderer.outputColorSpace = SRGBColorSpace;
   } catch {
-    host.remove(); stage.dataset.storyEnvironment = "failed";
-    return { setReducedMode() {}, dispose() { delete stage.dataset.storyEnvironment; } };
+    host.remove();
+    let current: EnvironmentBinding | undefined, token: object | undefined, disposed = false;
+    const bind = (binding: EnvironmentBinding): EnvironmentAttachment => {
+      if (current) delete current.stage.dataset.storyEnvironment;
+      if (disposed) return { invalidate() {}, release() {} };
+      const owned = {}; token = owned;
+      current = binding; binding.stage.dataset.storyEnvironment = "failed";
+      return { invalidate() {}, release() { if (token !== owned) return; delete binding.stage.dataset.storyEnvironment; current = undefined; token = undefined; } };
+    };
+    if (initial) bind(initial);
+    return { bind, setReducedMode() {}, dispose() { disposed = true; if (current) delete current.stage.dataset.storyEnvironment; current = undefined; token = undefined; } };
   }
   const canSimulate = renderer.extensions.has("EXT_color_buffer_float");
   const scene = new Scene(), camera = new Camera();
@@ -54,21 +81,21 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   let time = 0, remaining = 0, pulse = 0, click = 0, lastX = 0, lastY = 0, initialized = false, fieldCleared = false, fieldNeedsClear = false;
   let previousTravel = -1.2;
   let menuOpen = document.documentElement.dataset.menuOpen === "true";
-  const heroRoot = page.querySelector<HTMLElement>("#identity");
-  let heroProgress = options.pose ? 1 : readHeroWorldPose(heroRoot)?.progress ?? worldProgressFromScroll(
-    heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || designHeight(width), mobile,
-  );
-  const readFrame = (): StoryFrame => ({ time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) });
-  const readWorkTravel = () => Number(stage.querySelector<HTMLElement>(".work-world")?.dataset.travel ?? -1.35);
-  let workTravel = readWorkTravel();
+  let binding: EnvironmentBinding | undefined, attachmentToken: object | undefined, detach: ((keepProtection?: boolean) => void) | undefined;
+  let heroProgress = 1, workTravel = -1.35;
+  const readFrame = (): StoryFrame => ({ time: Number(binding?.stage.dataset.storyTime ?? 0), openingTime: Number(binding?.stage.dataset.openingTime ?? 0), progress: Number(binding?.stage.dataset.progress ?? 0) });
+  const readWorkTravel = () => Number(binding?.stage.querySelector<HTMLElement>(".work-world")?.dataset.travel ?? -1.35);
   const readingFrame: StoryFrame = { time: 0, openingTime: 26, progress: 0, emergence: 1 };
-  let frame = readFrame(), refreshFrame = false;
+  let frame: StoryFrame = { time: 0, openingTime: 0, progress: 0 }, refreshFrame = false;
+  let gapPose: EditorialPose = { time: 0, environment: 0, surfaceQuiet: 0 };
   let guards: SceneGuard[] = [];
+  const ownsRender = () => binding?.kind === "home" && journeyOwnsRender(binding.stage);
+  const journeyRendering = () => binding?.kind === "home" && isJourneyRendering(binding.stage);
   const active = () => !disposed && !lost && visible && !document.hidden;
   const park = () => { if (frameId) cancelAnimationFrame(frameId); if (timer) clearTimeout(timer); frameId = timer = 0; };
   const cancel = () => { park(); last = 0; };
   function wake() {
-    if (!active() || frameId || journeyOwnsRender(stage)) return;
+    if (!active() || frameId || ownsRender()) return;
     if (timer) { clearTimeout(timer); timer = 0; }
     frameId = requestAnimationFrame(render);
   }
@@ -76,17 +103,24 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   // here rather than introducing a layout read into every native scroll input.
   const pointerBounds = { left: 0, top: 0, width, height };
   const pointer = createEnvironmentPointer(wake, () => pointerBounds);
-  const fail = () => { lost = true; cancel(); host.style.visibility = "hidden"; stage.dataset.storyEnvironment = "failed"; };
+  let pointerActive = true;
+  const updatePointer = () => {
+    const next = visible && !document.hidden && !menuOpen && !lost;
+    if (pointerActive !== next) { pointerActive = next; pointer.setActive(next); }
+  };
+  const currentScore = () => binding?.kind === "home" ? sampleStoryScore(reduced ? readingFrame : frame, mobile)
+    : binding?.kind === "editorial" ? binding.pose() : gapPose;
+  const fail = () => { lost = true; cancel(); host.style.visibility = "hidden"; if (binding) binding.stage.dataset.storyEnvironment = "failed"; };
   function render() {
     frameId = 0;
-    if (!active() || (journeyOwnsRender(stage) && !isJourneyRendering(stage))) return;
+    if (!active() || (ownsRender() && !journeyRendering())) return;
     // RAF's refresh timestamp can precede the previous immediate journey draw's
     // callback time. Sample one monotonic clock in both ownership paths.
     const now = Math.max(last, performance.now());
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60); last = now; time += dt * (reduced ? 0.035 : 1);
-    if (!reduced && refreshFrame) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = false; }
+    if (binding?.kind === "home" && !reduced && refreshFrame) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = false; }
     // Source resets initialNarrative on reading entry independently of DOM time.
-    const score = { ...sampleStoryScore(reduced ? readingFrame : frame, mobile), ...options.pose?.() }, input = pointer.state;
+    const score = currentScore(), input = pointer.state;
     const pointerMoving = pointer.advance(dt, menuOpen);
     const workQuiet = smooth(280, 304, score.time) * (1 - smooth(426, 450, score.time));
     const heroBlend = smooth(0.25, 0.72, heroProgress);
@@ -107,7 +141,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     u.uDrag.value.set(input.dragX * aspect, input.dragY);
     // Reading resets narrative travel, while the source keeps its lastTravel
     // memory: the first draw contributes the reset delta to the existing field.
-    const travel = reduced ? -1.35 : workTravel;
+    const travel = binding?.kind === "home" && reduced ? -1.35 : workTravel;
     const horizontal = clamp((travel - previousTravel) / Math.max(dt, 0.001) * 0.18, -1, 1) * (1 - 0.6 * workQuiet);
     previousTravel = travel;
     u.uHorizontal.value = horizontal; u.uScroll.value = input.scrollVelocity * gain;
@@ -130,13 +164,13 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
       uniforms.uStage.value = score.environment; uniforms.uTime.value = time;
       renderer.render(scene, camera);
     } catch (error) { console.error("Optional home material failed.", error); fail(); return; }
-    stage.dataset.storyEnvironment = "ready"; canvas.dataset.surface = "stateful-sculptural";
+    if (binding) binding.stage.dataset.storyEnvironment = "ready"; canvas.dataset.surface = "stateful-sculptural";
     canvas.dataset.simulation = canSimulate && remaining > 0 ? "active" : "rest";
     canvas.dataset.materialTime = time.toFixed(6);
     canvas.dataset.pressureScale = input.pressureScale.toFixed(4);
     canvas.dataset.footerInfluence = input.footerInfluence.toFixed(4);
     canvas.dataset.contextStrength = input.contextStrength.toFixed(4);
-    if (journeyOwnsRender(stage)) return;
+    if (ownsRender()) return;
     // The studio normal drift is intentional source content even at rest.
     if (pointerMoving || energetic || remaining > 4.5) wake();
     else if (remaining > 0) timer = window.setTimeout(() => { timer = 0; wake(); }, 1000 / 30);
@@ -166,47 +200,91 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
       wake();
     } catch (error) { console.error("Optional home material could not resize.", error); fail(); }
   };
-  const onFrame = (event: Event) => {
-    const next = (event as CustomEvent<StoryFrame>).detail;
-    if (!next || !Number.isFinite(next.time)) return;
-    frame = next; refreshFrame = false;
-    workTravel = readWorkTravel();
-    // The journey parks our idle/settling RAF before requesting its first tick.
-    // Submit after its DOM/work publication in that same tick, never before it.
-    // Non-RAF restores/measurements still coalesce into our demand scheduler.
-    if (isJourneyRendering(stage)) render();
-    else wake();
-  };
-  const renderOwnership = () => { if (journeyOwnsRender(stage)) park(); else wake(); };
-  const interaction = (event: Event) => {
-    const detail = (event as CustomEvent<SceneInteraction>).detail;
-    if (!detail) return; guards = detail.guards; pointer.setGrabbed(detail.grabbed);
-  };
-  const hero = (event: Event) => { const detail = (event as CustomEvent<Partial<HeroWorldPose>>).detail; if (detail && Number.isFinite(detail.progress)) { heroProgress = clamp(detail.progress!); wake(); } };
-  const visibility = () => { pointer.setActive(!document.hidden && visible && !menuOpen && !lost); if (document.hidden) cancel(); else wake(); };
+  const visibility = () => { updatePointer(); if (document.hidden) cancel(); else wake(); };
   const contextLost = (event: Event) => { event.preventDefault(); fail(); };
   const restored = () => {
     if (disposed) return;
     // Context loss invalidates GPU contents even when the allocation keys match.
     // Keep the CPU histories; reinitialize the targets only on the next draw.
     lost = false; fieldCleared = false; fieldNeedsClear = true;
-    pointer.setActive(visible && !document.hidden && !menuOpen);
+    updatePointer();
     host.style.removeProperty("visibility"); measure();
   };
-  const observer = new IntersectionObserver(([entry]) => { visible = entry?.isIntersecting ?? false; pointer.setActive(visible && !document.hidden && !menuOpen && !lost); if (visible) wake(); else cancel(); });
-  observer.observe(page);
   const menu = new MutationObserver(() => {
     menuOpen = document.documentElement.dataset.menuOpen === "true";
-    pointer.setActive(!menuOpen && visible && !document.hidden && !lost);
+    updatePointer();
     // The source keeps its menu-quiet field tail and material clock alive.
     // Input is disabled above; render() supplies uQuiet=1 and no excitation.
     wake();
   });
   menu.observe(document.documentElement, { attributes: true, attributeFilter: ["data-menu-open"] });
-  stage.addEventListener("journey-frame", onFrame); stage.addEventListener("journey-scene-interaction", interaction);
-  stage.addEventListener(journeyRenderOwnerEvent, renderOwnership);
-  window.addEventListener("resize", measure, { passive: true }); window.addEventListener(heroWorldEvent, hero);
+  window.addEventListener("resize", measure, { passive: true });
   document.addEventListener("visibilitychange", visibility); canvas.addEventListener("webglcontextlost", contextLost); canvas.addEventListener("webglcontextrestored", restored);
+  function bind(next: EnvironmentBinding): EnvironmentAttachment {
+    if (disposed) return { invalidate() {}, release() {} };
+    detach?.(binding?.page === next.page);
+    const token = {}; attachmentToken = token;
+    binding = next; visible = true; refreshFrame = false;
+    const current = () => !disposed && attachmentToken === token;
+    if (next.kind === "home") {
+      frame = readFrame(); workTravel = readWorkTravel();
+      const heroRoot = next.heroRoot;
+      heroProgress = readHeroWorldPose(heroRoot)?.progress ?? worldProgressFromScroll(
+        heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || designHeight(width), mobile,
+      );
+    } else heroProgress = 1;
+    next.owner.prepend(host);
+    if (lost) next.stage.dataset.storyEnvironment = "failed";
+    const onFrame = (event: Event) => {
+      if (!current() || next.kind !== "home") return;
+      const value = (event as CustomEvent<StoryFrame>).detail;
+      if (!value || !Number.isFinite(value.time)) return;
+      frame = value; workTravel = readWorkTravel(); refreshFrame = false;
+      // Keep the accepted current-journey transaction, including late adoption.
+      if (journeyRendering()) render(); else wake();
+    };
+    const ownership = () => { if (!current()) return; if (ownsRender()) park(); else wake(); };
+    const interaction = (event: Event) => {
+      if (!current() || next.kind !== "home") return;
+      const detail = (event as CustomEvent<SceneInteraction>).detail;
+      if (detail) { guards = detail.guards; pointer.setGrabbed(detail.grabbed); }
+    };
+    const hero = (event: Event) => {
+      if (!current() || next.kind !== "home") return;
+      // Prefer this mount's publisher; a delayed old hero event cannot supply pose.
+      const pose = readHeroWorldPose(next.heroRoot);
+      const detail = (event as CustomEvent<Partial<HeroWorldPose>>).detail;
+      if (pose) { heroProgress = pose.progress; wake(); }
+      else if (!next.heroRoot && detail && Number.isFinite(detail.progress)) { heroProgress = clamp(detail.progress!); wake(); }
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!current()) return;
+      visible = entry?.isIntersecting ?? false; updatePointer(); if (visible) wake(); else cancel();
+    });
+    observer.observe(next.page);
+    next.stage.addEventListener("journey-frame", onFrame); next.stage.addEventListener("journey-scene-interaction", interaction);
+    next.stage.addEventListener(journeyRenderOwnerEvent, ownership); window.addEventListener(heroWorldEvent, hero);
+    const release = (keepProtection = false) => {
+      if (attachmentToken !== token) return;
+      gapPose = { ...currentScore(), surfaceQuiet: 0 };
+      if (next.kind === "home" && reduced) workTravel = -1.35;
+      binding = undefined; attachmentToken = undefined; detach = undefined; refreshFrame = false;
+      observer.disconnect(); next.stage.removeEventListener("journey-frame", onFrame);
+      next.stage.removeEventListener("journey-scene-interaction", interaction);
+      next.stage.removeEventListener(journeyRenderOwnerEvent, ownership); window.removeEventListener(heroWorldEvent, hero);
+      delete next.stage.dataset.storyEnvironment;
+      guards = []; pointer.setGrabbed(false);
+      if (!keepProtection) pointer.releaseProtection(next.page);
+      heroProgress = 1; visible = true;
+      // Placement adapts the source's sibling surface to accepted isolated shells.
+      // The same host stays connected in the locale slot between route commits.
+      parking.prepend(host); updatePointer(); wake();
+    };
+    detach = release;
+    updatePointer(); ownership();
+    return { invalidate() { if (current()) wake(); }, release };
+  }
+  if (initial) bind(initial);
   measure();
   function setReducedMode(enabled: boolean) {
     if (disposed || enabled === reduced) return;
@@ -214,7 +292,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     // Resume from this HOME's current clock, never its last motion score. A
     // subsequent precise journey event wins; otherwise reread before the draw
     // in case the parent's mode/layout effect refreshed the DOM clock later.
-    if (!enabled) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = true; }
+    if (!enabled && binding?.kind === "home") { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = true; }
     // Source's reduced-prop input effect releases transient targets, retaining
     // smoothed pointer coordinates, protections and the complete field history.
     pointer.resetInput();
@@ -223,12 +301,10 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   }
   function dispose() {
     if (disposed) return;
-    disposed = true; cancel(); observer.disconnect(); menu.disconnect(); pointer.dispose();
-    stage.removeEventListener("journey-frame", onFrame); stage.removeEventListener("journey-scene-interaction", interaction);
-    stage.removeEventListener(journeyRenderOwnerEvent, renderOwnership);
-    window.removeEventListener("resize", measure); window.removeEventListener(heroWorldEvent, hero);
+    disposed = true; cancel(); detach?.(); menu.disconnect(); pointer.dispose();
+    window.removeEventListener("resize", measure);
     document.removeEventListener("visibilitychange", visibility); canvas.removeEventListener("webglcontextlost", contextLost); canvas.removeEventListener("webglcontextrestored", restored);
-    field.dispose(); mesh.geometry.dispose(); material.dispose(); zero.dispose(); renderer.dispose(); renderer.forceContextLoss(); host.remove(); delete stage.dataset.storyEnvironment;
+    field.dispose(); mesh.geometry.dispose(); material.dispose(); zero.dispose(); renderer.dispose(); renderer.forceContextLoss(); host.remove();
   }
-  return { setReducedMode, dispose };
+  return { bind, setReducedMode, dispose };
 }

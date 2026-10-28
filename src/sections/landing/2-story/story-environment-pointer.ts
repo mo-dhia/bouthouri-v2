@@ -76,6 +76,10 @@ export function createEnvironmentPointer(wake: () => void, bounds: () => Pointer
   return {
     state,
     resetInput,
+    releaseProtection(owner: HTMLElement) {
+      protection.release(owner);
+      state.pressureScale = protection.pressureScale; state.footerInfluence = protection.footerInfluence;
+    },
     setActive(value: boolean) { active = value; if (!value) reset(); },
     setGrabbed(value: boolean) { grabbed = value; if (value) { state.pressed = false; state.pressHold = 0; } },
     advance(dt: number, menuOpen: boolean) {

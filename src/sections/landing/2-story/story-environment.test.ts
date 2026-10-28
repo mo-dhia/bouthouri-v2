@@ -6,7 +6,7 @@ import * as three from "three";
 import * as heroWorld from "../1-hero/hero-world";
 import { createEnvironmentField } from "./story-environment-field";
 import type { createEnvironmentPointer } from "./story-environment-pointer";
-import type { StoryEnvironmentController } from "./story-environment.animate";
+import type { EnvironmentBinding, PersistentStoryEnvironmentController, StoryEnvironmentController } from "./story-environment.animate";
 import { createMaterialProtection } from "./story-material-protection";
 import * as score from "./story-score";
 import * as journeyRender from "../3-journey/journey-render-owner";
@@ -34,17 +34,22 @@ class Surface extends EventTarget {
   children: Surface[] = [];
   parentElement: Surface | null = null;
   removed = false;
+  connected = false;
+  get isConnected(): boolean { return !this.removed && (this.parentElement?.isConnected ?? this.connected); }
   style = { visibility: "", removeProperty: (key: string) => { if (key === "visibility") this.style.visibility = ""; } };
-  append(child: Surface) { child.parentElement = this; this.children.push(child); }
-  prepend(child: Surface) { child.parentElement = this; this.children.unshift(child); }
-  remove() { this.removed = true; if (this.parentElement) this.parentElement.children = this.parentElement.children.filter((child) => child !== this); }
+  private adopt(child: Surface) { if (child.parentElement) child.parentElement.children = child.parentElement.children.filter((entry) => entry !== child); child.parentElement = this; child.removed = false; }
+  append(child: Surface) { this.adopt(child); this.children.push(child); }
+  prepend(child: Surface) { this.adopt(child); this.children.unshift(child); }
+  remove() { this.removed = true; if (this.parentElement) this.parentElement.children = this.parentElement.children.filter((child) => child !== this); this.parentElement = null; }
+  contains(child: Surface): boolean { return child === this || this.children.some((entry) => entry.contains(child)); }
   setAttribute() {}
   closest(selector: string): Surface | null { return this.parentElement?.closest(selector) ?? null; }
   querySelector(): Surface | null { return null; }
 }
 
-function environmentHarness({ reduced = false, simulate = true, failCreation = false, failMeasure = false, initialHeroProgress = undefined as number | undefined, initialStoryTime = 0, initialWorkTravel = -1.35 } = {}) {
-  const page = new Surface(), owner = new Surface(), stage = new Surface();
+function environmentHarness({ reduced = false, simulate = true, failCreation = false, failMeasure = false, persistent = false, initialHeroProgress = undefined as number | undefined, initialStoryTime = 0, initialWorkTravel = -1.35 } = {}) {
+  const page = new Surface(), owner = new Surface(), stage = new Surface(), parking = new Surface();
+  page.connected = owner.connected = parking.connected = true;
   const work = new Surface(); work.dataset.travel = String(initialWorkTravel); stage.querySelector = () => work;
   stage.dataset.storyTime = String(initialStoryTime);
   const heroRoot = Object.assign(new Surface(), { offsetHeight: 1000, getBoundingClientRect: () => ({ top: 0 }) });
@@ -69,13 +74,14 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   const backgroundDraws: { stage: number; time: number }[] = [];
   const errors: unknown[][] = [];
   const dimensions: number[][] = [];
+  const renderTargets = new Set<three.WebGLRenderTarget>();
   class Renderer {
     outputColorSpace = "";
     extensions = { has: () => simulate };
     target: three.WebGLRenderTarget | null = null;
     constructor() { creations++; if (failCreation) throw new Error("No context"); }
     getRenderTarget() { return this.target; }
-    setRenderTarget(target: three.WebGLRenderTarget | null) { this.target = target; }
+    setRenderTarget(target: three.WebGLRenderTarget | null) { this.target = target; if (target) renderTargets.add(target); }
     getClearAlpha() { return 0; }
     getClearColor(color: three.Color) { return color.set(0); }
     setClearColor() {}
@@ -140,14 +146,19 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
     "./story-scene.module.css": {},
   }).exports as {
     createStoryEnvironment(stage: unknown, options: { reduced: boolean }): StoryEnvironmentController;
+    createPersistentStoryEnvironment(parking: unknown, options: { reduced: boolean }): PersistentStoryEnvironmentController;
     mountStoryEnvironment(stage: unknown): () => void;
   };
-  const controller = loaded.createStoryEnvironment(stage, { reduced });
+  const homeBinding = { kind: "home", stage, page, owner, heroRoot } as unknown as EnvironmentBinding;
+  const controller = persistent ? loaded.createPersistentStoryEnvironment(parking, { reduced }) : loaded.createStoryEnvironment(stage, { reduced });
+  const initialAttachment = persistent ? (controller as PersistentStoryEnvironmentController).bind(homeBinding) : undefined;
+  const host = owner.children[0];
   const event = (type: string, properties: Record<string, unknown> = {}) => window.dispatchEvent(Object.assign(new Event(type), properties));
   return {
-    controller, module: loaded, stage, work, owner, fields, pointers, surfaces, backgroundDraws, dimensions, rafs, timers, errors,
+    controller, module: loaded, stage, work, page, owner, parking, host, homeBinding, initialAttachment, fields, pointers, surfaces, backgroundDraws, dimensions, renderTargets, rafs, timers, errors,
+    bind(binding: EnvironmentBinding) { return (controller as PersistentStoryEnvironmentController).bind(binding); },
     get stats() { return { creations, renders, rendererDisposals, contextLosses }; },
-    get canvas() { return owner.children[0].children[0]; },
+    get canvas() { return host.children[0]; },
     step(dt = 1 / 60, after?: () => void, rafOffsetMs = 0) {
       now += dt * 1000;
       const pending = [...rafs];
@@ -172,8 +183,9 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
     hidden(value: boolean) { document.hidden = value; document.dispatchEvent(new Event("visibilitychange")); },
     menu(value: boolean) { document.documentElement.dataset.menuOpen = String(value); for (const entry of mutations) entry.callback(); },
     visible(value: boolean) { for (const entry of intersections) entry.callback([{ isIntersecting: value }]); },
-    lose() { owner.children[0].children[0].dispatchEvent(new Event("webglcontextlost", { cancelable: true })); },
-    restore() { owner.children[0].children[0].dispatchEvent(new Event("webglcontextrestored")); },
+    observed(index: number, value: boolean) { intersections[index].callback([{ isIntersecting: value }]); },
+    lose() { host.children[0].dispatchEvent(new Event("webglcontextlost", { cancelable: true })); },
+    restore() { host.children[0].dispatchEvent(new Event("webglcontextrestored")); },
     failDraw() { throwRender = true; },
     get disconnected() { return intersections.every((entry) => entry.disposed === 1) && mutations.every((entry) => entry.disposed === 1); },
   };
@@ -574,51 +586,205 @@ test("visible idle changes cadence through one scheduler, and optional failures 
 function gateHarness() {
   type Effect = () => void | (() => void);
   type Slot = { ref?: { current: unknown }; value?: unknown; deps?: readonly unknown[]; cleanup?: () => void };
-  const slots: Slot[] = [], pending: (() => void)[] = [], idle = new Map<number, () => void>();
-  let index = 0, id = 0, calls = 0, disposals = 0;
+  const slots: Slot[] = [], pending: (() => void)[] = [];
+  let index = 0, calls = 0, releases = 0;
   const modes: boolean[] = [];
-  const stage = {};
+  const page = { dataset: { routePath: "/en" }, querySelector: () => null }, owner = {};
+  const stage = { closest: (selector: string) => selector === ".experience" ? owner : page };
+  const effect = (callback: Effect, deps: readonly unknown[]) => {
+    const slot = slots[index++] ??= {};
+    if (slot.deps && slot.deps.length === deps.length && slot.deps.every((dep, i) => Object.is(dep, deps[i]))) return;
+    slot.deps = deps; pending.push(() => { slot.cleanup?.(); slot.cleanup = callback() || undefined; });
+  };
   const hooks = {
     useRef<T>(initial: T) { const slot = slots[index++] ??= {}; return (slot.ref ??= { current: initial }) as { current: T }; },
     useState<T>(initial: T): [T, (next: T) => void] { const slot = slots[index++] ??= { value: initial }; return [slot.value as T, (next) => { slot.value = next; }]; },
-    useEffect(effect: Effect, deps: readonly unknown[]) {
-      const slot = slots[index++] ??= {};
-      if (slot.deps && slot.deps.length === deps.length && slot.deps.every((dep, i) => Object.is(dep, deps[i]))) return;
-      slot.deps = deps; pending.push(() => { slot.cleanup?.(); slot.cleanup = effect() || undefined; });
-    },
+    useEffect: effect, useLayoutEffect: effect,
   };
   const context = createContext({
-    window: { requestIdleCallback(callback: () => void) { const key = ++id; idle.set(key, callback); return key; }, cancelIdleCallback(key: number) { idle.delete(key); } },
-    document: { getElementById: () => stage }, console,
+    document: { getElementById: () => stage }, location: { pathname: "/en" }, console,
   });
   const { value: mount } = evaluate("./story-scene-gate.logic.ts", context, {
     react: hooks, "react/jsx-runtime": {},
     "@/lib/scene/sceneActivation": { useSceneActivation: () => ({ shouldMount: false }) },
     "@/lib/scene/sceneBootGate": { useSceneBootSlot: () => false },
     "@/lib/useReducedMotion": {}, "@/store/uiStore": {},
-    "./story-environment.animate": { createStoryEnvironment(_stage: unknown, { reduced }: { reduced: boolean }) {
-      calls++; modes.push(reduced); return { setReducedMode(mode: boolean) { modes.push(mode); }, dispose() { disposals++; } };
-    } },
-  }, "return useStorySceneMount;") as { value: (props: { staticMode: boolean; onFailure(): void }) => void };
+    "@/components/layout/environment/environment.logic": { environmentOwner: { navigate() {}, register(_binding: unknown, path: string, reduced: boolean) {
+      expect(path).toBe("/en"); calls++; modes.push(reduced);
+      return { setReducedMode(mode: boolean) { modes.push(mode); }, release() { releases++; } };
+    } } },
+  }, "return useHomeEnvironment;") as { value: (staticMode: boolean) => void };
   return {
-    modes, idle,
-    get calls() { return calls; }, get disposals() { return disposals; },
-    render(staticMode: boolean) { index = 0; mount({ staticMode, onFailure() {} }); for (const effect of pending.splice(0)) effect(); },
-    start() { for (const callback of idle.values()) callback(); idle.clear(); },
+    modes,
+    get calls() { return calls; }, get releases() { return releases; },
+    render(staticMode: boolean) { index = 0; mount(staticMode); for (const effect of pending.splice(0)) effect(); },
     dispose() { for (const slot of slots) slot.cleanup?.(); },
   };
 }
 
-test("gate reads latest mode across idle/import, retains its handle, and cancels late imports", async () => {
-  const h = gateHarness(); h.render(false); h.render(true);
-  expect(h.idle.size).toBe(1); expect(h.calls).toBe(0);
-  h.start(); h.render(false); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
-  expect(h.calls).toBe(1); expect(h.modes).toEqual([false]);
-  h.render(true); h.render(false); expect(h.calls).toBe(1); expect(h.modes).toEqual([false, true, false]);
-  h.dispose(); expect(h.disposals).toBe(1);
-  const cancelled = gateHarness(); cancelled.render(false); cancelled.start(); cancelled.dispose();
-  await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
-  expect(cancelled.calls).toBe(0); expect(cancelled.disposals).toBe(0);
-  const idleUnmount = gateHarness(); idleUnmount.render(true); idleUnmount.dispose();
-  expect(idleUnmount.idle.size).toBe(0); expect(idleUnmount.calls).toBe(0);
+test("HOME's environment lease survives quiet/object-failure mode changes until HOME itself leaves", () => {
+  const h = gateHarness(); h.render(false); h.render(true); h.render(false);
+  expect(h.calls).toBe(1); expect(h.releases).toBe(0);
+  expect(h.modes).toEqual([false, false, true, false]);
+  h.dispose(); expect(h.releases).toBe(1);
+});
+
+function editorialBinding(quiet = .65) {
+  const root = new Surface(); root.connected = true;
+  let surfaceQuiet = quiet;
+  const binding = { kind: "editorial", stage: root, page: root, owner: root, pose: () => ({ time: 448, environment: .28, surfaceQuiet }) } as unknown as EnvironmentBinding;
+  return { root, binding, focus(value: number) { surfaceQuiet = value; } };
+}
+
+test("one retained field/context/phase crosses HOME, editorial leases, connected parking and HOME reentry", () => {
+  const h = environmentHarness({ persistent: true, initialWorkTravel: 2.4, initialStoryTime: 350, initialHeroProgress: .13 });
+  h.step(); const canvas = h.canvas, material = h.surfaces[0].material, field = h.fields[0];
+  const targets = [...h.renderTargets];
+  h.step(); expect(field.field.uniforms.uHorizontal.value).toBe(0);
+  const pointer = h.pointers[0].state;
+  pointer.fieldX = .37; pointer.fieldY = -.18;
+  const phase = material.uniforms.uTime.value as number;
+  h.initialAttachment!.release();
+  expect(h.host.parentElement).toBe(h.parking); expect(canvas.isConnected).toBe(true);
+  h.step(.02); expect(material.uniforms.uTime.value).toBeGreaterThan(phase);
+  expect(field.field.uniforms.uHorizontal.value).toBe(0); expect(field.field.uniforms.uQuiet.value).toBe(0);
+  for (const quiet of [.65, .65, .9, 1]) {
+    const editorial = editorialBinding(quiet), attachment = h.bind(editorial.binding);
+    // Late HOME cleanup and publications cannot take the new binding back.
+    h.initialAttachment!.release(); h.frame(128); h.hero(0);
+    expect(h.host.parentElement).toBe(editorial.root); expect(h.canvas).toBe(canvas); expect(canvas.isConnected).toBe(true);
+    attachment.invalidate(); h.step(.02);
+    expect(material.uniforms.uStage.value).toBe(.28);
+    expect(field.field.uniforms.uQuiet.value).toBeCloseTo(.45 * quiet, 12);
+    expect(field.field.uniforms.uHorizontal.value).toBe(0);
+    expect(pointer.fieldX).toBe(.37); expect(pointer.fieldY).toBe(-.18);
+    expect(material.uniforms.uAmplitude.value).toBe(1);
+    attachment.release();
+  }
+  // HOME's existing parent resets narrative, not material history.
+  h.stage.dataset.storyTime = "0"; h.work.dataset.travel = "-1.35";
+  const beforeHome = material.uniforms.uTime.value;
+  const home = h.bind(h.homeBinding); h.step(.02);
+  expect(material.uniforms.uTime.value).toBeGreaterThan(beforeHome);
+  expect(field.field.uniforms.uHorizontal.value).toBe(-1);
+  h.step(.02); expect(field.field.uniforms.uHorizontal.value).toBe(0);
+  expect([...h.renderTargets]).toEqual(targets); expect(h.fields).toHaveLength(1); expect(h.pointers).toHaveLength(1);
+  expect(h.stats.creations).toBe(1); expect(h.stats.contextLosses).toBe(0);
+  home.release(); h.controller.dispose(); h.controller.dispose();
+  expect(canvas.isConnected).toBe(false); expect(field.disposals).toBe(1);
+  expect(h.stats.rendererDisposals).toBe(1); expect(h.stats.contextLosses).toBe(1);
+  expect(h.rafs.size + h.timers.size).toBe(0);
+});
+
+test("rebinding the same descriptor rejects old releases, observers, guards and pending journey publications", () => {
+  const h = environmentHarness({ persistent: true }); h.step();
+  const editorial = editorialBinding(), old = h.bind(editorial.binding), current = h.bind(editorial.binding);
+  old.release(); h.initialAttachment!.release(); current.invalidate(); h.step();
+  expect(h.host.parentElement).toBe(editorial.root); expect(editorial.root.dataset.storyEnvironment).toBe("ready");
+  current.release();
+  const journey = journeyRender.createJourneyRenderOwner(h.stage as unknown as HTMLElement);
+  journey.setPending(true); const draws = h.backgroundDraws.length;
+  const home = h.bind(h.homeBinding);
+  expect(h.rafs.size + h.timers.size).toBe(0);
+  h.step(.02, () => journey.render(() => { h.work.dataset.travel = "2.6"; h.frame(174.123456789); }));
+  expect(h.backgroundDraws).toHaveLength(draws + 1);
+  expect(h.backgroundDraws.at(-1)!.stage).toBeCloseTo(score.sampleStoryScore({ time: 174.123456789, openingTime: 26, progress: 0 }).environment, 14);
+  h.stage.dispatchEvent(Object.assign(new Event("journey-scene-interaction"), { detail: { grabbed: true, guards: [{ x: 0, y: 0, rx: 1, ry: 1, weight: 1 }] } }));
+  const next = h.bind(editorial.binding); home.release(); journey.dispose();
+  h.frame(128); h.step();
+  expect(h.fields[0].field.uniforms.uGuardWeight.value).toEqual([0, 0, 0, 0]);
+  expect(h.surfaces[0].material.uniforms.uStage.value).toBe(.28);
+  // A queued callback from the old page must not make this page offscreen.
+  const beforeStaleVisibility = h.backgroundDraws.length;
+  h.observed(0, false); next.invalidate(); h.step();
+  expect(h.backgroundDraws).toHaveLength(beforeStaleVisibility + 1);
+  next.release(); h.controller.dispose(); expect(h.disconnected).toBe(true);
+  expect(h.rafs.size + h.timers.size).toBe(0);
+});
+
+test("retained context loss/restore and paused profile changes stay lazy across route leases", () => {
+  const h = environmentHarness({ persistent: true }); h.step();
+  const canvas = h.canvas, phase = Number(canvas.dataset.materialTime), editorial = editorialBinding(.9);
+  h.lose(); const draws = h.stats.renders;
+  const lease = h.bind(editorial.binding); h.resize(412, 457.5); h.controller.setReducedMode(true);
+  expect(editorial.root.dataset.storyEnvironment).toBe("failed"); expect(h.stats.renders).toBe(draws);
+  h.hidden(true); h.restore();
+  expect(h.fields.at(-1)!.clears).toBe(0); expect(h.rafs.size + h.timers.size).toBe(0);
+  h.hidden(false); h.step();
+  expect(h.canvas).toBe(canvas); expect(Number(canvas.dataset.materialTime)).toBeGreaterThan(phase);
+  expect(h.fields.at(-1)!.clears).toBe(1); expect(h.stats.creations).toBe(1);
+  h.resize(500, 300); h.step(); expect(h.fields).toHaveLength(2);
+  lease.release(); h.controller.dispose(); expect(h.fields.every((field) => field.disposals === 1)).toBe(true);
+  expect(h.stats.contextLosses).toBe(1); expect(h.rafs.size + h.timers.size).toBe(0);
+});
+
+test("protection publishers remain independent and old route releases cannot erase a newer source", () => {
+  const protection = createMaterialProtection(), oldPage = new Surface(), newPage = new Surface();
+  const event = (source: "portrait" | "footer", publisher: number, owner: Surface, active = true) => ({ source, publisher, owner: owner as unknown as HTMLElement, active, pressureScale: source === "portrait" ? .2 : 1, influence: source === "footer" ? .75 : 0, clientX: 0, clientY: 0 });
+  protection.update(event("footer", 1, oldPage)); protection.update(event("footer", 3, newPage));
+  protection.update(event("portrait", 2, oldPage)); expect(protection.pressureScale).toBe(.2);
+  protection.update(event("footer", 1, oldPage, false)); protection.update(event("footer", 1, oldPage));
+  expect(protection.footerInfluence).toBe(.75);
+  protection.release(oldPage as unknown as HTMLElement);
+  expect(protection.pressureScale).toBe(1); expect(protection.footerInfluence).toBe(.75);
+  protection.update(event("portrait", 2, oldPage)); expect(protection.pressureScale).toBe(1);
+  protection.update(event("portrait", 4, newPage)); protection.update(event("portrait", 2, oldPage, false));
+  expect(protection.pressureScale).toBe(.2);
+  protection.release(newPage as unknown as HTMLElement); expect(protection.footerInfluence).toBe(0); expect(protection.pressureScale).toBe(1);
+});
+
+test("route attachment changes retain the active pulse, stroke, pointer press and original simulation tail", () => {
+  const h = environmentHarness({ persistent: true, initialHeroProgress: 1 });
+  h.event("pointermove", { pointerType: "mouse", clientX: 1088, clientY: 300 });
+  h.event("pointerdown", { pointerType: "mouse", clientX: 1088, clientY: 300, pointerId: 1, button: 0 });
+  h.step(); const field = h.fields[0], uniforms = field.field.uniforms;
+  const x = uniforms.uStroke.value.z, y = uniforms.uStroke.value.w, clears = field.clears, advances = field.advances;
+  expect(uniforms.uPulse.value.z).toBeGreaterThan(0);
+  const editorial = editorialBinding(.9); h.bind(editorial.binding); h.step(.02);
+  expect(h.pointers[0].state.pressed).toBe(true);
+  expect(uniforms.uStroke.value.x).toBe(x); expect(uniforms.uStroke.value.y).toBe(y);
+  expect(uniforms.uPulse.value.z).toBeGreaterThan(0); expect(field.clears).toBe(clears); expect(field.advances).toBeGreaterThan(advances);
+  h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
+});
+
+test("creation failure remains one optional failed owner across routes and stale failed leases cannot erase a new one", () => {
+  const h = environmentHarness({ persistent: true, failCreation: true });
+  const editorial = editorialBinding(), old = h.bind(editorial.binding), current = h.bind(editorial.binding);
+  old.release(); h.initialAttachment!.release();
+  expect(editorial.root.dataset.storyEnvironment).toBe("failed"); expect(h.stats.creations).toBe(1);
+  expect(h.fields).toHaveLength(0); expect(h.rafs.size + h.timers.size).toBe(0);
+  current.release(); h.controller.dispose(); h.controller.dispose();
+  expect(editorial.root.dataset.storyEnvironment).toBeUndefined(); expect(h.stats.contextLosses).toBe(0);
+});
+
+test("actual mount publishers mint identity before late events and cleanup reach the retained pointer", () => {
+  const protection = createMaterialProtection(), window = new EventTarget();
+  class DetailEvent extends Event { detail: unknown; constructor(name: string, options: { detail: unknown }) { super(name); this.detail = options.detail; } }
+  window.addEventListener("gazzar:material-protection", event => protection.update((event as DetailEvent).detail as Parameters<typeof protection.update>[0]));
+  const loaded = evaluate("../../../components/layout/header/material-protection.ts", createContext({ window, CustomEvent: DetailEvent }), {}).exports as {
+    createMaterialProtectionPublisher(root: HTMLElement): (value: Parameters<typeof protection.update>[0]) => void;
+  };
+  const oldRoot = new Surface(), newRoot = new Surface();
+  oldRoot.connected = newRoot.connected = true;
+  const old = loaded.createMaterialProtectionPublisher(oldRoot as unknown as HTMLElement);
+  const portrait = loaded.createMaterialProtectionPublisher(oldRoot as unknown as HTMLElement);
+  const current = loaded.createMaterialProtectionPublisher(newRoot as unknown as HTMLElement);
+  const value = { source: "footer" as const, active: true, pressureScale: 1, influence: .75, clientX: 0, clientY: 0 };
+  old(value); current(value); portrait({ ...value, source: "portrait", pressureScale: .2 });
+  old({ ...value, active: false }); expect(protection.footerInfluence).toBe(.75); expect(protection.pressureScale).toBe(.2);
+  protection.release(oldRoot as unknown as HTMLElement); expect(protection.pressureScale).toBe(1); expect(protection.footerInfluence).toBe(.75);
+  portrait({ ...value, source: "portrait", pressureScale: .2 }); expect(protection.pressureScale).toBe(1);
+  current({ ...value, active: false }); old(value); expect(protection.footerInfluence).toBe(0);
+});
+
+test("same-page lease replacement retains current protection; departing-page events cannot repopulate it", () => {
+  const h = environmentHarness({ persistent: true }); h.step();
+  const detail = { source: "portrait", publisher: 1, owner: h.page, active: true, pressureScale: .2, influence: 0, clientX: 0, clientY: 0 };
+  h.event("gazzar:material-protection", { detail }); expect(h.pointers[0].state.pressureScale).toBe(.2);
+  const replacement = h.bind(h.homeBinding); h.initialAttachment!.release();
+  expect(h.pointers[0].state.pressureScale).toBe(.2);
+  h.bind(editorialBinding().binding); replacement.release();
+  expect(h.pointers[0].state.pressureScale).toBe(1);
+  h.event("gazzar:material-protection", { detail }); expect(h.pointers[0].state.pressureScale).toBe(1);
+  h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
 });

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Initializer from "@/components/initializer/initializer";
 import RouteSurface from "@/components/layout/route-surface/route-surface";
+import Environment from "@/components/layout/environment/environment";
 import SiteSchema from "@/components/seo/site-schema";
 import { site } from "@/config/site";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -32,7 +33,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   return (
     <html lang={locale} dir={localeDirection(locale)} data-typography="questrial-cairo">
       <head><link rel="preload" href={`/assets/fonts/${locale === "ar" ? "cairo-variable" : "questrial-regular"}.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" /></head>
-      <body><SiteSchema locale={locale} /><Initializer /><RouteSurface />{children}</body>
+      <body><SiteSchema locale={locale} /><Initializer /><RouteSurface /><Environment locale={locale} />{children}</body>
     </html>
   );
 }

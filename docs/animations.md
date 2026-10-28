@@ -29,7 +29,7 @@ See [loading](load-architecture.md) and [ownership](code-splitter.md).
 | Hero motion | Direct `scrollManager` instance, `useRAF: false`; cached raw native input, then the existing 100ms clock/remap and hero RAF | Entry, marquee, magnet and portrait share this presentation owner. Sample initial/restored positions explicitly; remove the manager key on cleanup. |
 | Pinned journey | `getScrollTrigger()` interpolates `values: [[0, 1]]`, `useRAF: false`; the journey owns its 480ms scrub and the source 270 cutoff | Geometry refresh and restoration synchronously snap the shared clock. Work, opening and systems consume that frame, not React state. |
 | Object scene | Samples shared clock/history synchronously; its retained controller owns the GPU demand RAF | Near-viewport boot is serialized. Render only eligible poses/ambient motion; park offscreen, hidden, under MENU and after the object interval. |
-| Background material | Current journey transaction owns moving submissions; an explicit handoff parks the independent idle/tail scheduler | One current-pose submission, no duplicate or previous-pose draw. Retain field/time across reading changes. |
+| Background material | Current journey transaction owns moving submissions; an explicit handoff parks the independent idle/tail scheduler | A locale owner retains the renderer, field and time across HOME/editorial route leases and reading changes. Submit one current pose, without duplicate or previous-pose draws. |
 | Reading hero | Native scroll/measure/visibility wakes; no presentation RAF or advancing animation clock | Lightweight body/pose publication remains active. Its deferred portrait performs source-defined finite draws and resize/failure fallback handling. |
 | Editorial pages | Shared shell/menu and optional field; page-owned Vision/Services RAF or Contact finite entry/scrub owner | Server copy stays present. Custom scroll keys feed cached measured ranges; practice objects are a deferred renderer with no second clock. |
 | Footer material | Small clock/eligibility controller first, then dynamic Canvas/contour import | Its own interaction RAF handles morph, drag and waves; unchanged rest paths are cached. HOME reading disables the morph. |
@@ -77,6 +77,11 @@ Every owner releases its keys, listeners, observers, timers, subscriptions,
 RAF work, owned GPU resources and inline mutations. Async adoption checks
 cancellation/generation so an old mount cannot publish readiness into a new one.
 The HOME scene-failure latch survives mode toggles and resets at HOME unmount.
+The background has a separate locale lifetime: route cleanup releases its
+attachment and parks the connected surface, while locale disposal releases its
+GPU resources. A failed optional HOME object does not dispose that surface.
+See [background ownership](../src/components/layout/environment/environment.doc.md)
+for the deferred boundary, route leases and excluded-route policy.
 
 ## Verification
 

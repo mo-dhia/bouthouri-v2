@@ -199,7 +199,7 @@ function harness(variant = "home") {
         "./footer-geometry": { footerGlyphBoxes: () => Array.from({ length: GLYPHS }, (_, i) => ({ x: i * word.rect.width / GLYPHS, y: 0, width: word.rect.width / GLYPHS * 0.8, height: word.offsetHeight })) },
         "./footer-thoughts": { FooterThoughts: TrackedThoughts },
         "./footer-material-field": materialField,
-        "../header/material-protection": { emitMaterialProtection() {} },
+        "../header/material-protection": { createMaterialProtectionPublisher: () => () => {} },
       }, uncached ? (source) => {
         // The control uses the actual deformation formulas, disabling only cache eligibility.
         if (!source.includes("const restWord =")) throw new Error("Missing footer cache control");

@@ -12,7 +12,7 @@ import {
   FooterRefractionWaves,
   type MaterialContours,
 } from "./footer-material-field";
-import { emitMaterialProtection } from "../header/material-protection";
+import { createMaterialProtectionPublisher } from "../header/material-protection";
 import { designScale } from "@/lib/viewport-design";
 
 export type FooterMaterial = {
@@ -66,6 +66,7 @@ export function mountFooterMaterial(
   const ctx = context,
     labels = thoughts[root.lang === "ar" ? "ar" : "en"],
     rtl = root.lang === "ar";
+  const emitMaterialProtection = createMaterialProtectionPublisher(root);
   let disposed = false,
     failed = false,
     frame = 0,

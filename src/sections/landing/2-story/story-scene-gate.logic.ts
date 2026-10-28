@@ -1,15 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useSceneActivation } from "@/lib/scene/sceneActivation";
 import { useSceneBootSlot } from "@/lib/scene/sceneBootGate";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { uiStore, useUIStore } from "@/store/uiStore";
-import type { StoryEnvironmentController } from "./story-environment.animate";
+import { environmentOwner, type EnvironmentLease } from "@/components/layout/environment/environment.logic";
 import type { StorySceneController } from "./story-scene.animate";
 
 const loadScene = () => import("./story-scene.animate");
-const loadEnvironment = () => import("./story-environment.animate");
 
 export type StorySceneMountOptions = { staticMode: boolean; onFailure: () => void };
 
@@ -40,38 +39,14 @@ export function useStorySceneMount({ staticMode, onFailure }: StorySceneMountOpt
   const target = useRef<HTMLElement | null>(null);
   const [settled, setSettled] = useState(false);
   const controller = useRef<StorySceneController | null>(null);
-  const environment = useRef<StoryEnvironmentController | null>(null);
   const mode = useRef(staticMode);
   useEffect(() => {
     mode.current = staticMode;
     controller.current?.setStaticMode(staticMode);
-    environment.current?.setReducedMode(staticMode);
   }, [staticMode]);
   useEffect(() => { target.current = document.getElementById("top"); }, []);
   const { shouldMount } = useSceneActivation({ targetRef: target, prewarmMargin: "300px" });
   const boot = useSceneBootSlot(shouldMount, settled, target);
-  useEffect(() => {
-    let cancelled = false;
-    let owned: StoryEnvironmentController | undefined;
-    const start = () => {
-      if (cancelled) return;
-      void loadEnvironment().then(({ createStoryEnvironment }) => {
-        const stage = target.current;
-        if (!cancelled && stage) {
-          owned = createStoryEnvironment(stage, { reduced: mode.current });
-          environment.current = owned;
-        }
-      }).catch((error: unknown) => console.error("Optional home material could not load.", error));
-    };
-    const supportsIdle = typeof window.requestIdleCallback === "function";
-    const idle = supportsIdle ? window.requestIdleCallback(start, { timeout: 1200 }) : window.setTimeout(start, 32);
-    return () => {
-      cancelled = true;
-      if (supportsIdle) window.cancelIdleCallback(idle); else window.clearTimeout(idle);
-      owned?.dispose();
-      if (environment.current === owned) environment.current = null;
-    };
-  }, []);
   useEffect(() => {
     const stage = target.current;
     if (!shouldMount || !boot || !stage) return;
@@ -89,4 +64,20 @@ export function useStorySceneMount({ staticMode, onFailure }: StorySceneMountOpt
     });
     return () => { cancelled = true; owned?.dispose(); if (controller.current === owned) controller.current = null; };
   }, [shouldMount, boot, onFailure]);
+}
+
+/** This lease belongs to HOME, outside the optional failed object child. */
+export function useHomeEnvironment(staticMode: boolean) {
+  const lease = useRef<EnvironmentLease | null>(null);
+  const mode = useRef(staticMode);
+  useLayoutEffect(() => {
+    const stage = document.getElementById("top"), page = stage?.closest<HTMLElement>("main[data-route-path]");
+    const owner = stage?.closest<HTMLElement>(".experience");
+    if (!stage || !page?.dataset.routePath || !owner) return;
+    environmentOwner.navigate(location.pathname);
+    const owned = environmentOwner.register({ kind: "home", stage, page, owner, heroRoot: page.querySelector<HTMLElement>("#identity") }, page.dataset.routePath, mode.current);
+    lease.current = owned;
+    return () => { owned.release(); if (lease.current === owned) lease.current = null; };
+  }, []);
+  useLayoutEffect(() => { mode.current = staticMode; lease.current?.setReducedMode(staticMode); }, [staticMode]);
 }
