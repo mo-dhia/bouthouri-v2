@@ -14,6 +14,44 @@ controller. This is directly imported by the gate and starts no RAF, timer or
 entry runtime. Its optional portrait graphics are a separate dynamic import;
 the server photograph remains useful while that enhancement loads or fails.
 
+## Fixed design profiles (2026-10-28)
+
+The current sizing policy uses one composition per width category: desktop
+1920×1080 above 1024px, tablet 768×1024 above 600px through 1024px, and mobile
+412×915 through 600px. Root owns CSS conversion: original source rules/clamps
+are evaluated at each reference, then design lengths scale by actual width /
+reference width. Height/orientation never selects another composition. The
+older viewport comparisons below document earlier source investigations, not
+acceptance evidence for this policy.
+
+Motion consumes the already-scaled `#identity.offsetHeight`; it does not scale
+that DOM measurement again. The reference width selects the source 700px motion
+and portrait-detail branches, so 650px still uses the tablet composition. Entry
+offsets, mask overhang, copy-line tolerance, marquee inset and 133 reference-pixel
+per-second travel scale with the profile. Measured line/mark geometry and world
+translations are emitted as `vw`. Cached nav entry offsets also use `vw`, so a
+resize removes the current physical offset from the measured logo flight target.
+SVG viewBox coordinates, times, eases and the 100ms world clock remain unchanged.
+
+Portrait framebuffer dimensions/DPR remain physical image measurements. Pointer
+positions, native scroll coordinates, entry's near-top guard and magnet endpoint
+rounding retain their operational units. Neither hero controller uses actual
+viewport height for design sizing. Image `sizes` describes the evaluated profile
+photo widths: desktop100vw, tablet173.3333333333vw, mobile230.9708737864vw.
+
+The mounted motion regression checks scale-one reference poses, uniform scaling
+within each profile (including 650px tablet), height-only resize invariance,
+marquee phase/speed in both directions, entry geometry and entry resize. Mounted
+portrait/header regressions cover profile detail selection, physical framebuffer
+retention and measured navigation geometry. Scoped hero/header tests pass
+(68 tests /834 assertions) and ESLint is clean. The latest plain TypeScript run
+reports only four TS2532 diagnostics in the concurrently edited
+`footer.logic.test.ts:405`; no owned hero/header diagnostics. Root owns that
+integration check, CSS integration, full checks/build/SSR and paired
+EN/AR production review at the three references. No browser or production server
+was changed by this implementation handoff. These tests do not prove rendered
+Gazzar parity or whole-HOME smoothness.
+
 ## Reading body and world contract (R11 follow-up)
 
 The recovered source `2gz902oulp4x8.js.pretty:505–509` has separate world and
@@ -175,8 +213,8 @@ The regression retains the live source697px stops6.491/24.491/42.491/60.491/78.4
 Validation and fresh production comparison remain pending while the separate
 whole-experience smoothness baseline keeps the served31f4beb candidate frozen.
 
-The original 700px portrait breakpoint, 900px shell breakpoint, 6/5 tablet
-aspect rule, short-height rules and original clamps are retained. Desktop photo
+Earlier responsive baseline: the original 700px portrait breakpoint, 900px shell
+breakpoint, 6/5 tablet aspect rule, short-height rules and clamps were retained. Desktop photo
 width is `max(100vw,150svh)` centered at 50%/50%. Mobile uses
 `max(164vw,104svh)`, top 44%, center `50% + 65px`, and the original bottom mask.
 Desktop marquee top is 17.5%; mobile 29%; tablet portrait 34%.
@@ -199,7 +237,7 @@ Measured local/reference parity in active Vaelix tabs, DPR 1:
 
 ## Entry clock and assets
 
-A single owned RAF handles the entry, 133 CSS-pixel/second marquee, world
+A single owned RAF handles the entry, profile-scaled 133 reference-pixel/second marquee, world
 scrub and portrait invalidation. Animation progress never enters React/Storio.
 The three inline original logo shapes fill sequentially and assemble into the
 original mark; choices appear at ready +1.02..1.26s. QUIET mutes audio only.
@@ -271,7 +309,8 @@ parent’s `quietMode`; it is separate from entry audio and marquee pause. The
 effective reading state also includes `homeSceneFailed`, without changing either
 preference. At world>=.73 the entire inner scene uses `display:none` and is inert;
 entry descendants have explicit visibility and cannot override this containment.
-Reverse scrolling restores the scene; outer #identity still reserves 100svh.
+Reverse scrolling restores the scene; outer #identity reserves the width-scaled
+profile design height.
 
 Cleanup removes custom registration, observers, listeners, pointer state,
 RAF, text-line clones, inline styles and renderer resources, and releases any

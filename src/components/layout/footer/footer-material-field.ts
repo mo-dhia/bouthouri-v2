@@ -240,6 +240,7 @@ export class FooterIdleEpisodes {
   }
 }
 
+/** Coordinates, velocities and capped displacements share reference pixel space. */
 export class FooterRefractionWaves {
   private readonly partMap = [0, 1, 1, 1, 1, 2];
   private readonly packets = Array.from({ length: 6 }, () => ({

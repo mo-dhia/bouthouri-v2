@@ -1,7 +1,10 @@
 import { clamp } from "./story-score";
 import { createMaterialProtection, type MaterialProtection } from "./story-material-protection";
+import { designHeight } from "@/lib/viewport-design";
 
-export function createEnvironmentPointer(wake: () => void) {
+type PointerBounds = Pick<DOMRectReadOnly, "left" | "top" | "width" | "height">;
+
+export function createEnvironmentPointer(wake: () => void, bounds: () => PointerBounds = () => ({ left: 0, top: 0, width: innerWidth, height: designHeight(innerWidth) })) {
   const fine = matchMedia("(hover: hover) and (pointer: fine)");
   const state = {
     enabled: fine.matches, coarse: !fine.matches, hovering: false, pressed: false,
@@ -28,11 +31,15 @@ export function createEnvironmentPointer(wake: () => void) {
     state.clickX = state.targetX; state.clickY = state.targetY; state.clickSerial++;
     if (state.coarse) { state.fieldX = state.targetX; state.fieldY = state.targetY; }
   };
+  const position = (event: PointerEvent) => {
+    const rect = bounds();
+    return { x: (event.clientX - rect.left) / Math.max(1, rect.width) * 2 - 1, y: 1 - (event.clientY - rect.top) / Math.max(1, rect.height) * 2 };
+  };
   const move = (event: PointerEvent) => {
     if (!active || document.hidden) return;
     if (down && event.pointerType !== "mouse" && Math.hypot(event.clientX - down.x, event.clientY - down.y) > 10) { reset(); return; }
     if (!state.enabled || event.pointerType !== "mouse") return;
-    state.targetX = event.clientX / innerWidth * 2 - 1; state.targetY = 1 - event.clientY / innerHeight * 2;
+    const point = position(event); state.targetX = point.x; state.targetY = point.y;
     state.hovering = true;
     const target = event.target instanceof Element ? event.target : null;
     state.contextTarget = target?.closest("[data-portrait-entrance],.services-gate-scene,.project-composition,.projects-playground,[data-object-grab]") ? 0.46
@@ -43,17 +50,17 @@ export function createEnvironmentPointer(wake: () => void) {
     const target = event.target instanceof Element ? event.target : null;
     if (!active || grabbed || document.hidden || event.button !== 0 || target?.closest("button,a,input,label,select,textarea")) return;
     down = { x: event.clientX, y: event.clientY, id: event.pointerId };
-    if (event.pointerType === "mouse") begin(event.clientX / innerWidth * 2 - 1, 1 - event.clientY / innerHeight * 2);
+    if (event.pointerType === "mouse") { const point = position(event); begin(point.x, point.y); }
     wake();
   };
   const release = (event: PointerEvent) => {
     const initial = down; down = null;
     if (!initial || initial.id !== event.pointerId) return;
-    if (event.pointerType !== "mouse" && Math.hypot(event.clientX - initial.x, event.clientY - initial.y) < 12) begin(event.clientX / innerWidth * 2 - 1, 1 - event.clientY / innerHeight * 2);
+    if (event.pointerType !== "mouse" && Math.hypot(event.clientX - initial.x, event.clientY - initial.y) < 12) { const point = position(event); begin(point.x, point.y); }
     state.pressed = false; wake();
   };
   const leave = (event: PointerEvent) => { if (!event.relatedTarget) reset(); };
-  const scroll = () => { state.scrollVelocity = clamp(state.scrollVelocity + (scrollY - lastScroll) / innerHeight * 3, -1, 1); lastScroll = scrollY; wake(); };
+  const scroll = () => { state.scrollVelocity = clamp(state.scrollVelocity + (scrollY - lastScroll) / Math.max(1, bounds().height) * 3, -1, 1); lastScroll = scrollY; wake(); };
   const visibility = () => { if (document.hidden) { reset(); state.press = state.velocityX = state.velocityY = 0; } };
   const change = () => { state.enabled = fine.matches; state.coarse = !fine.matches; reset(); };
   const protect = (event: Event) => {

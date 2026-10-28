@@ -6,6 +6,7 @@ import { environmentFragment, environmentVertex } from "./story-environment-shad
 import { clamp, sampleStoryScore, smooth, type StoryFrame } from "./story-score";
 import styles from "./story-scene.module.css";
 import { isJourneyRendering, journeyOwnsRender, journeyRenderOwnerEvent } from "../3-journey/journey-render-owner";
+import { designHeight, viewportDesign } from "@/lib/viewport-design";
 
 export type SceneGuard = { x: number; y: number; rx: number; ry: number; weight: number };
 export type SceneInteraction = { guards: SceneGuard[]; grabbed: boolean };
@@ -37,7 +38,9 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   const canSimulate = renderer.extensions.has("EXT_color_buffer_float");
   const scene = new Scene(), camera = new Camera();
   const zero = new DataTexture(new Uint8Array(4), 1, 1); zero.needsUpdate = true;
-  let width = innerWidth, height = innerHeight, aspect = width / Math.max(1, height), mobile = width < 700;
+  let width = innerWidth, height = designHeight(width), design = viewportDesign(width);
+  let rendererSize = "";
+  let aspect = design.width / design.height, mobile = design.key === "mobile";
   let field = createEnvironmentField(aspect, mobile);
   const uniforms = {
     uState: { value: canSimulate ? field.texture : zero }, uCell: { value: field.uniforms.uCell.value },
@@ -53,7 +56,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   let menuOpen = document.documentElement.dataset.menuOpen === "true";
   const heroRoot = page.querySelector<HTMLElement>("#identity");
   let heroProgress = readHeroWorldPose(heroRoot)?.progress ?? worldProgressFromScroll(
-    heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || innerHeight, width <= 700,
+    heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || designHeight(width), mobile,
   );
   const readFrame = (): StoryFrame => ({ time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) });
   const readWorkTravel = () => Number(stage.querySelector<HTMLElement>(".work-world")?.dataset.travel ?? -1.35);
@@ -69,7 +72,10 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     if (timer) { clearTimeout(timer); timer = 0; }
     frameId = requestAnimationFrame(render);
   }
-  const pointer = createEnvironmentPointer(wake);
+  // The host is a fixed, top-anchored design canvas. Cache its logical bounds
+  // here rather than introducing a layout read into every native scroll input.
+  const pointerBounds = { left: 0, top: 0, width, height };
+  const pointer = createEnvironmentPointer(wake, () => pointerBounds);
   const fail = () => { lost = true; cancel(); host.style.visibility = "hidden"; stage.dataset.storyEnvironment = "failed"; };
   function render() {
     frameId = 0;
@@ -80,7 +86,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60); last = now; time += dt * (reduced ? 0.035 : 1);
     if (!reduced && refreshFrame) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = false; }
     // Source resets initialNarrative on reading entry independently of DOM time.
-    const score = sampleStoryScore(reduced ? readingFrame : frame, width < 701), input = pointer.state;
+    const score = sampleStoryScore(reduced ? readingFrame : frame, mobile), input = pointer.state;
     const pointerMoving = pointer.advance(dt, menuOpen);
     const workQuiet = smooth(280, 304, score.time) * (1 - smooth(426, 450, score.time));
     const heroBlend = smooth(0.25, 0.72, heroProgress);
@@ -139,10 +145,14 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   const measure = () => {
     if (disposed || lost) return;
     try {
-      const nextAspect = innerWidth / Math.max(1, innerHeight), nextMobile = innerWidth < 700;
+      const nextDesign = viewportDesign(innerWidth), nextAspect = nextDesign.width / nextDesign.height, nextMobile = nextDesign.key === "mobile";
       const fieldChanged = nextAspect !== aspect || nextMobile !== mobile, gridChanged = nextMobile !== mobile;
-      width = innerWidth; height = innerHeight; aspect = nextAspect; mobile = nextMobile;
-      renderer.setPixelRatio(Math.min(1.5, Math.max(1, devicePixelRatio))); renderer.setSize(width, height, false);
+      width = innerWidth; height = designHeight(width); design = nextDesign; aspect = nextAspect; mobile = nextMobile;
+      pointerBounds.width = width; pointerBounds.height = height;
+      const dpr = Math.min(1.5, Math.max(1, devicePixelRatio)), size = `${width}:${height}:${dpr}`;
+      if (size !== rendererSize) {
+        renderer.setPixelRatio(dpr); renderer.setSize(width, height, false); rendererSize = size;
+      }
       // Source useMemo([aspect, mobile]) retains both targets on a no-op/DPR-only
       // resize, even when the renderer's CSS dimensions change at the same ratio.
       if (fieldChanged) {

@@ -49,7 +49,7 @@ export function createStoryPointer(canvas: HTMLCanvasElement, camera: Camera, in
     state.hovering = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
     if (held && event.pointerId === held.id) {
       const radius = held.index === 0 ? 0.38 : 0.32;
-      const factor = 5 * radius / Math.min(innerWidth, innerHeight);
+      const factor = 5 * radius / Math.max(1, Math.min(rect.width, rect.height));
       const dx = (event.clientX - held.x) * factor, dy = (held.y - event.clientY) * factor;
       const length = Math.hypot(dx, dy), limit = length ? radius * Math.tanh(length / radius) / length : 1;
       pulls[held.index].tx = dx * limit; pulls[held.index].ty = dy * limit;

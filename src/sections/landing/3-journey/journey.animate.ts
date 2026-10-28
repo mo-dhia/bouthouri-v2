@@ -5,7 +5,6 @@ import {
 import { uiStore } from "@/store/uiStore";
 import {
   frameFromProgress,
-  journeyDistance,
   progressFromStoryTime,
   type JourneyFrame,
 } from "./journey-clock";
@@ -23,6 +22,8 @@ import { getSettledStoryOrigin } from "../2-story/story-origin";
 import { createJourneyScrubClock } from "./journey-scrub";
 import { createJourneyPresentation } from "./journey-presentation";
 import { createJourneyRenderOwner } from "./journey-render-owner";
+import { designHeight, pixelsToVw } from "@/lib/viewport-design";
+import { journeyGeometry } from "./journey-geometry";
 
 export function mountJourney(root: HTMLElement) {
   const stage = root.querySelector<HTMLElement>("#top")!;
@@ -108,10 +109,6 @@ export function mountJourney(root: HTMLElement) {
     const trigger = getScrollTrigger();
     if (!trigger) return;
     const opening = createOpeningType(root);
-    const viewportProbe = document.createElement("span");
-    viewportProbe.setAttribute("aria-hidden", "true");
-    viewportProbe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:0;height:100svh;inset:0 auto auto 0";
-    root.append(viewportProbe);
     let originWidth = stage.clientWidth, originHeight = stage.clientHeight;
     const origin: {
       current: ReturnType<typeof createWorkOrigin> & { changed?: () => void };
@@ -146,7 +143,7 @@ export function mountJourney(root: HTMLElement) {
     const render = (progress: number) => {
       const frame = frameFromProgress(
         progress,
-        100 / (innerWidth <= 700 ? 5.8 : 6.8),
+        journeyGeometry(innerWidth).heroInput,
       );
       const { time } = frame;
       presentation.frame(frame);
@@ -209,10 +206,9 @@ export function mountJourney(root: HTMLElement) {
       window.dispatchEvent(new Event("scroll"));
     };
     const measure = () => {
-      const mobile = innerWidth <= 700;
-      const viewportHeight = mobile ? viewportProbe.getBoundingClientRect().height : innerHeight;
-      root.style.setProperty("--journey-distance", `${journeyDistance(viewportHeight, mobile)}px`);
-      const distance = Math.round(chapter.getBoundingClientRect().height - stage.offsetHeight);
+      const stageHeight = stage.getBoundingClientRect().height || designHeight(innerWidth);
+      root.style.setProperty("--journey-distance", pixelsToVw(journeyGeometry(innerWidth, stageHeight).distance, innerWidth));
+      const distance = chapter.getBoundingClientRect().height - stageHeight;
       pinDistance = distance;
       opening.measure();
       presentation.refresh();
@@ -267,8 +263,8 @@ export function mountJourney(root: HTMLElement) {
       const atEnd = frameFromProgress(clock.target).time >= 710;
       const hero = document.querySelector<HTMLElement>("#identity");
       const y = atEnd
-        ? (hero?.offsetHeight ?? innerHeight) * (1 + (innerWidth <= 700 ? 5.8 : 6.8) * 22 / 100)
-        : scrollY + 0.9 * innerHeight;
+        ? (hero?.getBoundingClientRect().height || designHeight(innerWidth)) * (1 + 22 / journeyGeometry(innerWidth).heroInput)
+        : scrollY + 0.9 * (stage.getBoundingClientRect().height || designHeight(innerWidth));
       window.scrollTo({ top: y, behavior: "smooth" });
     };
     const visibility = () => {
@@ -295,7 +291,6 @@ export function mountJourney(root: HTMLElement) {
       work.dispose();
       systems.dispose();
       opening.dispose();
-      viewportProbe.remove();
       stage.removeEventListener("story-origin", onOrigin);
       window.removeEventListener("resize", measure);
       document.removeEventListener("visibilitychange", visibility);
@@ -315,7 +310,7 @@ export function mountJourney(root: HTMLElement) {
     getGeometry: () => root.hasAttribute("data-enhanced") && pinDistance > 0 ? {
       start: chapter.getBoundingClientRect().top + scrollY,
       distance: pinDistance,
-      heroInput: 100 / (innerWidth <= 700 ? 5.8 : 6.8),
+      heroInput: journeyGeometry(innerWidth).heroInput,
     } : null,
     onRestore: (detail) => snapRestore?.(detail),
   });

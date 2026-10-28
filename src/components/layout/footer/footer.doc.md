@@ -1,5 +1,40 @@
 # Source-compatible home footer
 
+Fixed design policy (2026-10-28): desktop1920×1080 (>1024px), tablet768×1024
+(600<width<=1024), mobile412×915 (<=600) supersede live700px layout decisions.
+`footer-material.ts` normalizes measured DOM glyph boxes, positions and pointer
+motion by shared `designScale(innerWidth)`, then applies that scale exactly once
+with DPR in the drawing transform. Fonts/caps, labels, morph/bridge offsets,
+pulls and refraction waves all run in reference pixels; pure path/field APIs and
+their source fixtures remain intact. `FooterThoughts`' optional final rasterScale
+only controls bitmap resolution; it does not resize logical layout. DOM font,
+tracking, origin and measured footer variables are emitted in vw, and the glyph
+reader uses computed physical left rather than parsing an inline vw value.
+Fractional word bounds preserve proportional canvas placement. Footer clearance
+uses reference height/padding and accepts `--footer-word-rest` as vw, % or px.
+
+Root CSS owns the DOM mask, word and footer's reference-height composition. The
+native footer canvas is a separate body overlay (data-footer-material=native-paths),
+not the legacy `.footer-material-layer`; its full physical viewport CSS box and
+buffer remain paired so clipped viewport drawing is not stretched. Native scroll,
+touch slop, client-coordinate protection/audio and visibility stay physical.
+CPU regressions cover factor one at each reference, proportional EN/AR text,
+morph/wave geometry and hit mapping, no tablet680/700 switch, actual-height
+independence, DPR and cleanup. Scoped tests and lint/plain TypeScript pass.
+These do not certify visual parity; root owns serialized build/SSR and live review.
+
+R2 buffer correction: the material's existing window resize listener now handles
+physical height/DPR changes through `resizeViewport()`. It updates the viewport
+buffer/DPR, invalidates only paint and draws the current pose once without
+advancing clocks or resetting paths, idle, waves, morph or thoughts. `draw()` also
+checks buffer dimensions before painting. Unchanged notifications do no work;
+width changes retain the prior interaction reset policy. No parent listener or
+extra RAF is added. A mounted parent/material regression leaves the mask's
+ResizeObserver silent while resizing rest, idle, wave, forward, logo and reverse
+states, checks DPR-only redraw and comparison with an unresized control, and
+verifies listener/API cleanup and the no-context handle. Physical overlay CSS
+and buffers stay paired; production review remains root-owned.
+
 `Footer copy={dictionary.footer}` is inserted **once inside `.systems-story`**
 by Journey. Optional `locale` is also accepted. It renders the original
 `.home-footer`, `.footer-information`, `.footer-word-mask`, `.footer-word-text`,

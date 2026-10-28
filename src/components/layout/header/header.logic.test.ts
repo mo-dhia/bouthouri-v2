@@ -3,10 +3,11 @@ import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import * as heroWorld from "@/sections/landing/1-hero/hero-world";
+import * as viewport from "@/lib/viewport-design";
 
 // Exercise the mounted controller with counted DOM operations. Layout values
 // are supplied explicitly; this checks ownership/invalidation, not CSS parity.
-function harness({ reading = false, late = false, locale = "en" } = {}) {
+function harness({ reading = false, late = false, locale = "en", width = 1920, physicalHeight = 1080 } = {}) {
   const counts = { queries: 0, geometry: 0, writes: 0 };
   let y = 0;
   class Surface extends EventTarget {
@@ -84,6 +85,8 @@ function harness({ reading = false, late = false, locale = "en" } = {}) {
   let resizeDisconnected = false, mutationDisconnected = false, rowTop = "34px";
   const globals = {
     document, window, Element: Surface, scrollX: 0,
+    get innerWidth() { return width; },
+    get innerHeight() { return physicalHeight; },
     get scrollY() { return y; },
     getComputedStyle() { counts.geometry++; return { top: rowTop }; },
     clearTimeout() {}, cancelAnimationFrame() {},
@@ -104,6 +107,7 @@ function harness({ reading = false, late = false, locale = "en" } = {}) {
     "./header.module.css": { default: { readingNavigation: "reading-viewport", readingFrame: "reading-frame" } },
     "./menu-timeline": { createMenuTimeline: () => ({ dispose() {} }) },
     "@/sections/landing/1-hero/hero-world": heroWorld,
+    "@/lib/viewport-design": viewport,
   };
   const source = readFileSync(new URL("./header.logic.ts", import.meta.url), "utf8");
   const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
@@ -120,7 +124,7 @@ function harness({ reading = false, late = false, locale = "en" } = {}) {
     mode(value: Partial<typeof state>) { Object.assign(state, value); subscribers.forEach((callback) => callback()); },
     event(progress: number) { window.dispatchEvent(new CustomEvent(heroWorld.heroWorldEvent, { detail: heroWorld.heroWorldPose(progress) })); },
     publisher: () => heroWorld.createHeroWorldPublisher(identity as unknown as HTMLElement, window),
-    resize(top = rowTop) { rowTop = top; window.dispatchEvent(new Event("resize")); },
+    resize(top = rowTop, nextWidth = width, nextHeight = physicalHeight) { rowTop = top; width = nextWidth; physicalHeight = nextHeight; window.dispatchEvent(new Event("resize")); },
     layout() { resize(); },
     lateStage() { insertStage(); mutate([{ type: "childList" }]); },
     mutation() { mutate([{ type: "childList" }]); },
@@ -136,7 +140,7 @@ test("motion uses full precision and skips native/unchanged poses without geomet
   const publisher = h.publisher(), pose = heroWorld.heroWorldPose(.123456789);
   publisher.publish(pose);
   const dispose = h.mount();
-  expect(h.hero.style.transform).toBe(`translate3d(0,${-pose.navTravel * 90}px,0)`);
+  expect(h.hero.style.transform).toBe(`translate3d(0,${viewport.pixelsToVw(-pose.navTravel * 90, 1920)},0)`);
   h.reset(); h.scroll(200); h.event(pose.progress); h.mutation();
   expect(h.counts).toEqual({ geometry: 0, queries: 0, writes: 0 });
   publisher.publish(heroWorld.heroWorldPose(.2));
@@ -145,7 +149,7 @@ test("motion uses full precision and skips native/unchanged poses without geomet
   h.reset(); h.event(.05); h.scroll(400); // Old event/dataset cannot replace the current WeakMap pose.
   expect(h.hero.style.transform).toBe(transform); expect(h.counts.writes).toBe(0);
   h.resize("60px");
-  expect(h.hero.style.transform).toBe(`translate3d(0,${-heroWorld.heroWorldPose(.2).navTravel * 116}px,0)`);
+  expect(h.hero.style.transform).toBe(`translate3d(0,${viewport.pixelsToVw(-heroWorld.heroWorldPose(.2).navTravel * 116, 1920)},0)`);
   h.reset(); h.scroll(420); expect(h.counts).toEqual({ geometry: 0, queries: 0, writes: 0 });
   dispose(); publisher.dispose(); expect(h.clean).toBe(true);
 });
@@ -154,7 +158,7 @@ test("reading keeps one document viewport, raw hero height, native offscreen foc
   for (const locale of ["en", "ar"]) {
     const h = harness({ reading: true, locale }), dispose = h.mount();
     const viewport = h.root.children.find((node) => node.dataset.readingNavigation === "true")!;
-    expect(viewport.style.top).toBe("800px"); expect(h.side.parent?.className).toBe("reading-frame");
+    expect(viewport.style.top).toBe(`${800 / 1920 * 100}vw`); expect(h.side.parent?.className).toBe("reading-frame");
     h.scroll(200); // .25 raw native input, without the ordinary motion remap.
     expect(h.hero.style.opacity).toBe(String(heroWorld.heroWorldPose(.25).navOpacity));
     h.reset(); h.scroll(200); h.event(0);
@@ -162,14 +166,14 @@ test("reading keeps one document viewport, raw hero height, native offscreen foc
     h.scroll(800); h.reset(); h.scroll(9000);
     expect(h.counts).toEqual({ geometry: 0, queries: 0, writes: 0 });
     expect(h.side.inert).toBe(false); expect(h.side.getAttribute("aria-hidden")).toBe("false");
-    expect(viewport.style.top).toBe("800px"); // The document supplies scrolling.
+    expect(viewport.style.top).toBe(`${800 / 1920 * 100}vw`); // The document supplies scrolling.
     h.identity.height = 1600; h.chapter.top = 1600; h.scroll(400); h.layout();
-    expect(viewport.style.top).toBe("1600px");
+    expect(viewport.style.top).toBe(`${1600 / 1920 * 100}vw`);
     expect(h.hero.style.opacity).toBe(String(heroWorld.heroWorldPose(.25).navOpacity));
     h.mode({ menuOpen: true });
     h.utilities.height = 48; h.side.width = 74; h.resize("16px");
-    expect(h.side.parent?.style.top).toBe("16px"); expect(h.side.parent?.style.height).toBe("48px");
-    expect(h.utilities.style["--nav-right-label"]).toBe("74px");
+    expect(h.side.parent?.style.top).toBe(`${16 / 1920 * 100}vw`); expect(h.side.parent?.style.height).toBe(`${48 / 1920 * 100}vw`);
+    expect(h.utilities.style["--nav-right-label"]).toBe(`${74 / 1920 * 100}vw`);
     h.mode({ menuOpen: false });
     h.fontsReady(); await Promise.resolve();
     expect(h.root.children.filter((node) => node.dataset.readingNavigation === "true")).toHaveLength(1);
@@ -188,11 +192,42 @@ test("late stage, geometry-ready, locale and OS mode invalidate caches; font com
   expect(h.hero.style.opacity).toBe(String(heroWorld.heroWorldPose(.5).navOpacity));
   expect(h.original.inert).toBe(true);
   h.chapter.top = 950; h.window.dispatchEvent(new Event("home-navigation-ready"));
-  expect(h.side.parent?.parent?.style.top).toBe("950px");
-  h.chapter.top = 1000; h.locale(); expect(h.side.parent?.parent?.style.top).toBe("1000px");
+  expect(h.side.parent?.parent?.style.top).toBe(`${950 / 1920 * 100}vw`);
+  h.chapter.top = 1000; h.locale(); expect(h.side.parent?.parent?.style.top).toBe(`${1000 / 1920 * 100}vw`);
   h.mode({ quietMode: false }); h.motion.matches = true; h.motion.dispatchEvent(new Event("change"));
   expect(h.side.parent?.className).toBe("reading-frame");
   dispose(); h.reset(); h.fontsReady(); await Promise.resolve();
   h.resize(); h.scroll(0); h.event(1);
   expect(h.counts).toEqual({ geometry: 0, queries: 0, writes: 0 }); expect(h.clean).toBe(true);
+});
+
+test("profile navigation scales measured geometry once and ignores physical viewport height", () => {
+  for (const [referenceWidth, referenceHeight, smallerWidth, rowTop, rowHeight] of [
+    [1920, 1080, 1440, 46.44, 60.48],
+    [768, 1024, 650, 16, 44],
+    [412, 915, 320, 16, 44],
+  ]) {
+    const referencePose = heroWorld.heroWorldPose(.2);
+    const expectedTravel = -referencePose.navTravel * (rowTop + rowHeight + 12);
+    for (const width of [referenceWidth, smallerWidth]) {
+      const scale = width / referenceWidth;
+      const h = harness({ reading: true, width, physicalHeight: referenceHeight });
+      h.identity.height = h.chapter.top = referenceHeight * scale;
+      h.entrance.height = h.utilities.height = rowHeight * scale;
+      h.side.width = 102 * scale;
+      const dispose = h.mount();
+      h.resize(`${rowTop * scale}px`);
+      h.scroll(.2 * referenceHeight * scale);
+      const transform = h.hero.style.transform as string;
+      expect(Number(transform.match(/translate3d\(0,([^v]+)vw,0\)/)![1]) * width / 100).toBeCloseTo(expectedTravel * scale, 10);
+      expect(Number.parseFloat(h.side.parent!.parent!.style.top as string) * width / 100).toBeCloseTo(referenceHeight * scale, 10);
+      expect(Number.parseFloat(h.side.parent!.style.height as string) * width / 100).toBeCloseTo(rowHeight * scale, 10);
+      expect(Number.parseFloat(h.utilities.style["--nav-right-label"] as string) * width / 100).toBeCloseTo(102 * scale, 10);
+      h.resize(`${rowTop * scale}px`, width, referenceHeight / 2);
+      expect(h.hero.style.transform).toBe(transform);
+      expect(h.hero.style.opacity).toBe(String(referencePose.navOpacity));
+      dispose();
+      expect(h.clean).toBe(true);
+    }
+  }
 });

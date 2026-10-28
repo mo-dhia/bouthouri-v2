@@ -1,7 +1,7 @@
 type Point = { x: number; y: number };
 const unit = (n: number) => Math.max(0, Math.min(1, n));
 
-/** The thought grows in small material cells from the selected identity piece. */
+/** Reference-pixel layout; the material owner applies the sole drawing scale. */
 export class FooterThoughts {
   private readonly canvas = document.createElement("canvas");
   readonly mobile: boolean;
@@ -17,6 +17,7 @@ export class FooterThoughts {
     private readonly rtl: boolean,
     labels: string[][],
     family: string,
+    rasterScale = 1,
   ) {
     this.mobile = width < 680;
     this.x = width * (this.mobile ? 0.06 : 0.055);
@@ -29,7 +30,7 @@ export class FooterThoughts {
     const bodySize = this.mobile
       ? Math.min(16, 0.041 * width)
       : Math.min(23, 0.019 * width);
-    this.ratio = Math.min(2, Math.max(1.5, devicePixelRatio || 1));
+    this.ratio = Math.min(2, Math.max(1.5, devicePixelRatio || 1)) * rasterScale;
     this.canvas.width = Math.ceil(this.width * this.ratio);
     this.canvas.height = Math.ceil(3 * this.row * this.ratio);
     const ctx = this.canvas.getContext("2d")!;

@@ -10,6 +10,7 @@ import { createStoryBoot, waitForStoryTask } from "./story-boot";
 import { disposePrivateStoryAtlas } from "./story-atlas-ownership";
 import { loadStoryMotionAssets } from "./story-motion-assets";
 import { uiStore } from "@/store/uiStore";
+import { designHeight, viewportDesign } from "@/lib/viewport-design";
 import { sampleStoryScore, type StoryFrame } from "./story-score";
 import { createStoryHeroHandoff } from "./story-hero-handoff";
 import { heroWorldPose, readHeroWorldPose, worldProgressFromScroll } from "../1-hero/hero-world";
@@ -42,6 +43,8 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
   };
   let disposed = false, lost = false, ready = false, frameId = 0;
   let width = Math.max(1, host.clientWidth), height = Math.max(1, host.clientHeight);
+  let rendererSize = "";
+  let design = viewportDesign(innerWidth), aspect = design.width / design.height;
   let visible = false, menuOpen = document.documentElement.dataset.menuOpen === "true";
   let elapsed = 0, lastRender = 0, sceneReady = false;
   let frame: StoryFrame = {
@@ -70,7 +73,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     } };
   }
   host.append(canvas);
-  const scene = new Scene(), camera = new PerspectiveCamera(34, width / height, 0.005, 60);
+  const scene = new Scene(), camera = new PerspectiveCamera(34, aspect, 0.005, 60);
   camera.position.set(0, 0, 10);
   let glassesModel: Object3D | undefined, motionModel: Object3D | undefined;
   let motionGeneration = 0, motionPending = false, modeCapture = false;
@@ -98,7 +101,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
   const pointer = createStoryPointer(canvas, camera, requestRender);
   const hero = stage.closest("main")?.querySelector<HTMLElement>("#identity") ?? null;
   const heroHandoff = createStoryHeroHandoff(() => readHeroWorldPose(hero) ?? heroWorldPose(worldProgressFromScroll(
-    hero ? -hero.getBoundingClientRect().top : scrollY, hero?.offsetHeight || innerHeight, innerWidth <= 700,
+    hero ? -hero.getBoundingClientRect().top : scrollY, hero?.offsetHeight || designHeight(innerWidth), design.key === "mobile",
   )), () => {
     if (staticMode) return;
     frame = heroHandoff.sample(frame); requestRender();
@@ -106,10 +109,10 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
   frame = heroHandoff.sample(frame);
   let cameraHistory = createStoryCameraHistory();
   let opticalHistory = createStoryOpticalHistory();
-  if (!staticMode) opticalHistory.sample(cameraHistory.sample(frame, width < 701));
+  if (!staticMode) opticalHistory.sample(cameraHistory.sample(frame, design.key === "mobile"));
   if (staticMode) pointer.setActive(false);
   const currentScore = () => {
-    const score = staticMode ? sampleStoryScore({ time: 0, openingTime: 26, progress: 26 / 740, emergence: 1 }, width < 701) : opticalHistory.sample(cameraHistory.sample(frame, width < 701));
+    const score = staticMode ? sampleStoryScore({ time: 0, openingTime: 26, progress: 26 / 740, emergence: 1 }, design.key === "mobile") : opticalHistory.sample(cameraHistory.sample(frame, design.key === "mobile"));
     if (staticMode) score.idle = 0;
     return score;
   };
@@ -121,7 +124,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     const score = currentScore();
     if (!staticMode && score.time >= 98) activateStudio();
     const pointerMoving = pointer.advance(dt, score.time, score.emergence);
-    const glassMoving = glasses.update(score, pointer, width / height, elapsed, dt);
+    const glassMoving = glasses.update(score, pointer, aspect, elapsed, dt);
     const logoMoving = sculptures?.update(score, pointer, dt) ?? false;
     if (modeCapture) { modeCapture = false; environments?.refreshGlasses(); }
     camera.updateMatrixWorld();
@@ -146,18 +149,22 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     if (!warm && !staticMode && (pointerMoving || glassMoving || logoMoving)) requestRender();
   }
   function measure() {
-    width = Math.max(1, host.clientWidth || stage.clientWidth);
-    height = Math.max(1, host.clientHeight || stage.clientHeight);
-    const rect = host.getBoundingClientRect(); visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
+    const rect = host.getBoundingClientRect();
+    width = Math.max(1, rect.width || host.clientWidth || stage.clientWidth);
+    height = Math.max(1, rect.height || host.clientHeight || stage.clientHeight);
+    design = viewportDesign(innerWidth); aspect = design.width / design.height;
+    visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
     // Source react-use-measure routes ResizeObserver through its 50ms scroll
     // debounce too. Coalesce capture with that existing full-bounds measure:
     // an immediate scroll must update the shared frame before cube invalidation
     // can cause a resize-owned draw of the previous glasses pose.
     if (sceneReady) scrollMeasure();
-    renderer.setPixelRatio(Math.min(Math.max(1, devicePixelRatio), width < 701 ? 1.5 : 2));
-    renderer.setSize(width, height, false);
-    camera.aspect = width / height; camera.updateProjectionMatrix();
-    pointer.measure(); sculptures?.resize(width / height); typography?.resize(width, height);
+    const dpr = Math.min(Math.max(1, devicePixelRatio), design.key === "mobile" ? 1.5 : 2), size = `${width}:${height}:${dpr}`;
+    if (size !== rendererSize) {
+      renderer.setPixelRatio(dpr); renderer.setSize(width, height, false); rendererSize = size;
+    }
+    camera.aspect = aspect; camera.updateProjectionMatrix();
+    pointer.measure(); sculptures?.resize(aspect); typography?.resize(width, height);
     canvas.dataset.dpr = String(renderer.getPixelRatio());
     requestRender();
   }
@@ -168,7 +175,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     frame = heroHandoff.sample(next);
     // The source clock exists before optional GPU assets. Retain both property
     // histories even when render() cannot draw yet or the stage is offscreen.
-    opticalHistory.sample(cameraHistory.sample(frame, width < 701));
+    opticalHistory.sample(cameraHistory.sample(frame, design.key === "mobile"));
     stage.dataset.storyActivity = visible ? document.hidden ? "hidden" : menuOpen ? "menu" : "visible" : "offscreen";
     // The parent owns time, not GPU draws. Coalesce clock/resize/pointer demand
     // into the scene's existing RAF, like the source demand-rendered Canvas.
@@ -179,7 +186,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
       // Restores can skip Ideas entirely. Its settled pen origin is a CPU
       // projection even after the object canvas has stopped drawing.
       if (typography) {
-        camera.position.set(0, 0, 10 * Math.max(1, 0.88 / (width / height))); camera.lookAt(0, 0, 0);
+        camera.position.set(0, 0, 10 * Math.max(1, 0.88 / aspect)); camera.lookAt(0, 0, 0);
         camera.updateMatrixWorld(); typography.update(frame.time);
       }
     }
@@ -287,13 +294,13 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     try {
       if (!currentMotion(generation) || !environments) return;
       environments.setSculpture(true);
-      ownSculptures = createSculptures(model, scene, environments.sculpture!.texture, width / height, document.documentElement.lang === "ar");
+      ownSculptures = createSculptures(model, scene, environments.sculpture!.texture, aspect, document.documentElement.lang === "ar");
       ownSculptures.root.visible = false; ownSculptures.setEnvironment(null);
       ownType = await createSpatialType(stage, scene, ownSculptures.root, camera, width, height, requestRender, motionAbort.signal);
       if (!currentMotion(generation)) return;
       motionModel = model; releaseLighting = release;
       sculptures = ownSculptures; typography = ownType;
-      sculptures.resize(width / height);
+      sculptures.resize(aspect);
       typography.resize(width, height); typography.update(frame.time);
       pointer.setObjects([glasses!.hitPlane, ...sculptures.objects]);
       // Adoption transfers all ownership; stale async work cleans up below.
@@ -344,7 +351,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
       // visible crossing. One deliberate warm draw uploads the actual current
       // frame even when #top is below the viewport; no offscreen loop follows.
       const score = currentScore();
-      glasses.update(score, pointer, width / height, elapsed, 0);
+      glasses.update(score, pointer, aspect, elapsed, 0);
       sculptures?.update(score, pointer, 0);
       // Source lazily initializes its CubeUV cache inside r180's transparent
       // transmission clear state. Preserve that field, including unused texels.
@@ -399,7 +406,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
       restoreDisplay();
       heroHandoff.refresh();
       frame = heroHandoff.sample({ time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) });
-      opticalHistory.sample(cameraHistory.sample(frame, width < 701));
+      opticalHistory.sample(cameraHistory.sample(frame, design.key === "mobile"));
     }
     // Source reduced-prop rerender recaptures its existing256 Environment even
     // without a geometry change. Defer that finite work while hidden/offscreen.

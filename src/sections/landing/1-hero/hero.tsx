@@ -185,7 +185,7 @@ export default function Hero({
                 alt={copy.portraitAlt}
                 width={1536}
                 height={1024}
-                sizes="(max-width: 700px) 164vw, 100vw"
+                sizes="(max-width: 600px) 230.9708737864vw, (max-width: 1024px) 173.3333333333vw, 100vw"
                 preload
                 unoptimized
                 draggable={false}

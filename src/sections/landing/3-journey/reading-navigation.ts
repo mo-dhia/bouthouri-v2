@@ -2,6 +2,7 @@ import {
   HOME_WORK_MOMENTS,
   type HomePosition,
 } from "@/lib/navigation/home-position";
+import { designPixels } from "@/lib/viewport-design";
 
 const workMoments = Object.values(HOME_WORK_MOMENTS);
 
@@ -81,7 +82,7 @@ export function readingNavigation(root: HTMLElement) {
         const project = root.querySelector<HTMLElement>(
           `[data-work-index="${index}"]`,
         );
-        if (project) return project.getBoundingClientRect().top + scrollY - 100;
+        if (project) return project.getBoundingClientRect().top + scrollY - designPixels(100, innerWidth);
       }
       return (root.querySelector("#beyond")?.getBoundingClientRect().top ?? 0) + scrollY;
     },

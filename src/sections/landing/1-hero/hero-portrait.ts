@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { emitMaterialProtection } from "@/components/layout/header/material-protection";
 import { clamp } from "./hero-world";
+import { viewportDesign } from "@/lib/viewport-design";
 import type { ReadingPortraitState } from "./hero-reading-portrait";
 import {
   playMaterialImpulse,
@@ -221,7 +222,7 @@ export async function mountHeroPortrait(
     fieldActive: { value: 0 },
     departure: { value: 0 },
     exitVelocity: { value: 0 },
-    exitDetail: { value: reading ? 0 : innerWidth <= 700 ? 0.35 : 1 },
+    exitDetail: { value: reading ? 0 : viewportDesign(innerWidth).width <= 700 ? 0.35 : 1 },
     exitPixel: { value: new THREE.Vector2(1, 1) },
     view: { value: new THREE.Vector2(0, 1) },
   };
@@ -340,7 +341,7 @@ export async function mountHeroPortrait(
     const width = image.offsetWidth,
       height = image.offsetHeight;
     uniforms.exitPixel.value.set(1 / width, 1 / height);
-    uniforms.exitDetail.value = innerWidth <= 700 ? 0.35 : 1;
+    uniforms.exitDetail.value = viewportDesign(innerWidth).width <= 700 ? 0.35 : 1;
     if (width !== pixelWidth || height !== pixelHeight) {
       renderer.setPixelRatio(
         Math.min(devicePixelRatio || 1, 1.5, 1536 / width),

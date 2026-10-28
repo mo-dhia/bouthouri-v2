@@ -4,6 +4,9 @@ import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import { FooterPaths } from "./footer-paths";
 import * as materialField from "./footer-material-field";
+import * as viewport from "@/lib/viewport-design";
+import type { FooterThoughts } from "./footer-thoughts";
+import type { FooterMaterial } from "./footer-material";
 
 class Surface extends EventTarget {
   dataset: Record<string, string> = {};
@@ -63,8 +66,18 @@ function harness(variant = "home") {
     pathBuilds: 0, contourCalls: 0, clears: 0,
     fills: [] as RecordedPath[], transforms: [] as number[][], clips: [] as number[][],
     hits: [] as { path: RecordedPath; x: number; y: number }[], hitPath: undefined as RecordedPath | undefined,
+    fonts: [] as string[], images: [] as number[][],
+    thoughts: [] as { mobile: boolean; x: number; y: number; titleSize: number }[],
+    canvases: [] as (Surface & { width: number; height: number })[],
   };
   const context = {
+    _font: "",
+    set font(value: string) { this._font = value; paint.fonts.push(value); },
+    get font() { return this._font; },
+    scale() {},
+    measureText(text: string) { return { width: text.length * parseFloat(this._font.split(" ")[1]) * 0.5, actualBoundingBoxLeft: 0, actualBoundingBoxRight: 0 }; },
+    fillText() {},
+    drawImage(_canvas: unknown, ...values: number[]) { paint.images.push(values); },
     clearRect() { paint.clears++; },
     setTransform(...values: number[]) { paint.transforms.push(values); },
     fill(path?: RecordedPath) { if (path) paint.fills.push(path); },
@@ -77,7 +90,10 @@ function harness(variant = "home") {
   };
   const document = Object.assign(new EventTarget(), {
     hidden: false, documentElement: new Surface(), body: new Surface(), fonts: { ready: Promise.resolve() },
-    createElement: () => Object.assign(new Surface(), { getContext: () => context }),
+    createElement: () => {
+      const canvas = Object.assign(new Surface(), { width: 0, height: 0, getContext: () => context });
+      paint.canvases.push(canvas); return canvas;
+    },
   });
   const window = new EventTarget();
   const motion = Object.assign(new EventTarget(), { matches: false });
@@ -88,6 +104,8 @@ function harness(variant = "home") {
   const state = { quietMode: false, homeSceneFailed: false, menuOpen: false };
   let intersect: (entries: { isIntersecting: boolean }[]) => void = () => {};
   let active = false, materialMounts = 0, materialDisposals = 0, soundCalls = 0;
+  let mountedMaterial: FooterMaterial | undefined, wordMeasures = 0, maskResizeNotifications = 0;
+  let maskResize: () => void = () => {};
   class ClockDate extends Date {
     constructor() { super(now); }
     static now() { return now; }
@@ -106,13 +124,14 @@ function harness(variant = "home") {
       constructor(callback: typeof intersect) { intersect = callback; }
       observe() {} disconnect() {}
     },
-    ResizeObserver: class { observe() {} disconnect() {} },
+    ResizeObserver: class { constructor(callback: () => void) { maskResize = callback; } observe() {} disconnect() {} },
   };
   const dependencies = {
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe: (callback: () => void) => { subscribers.add(callback); return () => subscribers.delete(callback); } } },
-    "./footer-geometry": { measureFooterWord() {} },
+    "./footer-geometry": { measureFooterWord() { wordMeasures++; } },
     "./footer-material": { mountFooterMaterial() {
       materialMounts++;
+      if (mountedMaterial) return mountedMaterial;
       return { measure() {}, reset() {}, setActive(value: boolean) { active = value; }, dispose() { materialDisposals++; } };
     } },
   };
@@ -125,7 +144,9 @@ function harness(variant = "home") {
       const pending = [...rafs.values()]; rafs.clear();
       pending.forEach((callback) => callback(now));
     },
-    mount: () => mount(root),
+    mount(material?: FooterMaterial) { mountedMaterial = material; return mount(root); },
+    maskResize() { maskResizeNotifications++; maskResize(); },
+    get measurements() { return { word: wordMeasures, maskResizeNotifications }; },
     frame(time: number) { stage.dispatchEvent(new CustomEvent("journey-frame", { detail: { time } })); },
     intersect(value: boolean) { intersect([{ isIntersecting: value }]); },
     mode(change: Partial<typeof state>) { Object.assign(state, change); subscribers.forEach((callback) => callback()); },
@@ -144,16 +165,21 @@ function harness(variant = "home") {
     get mounts() { return materialMounts; },
     get disposals() { return materialDisposals; },
     get subscribers() { return subscribers.size; },
-    material(uncached = false) {
+    material(uncached = false, realThoughts = false) {
       class Thoughts { mobile = false; x = 0; y = 0; titleSize = 20; draw() {} dispose() {} }
+      const Thought = (realThoughts ? load("./footer-thoughts.ts", globals, {}).FooterThoughts : Thoughts) as unknown as typeof FooterThoughts;
+      class TrackedThoughts extends Thought {
+        constructor(...args: ConstructorParameters<typeof FooterThoughts>) { super(...args); paint.thoughts.push(this); }
+      }
       class TrackedPaths extends FooterPaths {
         contours(progress: number, reverse = false) { paint.contourCalls++; return super.contours(progress, reverse); }
       }
       const exports = load("./footer-material.ts", globals, {
         "@/lib/audio/material-audio": { playMaterialSound() { soundCalls++; }, setFooterFriction() {} },
         "./footer-paths": { FooterPaths: TrackedPaths },
+        "@/lib/viewport-design": viewport,
         "./footer-geometry": { footerGlyphBoxes: () => Array.from({ length: 6 }, (_, i) => ({ x: i * word.rect.width / 6, y: 0, width: word.rect.width / 6 * 0.8, height: word.offsetHeight })) },
-        "./footer-thoughts": { FooterThoughts: Thoughts },
+        "./footer-thoughts": { FooterThoughts: TrackedThoughts },
         "./footer-material-field": materialField,
         "../header/material-protection": { emitMaterialProtection() {} },
       }, uncached ? (source) => {
@@ -162,7 +188,7 @@ function harness(variant = "home") {
         return source.replace("const restWord =", "const restWord = false &&");
       } : undefined);
       return (exports.mountFooterMaterial as unknown as (root: Surface, reduced: () => boolean) => {
-        measure(): void; reset(): void; setActive(active: boolean): void; dispose(): void;
+        measure(): void; resizeViewport(): void; reset(): void; setActive(active: boolean): void; dispose(): void;
       })(root, () => state.quietMode);
     },
     get soundCalls() { return soundCalls; },
@@ -271,8 +297,9 @@ test("partial-reveal and reverse scroll reuse exact rest paths with one mask/wor
       pair.wake(); pair.step();
       expect(cached.mask.rectReads - reads[0]).toBe(1); expect(cached.word.rectReads - reads[1]).toBe(1);
       expect(cached.paint.clears - clears).toBe(same ? 0 : 1);
-      expect(cached.paint.transforms.at(-1)).toEqual([1, 0, 0, 1, left, top + (wordTop - top)]);
-      if (wordTop > top) expect(cached.paint.clips.at(-1)).toEqual([0, top - wordTop, 600, 100]);
+      const scale = viewport.designScale(cached.globals.innerWidth);
+      expect(cached.paint.transforms.at(-1)).toEqual([scale, 0, 0, scale, left, top + (wordTop - top)]);
+      if (wordTop > top) expect(cached.paint.clips.at(-1)).toEqual([0, (top - wordTop) / scale, 600 / scale, 100 / scale]);
       cached.paint.fills.slice(-6).forEach((path, i) => expect(path).toBe(paths[i]));
     }
     expect(cached.paint.pathBuilds).toBe(6); expect(cached.paint.contourCalls).toBe(1);
@@ -319,7 +346,10 @@ test("idle takeover, hover/waves and pull bypass rest geometry; hits, measure an
     const path = h.paint.fills.at(-6)!;
     h.paint.hitPath = path; h.mask.rect.left = 31; h.mask.rect.top = 180; h.word.rect.top = 185;
     h.window.dispatchEvent(pointer("pointermove", 56, 235, 1000));
-    expect(h.paint.hits.at(-1)).toEqual({ path, x: 25, y: 50 });
+    const hit = h.paint.hits.at(-1)!;
+    expect(hit.path).toBe(path);
+    expect(hit.x).toBeCloseTo(25 / viewport.designScale(h.globals.innerWidth), 12);
+    expect(hit.y).toBeCloseTo(50 / viewport.designScale(h.globals.innerWidth), 12);
   });
   pair.step(); expect(cached.mask.dataset.idleKind).toBe("-1");
   expect(Number(cached.mask.dataset.waveEnergy)).toBeGreaterThan(0);
@@ -343,15 +373,176 @@ test("idle takeover, hover/waves and pull bypass rest geometry; hits, measure an
   for (const invalidate of ["measure", "reset"] as const) {
     const paths = cached.paint.fills.slice(-6), builds = cached.paint.pathBuilds, previous = cached.snapshot();
     if (invalidate === "measure") pair.scenes.forEach((h) => {
-      h.mask.rect.width = h.word.rect.width = 720; h.word.offsetHeight = 120; h.globals.devicePixelRatio = 2;
+      h.mask.rect.width = h.word.rect.width = 720; h.word.offsetHeight = h.word.rect.height = 120; h.globals.devicePixelRatio = 2;
     });
     pair.materials.forEach((material) => material[invalidate]()); pair.wake(); pair.step();
     expect(cached.paint.pathBuilds - builds).toBe(6);
     cached.paint.fills.slice(-6).forEach((path, i) => expect(path).not.toBe(paths[i]));
-    expect(cached.paint.transforms.at(-1)).toEqual([2, 0, 0, 2, 62, 370]);
+    const ratio = 2 * viewport.designScale(cached.globals.innerWidth);
+    expect(cached.paint.transforms.at(-1)).toEqual([ratio, 0, 0, ratio, 62, 370]);
     if (invalidate === "measure") expect(cached.snapshot()).not.toEqual(previous);
     else expect(cached.snapshot()).toEqual(previous);
   }
   pair.dispose();
   pair.scenes.forEach((h) => { expect(h.rafs.size).toBe(0); expect(h.timers.size).toBe(0); });
+});
+
+function designMaterial(width: number, height: number, dpr = 1, locale = "en") {
+  const h = harness(), scale = viewport.designScale(width);
+  Object.assign(h.globals, { innerWidth: width, innerHeight: height, devicePixelRatio: dpr });
+  h.root.lang = locale;
+  h.mask.rect.width = h.word.rect.width = 0.96 * width;
+  h.word.offsetHeight = h.word.rect.height = 0.24 * width;
+  h.mask.rect.left = 20 * scale;
+  h.mask.rect.top = h.word.rect.top = 180 * scale;
+  h.motion.matches = true;
+  const material = h.material(false, true);
+  material.setActive(true); h.step();
+  return { h, material, scale };
+}
+
+function equalDesignPaths(a: ReturnType<typeof harness>, b: ReturnType<typeof harness>) {
+  const left = a.snapshot(), right = b.snapshot();
+  expect(left.map((commands) => commands.map((command) => command[0]))).toEqual(right.map((commands) => commands.map((command) => command[0])));
+  let error = 0;
+  left.forEach((commands, glyph) => commands.forEach((command, index) => {
+    if (command[0] !== "Z") {
+      const other = right[glyph][index];
+      if (other[0] !== "Z") error = Math.max(error, Math.abs(command[1] - other[1]), Math.abs(command[2] - other[2]));
+    }
+  }));
+  expect(error).toBeLessThan(1e-8);
+}
+
+const fontSizes = (h: ReturnType<typeof harness>) => h.paint.fonts.map((font) => Number(parseFloat(font.split(" ")[1]).toFixed(8)));
+
+test("each fixed reference draws at factor one; proportional fonts, morphs, waves and hits share one scale", () => {
+  for (const reference of Object.values(viewport.viewportDesigns)) for (const locale of ["en", "ar"]) {
+    const a = designMaterial(reference.width, reference.height, 1, locale);
+    const b = designMaterial(reference.width * 1.25, reference.height * 0.8, 2, locale);
+    expect(a.scale).toBe(1); expect(b.scale).toBe(1.25);
+    expect(a.h.paint.transforms.at(-1)).toEqual([1, 0, 0, 1, 20, 180]);
+    expect(b.h.paint.transforms.at(-1)).toEqual([2.5, 0, 0, 2.5, 50, 450]);
+    equalDesignPaths(a.h, b.h);
+    expect(fontSizes(a.h)).toEqual(fontSizes(b.h));
+    const physicalTitleA = a.h.paint.thoughts[0].titleSize * a.h.paint.transforms.at(-1)![0];
+    const physicalTitleB = b.h.paint.thoughts[0].titleSize * b.h.paint.transforms.at(-1)![0] / 2;
+    expect(physicalTitleB / physicalTitleA).toBeCloseTo(1.25, 12);
+    for (const [pair, x, y, at] of [[a, 50, 40, 1000], [b, 50, 40, 1000], [a, 90, 55, 1100], [b, 90, 55, 1100]] as const) {
+      pair.h.paint.hitPath = pair.h.paint.fills.at(-6);
+      pair.h.window.dispatchEvent(pointer("pointermove", (20 + x) * pair.scale, (180 + y) * pair.scale, at));
+      expect(pair.h.paint.hits.at(-1)!.x).toBeCloseTo(x, 10);
+      expect(pair.h.paint.hits.at(-1)!.y).toBeCloseTo(y, 10);
+      pair.h.step(50);
+    }
+    equalDesignPaths(a.h, b.h);
+    expect(Number(a.h.mask.dataset.waveEnergy)).toBeGreaterThan(0);
+    for (const pair of [a, b]) pair.h.mask.dispatchEvent(Object.assign(new Event("keydown", { cancelable: true }), { key: "Enter" }));
+    for (let i = 0; i < 70; i++) { a.h.step(50); b.h.step(50); }
+    expect(a.h.mask.dataset.mode).toBe("logo");
+    equalDesignPaths(a.h, b.h);
+    expect(a.h.paint.images.length).toBeGreaterThan(0);
+    const imageA = a.h.paint.images.at(-1)!, imageB = b.h.paint.images.at(-1)!;
+    // Source bitmap pixels may change with DPR; destination geometry stays logical.
+    imageA.slice(4).forEach((value, i) => expect(imageB[4 + i] * b.scale).toBeCloseTo(value * 1.25, 9));
+    for (const pair of [a, b]) {
+      expect(pair.h.snapshot().flat(2).filter((value) => typeof value === "number").every(Number.isFinite)).toBe(true);
+      pair.material.dispose();
+      expect(pair.h.rafs.size + pair.h.timers.size).toBe(0);
+      expect(pair.h.paint.canvases.at(-1)!.width).toBe(1);
+      const builds = pair.h.paint.pathBuilds;
+      pair.h.window.dispatchEvent(pointer("pointermove", 20, 20, 5000));
+      expect(pair.h.paint.pathBuilds).toBe(builds);
+    }
+  }
+});
+
+test("footer reference typography ignores actual height and the former 680/700 tablet switches", () => {
+  const cases = [designMaterial(650, 400), designMaterial(700, 1400), designMaterial(900, 600), designMaterial(900, 1800)];
+  for (const { h, material } of cases) {
+    expect(h.paint.thoughts[0].mobile).toBe(false);
+    expect(h.paint.thoughts[0].titleSize).toBeCloseTo(cases[0].h.paint.thoughts[0].titleSize, 12);
+    expect(fontSizes(h)).toEqual(fontSizes(cases[0].h));
+    equalDesignPaths(h, cases[0].h);
+    material.dispose();
+  }
+});
+
+test("mounted footer resizes its physical buffer without mask RO or material history resets", async () => {
+  const pairs = [designMaterial(1920, 1080), designMaterial(1920, 1080)];
+  // Material already owns its fine-pointer query. Parent reading eligibility
+  // gets a distinct OS-reduced query, as it does in the browser.
+  pairs.forEach(({ h }) => { h.globals.matchMedia = () => Object.assign(new EventTarget(), { matches: false }); });
+  const disposals = pairs.map(({ h, material }) => { const dispose = h.mount(material); h.intersect(true); return dispose; });
+  await flushImports();
+  pairs.forEach(({ h }) => h.step(50));
+  const [resized, control] = pairs.map((pair) => pair.h);
+  const overlay = resized.paint.canvases.find((canvas) => canvas.dataset.footerMaterial === "native-paths")!;
+  const measurements = { ...resized.measurements };
+  const step = (count = 1) => { for (let i = 0; i < count; i++) { resized.step(50); control.step(50); } };
+  let height = 540;
+  const resizeCurrentPose = (dpr = resized.globals.devicePixelRatio) => {
+    const before = resized.snapshot(), dataset = { ...resized.mask.dataset };
+    const builds = resized.paint.pathBuilds, fonts = resized.paint.fonts.length;
+    const thoughts = resized.paint.thoughts.length, timers = [...resized.timers], rafs = [...resized.rafs.keys()];
+    const rest = resized.mask.dataset.mode === "word" && resized.mask.dataset.idleKind === "-1" && Number(resized.mask.dataset.waveEnergy) === 0;
+    resized.globals.innerHeight = height; resized.globals.devicePixelRatio = dpr;
+    resized.window.dispatchEvent(new Event("resize"));
+    expect(overlay.width).toBe(1920 * dpr); expect(overlay.height).toBe(height * dpr);
+    expect(resized.paint.transforms.at(-1)).toEqual([dpr, 0, 0, dpr, 20 * dpr, 180 * dpr]);
+    expect(resized.mask.dataset).toEqual(dataset); expect(resized.snapshot()).toEqual(before);
+    expect(resized.measurements).toEqual(measurements); // No ResizeObserver publication.
+    expect(resized.paint.fonts.length).toBe(fonts); expect(resized.paint.thoughts.length).toBe(thoughts);
+    expect([...resized.timers]).toEqual(timers); expect([...resized.rafs.keys()]).toEqual(rafs);
+    if (rest) expect(resized.paint.pathBuilds).toBe(builds); // Reuse the same rest paths.
+    equalDesignPaths(resized, control);
+    height = height === 540 ? 1400 : 540;
+    step(); equalDesignPaths(resized, control); expect(resized.mask.dataset).toEqual(control.mask.dataset);
+  };
+  resizeCurrentPose(); // A resting word has no RAF and must repaint finitely.
+  pairs.forEach(({ h }) => h.advance(4000)); step();
+  expect(Number(resized.mask.dataset.idleKind)).toBeGreaterThanOrEqual(0);
+  expect(Number(resized.mask.dataset.idleAmount)).toBeGreaterThan(0);
+  resizeCurrentPose(2);
+  pairs.forEach(({ h }) => {
+    h.paint.hitPath = h.paint.fills.at(-6);
+    h.window.dispatchEvent(pointer("pointermove", 70, 220, 1000));
+  }); step();
+  expect(Number(resized.mask.dataset.waveEnergy)).toBeGreaterThan(0);
+  resizeCurrentPose();
+  pairs.forEach(({ h }) => h.mask.dispatchEvent(Object.assign(new Event("keydown", { cancelable: true }), { key: "Enter" })));
+  step(8); expect(resized.mask.dataset.mode).toBe("to-logo"); resizeCurrentPose();
+  step(50); expect(resized.mask.dataset.mode).toBe("logo"); resizeCurrentPose();
+  pairs.forEach(({ h }) => h.mask.dispatchEvent(Object.assign(new Event("keydown", { cancelable: true }), { key: "Escape" })));
+  step(20); expect(resized.mask.dataset.mode).toBe("to-word"); resizeCurrentPose();
+  // DPR-only notification also redraws at the current pose without layout work.
+  const currentHeight = resized.globals.innerHeight;
+  resized.globals.devicePixelRatio = 1.5;
+  resized.window.dispatchEvent(new Event("resize"));
+  expect(overlay.width).toBe(2880); expect(overlay.height).toBe(currentHeight * 1.5);
+  equalDesignPaths(resized, control); expect(resized.measurements).toEqual(measurements);
+  const clears = resized.paint.clears;
+  resized.window.dispatchEvent(new Event("resize")); expect(resized.paint.clears).toBe(clears);
+  disposals.forEach((dispose) => dispose());
+  const width = overlay.width, bufferHeight = overlay.height, paints = resized.paint.fills.length;
+  resized.globals.innerHeight = 1700; resized.globals.devicePixelRatio = 2;
+  resized.window.dispatchEvent(new Event("resize"));
+  expect([overlay.width, overlay.height, resized.paint.fills.length]).toEqual([width, bufferHeight, paints]);
+  pairs.forEach(({ h }) => { expect(h.rafs.size + h.timers.size).toBe(0); expect(h.subscribers).toBe(0); });
+});
+
+test("physical buffer resize keeps width reset policy and disposed/no-context handles safe", () => {
+  const { h, material } = designMaterial(768, 1024);
+  h.mask.dispatchEvent(Object.assign(new Event("keydown", { cancelable: true }), { key: "Enter" }));
+  h.globals.innerWidth = 900; h.window.dispatchEvent(new Event("resize"));
+  expect(h.mask.dataset.mode).toBe("word");
+  const overlay = h.paint.canvases.find((canvas) => canvas.dataset.footerMaterial === "native-paths")!;
+  expect(overlay.width).toBe(900); expect(overlay.height).toBe(1024);
+  material.dispose(); const before = [overlay.width, overlay.height, h.paint.clears];
+  h.globals.innerHeight = 600; material.resizeViewport();
+  expect([overlay.width, overlay.height, h.paint.clears]).toEqual(before);
+  const failed = harness();
+  failed.document.createElement = () => Object.assign(new Surface(), { width: 0, height: 0, getContext: () => null }) as unknown as ReturnType<typeof failed.document.createElement>;
+  const fallback = failed.material(); expect(() => fallback.resizeViewport()).not.toThrow(); fallback.dispose();
+  expect(failed.rafs.size + failed.timers.size).toBe(0);
 });

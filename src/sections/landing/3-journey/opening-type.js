@@ -1,5 +1,7 @@
 import { heroWorldEvent, worldProgressFromScroll } from "../1-hero/hero-world";
 import { smoothRange } from "./journey-clock";
+import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
+import { journeyGeometry } from "./journey-geometry";
 /** Reference glyph metrics and line masks, driven by the shared hero-world handoff. */
 export function createOpeningType(root) {
   const e = root.querySelector(".glasses-opening");
@@ -16,12 +18,12 @@ export function createOpeningType(root) {
     for (const top of words
       .map((w) => w.parentElement.getBoundingClientRect().top)
       .sort((a, b) => a - b))
-      if (!tops.some((t) => Math.abs(t - top) <= 1)) tops.push(top);
+      if (!tops.some((t) => Math.abs(t - top) <= designPixels(1, innerWidth))) tops.push(top);
     groups = tops.map(() => []);
     words.forEach((word) => {
       const line = tops.findIndex(
         (t) =>
-          Math.abs(t - word.parentElement.getBoundingClientRect().top) <= 1,
+          Math.abs(t - word.parentElement.getBoundingClientRect().top) <= designPixels(1, innerWidth),
       );
       word.dataset.openingLine = String(line);
       groups[line].push(word);
@@ -30,6 +32,7 @@ export function createOpeningType(root) {
   };
   const fit = () => {
     if (!a) return;
+    const { width: openingWidth, height: openingHeight } = e.getBoundingClientRect();
     let r = e.querySelector(".opening-heading");
     if (!r) return;
     if ("ar" === document.documentElement.lang) {
@@ -44,7 +47,7 @@ export function createOpeningType(root) {
             metric: a,
             lines: i,
             size:
-              (0.96 * e.clientWidth) /
+              (0.96 * openingWidth) /
               (Math.max(...o.map((e) => e.width)) / 100),
             count: o.length,
             ascent: Math.max(...o.map((e) => e.actualBoundingBoxAscent)) / 100,
@@ -52,13 +55,13 @@ export function createOpeningType(root) {
               Math.max(...o.map((e) => e.actualBoundingBoxDescent)) / 100,
           };
         }),
-        i = e.clientWidth < 700 ? 10 : 14,
+        i = designPixels(journeyGeometry(innerWidth).mobile ? 10 : 14, innerWidth),
         o = a.reduce(
           (e, t) =>
             e + t.size * (t.ascent + t.descent + 1.18 * (t.count - 1)) + i,
           0,
         ),
-        s = Math.min(1, (e.clientHeight - 16) / o);
+        s = Math.min(1, (openingHeight - designPixels(16, innerWidth)) / o);
       {
         a.forEach(
           ({
@@ -71,7 +74,7 @@ export function createOpeningType(root) {
             descent: l,
           }) => {
             let d = a * s;
-            e.style.fontSize = `${d}px`;
+            e.style.fontSize = pixelsToVw(d, innerWidth);
             let c = document.createElement("span");
             {
               Object.assign(c.style, {
@@ -90,9 +93,9 @@ export function createOpeningType(root) {
               c.remove();
               e.style.setProperty(
                 "--ar-row-box",
-                `${d * (o + l + 1.18 * (n - 1)) + i}px`,
+                pixelsToVw(d * (o + l + 1.18 * (n - 1)) + i, innerWidth),
               );
-              e.style.setProperty("--ar-row-top", `${i / 2 + d * o - u}px`);
+              e.style.setProperty("--ar-row-top", pixelsToVw(i / 2 + d * o - u, innerWidth));
             }
             let p = t.parentElement.getBoundingClientRect(),
               h = e.querySelectorAll(".opening-ar-word-mask"),
@@ -109,16 +112,16 @@ export function createOpeningType(root) {
                 }
                 let n = m.getBoundingClientRect();
                 Object.assign(a.style, {
-                  left: `${n.left - p.left - 0.025 * d}px`,
-                  top: `${t * d * 1.18}px`,
-                  width: `${n.width + 0.05 * d}px`,
-                  height: `${f}px`,
+                  left: pixelsToVw(n.left - p.left - 0.025 * d, innerWidth),
+                  top: pixelsToVw(t * d * 1.18, innerWidth),
+                  width: pixelsToVw(n.width + 0.05 * d, innerWidth),
+                  height: pixelsToVw(f, innerWidth),
                 });
               }
             });
           },
         );
-        e.style.setProperty("--opening-optical-y", "0px");
+        e.style.setProperty("--opening-optical-y", "0vw");
         e.style.setProperty("--opening-fit", "1");
         e.dataset.typeFit = s.toFixed(4);
         e.dataset.inkHeight = (o * s).toFixed(2);
@@ -148,7 +151,7 @@ export function createOpeningType(root) {
       l = 1,
       d = i.getBoundingClientRect(),
       c = d.left + d.width / 2,
-      u = Math.max(2, 0.005 * e.clientWidth),
+      u = Math.max(designPixels(2, innerWidth), 0.005 * openingWidth),
       p = new Map();
     for (let e of i.querySelectorAll(".opening-word-metric")) {
       let r = e.textContent ?? "",
@@ -187,7 +190,7 @@ export function createOpeningType(root) {
     for (let [t, r] of p) {
       let a = t.getBoundingClientRect(),
         n = a.left + a.width / 2,
-        i = e.clientWidth / 2 - u - Math.abs(n - c),
+        i = openingWidth / 2 - u - Math.abs(n - c),
         o = Math.max(n - r.left, r.right - n);
       {
         if (o > 0) {
@@ -196,13 +199,13 @@ export function createOpeningType(root) {
       }
     }
     let h = s - o,
-      m = Math.min(1, l, Math.max(0.1, (e.clientHeight - 12) / h)),
+      m = Math.min(1, l, Math.max(0.1, (openingHeight - designPixels(12, innerWidth)) / h)),
       f = -((o + s) / 2 - (d.top + d.height / 2)) * m;
     {
       i.remove();
       if (Number.isFinite(m) && Number.isFinite(f)) {
         e.style.setProperty("--opening-fit", String(m));
-        e.style.setProperty("--opening-optical-y", `${f}px`);
+        e.style.setProperty("--opening-optical-y", pixelsToVw(f, innerWidth));
         e.dataset.typeFit = m.toFixed(4);
         e.dataset.inkHeight = (h * m).toFixed(2);
         n();
@@ -227,9 +230,7 @@ export function createOpeningType(root) {
   }
   function measure() {
     if (!a) return;
-    const next = matchMedia(
-      "(max-width:700px), (max-width:900px) and (orientation:portrait)",
-    ).matches;
+    const next = journeyGeometry(innerWidth).compactOpening;
     if (document.documentElement.lang === "ar" && next !== mobile) {
       mobile = next;
       const lines = next
@@ -271,8 +272,8 @@ export function createOpeningType(root) {
   window.addEventListener(heroWorldEvent, update);
   progress = worldProgressFromScroll(
     scrollY,
-    document.getElementById("identity")?.offsetHeight || innerHeight,
-    innerWidth <= 700,
+    document.getElementById("identity")?.getBoundingClientRect().height || designHeight(innerWidth),
+    journeyGeometry(innerWidth).mobile,
   );
   measure();
   return {

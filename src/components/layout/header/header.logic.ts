@@ -1,4 +1,5 @@
 import { uiStore } from "@/store/uiStore";
+import { designPixels, pixelsToVw } from "@/lib/viewport-design";
 import {
   attachAudioLifecycle,
   playMaterialSound,
@@ -62,7 +63,8 @@ export function mountHeader(root: HTMLElement): () => void {
   let readingMode = reduced();
   let identityTop = 0;
   let identityHeight = 1;
-  let navHeight = 120;
+  let viewportWidth = innerWidth;
+  let navHeight = designPixels(120, viewportWidth);
   let appliedProgress: number | undefined;
   let readingViewport: HTMLElement | undefined;
   let readingFrame: HTMLElement | undefined;
@@ -92,9 +94,9 @@ export function mountHeader(root: HTMLElement): () => void {
       root.append(readingViewport);
       readingFrame.append(side);
     }
-    readingViewport.style.top = `${chapterTop}px`;
-    readingFrame!.style.top = rowTop;
-    readingFrame!.style.height = `${rowHeight}px`;
+    readingViewport.style.top = pixelsToVw(chapterTop, viewportWidth);
+    readingFrame!.style.top = pixelsToVw(parseFloat(rowTop), viewportWidth);
+    readingFrame!.style.height = pixelsToVw(rowHeight, viewportWidth);
   };
   const animations = new Set<Animation>();
   const activeAnimations = new Map<Element, Animation>();
@@ -347,6 +349,7 @@ export function mountHeader(root: HTMLElement): () => void {
         ? "keyboard"
         : "pointer";
       dialog.showModal();
+      dialog.scrollTop = 0;
       const scroller = dialog.querySelector<HTMLElement>("[data-menu-scroll]");
       if (scroller) scroller.scrollTop = 0;
       measureInk();
@@ -444,7 +447,7 @@ export function mountHeader(root: HTMLElement): () => void {
       });
     const rail = dialog.querySelector<HTMLElement>("[data-menu-rail]");
     if (rail)
-      rail.style.transform = `translateY(${item.offsetTop + item.offsetHeight / 2}px)`;
+      rail.style.transform = `translateY(${pixelsToVw(item.offsetTop + item.offsetHeight / 2, viewportWidth)})`;
   };
   dialog.querySelectorAll<HTMLElement>("[data-menu-item]").forEach((item) => {
     const select = () => selectMenu(item);
@@ -462,7 +465,7 @@ export function mountHeader(root: HTMLElement): () => void {
     appliedProgress = pose.progress;
     const heroVisible = pose.navTravel < 1 && pose.navOpacity > 0.015;
     const persistentVisible = pose.persistentY.some((y) => y < 100);
-    hero.style.transform = `translate3d(0,${-pose.navTravel * navHeight}px,0)`;
+    hero.style.transform = `translate3d(0,${pixelsToVw(-pose.navTravel * navHeight, viewportWidth)},0)`;
     hero.style.opacity = String(pose.navOpacity);
     hero.style.visibility = heroVisible ? "inherit" : "hidden";
     hero.inert = !heroVisible;
@@ -509,7 +512,7 @@ export function mountHeader(root: HTMLElement): () => void {
   window.addEventListener(heroWorldEvent, onWorld);
   const measureInk = () => {
     if (disposed) return;
-    utilities.style.setProperty("--nav-right-label", `${side?.offsetWidth ?? 116}px`);
+    utilities.style.setProperty("--nav-right-label", pixelsToVw(side?.offsetWidth ?? designPixels(116, viewportWidth), viewportWidth));
     const context = document.createElement("canvas").getContext("2d");
     if (!context) return;
     root.querySelectorAll<HTMLElement>("[data-nav-ink]").forEach((ink) => {
@@ -528,7 +531,7 @@ export function mountHeader(root: HTMLElement): () => void {
         baseline.getBoundingClientRect().top +
         (metrics.actualBoundingBoxDescent - metrics.actualBoundingBoxAscent) /
           2;
-      ink.style.translate = `0 ${((bounds.top + bounds.bottom) / 2 - center).toFixed(3)}px`;
+      ink.style.translate = `0 ${pixelsToVw(Number(((bounds.top + bounds.bottom) / 2 - center).toFixed(3)), viewportWidth)}`;
     });
   };
   const onQuietScroll = () => {
@@ -566,6 +569,7 @@ export function mountHeader(root: HTMLElement): () => void {
     : new ResizeObserver(() => measureNavigation());
   const measureNavigation = () => {
     if (disposed) return;
+    viewportWidth = innerWidth;
     const previousIdentity = identity;
     identity = document.querySelector<HTMLElement>("#identity");
     chapter = document.querySelector<HTMLElement>(".glasses-chapter");
@@ -594,7 +598,7 @@ export function mountHeader(root: HTMLElement): () => void {
     // Source measure/progress guard (2gz902oulp4x8.js:4627–4649). Read the
     // geometry together, before moving the reading control or applying a pose.
     const rowTop = getComputedStyle(utilities).top;
-    navHeight = parseFloat(rowTop) + (entrance?.clientHeight ?? 44) + 12;
+    navHeight = parseFloat(rowTop) + (entrance?.clientHeight ?? designPixels(44, viewportWidth)) + designPixels(12, viewportWidth);
     identityTop = identity ? identity.getBoundingClientRect().top + scrollY : 0;
     identityHeight = Math.max(1, identity?.offsetHeight ?? 1);
     const documentChapter = readingMode && side ? chapter : null;
@@ -667,6 +671,7 @@ export function mountHeader(root: HTMLElement): () => void {
       motion = pieces.map((piece, i) => {
         const from = current[i];
         const to = active ? assembled[i] : origins[i];
+        // SVG px here are local viewBox coordinates, scaled by the CSS frame.
         const transform = (v: number[]) =>
           `translate(${v[0]}px,${v[1]}px) rotate(${v[2]}deg)`;
         const animation = piece.animate(

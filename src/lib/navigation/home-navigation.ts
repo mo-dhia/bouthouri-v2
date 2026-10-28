@@ -1,4 +1,5 @@
 import { frameFromProgress, type JourneyFrame } from "../../sections/landing/3-journey/journey-clock";
+import { viewportDesign } from "../viewport-design";
 import {
   captureHomePosition, homePinProgress, homeScrollTarget, homeWorkPosition,
   isHomeGeometry, isHomePosition, type HomeGeometry, type HomePosition,
@@ -206,10 +207,13 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     }
     const element = journey(), chapter = element?.querySelector<HTMLElement>(".glasses-chapter");
     if (!element?.hasAttribute("data-enhanced") || !chapter || element.querySelector(".experience.is-reduced")) return null;
+    const stage = element.querySelector<HTMLElement>(".stage");
+    const distanceValue = win.getComputedStyle(element).getPropertyValue("--journey-distance").trim();
+    const distance = Number.parseFloat(distanceValue) * (distanceValue.endsWith("vw") ? win.innerWidth / 100 : 1);
     const value = {
       start: chapter.getBoundingClientRect().top + win.scrollY,
-      distance: Number.parseFloat(win.getComputedStyle(element).getPropertyValue("--journey-distance")),
-      heroInput: 100 / (win.innerWidth <= 700 ? 5.8 : 6.8),
+      distance: stage ? chapter.getBoundingClientRect().height - stage.getBoundingClientRect().height : distance,
+      heroInput: 100 / (viewportDesign(win.innerWidth).width <= 700 ? 5.8 : 6.8),
     };
     return isHomeGeometry(value) ? value : null;
   };

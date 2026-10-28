@@ -3,10 +3,11 @@ import {
   ShaderMaterial, Vector2, WebGLRenderTarget, type Group, type Scene, type WebGLRenderer,
 } from "three";
 import { smooth, type StoryScore } from "./story-score";
+import { viewportDesign } from "@/lib/viewport-design";
 
 /** The reference's two-pass 9-tap silhouette shadow, captured only when needed. */
 export function createGlassesShadow(group: Group, scene: Scene, width: number) {
-  const resolution = width < 701 ? 256 : 512;
+  const resolution = viewportDesign(width).key === "mobile" ? 256 : 512;
   const raw = new WebGLRenderTarget(resolution, resolution);
   const soft = new WebGLRenderTarget(resolution, resolution, { depthBuffer: false });
   raw.texture.generateMipmaps = soft.texture.generateMipmaps = false;

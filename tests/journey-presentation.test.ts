@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { createJourneyPresentation } from "../src/sections/landing/3-journey/journey-presentation";
 import type { JourneyFrame } from "../src/sections/landing/3-journey/journey-clock";
+import { referencePixelsToVw, viewportDesign } from "../src/lib/viewport-design";
 
 // Minimal inline-DOM surface: count mutations and normalize transforms as CSSOM
 // does. No layout/clock/Three substitutes are needed to exercise presentation.
@@ -34,12 +35,16 @@ class InlineElement {
 }
 
 const previousDocument = Object.getOwnPropertyDescriptor(globalThis, "document");
+const previousWidth = Object.getOwnPropertyDescriptor(globalThis, "innerWidth");
 afterEach(() => {
   if (previousDocument) Object.defineProperty(globalThis, "document", previousDocument);
   else Reflect.deleteProperty(globalThis, "document");
+  if (previousWidth) Object.defineProperty(globalThis, "innerWidth", previousWidth);
+  else Reflect.deleteProperty(globalThis, "innerWidth");
 });
 
-function fixture(lang = "en") {
+function fixture(lang = "en", width = 1920) {
+  Object.defineProperty(globalThis, "innerWidth", { configurable: true, value: width });
   const documentElement = { lang };
   Object.defineProperty(globalThis, "document", { configurable: true, value: { documentElement } });
   const beats = Array.from({ length: 4 }, () => new InlineElement());
@@ -98,20 +103,37 @@ function fixture(lang = "en") {
 }
 
 describe("Journey presentation DOM cache", () => {
+  test("optical lengths follow the fixed design at reference and scaled widths", () => {
+    for (const width of [1920, 1440, 768, 960, 640, 412, 515]) {
+      const f = fixture("en", width), reference = viewportDesign(width);
+      f.render(0);
+      const blur = Number.parseFloat(f.beats[0].values.get("filter")!.slice(5)) * width / 100;
+      const translate = Number.parseFloat(f.beats[0].values.get("transform")!.split(",")[1]) * width / 100;
+      expect(blur).toBeCloseTo(12 * width / reference.width, 10);
+      expect(translate).toBeCloseTo(16 * width / reference.width, 10);
+      // A profile crossing refreshes cached vw coefficients before repainting.
+      Object.defineProperty(globalThis, "innerWidth", { configurable: true, value: 412 });
+      f.presentation.refresh(); f.render(0);
+      expect(f.beats[0].values.get("filter")).toBe(`blur(${referencePixelsToVw(12, viewportDesign(412))})`);
+      f.presentation.dispose();
+    }
+  });
+
   test("keeps accepted optical, filter, tracking and post-line poses in both directions", () => {
     const f = fixture();
     for (const time of [0, 19, 27.5, 30, 27.5, 19, 0]) {
       f.render(time);
-      const expected = time === 19 ? ["1", "blur(0px)", "translate3d(0, 0px, 0)", "0em", "false"]
-        : time === 27.5 ? ["0.5", "blur(5px)", "translate3d(0, -4px, 0)", "0.0125em", "false"]
-        : time === 30 ? ["0", "blur(10px)", "translate3d(0, -8px, 0)", "0.025em", "true"]
-        : ["0", "blur(12px)", "translate3d(0, 16px, 0)", "0.018em", "true"];
+      const vw = (value: number) => referencePixelsToVw(value, viewportDesign(1920));
+      const expected = time === 19 ? ["1", "blur(0vw)", "translate3d(0, 0vw, 0)", "0em", "false"]
+        : time === 27.5 ? ["0.5", `blur(${vw(5)})`, `translate3d(0, ${vw(-4)}, 0)`, "0.0125em", "false"]
+        : time === 30 ? ["0", `blur(${vw(10)})`, `translate3d(0, ${vw(-8)}, 0)`, "0.025em", "true"]
+        : ["0", `blur(${vw(12)})`, `translate3d(0, ${vw(16)}, 0)`, "0.018em", "true"];
       const beat = f.beats[0];
       expect([beat.values.get("opacity"), beat.values.get("filter"), beat.values.get("transform"),
         beat.values.get("--focus-tracking"), beat.getAttribute("aria-hidden")]).toEqual(expected);
     }
     f.render(0);
-    expect(f.opening.values.get("filter")).toBe("blur(0px) contrast(1)");
+    expect(f.opening.values.get("filter")).toBe("blur(0vw) contrast(1)");
     expect(f.opening.values.get("opacity")).toBe("1");
     f.render(80);
     expect(f.panels[0].lines[0].values.get("transform")).toBe("translate3d(0, 56%, 0)");

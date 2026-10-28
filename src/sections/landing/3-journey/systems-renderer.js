@@ -7,6 +7,8 @@ import {
 } from "./systems-geometry.js";
 import { sampleWorkPen, workPenSegment } from "./work-renderer.js";
 import { workSymbolLayout } from "./work-paths.js";
+import { referencePixelsToVw } from "@/lib/viewport-design";
+import { journeyGeometry } from "./journey-geometry";
 
 const clamp = (a, b, t) => Math.max(0, Math.min(1, (t - a) / (b - a)));
 const smooth = (a, b, t) => {
@@ -45,7 +47,8 @@ export function createSystemsRenderer(root, getPen) {
       '[data-stroke-project="3"] .work-connector,[data-stroke-project="3"] .work-connector-tip',
     ),
   ];
-  let width = 0,
+  let camera = journeyGeometry(innerWidth),
+    width = 0,
     height = 0,
     stageHeight = 0,
     frames = [],
@@ -179,8 +182,8 @@ export function createSystemsRenderer(root, getPen) {
     const organize = smooth(444, 504, score),
       coordinate = smooth(514, 562, score),
       footerProgress = smooth(663, 714, score);
-    build.style.transform = `translate3d(${(1 - organize) * 6}px,${height * (0.18 * (1 - smooth(425, 468, score)) - 0.08 * smooth(511, 544, score))}px,0)`;
-    shared.style.transform = `translate3d(0,${0.28 * height * (1 - coordinate)}px,0)`;
+    build.style.transform = `translate3d(${referencePixelsToVw((1 - organize) * 6, camera.reference)},${referencePixelsToVw(height * (0.18 * (1 - smooth(425, 468, score)) - 0.08 * smooth(511, 544, score)), camera.reference)},0)`;
+    shared.style.transform = `translate3d(0,${referencePixelsToVw(0.28 * height * (1 - coordinate), camera.reference)},0)`;
     captions[0].style.opacity = String(
       smooth(472, 489, score) * (1 - smooth(501, 518, score)),
     );
@@ -220,7 +223,7 @@ export function createSystemsRenderer(root, getPen) {
           (endingTop + translate + endingHeight * scale),
       );
     }
-    ending.style.transform = `translate3d(0,${translate + correction}px,0) scale(${scale})`;
+    ending.style.transform = `translate3d(0,${referencePixelsToVw(translate + correction, camera.reference)},0) scale(${scale})`;
     const invitation = smooth(680, 699, score),
       metadata = smooth(710, 714, score),
       reveal = smooth(690, 714, score);
@@ -231,12 +234,12 @@ export function createSystemsRenderer(root, getPen) {
     }
     if (information) {
       information.style.opacity = String(invitation);
-      information.style.transform = `translate3d(0,${(1 - footerProgress) * height * 0.435 + (1 - invitation) * 12}px,0)`;
+      information.style.transform = `translate3d(0,${referencePixelsToVw((1 - footerProgress) * height * 0.435 + (1 - invitation) * 12, camera.reference)},0)`;
     }
     if (colophon) {
       colophon.inert = metadata < 0.8;
       colophon.style.opacity = String(metadata);
-      colophon.style.transform = `translate3d(0,${(1 - metadata) * 12}px,0)`;
+      colophon.style.transform = `translate3d(0,${referencePixelsToVw((1 - metadata) * 12, camera.reference)},0)`;
     }
     if (wordmark)
       wordmark.style.transform = `translate3d(0,${(1 - reveal) * 112}%,0)`;
@@ -247,12 +250,13 @@ export function createSystemsRenderer(root, getPen) {
     });
   };
   const resize = () => {
-    endingTop = ending.offsetTop;
-    endingHeight = ending.offsetHeight;
+    camera = journeyGeometry(innerWidth, root.querySelector(".stage").getBoundingClientRect().height || undefined);
+    endingTop = ending.offsetTop / camera.scale;
+    endingHeight = ending.offsetHeight / camera.scale;
     if (section.dir === "rtl")
       blocks[1].style.setProperty(
         "--systems-human-bottom",
-        `${distinct.offsetTop + distinct.offsetHeight}px`,
+        referencePixelsToVw((distinct.offsetTop + distinct.offsetHeight) / camera.scale, camera.reference),
       );
     else blocks[1].style.removeProperty("--systems-human-bottom");
     const lineHeight = parseFloat(getComputedStyle(captions[1]).lineHeight);
@@ -268,11 +272,11 @@ export function createSystemsRenderer(root, getPen) {
         ),
     );
     blocks[1].style.transform = captionShift
-      ? `translate3d(0,${captionShift}px,0)`
+      ? `translate3d(0,${referencePixelsToVw(captionShift / camera.scale, camera.reference)},0)`
       : "";
-    const w = section.clientWidth,
-      h = section.clientHeight,
-      stage = root.querySelector(".stage").clientHeight,
+    const w = camera.width,
+      h = section.getBoundingClientRect().height / camera.scale,
+      stage = camera.height,
       newPen = getPen();
     if (
       w === width &&

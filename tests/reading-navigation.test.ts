@@ -1,8 +1,11 @@
 import { expect, test } from "bun:test";
 import { readingNavigation } from "../src/sections/landing/3-journey/reading-navigation";
+import { designPixels } from "../src/lib/viewport-design";
 
 test("restored reading positions select the source project anchor instead of interpolating the work track", () => {
   const previousScroll = Object.getOwnPropertyDescriptor(globalThis, "scrollY");
+  const previousWidth = Object.getOwnPropertyDescriptor(globalThis, "innerWidth");
+  Object.defineProperty(globalThis, "innerWidth", { configurable: true, value: 412 });
   let currentY = 8541;
   let enhanced = false;
   const tops = new Map([
@@ -41,6 +44,10 @@ test("restored reading positions select the source project anchor instead of int
     expect(getTarget({ section: "opening", progress: 0.8 })).toBe(865);
     expect(getTarget({ section: "perspective", progress: 0.8 })).toBe(865);
     expect(getTarget({ section: "footer", progress: 1 })).toBe(2097);
+    for (const width of [1920, 1440, 768, 960, 640, 412, 515]) {
+      Object.defineProperty(globalThis, "innerWidth", { configurable: true, value: width });
+      expect(workTarget(312)).toBeCloseTo(3927 - designPixels(100, width), 10);
+    }
     tops.delete('[data-work-index="0"]');
     expect(workTarget(312)).toBe(2097);
     enhanced = true;
@@ -48,5 +55,7 @@ test("restored reading positions select the source project anchor instead of int
   } finally {
     if (previousScroll) Object.defineProperty(globalThis, "scrollY", previousScroll);
     else Reflect.deleteProperty(globalThis, "scrollY");
+    if (previousWidth) Object.defineProperty(globalThis, "innerWidth", previousWidth);
+    else Reflect.deleteProperty(globalThis, "innerWidth");
   }
 });

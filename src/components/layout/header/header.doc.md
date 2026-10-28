@@ -4,10 +4,30 @@ Header stays outside main and renders both source layouts and the complete menu
 on the server. `header-animate-gate` returns null; only `header.logic.ts` loads
 after hydration. No `portfolio-environment` wrapper is required for these scoped
 styles. Parent supplies the global Questrial/Cairo metrics; shell supplies its
-44px hit-area and physical LTR layout. Arabic labels keep their own direction.
+profile-scaled 44-reference-pixel hit-area and physical LTR layout. Arabic labels
+keep their own direction.
+
+The 2026-10-28 sizing policy fixes desktop at1920×1080 for widths>1024, tablet
+at768×1024 for600<width<=1024, and mobile at412×915 forwidth<=600. Root evaluates
+the original CSS cascade at those references and scales design lengths by actual
+width/reference width. Height/orientation does not change composition. Historical
+source comparisons below predate this policy and are not fresh parity evidence.
+Controller navigation travel combines already-scaled measured row geometry with
+a scaled12-reference-pixel overhang; fallback row/label lengths also scale once.
+Reading frame placement, label reservation, menu rail and measured ink correction
+emit `vw`. SVG hover transforms retain their local viewBox coordinates. Native
+scroll lock, clocks, menu tracks, audio and animation ownership are unchanged.
+
+The mounted profile regression checks scale-one travel, uniform within-profile
+scaling, single conversion of measured DOM lengths and height-only resize
+invariance. Scoped hero/header tests pass (68 tests /834 assertions) and ESLint
+is clean. The latest plain TypeScript run reports only four TS2532 diagnostics
+in concurrent `footer.logic.test.ts:405`, with no owned hero/header diagnostics.
+Root owns CSS integration, full checks/build/SSR and reference-sized production visual
+review; this non-CSS handoff did not use a browser or change the served candidate.
 
 The hero layout has language/menu left, original inline logo center and
-sound/conversation right. At <=900px it becomes logo left / menu right. The
+sound/conversation right. Tablet/mobile profiles use logo left / menu right. The
 persistent layout exposes logo/discipline left and utilities/conversation/menu
 right. `gazzar:hero-world { progress }` drives the exact source world masks,
 nav travel/opacity, persistent roll bands .83..99, and side-menu band .89..97.
@@ -126,7 +146,7 @@ it scrolls away. The previous fixed substitute stayed at75.850006 throughout.
 An offline adversary caught that translating inside the fixed header would
 still prevent native focus scrolling. The reading viewport therefore owns the
 actual control outside the fixed utilities, preserves its measured row geometry
-and100svh clip, and returns it to its original home on motion/cleanup. It stays
+and profile design-height clip, and returns it to its original home on motion/cleanup. It stays
 focusable offscreen as on source. Source default focus from y1892 moved native
 scroll to793.85; R12 independently confirmed the same default-focus behavior
 at wide and narrow sizes in both locales.

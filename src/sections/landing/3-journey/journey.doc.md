@@ -10,11 +10,15 @@ server component inserted into the systems chapter.
 `journey.module.css` preserves the reference's geometry/cascade under a local
 scope. Shared typography metrics live in the global stylesheet. The source's
 GSAP-generated pin spacer is replaced by a native sticky stage and a measured
-wrapper height. Desktop at 1912 × 1036: 29357px of pin travel, 30393px chapter,
-31429px total document. Mobile uses its original 5.8svh/input-unit pace.
-Short stages keep the original minimum height (600px desktop, 560px mobile).
-Mobile pin measurement uses 100svh and the original dvh/svh stage difference;
-navigation reads the actual measured pin range. The skip link immediately
+wrapper height. The explicit design profiles are desktop 1920 × 1080 above
+1024px, tablet 768 × 1024 above 600px through 1024px, and mobile 412 × 915
+through 600px. Within a profile, composition and stage height scale uniformly
+with width. The measured DOM stage supplies the pin distance, with the scaled
+design height as fallback; there is no `100svh` measurement probe. Desktop and
+tablet retain the source 6.8/input-unit pace; mobile retains 5.8. Navigation
+reads the actual measured pin range and the same profile-selected hero input.
+Physical viewport height is used only to clamp native scroll extent during mode
+changes. The skip link immediately
 selects score 102. The end cue returns to the hero-world/opening seam.
 
 `journey-clock.ts` maps scroll input to the original 26-unit opening and 714-unit
@@ -42,6 +46,16 @@ measured pen windows, horizontal composition and pointer/focus behavior ported
 to ordinary modules. `systems-geometry.js` contains cubic path/arc-length math;
 `systems-renderer.js` applies those paths and the typography/footer transitions.
 They have no GSAP, React Three Fiber, or original application runtime dependency.
+The work and systems renderers run those original functions in a reference-size
+SVG camera, normalizing measured DOM heights by `designScale(width)`. Their
+viewBoxes scale geometry and pen tips once; DOM font, mask, filter and transform
+lengths emit `vw`. The story-origin radius arrives in actual render pixels and
+is normalized once at the SVG boundary. Opening fitting retains DOM/font metrics
+with width-scaled fixed gaps and tolerances. Arabic line breaks use the selected
+reference aspect ratio (compact for tablet/mobile), never the current physical
+viewport orientation. The reading project offset also scales its authored 100px.
+The pure source clock, easing, path functions, 480ms scrub, score-270 cutoff,
+publication order, RAF handoff and restoration behavior remain unchanged.
 
 Quiet/reduced mode removes the pin and controller mutations; content keeps its
 server-rendered reading path. The Three scene is a separate deferred controller
@@ -68,6 +82,8 @@ EN1912×1009 opening rows and fit.8101939248682843 match source exactly; AR392×
 rows and fit.9774 also match, with document9406 and native8541 preserved through
 mode toggles. Evidence: `/tmp/gazzar-reading-ui-root/evidence.json`. The static
 lens environment is a separate scene-lifetime concern and is not certified here.
+Those measurements describe the previous fluid layout baseline. They do not
+certify the new fixed-profile layout at other dimensions.
 The reading scroll cue now uses the source `#beyond.scrollIntoView({
 behavior: 'auto', block: 'start' })` action. Its listener is removed on mode
 change and HOME disposal. An independent offline review found this previously
@@ -147,3 +163,13 @@ mounting and cleanup to `journey-gate.logic.ts`; the controller import is
 module-scoped. This baseline geometry/navigation owner also runs in reading
 mode, so disabling it through `useDeferredMotion` would break restoration and
 the reading cue. Heavy visuals remain in the separate scene gate.
+
+Fixed-profile handoff (2026-10-28): the five focused journey/reading test files
+pass 37 tests / 2,665 assertions, including reference-size cameras, scaled EN/AR
+work/systems poses, tablet at 640px, physical-height invariance, optical lengths
+and reading offsets. SVG measurement stand-ins verify renderer coordinates and
+writes; they do not certify browser font shaping, layout or visual parity.
+Scoped ESLint and diff whitespace checks pass. Plain TypeScript checking found
+only concurrent errors in the separately owned footer test at handoff. Integrated
+check/build/SSR and original/local browser comparisons remain with the parent;
+this slice did not run build/typegen, change baselines, stage or commit files.

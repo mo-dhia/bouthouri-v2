@@ -1,4 +1,5 @@
 import { smoothRange, type JourneyFrame } from "./journey-clock";
+import { referencePixelsToVw, viewportDesign } from "@/lib/viewport-design";
 
 const beatWindows = [
   [14, 19, 25, 30],
@@ -64,6 +65,7 @@ function clearOptical(element: HTMLElement) {
 
 /** Per-motion-mount presentation only; the caller keeps frame/renderer ordering. */
 export function createJourneyPresentation(root: HTMLElement, stage: HTMLElement) {
+  let reference = viewportDesign(innerWidth);
   let elements: ReturnType<typeof collect> | undefined = collect(root);
   let styles = new WeakMap<HTMLElement, Map<string, { requested: string; applied: string }>>();
   const style = (element: HTMLElement | null, property: string, value: string) => {
@@ -95,6 +97,7 @@ export function createJourneyPresentation(root: HTMLElement, stage: HTMLElement)
   return {
     refresh() {
       if (!elements) return;
+      reference = viewportDesign(innerWidth);
       const next = collect(root);
       const retained = new Set(next.cleanup);
       elements.cleanup.forEach((element) => {
@@ -115,8 +118,8 @@ export function createJourneyPresentation(root: HTMLElement, stage: HTMLElement)
         const enter = smoothRange(a, b, time),
           exit = smoothRange(c, d, time);
         style(element, "opacity", String(enter * (1 - exit)));
-        style(element, "filter", `blur(${12 * (1 - enter) + 10 * exit}px)`);
-        style(element, "transform", `translate3d(0,${16 * (1 - enter) - 8 * exit}px,0)`);
+        style(element, "filter", `blur(${referencePixelsToVw(12 * (1 - enter) + 10 * exit, reference)})`);
+        style(element, "transform", `translate3d(0,${referencePixelsToVw(16 * (1 - enter) - 8 * exit, reference)},0)`);
         style(element, "--focus-tracking", `${0.018 * (1 - enter) + 0.025 * exit}em`);
         attribute(element, "aria-hidden", String(enter * (1 - exit) < 0.45));
       });
@@ -143,7 +146,7 @@ export function createJourneyPresentation(root: HTMLElement, stage: HTMLElement)
             3.2 - (3.2 - 0.035) * Math.pow(Math.min(1, (time - 48) / 22), 3);
         const clarity = 0.6 * smoothRange(9.8, 9.4, distance) + 0.4 * focus;
         style(elements.opening, "opacity", String(1 - smoothRange(0.03, 0.88, clarity)));
-        style(elements.opening, "filter", `blur(${36 * Math.pow(clarity, 1.6)}px) contrast(${1 - 0.32 * clarity})`);
+        style(elements.opening, "filter", `blur(${referencePixelsToVw(36 * Math.pow(clarity, 1.6), reference)}) contrast(${1 - 0.32 * clarity})`);
       }
     },
     controls({ time, openingTime }: JourneyFrame) {

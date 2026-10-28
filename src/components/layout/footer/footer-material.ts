@@ -13,9 +13,11 @@ import {
   type MaterialContours,
 } from "./footer-material-field";
 import { emitMaterialProtection } from "../header/material-protection";
+import { designScale } from "@/lib/viewport-design";
 
 export type FooterMaterial = {
   measure: () => void;
+  resizeViewport: () => void;
   reset: () => void;
   setActive: (value: boolean) => void;
   dispose: () => void;
@@ -59,7 +61,7 @@ export function mountFooterMaterial(
   const context = canvas.getContext("2d");
   if (!context) {
     canvas.remove();
-    return { measure() {}, reset() {}, setActive() {}, dispose() {} };
+    return { measure() {}, resizeViewport() {}, reset() {}, setActive() {}, dispose() {} };
   }
   const ctx = context,
     labels = thoughts[root.lang === "ar" ? "ar" : "en"],
@@ -81,6 +83,7 @@ export function mountFooterMaterial(
     width = 1,
     height = 1,
     dpr = 1,
+    scale = 1,
     grab: number | null = null,
     startX = 0,
     startY = 0,
@@ -140,16 +143,33 @@ export function mountFooterMaterial(
   const restore = () => {
     word.style.visibility = "";
     canvas.style.visibility = "hidden";
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+  const sizeViewport = () => {
+    if (disposed) return false;
+    const nextDpr = Math.min(devicePixelRatio || 1, 2);
+    const nextWidth = Math.ceil(innerWidth * nextDpr), nextHeight = Math.ceil(innerHeight * nextDpr);
+    if (nextDpr === dpr && canvas.width === nextWidth && canvas.height === nextHeight) return false;
+    dpr = nextDpr;
+    // Resetting a backing buffer clears paint, never the reference geometry or
+    // material clocks. Its CSS box continues to cover the physical viewport.
+    if (canvas.width !== nextWidth) canvas.width = nextWidth;
+    if (canvas.height !== nextHeight) canvas.height = nextHeight;
+    return true;
   };
   const measure = () => {
     if (disposed) return;
-    width = mask.getBoundingClientRect().width;
-    height = word.offsetHeight;
-    dpr = Math.min(devicePixelRatio || 1, 2);
-    canvas.width = Math.ceil(innerWidth * dpr);
-    canvas.height = Math.ceil(innerHeight * dpr);
-    paths = new FooterPaths(footerGlyphBoxes(word, ctx), width);
+    // DOM bounds/input are physical pixels. All material formulas, capped
+    // fonts and offsets below run once in the selected reference pixel space.
+    scale = designScale(innerWidth);
+    width = mask.getBoundingClientRect().width / scale;
+    height = word.getBoundingClientRect().height / scale;
+    sizeViewport();
+    paths = new FooterPaths(footerGlyphBoxes(word, ctx).map((box) => ({
+      x: box.x / scale, y: box.y / scale,
+      width: box.width / scale, height: box.height / scale,
+    })), width);
     idleTargets = createIdleTargets(paths.source, paths.boxes);
     idle.reset();
     waves.clear();
@@ -159,7 +179,7 @@ export function mountFooterMaterial(
       getComputedStyle(root)
         .getPropertyValue(rtl ? "--font-arabic" : "--font-latin")
         .trim() || (rtl ? "Cairo" : "Questrial");
-    editorial = new FooterThoughts(width, height, rtl, labels, family);
+    editorial = new FooterThoughts(width, height, rtl, labels, family, scale);
     drawn = [];
     restGeometry = paintedRest = undefined;
     if (enabled || phase !== "word") wake();
@@ -363,10 +383,11 @@ export function mountFooterMaterial(
   const readGeometry = () => {
     const rect = mask.getBoundingClientRect(),
       wordTop = word.getBoundingClientRect().top;
-    return { left: rect.left, top: rect.top, shift: wordTop - rect.top, wordTop };
+    return { left: rect.left / scale, top: rect.top / scale, shift: (wordTop - rect.top) / scale, wordTop: wordTop / scale };
   };
   const draw = (geometry = readGeometry()) => {
     if (!paths) return;
+    if (sizeViewport()) paintedRest = undefined;
     const { left, top, shift } = geometry;
     // Partial reveal only changes placement/clip while the word is undeformed.
     const restWord =
@@ -394,7 +415,8 @@ export function mountFooterMaterial(
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(dpr, 0, 0, dpr, left * dpr, (top + shift) * dpr);
+    const ratio = dpr * scale;
+    ctx.setTransform(ratio, 0, 0, ratio, left * ratio, (top + shift) * ratio);
     if (shift > 0.01) {
       ctx.save();
       ctx.beginPath();
@@ -429,6 +451,13 @@ export function mountFooterMaterial(
       ctx.restore();
     }
     paintedRest = restWord ? geometry : undefined;
+  };
+  const resizeViewport = () => {
+    if (!sizeViewport()) return;
+    paintedRest = undefined;
+    // A single current-pose repaint also covers a resting word with no RAF.
+    // draw() does not advance age, idle episodes, waves, morph or thought time.
+    if (canInteract()) draw();
   };
   const tick = (now: number) => {
     frame = 0;
@@ -708,8 +737,8 @@ export function mountFooterMaterial(
   const hit = (event: PointerEvent) => {
     if (!paths) return -1;
     const geometry = readGeometry(),
-      x = event.clientX - geometry.left,
-      y = event.clientY - geometry.wordTop;
+      x = event.clientX / scale - geometry.left,
+      y = event.clientY / scale - geometry.wordTop;
     if (!drawn.length) draw(geometry);
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -800,8 +829,8 @@ export function mountFooterMaterial(
     startY = event.clientY;
     startScroll = scrollY;
     startAt = event.timeStamp;
-    pullX = event.clientX - rect.left;
-    pullY = event.clientY - word.getBoundingClientRect().top;
+    pullX = (event.clientX - rect.left) / scale;
+    pullY = (event.clientY - word.getBoundingClientRect().top) / scale;
     pulledGlyph = glyph;
     threshold = Math.max(24, Math.min(64, 0.24 * paths!.boxes[glyph].height));
     dx = 0;
@@ -827,10 +856,10 @@ export function mountFooterMaterial(
     pointerClientX = event.clientX;
     pointerClientY = event.clientY;
     velocityX = pointerAt
-      ? Math.max(-1400, Math.min(1400, (event.clientX - oldX) / dt))
+      ? Math.max(-1400, Math.min(1400, (event.clientX - oldX) / scale / dt))
       : 0;
     velocityY = pointerAt
-      ? Math.max(-1400, Math.min(1400, (event.clientY - oldY) / dt))
+      ? Math.max(-1400, Math.min(1400, (event.clientY - oldY) / scale / dt))
       : 0;
     pointerAt = event.timeStamp;
     if ((phase === "word" || phase === "logo") && enabled && canInteract()) {
@@ -884,12 +913,12 @@ export function mountFooterMaterial(
       }
     }
     if (event.pointerId !== grab) return;
-    dx = event.clientX - startX;
-    dy = event.clientY - startY;
+    dx = (event.clientX - startX) / scale;
+    dy = (event.clientY - startY) / scale;
     if (
       !canInteract() ||
       Math.abs(scrollY - startScroll) > 6 ||
-      (touch && Math.hypot(dx, dy) > 10)
+      (touch && Math.hypot(event.clientX - startX, event.clientY - startY) > 10)
     ) {
       reset();
       return;
@@ -914,7 +943,7 @@ export function mountFooterMaterial(
       return;
     }
     const shortTap =
-      touch && Math.hypot(dx, dy) <= 10 && event.timeStamp - startAt < 650;
+      touch && Math.hypot(event.clientX - startX, event.clientY - startY) <= 10 && event.timeStamp - startAt < 650;
     if (
       canInteract() &&
       Math.abs(scrollY - startScroll) < 6 &&
@@ -949,6 +978,13 @@ export function mountFooterMaterial(
   const cancel = (event: PointerEvent) => {
     if (event.pointerId === grab || grab === null) reset();
   };
+  let lastWindowWidth = innerWidth;
+  const resize = () => {
+    if (lastWindowWidth === innerWidth) { resizeViewport(); return; }
+    lastWindowWidth = innerWidth;
+    reset();
+    sizeViewport();
+  };
   document.addEventListener("pointerdown", down, true);
   window.addEventListener("pointermove", move, {
     passive: true,
@@ -959,13 +995,14 @@ export function mountFooterMaterial(
   mask.addEventListener("keydown", key);
   window.addEventListener("blur", reset);
   mask.addEventListener("blur", reset);
-  window.addEventListener("resize", reset);
+  window.addEventListener("resize", resize);
   document.addEventListener("visibilitychange", visibility);
   window.addEventListener("portfolio-route-start", reset);
   measure();
   reset();
   return {
     measure,
+    resizeViewport,
     reset,
     setActive,
     dispose() {
@@ -981,7 +1018,7 @@ export function mountFooterMaterial(
       mask.removeEventListener("keydown", key);
       window.removeEventListener("blur", reset);
       mask.removeEventListener("blur", reset);
-      window.removeEventListener("resize", reset);
+      window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", visibility);
       window.removeEventListener("portfolio-route-start", reset);
       delete mask.dataset.grabbable;

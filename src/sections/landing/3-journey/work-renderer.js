@@ -1,6 +1,8 @@
 /** Reference path geometry and score measurements, ported to native DOM modules. */
 import * as a from "./work-paths.js";
 import * as s from "./work-paths.js";
+import { referencePixelsToVw } from "@/lib/viewport-design";
+import { journeyGeometry } from "./journey-geometry";
 let l = (e) => Math.max(0, Math.min(1, e)),
   c = [
     998.8945444023568, 987.9125729955807, 741.2294330018939, 1547.8671809238215,
@@ -227,8 +229,9 @@ export const createHorizontalRenderer = function (e, t, r = () => !1) {
     O = !1,
     I = NaN,
     M = 0,
-    x = e.clientWidth,
-    $ = innerHeight,
+    camera = journeyGeometry(innerWidth, e.querySelector(".stage")?.getBoundingClientRect().height || undefined),
+    x = camera.width,
+    $ = camera.height,
     C = x <= 700,
     F = -1,
     P = r() ? -1 : 1,
@@ -307,7 +310,7 @@ export const createHorizontalRenderer = function (e, t, r = () => !1) {
         n.dataset.workProgress = i.progress.toFixed(4);
         n.dataset.penProgress = a.progress.toFixed(6);
         n.dataset.penHead = A.toFixed(3);
-        o.style.transform = `translate3d(${-P * i.travel * x}px,0,0)`;
+        o.style.transform = `translate3d(${referencePixelsToVw(-P * i.travel * x, camera.reference)},0,0)`;
       }
       let g = t.current,
         O = f(280, 292, r),
@@ -322,7 +325,7 @@ export const createHorizontalRenderer = function (e, t, r = () => !1) {
         T[0].connectorTip.setAttribute("d", B);
         l.setAttribute("cx", String(D));
         l.setAttribute("cy", String(U));
-        l.setAttribute("r", String(w(g.radius, 0.75, f(270, 282, r))));
+        l.setAttribute("r", String(w(g.radius / camera.scale, 0.75, f(270, 282, r))));
         l.style.visibility = g.ready ? "visible" : "hidden";
         n.dataset.origin = `${g.x.toFixed(4)},${g.y.toFixed(4)}`;
         T.forEach(
@@ -354,8 +357,8 @@ export const createHorizontalRenderer = function (e, t, r = () => !1) {
                   (0.64 + 0.36 * h) *
                   (1 - i.clear),
               );
-              o.style.transform = `translate3d(${P * d * 1.3 * y}vw,${(1 - h) * 9}px,0)`;
-              o.style.clipPath = `inset(${(1 - f(0.08, 0.65, h) * f(0.35, 0.8, w)) * 100}% -8px -8px)`;
+              o.style.transform = `translate3d(${P * d * 1.3 * y}vw,${referencePixelsToVw((1 - h) * 9, camera.reference)},0)`;
+              o.style.clipPath = `inset(${(1 - f(0.08, 0.65, h) * f(0.35, 0.8, w)) * 100}% ${referencePixelsToVw(-8, camera.reference)} ${referencePixelsToVw(-8, camera.reference)})`;
               o.style.opacity = String(1 - i.clear);
               a.style.transform = `translate3d(${P * d * y}vw,0,0)`;
               a.style.opacity = String((0.65 + 0.35 * h) * (1 - i.clear));
@@ -411,14 +414,15 @@ export const createHorizontalRenderer = function (e, t, r = () => !1) {
       `M${e} ${t} C${e + P * x * 0.26} ${t} ${r - P * x * 0.2} ${n} ${r} ${n}`,
     U = () => {
       {
-        x = e.clientWidth;
-        $ = e.querySelector(".stage")?.clientHeight || innerHeight;
+        camera = journeyGeometry(innerWidth, e.querySelector(".stage")?.getBoundingClientRect().height || undefined);
+        x = camera.width;
+        $ = camera.height;
         C = x <= 700;
         P = r() ? -1 : 1;
         T.forEach(({ section: e }, t) => {
           {
             if (P < 0) {
-              e.style.left = `${-h[t] * x}px`;
+              e.style.left = referencePixelsToVw(-h[t] * x, camera.reference);
             } else {
               e.style.removeProperty("left");
             }
@@ -426,8 +430,8 @@ export const createHorizontalRenderer = function (e, t, r = () => !1) {
         });
         H = h.map((e, t) => (0, s.workSymbolLayout)(x, $, t, e, !0, P));
         i.setAttribute("viewBox", `0 0 ${5.6 * x} ${$}`);
-        i.style.width = `${5.6 * x}px`;
-        i.style.height = `${$}px`;
+        i.style.width = referencePixelsToVw(5.6 * x, camera.reference);
+        i.style.height = referencePixelsToVw($, camera.reference);
         H.forEach((e, t) => {
           let r = (0, s.placeWorkPath)(
             (0, s.directedWorkPath)(a.WORK_PROJECTS[t].mark.path, P),

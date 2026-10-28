@@ -10,6 +10,7 @@ import type { StoryEnvironmentController } from "./story-environment.animate";
 import { createMaterialProtection } from "./story-material-protection";
 import * as score from "./story-score";
 import * as journeyRender from "../3-journey/journey-render-owner";
+import * as viewport from "@/lib/viewport-design";
 
 // Execute the real controller/input code against a CPU renderer and event surface.
 // No browser, WebGL context, source bundle execution or global module mocks.
@@ -50,7 +51,9 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   page.querySelector = () => heroRoot;
   stage.closest = (selector) => selector === "main" ? page : selector === ".experience" ? owner : null;
   const document = Object.assign(new EventTarget(), {
-    hidden: false, documentElement: new Surface(), createElement: () => new Surface(), getElementById: () => stage,
+    hidden: false, documentElement: new Surface(), createElement: () => Object.assign(new Surface(), {
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: context.innerWidth, height: viewport.designHeight(context.innerWidth) }),
+    }), getElementById: () => stage,
   });
   const window = new EventTarget();
   const publisher = heroWorld.createHeroWorldPublisher(heroRoot as unknown as HTMLElement, window);
@@ -115,13 +118,15 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   });
   const pointerModule = evaluate("./story-environment-pointer.ts", context, {
     "./story-score": score, "./story-material-protection": { createMaterialProtection },
+    "@/lib/viewport-design": viewport,
   }).exports as { createEnvironmentPointer: typeof createEnvironmentPointer };
   const loaded = evaluate("./story-environment.animate.ts", context, {
     three: { ...three, WebGLRenderer: Renderer }, "./story-score": score,
     "../1-hero/hero-world": heroWorld,
     "../3-journey/journey-render-owner": journeyRender,
-    "./story-environment-pointer": { createEnvironmentPointer(wake: () => void) {
-      const pointer = pointerModule.createEnvironmentPointer(wake); pointers.push(pointer); return pointer;
+    "@/lib/viewport-design": viewport,
+    "./story-environment-pointer": { createEnvironmentPointer(...args: Parameters<typeof createEnvironmentPointer>) {
+      const pointer = pointerModule.createEnvironmentPointer(...args); pointers.push(pointer); return pointer;
     } },
     "./story-environment-field": { createEnvironmentField(aspect: number, mobile: boolean) {
       const field = createEnvironmentField(aspect, mobile), record = { field, clears: 0, advances: 0, disposals: 0 };
@@ -155,6 +160,7 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
     requestAnimationFrame,
     timer() { const [id, timer] = timers.entries().next().value!; timers.delete(id); timer.callback(); },
     event,
+    scroll(value: number) { context.scrollY = value; event("scroll"); },
     hero(progress: number) { publisher.publish(heroWorld.heroWorldPose(progress)); },
     frame(time: number, openingTime = 26) {
       const detail = { time, openingTime, progress: (openingTime + time) / 740 };
@@ -278,7 +284,7 @@ test("source reduced-prop updates retain material time, pointer, targets and wav
   expect(surface.material.uniforms.uTime.value - time).toBeCloseTo(0.035 / 60, 10);
   expect(pointer.state.fieldX).toBe(x); expect(field.clears).toBe(1);
   expect(pointer.state.hovering).toBe(false); expect(pointer.state.pressed).toBe(false); expect(pointer.state.targetX).toBe(0);
-  expect(field.field.uniforms.uStroke.value.x).toBeCloseTo(x * 1.36, 10);
+  expect(field.field.uniforms.uStroke.value.x).toBeCloseTo(x * (1920 / 1080), 10);
   expect(field.field.uniforms.uPulse.value.x).toBe(pulse.x); expect(field.field.uniforms.uPulse.value.y).toBe(pulse.y);
   expect(field.field.uniforms.uPulse.value.z / pulse.z).toBeCloseTo(0.32 * Math.exp(-10 / 60), 10);
   const reducedTime = surface.material.uniforms.uTime.value as number;
@@ -378,7 +384,7 @@ test("background gain/presence use the published displayed hero clock, never ope
   expect(h.fields).toHaveLength(1); expect(h.stats.creations).toBe(1); h.controller.dispose();
 });
 
-test("source allocation keys preserve no-op/same-aspect/DPR history and replace only the changed field/grid", () => {
+test("reference aspect keys preserve within-profile/height/DPR history and replace only the changed field/grid", () => {
   const h = environmentHarness();
   h.event("pointerdown", { pointerType: "mouse", clientX: 1000, clientY: 400, pointerId: 1, button: 0 }); h.step();
   const first = h.fields[0], mesh = h.surfaces[0], geometry = mesh.geometry, material = mesh.material;
@@ -390,20 +396,84 @@ test("source allocation keys preserve no-op/same-aspect/DPR history and replace 
   h.resize(2720, 2000); h.step();
   h.dpr(2); h.step();
   expect(h.fields).toHaveLength(1); expect(mesh.geometry).toBe(geometry); expect(first.clears).toBe(1);
-  expect(h.dimensions.at(-1)).toEqual([2720, 2000]);
-  // An aspect change reallocates even if the rounded target width is unchanged.
-  h.resize(1361, 1000); expect(h.fields).toHaveLength(2); expect(first.disposals).toBe(1);
-  expect(h.fields[1].field.uniforms.uCell.value.x).toBe(first.field.uniforms.uCell.value.x);
+  expect(h.dimensions.at(-1)).toEqual([2720, viewport.designHeight(2720)]);
+  h.resize(1361, 1000); expect(h.fields).toHaveLength(1); expect(first.disposals).toBe(0);
   expect(mesh.geometry).toBe(geometry); expect(gridDisposals).toBe(0); h.step();
-  expect(h.fields[1].clears).toBe(1); expect(h.fields[1].advances).toBe(1);
-  expect(material.uniforms.uAspect.value).toBe(1.361);
-  h.resize(800, 1000); h.step(); const desktop = h.fields.at(-1)!;
-  h.resize(640, 800); // Same .8 aspect, different mobile key / geometry args.
-  expect(desktop.disposals).toBe(1); expect(mesh.geometry).not.toBe(geometry); expect(gridDisposals).toBe(1);
+  expect(material.uniforms.uAspect.value).toBe(1920 / 1080);
+  h.resize(800, 1000); h.step(); const tablet = h.fields.at(-1)!;
+  expect(first.disposals).toBe(1); expect(h.fields).toHaveLength(2);
+  h.resize(640, 800); h.step(); // Both sides of the obsolete 700px boundary are tablet.
+  expect(tablet.disposals).toBe(0); expect(h.fields).toHaveLength(2); expect(mesh.geometry).toBe(geometry);
+  h.resize(600, 800);
+  expect(tablet.disposals).toBe(1); expect(mesh.geometry).not.toBe(geometry); expect(gridDisposals).toBe(1);
   expect(mesh.geometry.parameters.widthSegments).toBe(96); expect(mesh.geometry.parameters.heightSegments).toBe(96);
   expect(mesh.material).toBe(material); h.step(); h.controller.dispose(); h.controller.dispose();
   expect(h.fields.every((entry) => entry.disposals === 1)).toBe(true);
   expect(h.stats.rendererDisposals).toBe(1); expect(h.stats.contextLosses).toBe(1);
+});
+
+test("background draw geometry and pointer mapping share the fixed profile independently of actual viewport height", () => {
+  const h = environmentHarness();
+  for (const reference of Object.values(viewport.viewportDesigns)) {
+    h.resize(reference.width, reference.height); h.step();
+    const field = h.fields.at(-1)!, mesh = h.surfaces[0];
+    expect(viewport.designScale(reference.width)).toBe(1);
+    expect(h.dimensions.at(-1)).toEqual([reference.width, reference.height]);
+    expect(mesh.material.uniforms.uAspect.value).toBe(reference.width / reference.height);
+    const bufferMeasurements = h.dimensions.length;
+    h.resize(reference.width, reference.height / 2); h.step();
+    expect(h.dimensions).toHaveLength(bufferMeasurements);
+    expect(h.fields.at(-1)).toBe(field);
+    expect(h.dimensions.at(-1)).toEqual([reference.width, reference.height]);
+    const input = () => h.event("pointermove", { pointerType: "mouse", clientX: reference.width * 0.75, clientY: reference.height * 0.25 });
+    input();
+    expect(h.pointers[0].state.targetX).toBe(0.5); expect(h.pointers[0].state.targetY).toBe(0.5);
+    h.resize(reference.width * 1.25, reference.height * 0.8); h.dpr(2); h.step();
+    expect(h.fields.at(-1)).toBe(field);
+    expect(h.dimensions.at(-1)).toEqual([reference.width * 1.25, reference.height * 1.25]);
+    h.event("pointermove", { pointerType: "mouse", clientX: reference.width * 1.25 * 0.75, clientY: reference.height * 1.25 * 0.25 });
+    expect(h.pointers[0].state.targetX).toBe(0.5); expect(h.pointers[0].state.targetY).toBe(0.5);
+    expect([...mesh.material.uniforms.uCell.value.toArray(), mesh.material.uniforms.uAspect.value].every(Number.isFinite)).toBe(true);
+  }
+  h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
+});
+
+test("native scroll pressure uses the design canvas height across physical height and proportional width changes", () => {
+  for (const reference of Object.values(viewport.viewportDesigns)) {
+    const cases = [environmentHarness(), environmentHarness(), environmentHarness()];
+    cases[0].resize(reference.width, reference.height);
+    cases[1].resize(reference.width, reference.height / 2);
+    cases[2].resize(reference.width * 1.25, reference.height / 2);
+    cases.forEach((h, i) => {
+      const delta = i === 2 ? 50 : 40;
+      h.hero(0.5); h.scroll(delta);
+      expect(h.pointers[0].state.scrollVelocity).toBeCloseTo(40 / reference.height * 3, 12);
+      h.step();
+    });
+    const scrollPressure = cases[0].fields.at(-1)!.field.uniforms.uScroll.value;
+    for (const h of cases) {
+      expect(h.fields.at(-1)!.field.uniforms.uScroll.value).toBeCloseTo(scrollPressure, 12);
+      const before = h.pointers[0].state.scrollVelocity;
+      h.controller.dispose(); h.scroll(100);
+      expect(h.pointers[0].state.scrollVelocity).toBe(before);
+      expect(h.rafs.size + h.timers.size).toBe(0);
+    }
+  }
+});
+
+test("standalone environment pointer defaults to design height and keeps a finite zero-sized bounds basis", () => {
+  for (const supplied of [false, true]) {
+    const window = new EventTarget(), fine = Object.assign(new EventTarget(), { matches: true });
+    const context = createContext({ window, document: Object.assign(new EventTarget(), { hidden: false }),
+      innerWidth: 1920, innerHeight: 540, scrollY: 0, matchMedia: () => fine, Element: Surface });
+    const loaded = evaluate("./story-environment-pointer.ts", context, {
+      "./story-score": score, "./story-material-protection": { createMaterialProtection }, "@/lib/viewport-design": viewport,
+    }).exports as { createEnvironmentPointer: typeof createEnvironmentPointer };
+    const pointer = loaded.createEnvironmentPointer(() => {}, supplied ? () => ({ left: 0, top: 0, width: 0, height: 0 }) : undefined);
+    context.scrollY = 40; window.dispatchEvent(new Event("scroll"));
+    expect(pointer.state.scrollVelocity).toBeCloseTo(supplied ? 1 : 40 / 1080 * 3, 12);
+    expect(Number.isFinite(pointer.state.scrollVelocity)).toBe(true); pointer.dispose();
+  }
 });
 
 test("mode, resize and context restore submit no hidden/offscreen GPU work and clean up once", () => {
@@ -417,13 +487,13 @@ test("mode, resize and context restore submit no hidden/offscreen GPU work and c
   expect(Number(h.canvas.dataset.materialTime)).toBeGreaterThan(materialTime);
   expect(h.stats.creations).toBe(1); expect(field.clears).toBe(hiddenClears + 1);
   h.menu(true); const beforeMenuDraw = h.stats.renders;
-  h.controller.setReducedMode(false); h.resize(1362, 1000);
+  h.controller.setReducedMode(false); h.resize(800, 1000);
   expect(h.fields.at(-1)!.clears).toBe(0); expect(h.stats.renders).toBe(beforeMenuDraw);
   expect(h.rafs.size).toBe(1); h.step();
   expect(h.fields.at(-1)!.clears).toBe(1);
   expect(h.fields.at(-1)!.field.uniforms.uQuiet.value).toBe(1);
   h.menu(false); h.step(); h.visible(false); const offscreenRenders = h.stats.renders;
-  h.controller.setReducedMode(true); h.resize(1364, 1000);
+  h.controller.setReducedMode(true); h.resize(412, 1000);
   expect(h.fields.at(-1)!.clears).toBe(0); expect(h.stats.renders).toBe(offscreenRenders);
   expect(h.rafs.size + h.timers.size).toBe(0);
   h.visible(true); h.step(); h.controller.dispose(); h.controller.dispose();

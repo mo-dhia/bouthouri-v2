@@ -1,6 +1,7 @@
 import { kickScroll } from "@/lib/scrollInteraction/scrollTrigger";
 import scrollManager from "@/lib/scrollInteraction/scrollManager";
 import { uiStore } from "@/store/uiStore";
+import { designPixels, pixelsToVw, viewportDesign } from "@/lib/viewport-design";
 import { setAudioEnabled } from "@/lib/audio/material-audio";
 import {
   getHomeRestoreIntent,
@@ -150,12 +151,14 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   let resolve = 1,
     portrait: PortraitController | undefined;
   const portraitAbort = new AbortController();
+  let viewportWidth = innerWidth,
+    mobile = viewportDesign(viewportWidth).width <= 700;
   let groupWidth = 1,
-    marqueeX = innerWidth + 8,
+    marqueeX = viewportWidth + designPixels(8, viewportWidth),
     paused = false;
   const worldClock = createHeroWorldClock();
   const worldPublisher = createHeroWorldPublisher(root);
-  let worldPose = worldClock.pose(innerWidth <= 700);
+  let worldPose = worldClock.pose(mobile);
   let height = root.offsetHeight,
     top = root.getBoundingClientRect().top + scrollY;
   let previousWorld = -1,
@@ -237,7 +240,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       range.setEnd(text, word.index! + word[0].length);
       const rect = range.getBoundingClientRect(),
         last = groups.at(-1);
-      if (last && Math.abs(last.top - rect.top) < 2) last.words.push(word[0]);
+      if (last && Math.abs(last.top - rect.top) < designPixels(2, viewportWidth)) last.words.push(word[0]);
       else groups.push({ top: rect.top, words: [word[0]] });
     }
     const lineHeight = parseFloat(getComputedStyle(support).lineHeight);
@@ -246,7 +249,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     groups.forEach((group, index) => {
       const mask = document.createElement("span"),
         line = document.createElement("span");
-      mask.style.cssText = `position:absolute;inset-inline:0;top:${group.top - groups[0].top}px;height:${lineHeight}px;overflow:hidden;display:block;`;
+      mask.style.cssText = `position:absolute;inset-inline:0;top:${pixelsToVw(group.top - groups[0].top, viewportWidth)};height:${pixelsToVw(lineHeight, viewportWidth)};overflow:hidden;display:block;`;
       line.textContent = group.words.join(" ");
       line.dataset.heroCopyLine = String(index + 1);
       line.style.cssText =
@@ -260,9 +263,13 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   };
   const measure = () => {
     if (disposed) return;
+    const previousWidth = viewportWidth;
+    viewportWidth = innerWidth;
+    mobile = viewportDesign(viewportWidth).width <= 700;
     const width = cycle.getBoundingClientRect().width;
     if (marqueeX <= 0 && groupWidth > 1)
       marqueeX = -((-marqueeX % groupWidth) / groupWidth) * width;
+    else marqueeX *= viewportWidth / previousWidth;
     groupWidth = width || 1;
     height = root.offsetHeight;
     top = root.getBoundingClientRect().top + scrollY;
@@ -274,14 +281,14 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       if (navItems[1])
         logoBox = new DOMRect(
           logoBox.x,
-          logoBox.y - parseFloat(navItems[1].dataset.entryY ?? "0"),
+          logoBox.y - parseFloat(navItems[1].dataset.entryY ?? "0") * viewportWidth / 100,
           logoBox.width,
           logoBox.height,
         );
-      mark.style.left = `${loadingBox.left}px`;
-      mark.style.top = `${loadingBox.top}px`;
-      mark.style.width = `${loadingBox.width}px`;
-      mark.style.height = `${loadingBox.height}px`;
+      mark.style.left = pixelsToVw(loadingBox.left, viewportWidth);
+      mark.style.top = pixelsToVw(loadingBox.top, viewportWidth);
+      mark.style.width = pixelsToVw(loadingBox.width, viewportWidth);
+      mark.style.height = pixelsToVw(loadingBox.height, viewportWidth);
       mark.style.transformOrigin = "0 0";
       mark.style.transform = "translate3d(0,0,0)";
     }
@@ -398,10 +405,10 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const renderWorld = () => {
     const pose = worldPose,
       currentWorld = pose.progress,
-      scale = height * (innerWidth <= 700 ? 0.62 : 1),
+      scale = height * (mobile ? 0.62 : 1),
       portraitY = pose.portraitY * scale,
       portraitScale =
-        1 + (pose.portraitScale - 1) * (innerWidth <= 700 ? 0.6 : 1);
+        1 + (pose.portraitScale - 1) * (mobile ? 0.6 : 1);
     const mask =
       portraitEntrance.dataset.portraitReady === "true"
         ? null
@@ -422,18 +429,18 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     scene.style.display = pose.hidden ? "none" : "";
     scene.style.visibility = pose.hidden ? "hidden" : "visible";
     scene.inert = pose.hidden;
-    portraitElement.style.transform = `translate3d(0,${portraitY}px,0) scale(${portraitScale})`;
+    portraitElement.style.transform = `translate3d(0,${pixelsToVw(portraitY, viewportWidth)},0) scale(${portraitScale})`;
     marquee.style.opacity = String(pose.marqueeOpacity);
-    marquee.style.transform = `translate3d(0,${pose.marqueeY * scale}px,0)`;
-    identity.style.transform = `translate3d(0,${pose.identityY * scale}px,0)`;
+    marquee.style.transform = `translate3d(0,${pixelsToVw(pose.marqueeY * scale, viewportWidth)},0)`;
+    identity.style.transform = `translate3d(0,${pixelsToVw(pose.identityY * scale, viewportWidth)},0)`;
     copyExit.style.opacity = String(pose.identityOpacity);
     signature.style.setProperty(
       "--signature-presence",
       String(pose.signatureOpacity),
     );
-    signature.style.transform = `translate3d(0,${(pose.signatureY - pose.identityY) * scale}px,0)`;
+    signature.style.transform = `translate3d(0,${pixelsToVw((pose.signatureY - pose.identityY) * scale, viewportWidth)},0)`;
     bottom.style.opacity = String(pose.cueOpacity);
-    bottom.style.transform = `translate3d(0,${pose.identityY * scale * 0.5}px,0)`;
+    bottom.style.transform = `translate3d(0,${pixelsToVw(pose.identityY * scale * 0.5, viewportWidth)},0)`;
     worldPublisher.publish(pose);
   };
   const tick = (now: number) => {
@@ -488,7 +495,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       const t = assemblyTime,
         flight = smoother(0, 1.1, t);
       if (loadingBox && logoBox)
-        mark.style.transform = `translate3d(${(logoBox.left - loadingBox.left) * flight}px,${(logoBox.top - loadingBox.top) * flight}px,0) scale(${1 + (logoBox.width / loadingBox.width - 1) * flight},${1 + (logoBox.height / loadingBox.height - 1) * flight})`;
+        mark.style.transform = `translate3d(${pixelsToVw((logoBox.left - loadingBox.left) * flight, viewportWidth)},${pixelsToVw((logoBox.top - loadingBox.top) * flight, viewportWidth)},0) scale(${1 + (logoBox.width / loadingBox.width - 1) * flight},${1 + (logoBox.height / loadingBox.height - 1) * flight})`;
       mark.style.color = `color-mix(in srgb,#d6d3c9 ${(1 - smoother(0.62, 1.1, t)) * 100}%,#777772)`;
       fillLogo(
         1 - smoother(0.38, 1.1, t),
@@ -509,12 +516,15 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       }
       navWindows.forEach(
         (window, i) =>
-          (window.style.clipPath = `inset(${100 * (1 - easeInOut(clamp((t - 0.15 - 0.06 * i) / 0.55)))}% -12px 0%)`),
+          (window.style.clipPath = `inset(${100 * (1 - easeInOut(clamp((t - 0.15 - 0.06 * i) / 0.55)))}% ${pixelsToVw(designPixels(-12, viewportWidth), viewportWidth)} 0%)`),
       );
       navItems.forEach((item, i) => {
-        const y = 24 * (1 - easeInOut(clamp((t - 0.15 - 0.06 * i) / 0.55)));
-        item.style.transform = `translateY(${y}px)`;
-        item.dataset.entryY = String(y);
+        const y = designPixels(24, viewportWidth) * (1 - easeInOut(clamp((t - 0.15 - 0.06 * i) / 0.55)));
+        const entryY = pixelsToVw(y, viewportWidth);
+        item.style.transform = `translateY(${entryY})`;
+        // Keep the cached offset in the same units as its CSS transform so a
+        // width resize can subtract the current physical offset from the rect.
+        item.dataset.entryY = entryY;
       });
       if (t >= 0.28) {
         identity.style.visibility = "visible";
@@ -545,14 +555,14 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     }
     if (entered || phase === "assembling") {
       // Source ticker reads Date.now inside its callback, not the RAF stamp.
-      worldPose = worldClock.sample(performance.now(), innerWidth <= 700);
+      worldPose = worldClock.sample(performance.now(), mobile);
       renderWorld();
       const pose = worldPose;
       if (!paused && !pose.hidden && assemblyTime >= 0.16) {
-        marqueeX -= 133 * delta;
+        marqueeX -= designPixels(133, viewportWidth) * delta;
         if (marqueeX <= 0) marqueeX = -(-marqueeX % groupWidth);
       }
-      track.style.transform = `translate3d(${root.dataset.locale === "ar" ? innerWidth - 2 * groupWidth - marqueeX : marqueeX}px,0,0)`;
+      track.style.transform = `translate3d(${pixelsToVw(root.dataset.locale === "ar" ? viewportWidth - 2 * groupWidth - marqueeX : marqueeX, viewportWidth)},0,0)`;
       const active =
         portrait?.render(
           delta,
@@ -599,7 +609,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     const detail = (event as CustomEvent<{ progress: number }>).detail;
     if (detail && Number.isFinite(detail.progress)) {
       root.dataset.heroWorldOwner = "journey";
-      setWorldTarget(heroInputFromWorldProgress(detail.progress, innerWidth <= 700));
+      setWorldTarget(heroInputFromWorldProgress(detail.progress, mobile));
       wake();
     }
   };
@@ -607,21 +617,21 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     const next = clamp(value);
     if (immediate || phase !== "complete") {
       worldClock.snap(next, performance.now());
-      worldPose = worldClock.pose(innerWidth <= 700);
+      worldPose = worldClock.pose(mobile);
       previousWorld = -1;
       renderWorld();
     } else worldClock.retarget(next, performance.now());
   };
   const updateScroll = () => {
     setWorldTarget(
-      heroInputProgressFromScroll(scrollY - top, height, innerWidth <= 700),
+      heroInputProgressFromScroll(scrollY - top, height, mobile),
     );
     delete root.dataset.heroWorldOwner;
     wake();
   };
   const snapWorldToScroll = () => {
     setWorldTarget(
-      heroInputProgressFromScroll(scrollY - top, height, innerWidth <= 700),
+      heroInputProgressFromScroll(scrollY - top, height, mobile),
       true,
     );
     delete root.dataset.heroWorldOwner;
@@ -654,7 +664,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     bounds: () => ({
       start: top,
       end:
-        top + height + (height / (100 / (innerWidth <= 700 ? 5.8 : 6.8))) * 22,
+        top + height + (height / (100 / (mobile ? 5.8 : 6.8))) * 22,
     }),
     ready: () =>
       phase === "complete" &&
@@ -669,11 +679,11 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     },
     target: (progress, velocity, distance) => {
       const span =
-        height + (height / (100 / (innerWidth <= 700 ? 5.8 : 6.8))) * 22;
+        height + (height / (100 / (mobile ? 5.8 : 6.8))) * 22;
       const world = worldProgressFromScroll(
         progress * span,
         height,
-        innerWidth <= 700,
+        mobile,
       );
       return world >= 0.995 &&
         world < 0.997 &&

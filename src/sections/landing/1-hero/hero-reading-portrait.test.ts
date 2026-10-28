@@ -4,6 +4,7 @@ import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import { createReadingPortraitState, type ReadingPortraitState } from "./hero-reading-portrait";
 import type { PortraitController } from "./hero-portrait";
+import * as viewport from "@/lib/viewport-design";
 
 const visible = { resolve: 1, exit: 0, pointer: 1, active: true };
 
@@ -43,7 +44,7 @@ function deferred() {
 }
 
 /** Runs the actual graphics/controller module with an observable, non-GPU renderer. */
-function graphicsHarness() {
+function graphicsHarness(normal = false) {
   class Surface extends EventTarget {
     dataset: Record<string, string> = {};
     selectors = new Map<string, unknown>();
@@ -52,6 +53,7 @@ function graphicsHarness() {
   const root = new Surface(), container = new Surface(), canvas = new Surface();
   const decode = deferred();
   let width = 882.316650390625, height = 588.2166748046875, heroHeight = 825, imageTop = 68.89999389648438, rootTop = 0, dpr = 1;
+  let viewportWidth = 538, physicalHeight = 1000;
   const image = {
     naturalWidth: 1536, decode: () => decode.promise,
     getBoundingClientRect: () => ({ width, height, left: 0, top: imageTop + rootTop }),
@@ -95,8 +97,11 @@ function graphicsHarness() {
   }
   const forbidden = () => { throw Error("Reading graphics must not schedule frames, sample pointers, create alpha canvases or play audio"); };
   const context = createContext({
-    window, document: Object.assign(new EventTarget(), document, { createElement: forbidden }), Event, DOMException,
-    Float32Array, Element: Surface, innerWidth: 538,
+    window, document: Object.assign(new EventTarget(), document, { createElement: normal ? () => ({
+      width: 0, height: 0, getContext: () => ({ drawImage() {}, getImageData: () => ({ data: new Uint8ClampedArray(192 * 128 * 4) }) }),
+    }) : forbidden }), Event, DOMException,
+    Float32Array, Element: Surface,
+    get innerWidth() { return viewportWidth; }, get innerHeight() { return physicalHeight; },
     requestAnimationFrame: forbidden, setTimeout: forbidden,
   });
   // Keep visibility mutable in the module's own document object.
@@ -109,23 +114,25 @@ function graphicsHarness() {
       Mesh: class { frustumCulled = true; },
     },
     "./hero-world": { clamp: (x: number) => Math.max(0, Math.min(1, x)) },
-    "@/components/layout/header/material-protection": { emitMaterialProtection: forbidden },
-    "@/lib/audio/material-audio": { playMaterialImpulse: forbidden, setMaterialMotion: forbidden, clearMaterialMotion: forbidden },
+    "@/lib/viewport-design": viewport,
+    "@/components/layout/header/material-protection": { emitMaterialProtection: normal ? () => {} : forbidden },
+    "@/lib/audio/material-audio": { playMaterialImpulse: forbidden, setMaterialMotion: normal ? () => {} : forbidden, clearMaterialMotion: normal ? () => {} : forbidden },
   };
   const source = ts.transpileModule(readFileSync(new URL("./hero-portrait.ts", import.meta.url), "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
   }).outputText;
-  const evaluated = { exports: {} as { mountHeroPortrait: (root: unknown, options: { reading: ReadingPortraitState; signal?: AbortSignal }) => Promise<PortraitController> } };
+  const evaluated = { exports: {} as { mountHeroPortrait: (root: unknown, options: { reading?: ReadingPortraitState; signal?: AbortSignal }) => Promise<PortraitController> } };
   runInContext(`(function(require, module, exports) { ${source}\n })`, context)((name: string) => {
     if (!(name in dependencies)) throw Error(`Unexpected graphics dependency ${name}`);
     return dependencies[name];
   }, evaluated, evaluated.exports);
   return {
     root, container, canvas, page, calls, renderers, allocations, decode,
-    mount: (reading: ReadingPortraitState, signal?: AbortSignal) => evaluated.exports.mountHeroPortrait(root, { reading, signal }),
+    mount: (reading?: ReadingPortraitState, signal?: AbortSignal) => evaluated.exports.mountHeroPortrait(root, { reading, signal }),
     geometry(w: number, h: number, hero = heroHeight, top = imageTop) { width = w; height = h; heroHeight = hero; imageTop = top; },
     scroll(y: number) { rootTop = -y; },
     dpr(value: number) { dpr = value; },
+    viewport(width: number, height = physicalHeight) { viewportWidth = width; physicalHeight = height; },
   };
 }
 
@@ -274,5 +281,29 @@ test("a resolved compiler with an unlinked program cannot hide the photograph or
   expect((await pending as Error).message).toBe("Portrait shader could not compile");
   expect(h.container.dataset.portraitReady).toBe("false");
   expect(h.renderers[0].draws).toHaveLength(0);
+  expect(h.allocations.every((resource) => resource.releases === 1)).toBe(true);
+});
+
+test("ordinary portrait selects authored detail by design profile and retains measured framebuffer geometry", async () => {
+  const h = graphicsHarness(true);
+  h.viewport(412, 915);
+  const pending = h.mount();
+  h.decode.resolve(); await flush(); h.renderers[0].compile.resolve();
+  const controller = await pending, renderer = h.renderers[0];
+  for (const [width, detail] of [[412, .35], [600, .35], [601, 1], [650, 1], [768, 1], [1024, 1], [1920, 1]]) {
+    h.viewport(width);
+    controller.measure();
+    // Alternate the source exit so every check presents a frame.
+    controller.render(0, 1, detail === .35 ? .2 : .3 + width / 100000, 1, true);
+    expect(renderer.draws.at(-1)!.detail).toBe(detail);
+  }
+  const sizes = h.calls.filter((call) => call.kind === "size");
+  expect(sizes.map((call) => call.value)).toEqual([[882, 588]]);
+  const frame = renderer.draws.at(-1)!;
+  h.viewport(1920, 240); controller.measure();
+  controller.render(0, 1, .4, 1, true);
+  expect(renderer.draws.at(-1)!.view).toEqual(frame.view);
+  expect(h.calls.filter((call) => call.kind === "size")).toHaveLength(1);
+  controller.dispose();
   expect(h.allocations.every((resource) => resource.releases === 1)).toBe(true);
 });

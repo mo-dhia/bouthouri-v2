@@ -1,5 +1,26 @@
 # Home visual layer
 
+Fixed design policy (2026-10-28): `viewportDesign` selects desktop1920×1080
+above1024px, tablet768×1024 above600px through1024px, and mobile412×915
+through600px. Object camera/frustum, sculpture routes, authored score selection,
+shadow quality and spatial type use that reference geometry. World-unit fonts
+remain numeric; a full-width canvas with `designHeight(width)` makes their
+projected text/geometry scale once with width. Same-profile or height-only
+resizes retain the spatial text graph. Physical bounds still size renderer
+buffers, pointer mapping/pulls, visibility and full-bounds environment recapture.
+Source materials, lights, easing, score and camera/optical history math are unchanged.
+
+CSS contract for root: `.canvas-layer` (including reading), `.environment` /
+`.global-environment` and their full-size canvases must have full viewport width
+and width-scaled reference height, anchored at top with bottom:auto. The numeric
+`getSettledStoryOrigin(width,height,rtl)` remains a pure source-geometry API with
+its original fixtures; its caller must pass the corresponding fixed-aspect stage
+geometry. No CSS or gate/controller boundary is changed here. CPU regressions
+cover all three factor-one references, proportional EN/AR text/terminal projection,
+tablet behavior across700px, actual-height independence, finite transforms and
+pointer cleanup. They do not establish visual or continuous-motion parity;
+root owns production build/SSR and original Vawzen36/37 comparison.
+
 The integration, measured clock/camera, startup states, resource ownership,
 validation evidence and remaining fidelity gaps are maintained in
 [`docs/home-scene-contract.md`](../../../../docs/home-scene-contract.md).

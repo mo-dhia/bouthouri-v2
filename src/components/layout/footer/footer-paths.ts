@@ -10,7 +10,7 @@ const ease = (value: number) => {
 };
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 
-/** Public reference outline data only; no original application/runtime is shipped. */
+/** Reference-pixel API: normalize DOM boxes before constructing; scale only on draw. */
 export class FooterPaths {
   readonly source: Point[][][];
   readonly parts: GlyphBox[];
