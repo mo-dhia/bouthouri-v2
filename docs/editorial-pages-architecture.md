@@ -46,5 +46,5 @@ Build/SSR and architecture checks verify delivery boundaries, not visual parity.
 
 The current [implementation and verification status](editorial-parity-status.md)
 links the completed reviews and validation, deployment configuration and the
-native footer-flow check deferred while the user controls the PC. A deferred or
-excluded control must not be described as a parity pass.
+native footer-flow results with their retained source-comparison limit. A deferred
+or excluded control must not be described as a parity pass.

@@ -1,9 +1,11 @@
 # Editorial implementation and verification status
 
 Vision, Services and Contact are implemented in English and Arabic with the
-approved Bouthouri identity. Projects remains outside this task. The final native
-plain-footer Contact navigation check is **pending PC availability**, not passed.
-No new application change is justified by the latest completed controls.
+approved Bouthouri identity. Projects remains outside this task. Fresh native
+plain-footer Contact navigation completes locally in **all six** agreed
+locale/screen contexts. The original fails to visibly complete the same arrival
+in those controls, so that path has no fresh matched source/local pass.
+No new application change is justified by the completed controls.
 
 ## Implementation
 
@@ -59,24 +61,34 @@ These are finite visual and behavior checks. The reports retain source native-po
 exclusions, failed controls, uninspected frames and inherited limits. They do not
 certify universal frame equality, hardware touch, native OS reduced preference or FPS.
 
-## Remaining native check
+## Native footer verification
 
 [R8](pages-native-footer-contact-review-r8.md) was interrupted before any Contact
-click or recording when the user took PC control. **Zero of six** matched native
-plain-footer arrivals is graded. Menu-to-Contact checks are not substituted for
-that path; earlier source footer-tail pixels remain excluded.
+click or recording when the user took PC control. Its six flows remain ungraded;
+the invalid preparation is retained. After the user returned control,
+[R10](pages-native-footer-contact-review-r10.md) restored 100% zoom and verified
+the actual reference viewports and DPR before fresh native controls.
 
-All native input, focus changes, window resizing, zoom resetting and desktop
-recording remain stopped until the user hands control back. Background work must
-not change the window or tab the user is using. At R8's last saved state, source
-zoom had changed its CSS viewport to 2144×1206/DPR .895522; that is not an agreed
-reference and was deliberately not reset against user control.
+Each of the six local EN/AR desktop/tablet/mobile cases starts at a genuinely
+visible Services footer. One trusted native Contact click completes the visible
+Contact heading and support copy without further input, with the correct URL,
+native y0, fonts ready and no open menu. These are native functional passes,
+independent of the earlier MENU-to-Contact controls.
 
-Resume with a fresh browser loan: verify assigned tabs/window, restore actual
-reference geometry and 100% source zoom, scroll to a genuinely visible settled
-footer, validate the Contact hit target, and record a native click through a
-visibly completed arrival. Stop if focus, pointer, modifiers or viewport drift.
-Preserve R8's invalid preparation and all existing exclusions.
+The source commits Contact/y0 and reports ready markup, but its composited body
+remains dark or displaced in all six controls. Additional EN desktop repetitions
+retain the same failure. The failed tails and the separately observed recovery
+after ordinary input are preserved; neither ready markup nor recovery counts as
+an unassisted matched arrival. No cause or local regression is inferred. This
+source failure limits comparison of that path; it does not justify making the
+working local arrival fail similarly.
+
+Both assigned tabs were then freshly restored to EN Contact/y0, 1920×1080/DPR1,
+100% zoom, fonts and entry complete, motion on, audio off, menus and RDM closed,
+blank forms and native prototypes; the local tab was focused. All owned input,
+recording and decoding jobs stopped before explicit release. The application
+build and all 259 input hashes remained unchanged. R10's final report retains
+the exact footage coverage, source failures and comparison limits.
 
 ## Deployment configuration
 

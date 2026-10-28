@@ -112,7 +112,9 @@ and architecture, followed by build `ETSBMuTNkBFMyZQ0iwhPG` and the HTTP
 SSR/20-asset audit. Five before-fix readiness failures and the passing mounted
 controller/registry regressions remain in `reduced-readiness-r6`; root validation
 logs and all 259 build-input hashes remain in the `root/*readiness-r7*` artifacts.
-The repeated reduced-mode visible-step finding still requires new-build review.
+The subsequent [R7 production review](../../../../docs/pages-reduced-readiness-review-r7.md)
+records its absence in three fresh matched uninstrumented controls, retaining
+the finite sampling and causal limits.
 
 The independent R10 review passed 24 mounted adversarial cases and 152 scoped
 tests without a new confirmed P1/P2. Root's combined integration passed lint,
@@ -120,9 +122,10 @@ types, architecture and 363 tests with 15,607 assertions, then production build
 `xqr5J4NXtkoga9N948wij` and the HTTP SSR/asset audit. Exact logs and build-input
 hashes are retained under `.artifacts/pages-parity-20261028/root/`.
 
-New-build route timing/history and visual acceptance remain pending. The R10
-async URL-selection/no-DOM-update reachability limit stays ungraded; these checks
-make no presented-frame or complete visual-parity claim.
+Later production timing/history and native-path results are recorded in the
+[current status](../../../../docs/editorial-parity-status.md). The R10 async
+URL-selection/no-DOM-update reachability limit stays ungraded; these checks make
+no presented-frame or complete visual-parity claim.
 
 ## Route callback clock
 
@@ -140,8 +143,9 @@ refresh stamps lag by 46.42/13.08ms. It failed before the sampling change and
 passes afterward. This corrects the sample-clock contract; it does not recreate
 GSAP's global parent-start phase or its default long-stall smoothing. R4's
 controlled delayed schedule is not a recovered browser writer trace. R3's
-reduced-mode visible/wall-time observation remains separate and requires fresh
-production adjudication; no missed frames or performance improvement is claimed.
+reduced-mode visible/wall-time observation remains separate from this fixture;
+the current status links its later production reviews. No recovered missed frames
+or performance improvement is claimed.
 
 The corrected integration passed 106 focused route/HOME tests and the full
 364-test check with 15,615 assertions, lint, types and architecture. Build
