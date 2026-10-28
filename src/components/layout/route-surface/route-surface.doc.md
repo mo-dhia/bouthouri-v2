@@ -108,3 +108,28 @@ hashes are retained under `.artifacts/pages-parity-20261028/root/`.
 New-build route timing/history and visual acceptance remain pending. The R10
 async URL-selection/no-DOM-update reachability limit stays ungraded; these checks
 make no presented-frame or complete visual-parity claim.
+
+## Route callback clock
+
+R4 executed the cached source core32919's fresh `gsap.to` route tween with a
+controlled Date clock and actual internal ticker callbacks. Source samples the
+callback clock, rather than the browser's supplied refresh timestamp. Delayed
+dispatch makes those clocks differ even within the same finite animation.
+The local route keeps its synchronous `tick(start)` and existing segment start,
+duration, sine easing and resume phase. Subsequent callbacks sample
+`win.performance.now()` before calling that same tick. No RAF, global ticker,
+parent clock or duration constant was added.
+
+The mounted regression retains source opacity values at 80/96ms while supplied
+refresh stamps lag by 46.42/13.08ms. It failed before the sampling change and
+passes afterward. This corrects the sample-clock contract; it does not recreate
+GSAP's global parent-start phase or its default long-stall smoothing. R4's
+controlled delayed schedule is not a recovered browser writer trace. R3's
+reduced-mode visible/wall-time observation remains separate and requires fresh
+production adjudication; no missed frames or performance improvement is claimed.
+
+The corrected integration passed 106 focused route/HOME tests and the full
+364-test check with 15,615 assertions, lint, types and architecture. Build
+`iTxQ9za0P2IZUlsc_NBns` and the HTTP SSR/20-asset audit also passed. Logs and
+the two-input change manifest are in the root `route-clock-r5` artifacts.
+Fresh independent production timing/transition review remains pending.

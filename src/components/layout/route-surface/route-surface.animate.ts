@@ -136,7 +136,9 @@ export function mountRouteSurface(surface: HTMLElement, push: (href: string) => 
       if (revealing) transaction.revealProgress = progress;
       field.style.opacity = String(pose.cover);
       if (!revealing && dimmed) dimmed.main.style.opacity = String(pose.content);
-      if (progress < 1) frame = win.requestAnimationFrame(tick); else { settleAnimation = null; complete(); }
+      // The source ticker samples its callback clock. A refresh timestamp can
+      // be older after other frame work; keep it out of this wall-start segment.
+      if (progress < 1) frame = win.requestAnimationFrame(() => tick(win.performance.now())); else { settleAnimation = null; complete(); }
     };
     tick(start);
   };

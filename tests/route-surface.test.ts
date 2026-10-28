@@ -111,12 +111,12 @@ function harness({ denied = false, type = "navigate", initialHold = false, defer
       const anchor = new ElementFixture(); anchor.href = new URL(target, win.location.href).href;
       const event = new Event(type); Object.defineProperty(event, "target", { value: anchor }); body.dispatchEvent(event);
     },
-    async advance(milliseconds: number) {
+    async advance(milliseconds: number, callbackDelay = 0) {
       const end = now + milliseconds;
       while (now < end) {
         now = Math.min(end, now + 20);
         for (const [id, timer] of [...timers]) if (timer.at <= now) { timers.delete(id); timer.callback(); }
-        const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(callback => callback(now)); await flush();
+        const callbacks = [...frames.values()]; frames.clear(); callbacks.forEach(callback => callback(now - callbackDelay)); await flush();
       }
     },
     traverse(path: string, state: Record<string, unknown>) { win.location = locationAt(path); win.history.state = state as typeof win.history.state; win.dispatchEvent(new Event("popstate")); },
@@ -138,6 +138,25 @@ test("mounted body capture waits for full cover, releases old menu before routin
   expect(starts).toEqual([false]); expect(h.calls).not.toContain("locked-scroll");
   await h.advance(400); expect(h.surface.dataset.active).toBe("false"); expect(h.frames.size).toBe(0); expect(h.timers.size).toBe(0);
   expect(h.writes.every(state => state.__NA === true && state.retained === "next")).toBe(true);
+});
+
+test("route reveal uses cached source callback-clock samples when RAF dispatch is delayed", async () => {
+  const h = harness(); h.win.matchMedia = () => ({ matches: true });
+  h.click("/en/contact"); await h.advance(140);
+  const contact = h.owner("/en/contact"); h.ready(contact); h.install(contact); await flush();
+  expect(h.surface.dataset.phase).toBe("revealing");
+  expect(h.field.style.opacity).toBe("1");
+  // Actual cached core32919 fresh130ms sine tween, created at the current
+  // parent tick: elapsed wall80/96ms with forwarded stamps33.58/82.92ms.
+  // R4's controlled schedule proves the sampling contract, not browser paint.
+  await h.advance(80, 46.42);
+  expect(Number(h.field.style.opacity)).toBeCloseTo(.322698, 5);
+  await h.advance(16, 13.08);
+  expect(Number(h.field.style.opacity)).toBeCloseTo(.159492, 5);
+  await h.advance(34, 5);
+  expect(h.surface.dataset.active).toBe("false");
+  expect(h.field.style.opacity).toBe("0");
+  expect(h.frames.size).toBe(0); expect(h.timers.size).toBe(0);
 });
 
 test("editorial Back restores its own pixels once, skips entry/focus and never writes history during scrolling", async () => {
