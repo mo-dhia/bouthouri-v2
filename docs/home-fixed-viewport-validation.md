@@ -107,5 +107,17 @@ alignment at all six references and preserves the full moving evidence hashes.
 It found a separate pre-existing reopening policy: source resets to VISION after
 a complete close. Commit`19b2e0c` now resets the row, description and rail only
 on a new open; an interrupted reverse retains selection. The full validation
-counts/build above include both corrections. A final focused reopen acceptance
-round is pending; both earlier reviews remain frozen historical evidence.
+counts/build above include both corrections. [The final focused review](home-final-menu-reset-acceptance.md) accepts the tested
+HOME scope: all six fresh/reopen selection, description and rail controls pass,
+with a maximum measured rail-center residual of0.067px. Native EN/AR interrupted
+closes retain selection; open resize preservation and native menu scroll reset
+also pass. Combined with the full moving and subsequent transition recordings,
+both actionable menu findings are resolved. Earlier reports remain frozen
+historical evidence rather than being rewritten as passes.
+
+The final application is`19b2e0c`, build`QJTj_MU6uWWybPQ5AtMGp`. All new videos,
+receipts, review images and validation logs are saved under
+`.artifacts/final-parity-20261028/`, including the final`menu-reset-recheck/`.
+The final review released both original tabs at EN0/1920×1080, motion enabled,
+audio off, entry complete and menus/RDM closed. All recording/input/decoder jobs
+are finished. The user-requested machine shutdown follows the final saved commit.
