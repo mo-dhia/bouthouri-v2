@@ -1,0 +1,83 @@
+import "server-only";
+
+/** Complete Contact copy recovered from the EN/AR source route, including every form state. */
+export const contactCopy = {
+  en: {
+    index: "A CONVERSATION STARTS HERE",
+    hero: ["WHAT ARE", "YOU BUILDING?"],
+    intro: "An early thought. A difficult question. Something ready for its next chapter.",
+    begin: "PUT IT INTO WORDS",
+    direct: "OR WRITE DIRECTLY",
+    formIndex: "THE FIRST FEW WORDS",
+    greeting: "Good to meet you,",
+    formIntro: "No presentation needed. Just enough to begin",
+    fields: {
+      name: { label: "What should I call you?", placeholder: "Your name" },
+      email: { label: "Where can I reach you?", placeholder: "you@example.com" },
+      message: { label: "Tell me what’s on your mind.", placeholder: "The idea, the sticking point, or the question…" },
+    },
+    submit: "START THE CONVERSATION",
+    validating: "CHECKING THE DETAILS",
+    sending: "ON ITS WAY",
+    error: "That didn’t go through. Try again, or email me directly.",
+    success: ["GOT IT.", "OVER TO ME."],
+    successCopy: "Thank you for the context. The conversation has started.",
+    again: "WRITE ANOTHER NOTE",
+    errors: {
+      nameRequired: "A name would help.",
+      nameLong: "Keep your name within 100 characters.",
+      emailRequired: "Add an email address so I can reply.",
+      emailInvalid: "Check the email address.",
+      emailLong: "That email address is too long.",
+      messageRequired: "Tell me a little about the idea.",
+      messageLong: "Keep the note within 5,000 characters.",
+    },
+    alternative: {
+      index: "ANOTHER WAY IN",
+      title: ["RATHER TALK", "IT THROUGH?"],
+      copy: "A conversation can be a useful first sketch",
+      book: "BOOK A CALL",
+      bookingCopy: "Let’s find a time to talk.",
+    },
+  },
+  ar: {
+    index: "من هنا يبدأ الحوار",
+    hero: ["ماذا", "تبني الآن؟"],
+    intro: "فكرة في أولها. سؤال صعب. أو عمل ينتظر خطوته التالية.",
+    begin: "ضع الفكرة في كلمات",
+    direct: "أو اكتب لي مباشرة",
+    formIndex: "الكلمات الأولى",
+    greeting: "سعيد بالتعرّف عليك،",
+    formIntro: "لا تحتاج إلى عرض كامل. فقط ما يكفي لنبدأ",
+    fields: {
+      name: { label: "بأي اسم أناديك؟", placeholder: "اسمك" },
+      email: { label: "أين يصلك الرد؟", placeholder: "you@example.com" },
+      message: { label: "ما الذي يشغلك؟", placeholder: "الفكرة، أو العقبة، أو السؤال…" },
+    },
+    submit: "لنبدأ الحديث",
+    validating: "أراجع التفاصيل",
+    sending: "جارٍ الإرسال",
+    error: "لم تصل الرسالة. جرّب مرة أخرى أو راسلني مباشرة.",
+    success: ["وصلت فكرتك.", "دوري الآن."],
+    successCopy: "شكرًا على التفاصيل. بدأ الحوار.",
+    again: "اكتب رسالة أخرى",
+    errors: {
+      nameRequired: "أضف اسمك لنبدأ.",
+      nameLong: "اكتب اسمًا لا يتجاوز 100 حرف.",
+      emailRequired: "أضف بريدك لأتمكّن من الرد.",
+      emailInvalid: "راجع عنوان البريد.",
+      emailLong: "عنوان البريد أطول من المسموح.",
+      messageRequired: "احكِ لي قليلًا عن الفكرة.",
+      messageLong: "اختصر الرسالة إلى 5,000 حرف أو أقل.",
+    },
+    alternative: {
+      index: "بداية أخرى",
+      title: ["تفضّل", "أن نتحدث؟"],
+      copy: "قد يكون الحديث أول رسم للفكرة",
+      book: "احجز مكالمة",
+      bookingCopy: "اختر وقتًا مناسبًا لنتحدث",
+    },
+  },
+} as const;
+
+export type ContactCopy = typeof contactCopy.en | typeof contactCopy.ar;

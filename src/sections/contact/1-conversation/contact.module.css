@@ -1,0 +1,331 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .content { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; font-family: var(--font-latin), sans-serif; color: var(--ed-ink); --nav-compact: 1; position: relative }
+  .content :is(h1, h2, h3, p) { margin: 0 }
+  .content :is(h1, h2, h3) { font-weight: var(--weight-440, 440) }
+  .content a { color: inherit; text-decoration: none }
+  .content :is(a, button, input, textarea):focus-visible { outline-offset: 0.260417vw; outline: 1px solid #c2bdb0 }
+  .editorial-opening { height: 56.25vw; min-height: 38.5417vw; padding: 10.6875vw var(--ed-gutter) 3.9375vw; border-bottom: 1px solid var(--ed-rule); flex-direction: column; display: flex; position: relative }
+  .editorial-kicker { font-size: calc(0.46875vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #aaa597; justify-content: space-between; align-items: baseline; gap: 1.25vw; display: flex }
+  .editorial-eyebrow { font-size: calc(0.46875vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #a09d91; line-height: 1.6; display: block }
+  .editorial-line { margin-block: -.07em; padding-block: .07em; display: block; overflow: clip }
+  .editorial-line>span { display: block }
+  .editorial-section { padding: 9vw var(--ed-gutter); position: relative }
+  .editorial-section h2 { font-size: calc(7.5vw * var(--type-scale, 1)); letter-spacing: calc(-.064em * var(--tracking-scale, 1)); margin-top: 3.9375vw; line-height: 1.07 }
+  .contact-opening { height: 56.25vw; min-height: 37.5vw }
+  .contact-opening .editorial-kicker>span:only-child { text-align: start; max-width: none }
+  .contact-question { font-size: calc(11.25vw * var(--type-scale, 1)); letter-spacing: calc(-.075em * var(--tracking-scale, 1)); line-height: .94; margin-top: 3.9375vw !important }
+  .contact-question .editorial-line { white-space: nowrap }
+  .contact-question .editorial-line:last-child { padding-inline-start: 12% }
+  .contact-intro { justify-content: space-between; align-items: flex-end; gap: 4vw; margin-top: 2.8125vw; display: flex }
+  .contact-intro>p { font-size: calc(0.833334vw * var(--type-scale, 1)); color: var(--ed-muted); max-width: 15.625vw; line-height: 1.65 }
+  .contact-email { font-size: calc(1.71875vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); overflow-wrap: anywhere; unicode-bidi: isolate; min-height: 2.29167vw; padding-block: 0.416667vw; line-height: 1.7; display: inline-block; position: relative }
+  .contact-email:after { content: ''; transform-origin: 0; background: #969082; height: 0.0520834vw; transition: transform .4s; position: absolute; inset: auto 0 0; transform: scaleX(.15) }
+  .contact-email:hover:after, .contact-email:focus-visible:after { transform: scaleX(1) }
+  .contact-begin { min-height: 2.29167vw; font-size: calc(0.46875vw * var(--type-scale, 1)); letter-spacing: calc(.08em * var(--tracking-scale, 1)); align-items: center; gap: 1.30209vw; margin-top: auto; padding-top: 1.30209vw; display: flex }
+  .contact-axis { transform-origin: 0; background: #7c7666; flex: 1; height: 0.0520834vw }
+  .contact-conversation { padding: 7.3125vw 9vw 6.1875vw; scroll-margin-top: 4.6875vw }
+  .conversation-heading { grid-template-columns: 1fr 1.15fr; align-items: baseline; gap: 1.5625vw; margin-bottom: 4.5vw; display: grid; position: relative }
+  .conversation-heading p { font-size: calc(0.9375vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); overflow-wrap: anywhere; line-height: 1.7 }
+  .contact-conversation form { min-width: 0 }
+  .contact-conversation fieldset { border: 0; min-width: 0; margin: 0; padding: 0 }
+  .contact-field { grid-template-columns: 1fr 1.4fr; column-gap: 5vw; min-width: 0; padding-top: 1.77084vw; display: grid }
+  .contact-field label { font-size: calc(1.5625vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: #a7a396; gap: 1.14584vw; padding-top: 0.416667vw; line-height: 1.45; transition: color .25s; display: flex }
+  .contact-field label bdi { font-size: calc(0.46875vw * var(--type-scale, 1)); color: #807c70; letter-spacing: 0; line-height: 2.5 }
+  .contact-field[data-active=true] label { color: #e0dbcd }
+  .contact-input-wrap { min-width: 0; position: relative }
+  .contact-field :is(input, textarea) { width: 100%; box-shadow: none; font-family: inherit; font-size: calc(1.5625vw * var(--type-scale, 1)); letter-spacing: calc(-.03em * var(--tracking-scale, 1)); color: #e4dfd3; caret-color: #ddd4c0; background: 0 0; border: 0; border-radius: 0; min-width: 0; min-height: 3.54167vw; padding: 0.416667vw 0 1.14584vw; line-height: 1.55; display: block; outline: none !important }
+  .contact-field textarea { resize: vertical; min-height: 9.89584vw; max-height: 22.9167vw; line-height: 1.65; overflow: auto }
+  .contact-field input::placeholder, .contact-field textarea::placeholder { color: #7d7a70; opacity: 1 }
+  .contact-field input:-webkit-autofill { -webkit-text-fill-color: #dedbd2; -webkit-box-shadow: inset 0 0 0 52.0834vw #151512 }
+  .contact-field-rule { background: #4a473e; height: 0.0520834vw; display: block; position: relative }
+  .contact-field-rule:after { content: ''; transform-origin: 0; background: #c4baa6; transition: transform .4s; position: absolute; inset: 0; transform: scaleX(0) }
+  .contact-field:focus-within .contact-field-rule:after { transform: scaleX(1) }
+  .contact-field [aria-invalid=true]+.contact-field-rule { background: #b59680 }
+  .contact-field-error { min-height: 1.97917vw; font-size: calc(0.625vw * var(--type-scale, 1)); color: #d0b29c; padding-top: 0.416667vw; line-height: 1.6; display: block }
+  .contact-submit-row { justify-content: space-between; align-items: center; gap: 6vw; margin-top: 1.82292vw; display: flex }
+  .contact-submit { flex: none; min-height: 2.8125vw !important; font-size: calc(0.625vw * var(--type-scale, 1)) !important; letter-spacing: calc(.04em * var(--tracking-scale, 1)) !important }
+  .contact-response { font-size: calc(0.729167vw * var(--type-scale, 1)); color: #cfc6b5; min-height: 2em; margin-top: 1.45834vw; line-height: 1.8 }
+  .contact-response a { border-bottom: 1px solid #7d7566; min-height: 2.29167vw; padding-block: 0.416667vw; display: inline-block }
+  .contact-success { padding: 3.9375vw 0; scroll-margin-top: 5.20834vw; animation: .5s ease-out contact-response-in }
+  .contact-success h2 { font-size: calc(9.89584vw * var(--type-scale, 1)); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.05 }
+  .contact-success h2 span { display: block }
+  .contact-success p { color: #aaa391; font-size: calc(0.9375vw * var(--type-scale, 1)); margin-block: 1.82292vw }
+  .contact-conversation :disabled { cursor: wait }
+  @keyframes contact-response-in {
+    0% { clip-path: inset(100% 0 0) }
+    to { clip-path: inset(0) }
+  }
+  .contact-alternative { border-top: 1px solid var(--ed-rule); grid-template-columns: 1.4fr 1fr; gap: 5vw; padding-block: 7.3125vw; display: grid }
+  .contact-alternative h2 { font-size: calc(6.79948vw * var(--type-scale, 1)); margin-top: 2.8125vw }
+  .contact-alternative p { font-size: calc(0.78125vw * var(--type-scale, 1)); color: var(--ed-muted); max-width: 17.1875vw; margin-top: 1.5625vw; line-height: 1.7 }
+  .contact-calendar { align-self: end; padding-bottom: 0.260417vw }
+  .contact-calendar .contact-booking { font-size: calc(1.97917vw * var(--type-scale, 1)); color: var(--paper); letter-spacing: -.025em; padding-block: 0.9375vw; padding-inline: 0 1.66667vw }
+  .contact-booking-title, .contact-booking-copy { display: block }
+  .contact-booking-title { white-space: nowrap }
+  .contact-booking-copy { font-size: calc(0.729167vw * var(--type-scale, 1)); letter-spacing: 0; color: var(--ed-muted); margin-top: 0.416667vw; line-height: 1.7 }
+  .contact-booking [data-locale-text] { white-space: normal }
+  .contact-booking [data-locale-text]>[aria-hidden=true] { width: 100% }
+  .contact-calendar .contact-booking>i { width: 0.833334vw; inset-block-start: calc(1.04167vw + .725em) }
+  .contact-booking:after { content: ''; inset-inline: 0; opacity: .35; transform-origin: 0; background: currentColor; height: 0.0520834vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute; bottom: 0.416667vw; transform: scaleX(.18) }
+  .contact-booking:is(:hover, :focus-visible):after { opacity: .7; transform: scaleX(1) }
+  html[lang=ar] .contact-calendar .contact-booking { font-size: calc(2.1875vw * var(--type-scale, 1)); letter-spacing: 0 }
+  html[lang=ar] .contact-booking-copy { font-size: calc(0.833334vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-booking:after { transform-origin: 100% }
+  html[lang=ar] .content { font-family: var(--font-arabic), sans-serif; --ed-gutter: 6vw }
+  html[lang=ar] .content :is(h1, h2, h3) { letter-spacing: 0; line-height: 1.3; font-weight: var(--weight-500, 500) }
+  html[lang=ar] .editorial-line { margin-block: -.13em; padding-block: .13em }
+  html[lang=ar] :is(.editorial-kicker, .editorial-eyebrow, .contact-begin) { letter-spacing: 0; font-size: calc(0.625vw * var(--type-scale, 1)) }
+  html[lang=ar] .content .contact-question { font-size: calc(10.125vw * var(--type-scale, 1)); line-height: 1.08; display: grid }
+  html[lang=ar] .contact-axis { transform-origin: 100% }
+  html[lang=ar] .contact-intro>p { font-size: calc(0.9375vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-field label, html[lang=ar] .contact-field :is(input, textarea) { letter-spacing: 0 }
+  html[lang=ar] .contact-field input[type=email] { font-family: var(--font-latin), sans-serif; letter-spacing: calc(-.03em * var(--tracking-scale, 1)) }
+  html[lang=ar] .contact-field-rule:after { transform-origin: 100% }
+  html[lang=ar] .contact-submit { letter-spacing: 0 !important; font-size: calc(0.78125vw * var(--type-scale, 1)) !important }
+  html[lang=ar] .contact-email { font-family: var(--font-latin), sans-serif }
+  html[lang=ar] .contact-alternative h2 { font-size: calc(8vw * var(--type-scale, 1)) }
+  @media (prefers-reduced-motion:reduce) {
+    .content *, .content :after { scroll-behavior: auto !important; transition: none !important; animation: none !important }
+    .editorial-line>span { transform: none !important }
+  }
+  .contact-field :is(input, textarea) { scroll-margin-block: 7.29167vw 3.125vw }
+  .content [hidden] { display: none !important }
+  .contact-response p { margin: 0 }
+  .contact-greeting { display: contents }
+  .contact-greeting bdi { unicode-bidi: isolate }
+}
+@media (600px < width <= 1024px) {
+  .content { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; font-family: var(--font-latin), sans-serif; color: var(--ed-ink); --nav-compact: 1; position: relative }
+  .content :is(h1, h2, h3, p) { margin: 0 }
+  .content :is(h1, h2, h3) { font-weight: var(--weight-440, 440) }
+  .content a { color: inherit; text-decoration: none }
+  .content :is(a, button, input, textarea):focus-visible { outline-offset: 0.651042vw; outline: 1px solid #c2bdb0 }
+  .editorial-opening { height: 133.334vw; min-height: 96.3542vw; padding: 25.3334vw var(--ed-gutter) 9.33334vw; border-bottom: 1px solid var(--ed-rule); flex-direction: column; display: flex; position: relative }
+  .editorial-kicker { font-size: calc(1.17188vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #aaa597; justify-content: space-between; align-items: baseline; gap: 3.125vw; display: flex }
+  .editorial-eyebrow { font-size: calc(1.17188vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #a09d91; line-height: 1.6; display: block }
+  .editorial-line { margin-block: -.07em; padding-block: .07em; display: block; overflow: clip }
+  .editorial-line>span { display: block }
+  .editorial-section { padding: 21.3334vw var(--ed-gutter); position: relative }
+  .editorial-section h2 { font-size: calc(7.5vw * var(--type-scale, 1)); letter-spacing: calc(-.064em * var(--tracking-scale, 1)); margin-top: 9.33334vw; line-height: 1.07 }
+  .contact-opening { height: 133.334vw; min-height: 93.75vw }
+  .contact-opening .editorial-kicker>span:only-child { text-align: start; max-width: none }
+  .contact-question { font-size: calc(11.3998vw * var(--type-scale, 1)); letter-spacing: calc(-.075em * var(--tracking-scale, 1)); line-height: .94; margin-top: 9.33334vw !important }
+  .contact-question .editorial-line { white-space: nowrap }
+  .contact-question .editorial-line:last-child { padding-inline-start: 12% }
+  .contact-intro { justify-content: space-between; align-items: flex-end; gap: 4vw; margin-top: 6.66667vw; display: flex }
+  .contact-intro>p { font-size: calc(2.08334vw * var(--type-scale, 1)); color: var(--ed-muted); max-width: 39.0625vw; line-height: 1.65 }
+  .contact-email { font-size: calc(2.21355vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); overflow-wrap: anywhere; unicode-bidi: isolate; min-height: 5.72917vw; padding-block: 1.04167vw; line-height: 1.7; display: inline-block; position: relative }
+  .contact-email:after { content: ''; transform-origin: 0; background: #969082; height: 0.130209vw; transition: transform .4s; position: absolute; inset: auto 0 0; transform: scaleX(.15) }
+  .contact-email:hover:after, .contact-email:focus-visible:after { transform: scaleX(1) }
+  .contact-begin { min-height: 5.72917vw; font-size: calc(1.17188vw * var(--type-scale, 1)); letter-spacing: calc(.08em * var(--tracking-scale, 1)); align-items: center; gap: 3.25521vw; margin-top: auto; padding-top: 3.25521vw; display: flex }
+  .contact-axis { transform-origin: 0; background: #7c7666; flex: 1; height: 0.130209vw }
+  .contact-conversation { padding: 17.3334vw 9vw 14.6667vw; scroll-margin-top: 11.7188vw }
+  .conversation-heading { grid-template-columns: 1fr 1.15fr; align-items: baseline; gap: 3.90625vw; margin-bottom: 10.6667vw; display: grid; position: relative }
+  .conversation-heading p { font-size: calc(2.34375vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); overflow-wrap: anywhere; line-height: 1.7 }
+  .contact-conversation form { min-width: 0 }
+  .contact-conversation fieldset { border: 0; min-width: 0; margin: 0; padding: 0 }
+  .contact-field { grid-template-columns: 1fr 1.4fr; column-gap: 5vw; min-width: 0; padding-top: 4.42709vw; display: grid }
+  .contact-field label { font-size: calc(2.21355vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: #a7a396; gap: 2.86459vw; padding-top: 1.04167vw; line-height: 1.45; transition: color .25s; display: flex }
+  .contact-field label bdi { font-size: calc(1.17188vw * var(--type-scale, 1)); color: #807c70; letter-spacing: 0; line-height: 2.5 }
+  .contact-field[data-active=true] label { color: #e0dbcd }
+  .contact-input-wrap { min-width: 0; position: relative }
+  .contact-field :is(input, textarea) { width: 100%; box-shadow: none; font-family: inherit; font-size: calc(2.34375vw * var(--type-scale, 1)); letter-spacing: calc(-.03em * var(--tracking-scale, 1)); color: #e4dfd3; caret-color: #ddd4c0; background: 0 0; border: 0; border-radius: 0; min-width: 0; min-height: 8.85417vw; padding: 1.04167vw 0 2.86459vw; line-height: 1.55; display: block; outline: none !important }
+  .contact-field textarea { resize: vertical; min-height: 24.7396vw; max-height: 57.2917vw; line-height: 1.65; overflow: auto }
+  .contact-field input::placeholder, .contact-field textarea::placeholder { color: #7d7a70; opacity: 1 }
+  .contact-field input:-webkit-autofill { -webkit-text-fill-color: #dedbd2; -webkit-box-shadow: inset 0 0 0 130.209vw #151512 }
+  .contact-field-rule { background: #4a473e; height: 0.130209vw; display: block; position: relative }
+  .contact-field-rule:after { content: ''; transform-origin: 0; background: #c4baa6; transition: transform .4s; position: absolute; inset: 0; transform: scaleX(0) }
+  .contact-field:focus-within .contact-field-rule:after { transform: scaleX(1) }
+  .contact-field [aria-invalid=true]+.contact-field-rule { background: #b59680 }
+  .contact-field-error { min-height: 4.94792vw; font-size: calc(1.5625vw * var(--type-scale, 1)); color: #d0b29c; padding-top: 1.04167vw; line-height: 1.6; display: block }
+  .contact-submit-row { justify-content: space-between; align-items: center; gap: 6vw; margin-top: 4.5573vw; display: flex }
+  .contact-submit { flex: none; min-height: 7.03125vw !important; font-size: calc(1.5625vw * var(--type-scale, 1)) !important; letter-spacing: calc(.04em * var(--tracking-scale, 1)) !important }
+  .contact-response { font-size: calc(1.82292vw * var(--type-scale, 1)); color: #cfc6b5; min-height: 2em; margin-top: 3.64584vw; line-height: 1.8 }
+  .contact-response a { border-bottom: 1px solid #7d7566; min-height: 5.72917vw; padding-block: 1.04167vw; display: inline-block }
+  .contact-success { padding: 9.33334vw 0; scroll-margin-top: 13.0209vw; animation: .5s ease-out contact-response-in }
+  .contact-success h2 { font-size: calc(10vw * var(--type-scale, 1)); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.05 }
+  .contact-success h2 span { display: block }
+  .contact-success p { color: #aaa391; font-size: calc(2.34375vw * var(--type-scale, 1)); margin-block: 4.5573vw }
+  .contact-conversation :disabled { cursor: wait }
+  @keyframes contact-response-in {
+    0% { clip-path: inset(100% 0 0) }
+    to { clip-path: inset(0) }
+  }
+  .contact-alternative { border-top: 1px solid var(--ed-rule); grid-template-columns: 1.4fr 1fr; gap: 5vw; padding-block: 17.3334vw; display: grid }
+  .contact-alternative h2 { font-size: calc(6.79905vw * var(--type-scale, 1)); margin-top: 6.66667vw }
+  .contact-alternative p { font-size: calc(1.95313vw * var(--type-scale, 1)); color: var(--ed-muted); max-width: 42.9688vw; margin-top: 3.90625vw; line-height: 1.7 }
+  .contact-calendar { align-self: end; padding-bottom: 0.651042vw }
+  .contact-calendar .contact-booking { font-size: calc(3.125vw * var(--type-scale, 1)); color: var(--paper); letter-spacing: -.025em; padding-block: 2.34375vw; padding-inline: 0 4.16667vw }
+  .contact-booking-title, .contact-booking-copy { display: block }
+  .contact-booking-title { white-space: nowrap }
+  .contact-booking-copy { font-size: calc(1.82292vw * var(--type-scale, 1)); letter-spacing: 0; color: var(--ed-muted); margin-top: 1.04167vw; line-height: 1.7 }
+  .contact-booking [data-locale-text] { white-space: normal }
+  .contact-booking [data-locale-text]>[aria-hidden=true] { width: 100% }
+  .contact-calendar .contact-booking>i { width: 2.08334vw; inset-block-start: calc(2.60417vw + .725em) }
+  .contact-booking:after { content: ''; inset-inline: 0; opacity: .35; transform-origin: 0; background: currentColor; height: 0.130209vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute; bottom: 1.04167vw; transform: scaleX(.18) }
+  .contact-booking:is(:hover, :focus-visible):after { opacity: .7; transform: scaleX(1) }
+  html[lang=ar] .contact-calendar .contact-booking { font-size: calc(3.51563vw * var(--type-scale, 1)); letter-spacing: 0 }
+  html[lang=ar] .contact-booking-copy { font-size: calc(2.08334vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-booking:after { transform-origin: 100% }
+  html[lang=ar] .content { font-family: var(--font-arabic), sans-serif; --ed-gutter: 6vw }
+  html[lang=ar] .content :is(h1, h2, h3) { letter-spacing: 0; line-height: 1.3; font-weight: var(--weight-500, 500) }
+  html[lang=ar] .editorial-line { margin-block: -.13em; padding-block: .13em }
+  html[lang=ar] :is(.editorial-kicker, .editorial-eyebrow, .contact-begin) { letter-spacing: 0; font-size: calc(1.5625vw * var(--type-scale, 1)) }
+  html[lang=ar] .content .contact-question { font-size: calc(14.4987vw * var(--type-scale, 1)); line-height: 1.08; display: grid }
+  html[lang=ar] .contact-axis { transform-origin: 100% }
+  html[lang=ar] .contact-intro>p { font-size: calc(2.34375vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-field label, html[lang=ar] .contact-field :is(input, textarea) { letter-spacing: 0 }
+  html[lang=ar] .contact-field input[type=email] { font-family: var(--font-latin), sans-serif; letter-spacing: calc(-.03em * var(--tracking-scale, 1)) }
+  html[lang=ar] .contact-field-rule:after { transform-origin: 100% }
+  html[lang=ar] .contact-submit { letter-spacing: 0 !important; font-size: calc(1.95313vw * var(--type-scale, 1)) !important }
+  html[lang=ar] .contact-email { font-family: var(--font-latin), sans-serif }
+  html[lang=ar] .contact-alternative h2 { font-size: calc(7.99914vw * var(--type-scale, 1)) }
+  .contact-conversation { padding-inline: var(--ed-gutter) }
+  .contact-field { column-gap: 4vw }
+  .contact-intro { margin-top: 6.66667vw }
+  @media (prefers-reduced-motion:reduce) {
+    .content *, .content :after { scroll-behavior: auto !important; transition: none !important; animation: none !important }
+    .editorial-line>span { transform: none !important }
+  }
+  .contact-field :is(input, textarea) { scroll-margin-block: 18.2292vw 7.8125vw }
+  .content [hidden] { display: none !important }
+  .contact-response p { margin: 0 }
+  .contact-greeting { display: contents }
+  .contact-greeting bdi { unicode-bidi: isolate }
+}
+@media (width <= 600px) {
+  .content { --ed-ink: #dedbd2; --ed-muted: #a29f94; --ed-rule: #393933; --ed-gutter: 5.3vw; font-family: var(--font-latin), sans-serif; color: var(--ed-ink); --nav-compact: 1; position: relative }
+  .content :is(h1, h2, h3, p) { margin: 0 }
+  .content :is(h1, h2, h3) { font-weight: var(--weight-440, 440) }
+  .content a { color: inherit; text-decoration: none }
+  .content :is(a, button, input, textarea):focus-visible { outline-offset: 1.2136vw; outline: 1px solid #c2bdb0 }
+  .editorial-opening { height: 222.088vw; min-height: 179.612vw; padding: 42.1967vw var(--ed-gutter) 15.5462vw; border-bottom: 1px solid var(--ed-rule); flex-direction: column; display: flex; position: relative }
+  .editorial-kicker { font-size: calc(2.18447vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #aaa597; justify-content: space-between; align-items: baseline; gap: 5.82525vw; display: flex }
+  .editorial-eyebrow { font-size: calc(2.18447vw * var(--type-scale, 1)); letter-spacing: calc(.09em * var(--tracking-scale, 1)); color: #a09d91; line-height: 1.6; display: block }
+  .editorial-line { margin-block: -.07em; padding-block: .07em; display: block; overflow: clip }
+  .editorial-line>span { display: block }
+  .editorial-section { padding: 35.534vw var(--ed-gutter); position: relative }
+  .editorial-section h2 { font-size: calc(11.1651vw * var(--type-scale, 1)); letter-spacing: calc(-.064em * var(--tracking-scale, 1)); margin-top: 15.5462vw; line-height: 1.07 }
+  .contact-opening { height: 222.088vw; min-height: 174.758vw }
+  .contact-opening .editorial-kicker>span:only-child { text-align: start; max-width: none }
+  .contact-question { font-size: calc(16.9903vw * var(--type-scale, 1)); letter-spacing: calc(-.075em * var(--tracking-scale, 1)); line-height: .94; margin-top: 15.5462vw !important }
+  .contact-question .editorial-line { white-space: nowrap }
+  .contact-question .editorial-line:last-child { padding-inline-start: 12% }
+  .contact-intro { justify-content: space-between; align-items: flex-end; gap: 4vw; margin-top: 11.1044vw; display: flex }
+  .contact-intro>p { font-size: calc(3.8835vw * var(--type-scale, 1)); color: var(--ed-muted); max-width: 72.8156vw; line-height: 1.65 }
+  .contact-email { font-size: calc(4.12622vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); overflow-wrap: anywhere; unicode-bidi: isolate; min-height: 10.6797vw; padding-block: 1.94175vw; line-height: 1.7; display: inline-block; position: relative }
+  .contact-email:after { content: ''; transform-origin: 0; background: #969082; height: 0.242719vw; transition: transform .4s; position: absolute; inset: auto 0 0; transform: scaleX(.15) }
+  .contact-email:hover:after, .contact-email:focus-visible:after { transform: scaleX(1) }
+  .contact-begin { min-height: 10.6797vw; font-size: calc(2.18447vw * var(--type-scale, 1)); letter-spacing: calc(.08em * var(--tracking-scale, 1)); align-items: center; gap: 6.06797vw; margin-top: auto; padding-top: 6.06797vw; display: flex }
+  .contact-axis { transform-origin: 0; background: #7c7666; flex: 1; height: 0.242719vw }
+  .contact-conversation { padding: 28.8714vw 9vw 24.4297vw; scroll-margin-top: 21.8447vw }
+  .conversation-heading { grid-template-columns: 1fr 1.15fr; align-items: baseline; gap: 7.28156vw; margin-bottom: 17.767vw; display: grid; position: relative }
+  .conversation-heading p { font-size: calc(4.36894vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); overflow-wrap: anywhere; line-height: 1.7 }
+  .contact-conversation form { min-width: 0 }
+  .contact-conversation fieldset { border: 0; min-width: 0; margin: 0; padding: 0 }
+  .contact-field { grid-template-columns: 1fr 1.4fr; column-gap: 5vw; min-width: 0; padding-top: 8.25243vw; display: grid }
+  .contact-field label { font-size: calc(4.12622vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: #a7a396; gap: 5.33981vw; padding-top: 1.94175vw; line-height: 1.45; transition: color .25s; display: flex }
+  .contact-field label bdi { font-size: calc(2.18447vw * var(--type-scale, 1)); color: #807c70; letter-spacing: 0; line-height: 2.5 }
+  .contact-field[data-active=true] label { color: #e0dbcd }
+  .contact-input-wrap { min-width: 0; position: relative }
+  .contact-field :is(input, textarea) { width: 100%; box-shadow: none; font-family: inherit; font-size: calc(4.36894vw * var(--type-scale, 1)); letter-spacing: calc(-.03em * var(--tracking-scale, 1)); color: #e4dfd3; caret-color: #ddd4c0; background: 0 0; border: 0; border-radius: 0; min-width: 0; min-height: 16.5049vw; padding: 1.94175vw 0 5.33981vw; line-height: 1.55; display: block; outline: none !important }
+  .contact-field textarea { resize: vertical; min-height: 46.1166vw; max-height: 106.797vw; line-height: 1.65; overflow: auto }
+  .contact-field input::placeholder, .contact-field textarea::placeholder { color: #7d7a70; opacity: 1 }
+  .contact-field input:-webkit-autofill { -webkit-text-fill-color: #dedbd2; -webkit-box-shadow: inset 0 0 0 242.719vw #151512 }
+  .contact-field-rule { background: #4a473e; height: 0.242719vw; display: block; position: relative }
+  .contact-field-rule:after { content: ''; transform-origin: 0; background: #c4baa6; transition: transform .4s; position: absolute; inset: 0; transform: scaleX(0) }
+  .contact-field:focus-within .contact-field-rule:after { transform: scaleX(1) }
+  .contact-field [aria-invalid=true]+.contact-field-rule { background: #b59680 }
+  .contact-field-error { min-height: 9.22331vw; font-size: calc(2.91263vw * var(--type-scale, 1)); color: #d0b29c; padding-top: 1.94175vw; line-height: 1.6; display: block }
+  .contact-submit-row { justify-content: space-between; align-items: center; gap: 6vw; margin-top: 8.49515vw; display: flex }
+  .contact-submit { flex: none; min-height: 13.1068vw !important; font-size: calc(2.91263vw * var(--type-scale, 1)) !important; letter-spacing: calc(.04em * var(--tracking-scale, 1)) !important }
+  .contact-response { font-size: calc(3.39806vw * var(--type-scale, 1)); color: #cfc6b5; min-height: 2em; margin-top: 6.79612vw; line-height: 1.8 }
+  .contact-response a { border-bottom: 1px solid #7d7566; min-height: 10.6797vw; padding-block: 1.94175vw; display: inline-block }
+  .contact-success { padding: 15.5462vw 0; scroll-margin-top: 24.2719vw; animation: .5s ease-out contact-response-in }
+  .contact-success h2 { font-size: calc(12.6214vw * var(--type-scale, 1)); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.05 }
+  .contact-success h2 span { display: block }
+  .contact-success p { color: #aaa391; font-size: calc(4.36894vw * var(--type-scale, 1)); margin-block: 8.49515vw }
+  .contact-conversation :disabled { cursor: wait }
+  @keyframes contact-response-in {
+    0% { clip-path: inset(100% 0 0) }
+    to { clip-path: inset(0) }
+  }
+  .contact-alternative { border-top: 1px solid var(--ed-rule); grid-template-columns: 1.4fr 1fr; gap: 5vw; padding-block: 28.8714vw; display: grid }
+  .contact-alternative h2 { font-size: calc(12.136vw * var(--type-scale, 1)); margin-top: 11.1044vw }
+  .contact-alternative p { font-size: calc(3.64078vw * var(--type-scale, 1)); color: var(--ed-muted); max-width: 80.0971vw; margin-top: 7.28156vw; line-height: 1.7 }
+  .contact-calendar { align-self: end; padding-bottom: 1.2136vw }
+  .contact-calendar .contact-booking { font-size: calc(5.82525vw * var(--type-scale, 1)); color: var(--paper); letter-spacing: -.025em; padding-block: 4.36894vw; padding-inline: 0 7.767vw }
+  .contact-booking-title, .contact-booking-copy { display: block }
+  .contact-booking-title { white-space: nowrap }
+  .contact-booking-copy { font-size: calc(3.39806vw * var(--type-scale, 1)); letter-spacing: 0; color: var(--ed-muted); margin-top: 1.94175vw; line-height: 1.7 }
+  .contact-booking [data-locale-text] { white-space: normal }
+  .contact-booking [data-locale-text]>[aria-hidden=true] { width: 100% }
+  .contact-calendar .contact-booking>i { width: 3.8835vw; inset-block-start: calc(4.85437vw + .725em) }
+  .contact-booking:after { content: ''; inset-inline: 0; opacity: .35; transform-origin: 0; background: currentColor; height: 0.242719vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute; bottom: 1.94175vw; transform: scaleX(.18) }
+  .contact-booking:is(:hover, :focus-visible):after { opacity: .7; transform: scaleX(1) }
+  html[lang=ar] .contact-calendar .contact-booking { font-size: calc(6.5534vw * var(--type-scale, 1)); letter-spacing: 0 }
+  html[lang=ar] .contact-booking-copy { font-size: calc(3.8835vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-booking:after { transform-origin: 100% }
+  html[lang=ar] .content { font-family: var(--font-arabic), sans-serif; --ed-gutter: 6vw }
+  html[lang=ar] .content :is(h1, h2, h3) { letter-spacing: 0; line-height: 1.3; font-weight: var(--weight-500, 500) }
+  html[lang=ar] .editorial-line { margin-block: -.13em; padding-block: .13em }
+  html[lang=ar] :is(.editorial-kicker, .editorial-eyebrow, .contact-begin) { letter-spacing: 0; font-size: calc(2.91263vw * var(--type-scale, 1)) }
+  html[lang=ar] .content .contact-question { font-size: calc(17.4758vw * var(--type-scale, 1)); line-height: 1.08; display: grid }
+  html[lang=ar] .contact-axis { transform-origin: 100% }
+  html[lang=ar] .contact-intro>p { font-size: calc(4.36894vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-field label, html[lang=ar] .contact-field :is(input, textarea) { letter-spacing: 0 }
+  html[lang=ar] .contact-field input[type=email] { font-family: var(--font-latin), sans-serif; letter-spacing: calc(-.03em * var(--tracking-scale, 1)) }
+  html[lang=ar] .contact-field-rule:after { transform-origin: 100% }
+  html[lang=ar] .contact-submit { letter-spacing: 0 !important; font-size: calc(3.64078vw * var(--type-scale, 1)) !important }
+  html[lang=ar] .contact-email { font-family: var(--font-latin), sans-serif }
+  html[lang=ar] .contact-alternative h2 { font-size: calc(14.5632vw * var(--type-scale, 1)) }
+  .contact-conversation { padding-inline: var(--ed-gutter) }
+  .contact-field { column-gap: 4vw }
+  .contact-intro { margin-top: 11.1044vw }
+  .content { --ed-gutter: 6vw }
+  .editorial-opening { height: 208.763vw; min-height: 150.486vw; padding-top: 33.9806vw; padding-bottom: 8.49515vw }
+  .editorial-kicker { font-size: calc(1.94175vw * var(--type-scale, 1)); gap: 4.85437vw; line-height: 1.7 }
+  .editorial-kicker>span:last-child { text-align: end; max-width: 23.0583vw }
+  .editorial-section { padding-block: 24.4297vw }
+  .editorial-section h2 { font-size: calc(9.1vw * var(--type-scale, 1)); margin-top: 10.9224vw; line-height: 1.12 }
+  .contact-opening { height: auto; min-height: 204.321vw; padding-top: 32.767vw }
+  .contact-question { font-size: calc(12.2vw * var(--type-scale, 1)); letter-spacing: calc(-.066em * var(--tracking-scale, 1)); margin-top: 22.2088vw !important }
+  .contact-question .editorial-line:last-child { margin-top: 2.91263vw; padding-inline-start: 0 }
+  .contact-intro { margin-top: 10.1942vw; display: block }
+  .contact-intro>p { font-size: calc(3.64078vw * var(--type-scale, 1)); max-width: 64.3204vw }
+  .contact-intro>div { margin-top: 7.767vw }
+  .contact-email { font-size: calc(5.09709vw * var(--type-scale, 1)) }
+  .contact-begin { font-size: calc(1.94175vw * var(--type-scale, 1)); margin-top: 6.06797vw; padding-top: 4.85437vw }
+  .contact-conversation { padding-top: 22.2088vw; padding-bottom: 17.767vw; scroll-margin-top: 18.2039vw }
+  .conversation-heading { grid-template-columns: 1fr auto; gap: 4.36894vw; margin-bottom: 8.49515vw }
+  .conversation-heading p { font-size: calc(4.12622vw * var(--type-scale, 1)); grid-area: 2/1/auto/-1; max-width: 100% }
+  .contact-field { padding-top: 4.85437vw; display: block }
+  .contact-field label { font-size: calc(4.85437vw * var(--type-scale, 1)); gap: 3.39806vw; margin-bottom: 3.39806vw; padding-top: 0 }
+  .contact-field :is(input, textarea) { font-size: calc(4.85437vw * var(--type-scale, 1)); min-height: 13.5923vw; padding-bottom: 4.36894vw; line-height: 1.65 }
+  .contact-field textarea { min-height: 43.6894vw }
+  .contact-field-error { min-height: 7.767vw; font-size: calc(2.91263vw * var(--type-scale, 1)) }
+  .contact-submit-row { margin-top: 3.64078vw; display: block }
+  .contact-submit { font-size: calc(2.66991vw * var(--type-scale, 1)) !important }
+  .contact-alternative { padding-block: 24.4297vw; display: block }
+  .contact-alternative h2 { font-size: calc(12vw * var(--type-scale, 1)) }
+  .contact-alternative p { font-size: calc(3.39806vw * var(--type-scale, 1)) }
+  .contact-calendar { margin-top: 7.28156vw }
+  html[lang=ar] .editorial-kicker { font-size: calc(2.42719vw * var(--type-scale, 1)) }
+  html[lang=ar] .content .contact-question { font-size: calc(21vw * var(--type-scale, 1)); line-height: 1.15; margin-top: 13.3253vw !important }
+  html[lang=ar] .contact-question .editorial-line:last-child { margin-top: 0 }
+  html[lang=ar] .contact-intro>p { font-size: calc(4.12622vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-alternative h2 { font-size: calc(18vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-field label { font-size: calc(5.09709vw * var(--type-scale, 1)) }
+  html[lang=ar] .contact-field :is(input, textarea) { font-size: calc(4.85437vw * var(--type-scale, 1)) }
+  html[lang=ar] .editorial-eyebrow { font-size: calc(2.66991vw * var(--type-scale, 1)) }
+  @media (prefers-reduced-motion:reduce) {
+    .content *, .content :after { scroll-behavior: auto !important; transition: none !important; animation: none !important }
+    .editorial-line>span { transform: none !important }
+  }
+  .contact-field :is(input, textarea) { scroll-margin-block: 33.9806vw 14.5632vw }
+  .content [hidden] { display: none !important }
+  .contact-response p { margin: 0 }
+  .contact-greeting { display: contents }
+  .contact-greeting bdi { unicode-bidi: isolate }
+}
