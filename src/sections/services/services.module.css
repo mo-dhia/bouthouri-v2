@@ -163,8 +163,8 @@
   .editorial-line > span, .page [data-reveal-piece] { display: block }
   .masked-text :global(.masked-rendered-line) { white-space: nowrap; display: block }
   .masked-text :global(.masked-rendered-line-mask) { display: block; overflow: clip; margin-block: -.09em; padding-block: .09em }
-  :global(html[lang='ar']) .masked-text :global(.masked-rendered-line-mask) { margin-block: -.19em; padding-block: .19em }
-  :global(html[lang='ar']) .masked-text .masked-text-line { margin-block: -.19em; padding-block: .19em }
+  :global(html[lang='ar']) .masked-text :global(.masked-rendered-line-mask) { margin-block: -.14em; padding-block: .14em }
+  :global(html[lang='ar']) .masked-text .masked-text-line { margin-block: -.14em; padding-block: .14em }
 }
 @media (600px < width <= 1024px) {
   .page { position: relative; color: #dedbd2 }
@@ -385,8 +385,8 @@
   .editorial-line > span, .page [data-reveal-piece] { display: block }
   .masked-text :global(.masked-rendered-line) { white-space: nowrap; display: block }
   .masked-text :global(.masked-rendered-line-mask) { display: block; overflow: clip; margin-block: -.09em; padding-block: .09em }
-  :global(html[lang='ar']) .masked-text :global(.masked-rendered-line-mask) { margin-block: -.19em; padding-block: .19em }
-  :global(html[lang='ar']) .masked-text .masked-text-line { margin-block: -.19em; padding-block: .19em }
+  :global(html[lang='ar']) .masked-text :global(.masked-rendered-line-mask) { margin-block: -.14em; padding-block: .14em }
+  :global(html[lang='ar']) .masked-text .masked-text-line { margin-block: -.14em; padding-block: .14em }
 }
 @media (width <= 600px) {
   .page { position: relative; color: #dedbd2 }
@@ -623,6 +623,6 @@
   .editorial-line > span, .page [data-reveal-piece] { display: block }
   .masked-text :global(.masked-rendered-line) { white-space: nowrap; display: block }
   .masked-text :global(.masked-rendered-line-mask) { display: block; overflow: clip; margin-block: -.09em; padding-block: .09em }
-  :global(html[lang='ar']) .masked-text :global(.masked-rendered-line-mask) { margin-block: -.19em; padding-block: .19em }
-  :global(html[lang='ar']) .masked-text .masked-text-line { margin-block: -.19em; padding-block: .19em }
+  :global(html[lang='ar']) .masked-text :global(.masked-rendered-line-mask) { margin-block: -.14em; padding-block: .14em }
+  :global(html[lang='ar']) .masked-text .masked-text-line { margin-block: -.14em; padding-block: .14em }
 }

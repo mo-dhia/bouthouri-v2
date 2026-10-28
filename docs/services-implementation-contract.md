@@ -292,3 +292,53 @@ The stylesheet, generator, focused profile test and this contract are frozen.
 The root's earlier build does not validate the unserved CSS correction;
 root owns combined TypeScript, rebuild and renewed geometry acceptance.
 Static CSS cascade checks do not establish full pixel or moving parity.
+
+## Arabic masked-line source cascade repair
+
+Fresh root visual R2 evidence at
+`.artifacts/pages-parity-20261028/full-review-r2/ar-services-tablet-row-lead.json`
+and `ar-services-tablet-row-computed.json` showed identical copy, rendered
+three-line fragments, 6vw gutters, 48px/54px row padding and26px copy margin,
+but source/local row heights297.133/299.933px and index heights
+3785.933/3816.717px. Root traced the accumulated31px closing drift to mask
+ink padding: source±.14em (2.71367px at the captured copy font) versus
+local±.19em (3.67967px). These are root-owned browser measurements, not an
+acceptance comparison performed by this agent.
+
+The source's later `36vl4h0t25ivv.css` declares
+`html[lang=ar] .masked-text .masked-text-line` with margin-block−.14em and
+padding-block.14em. Its specificity equals the earlier0ht typography rule
+`html[data-typography=questrial-cairo][lang=ar] :is(.masked-text-line,.editorial-line)`;
+later source order therefore wins for masked lines. Plain Arabic editorial
+lines retain .19em. The Services generator now preserves that distinction for
+both server-rendered local mask classes and raw runtime rendered-line masks,
+and all three generated profiles changed only their two AR mask selectors.
+EN masks remain .09em. No controller, reveal stagger, row dimension, copy,
+gutter, SVG user-space boundary or shared CSS was changed.
+
+The portable fixtures in `services-css-profile.test.ts` retain the relevant
+0ht and36 margin/padding declarations in original order. Tests resolve the
+actual global stylesheet plus Services CSS Module cascade, distinguishing
+local server classes from raw runtime classes, for EN/AR × three profiles.
+They also verify the equal-specificity source-order override and the plain
+editorial-line exception. Existing parent-gutter regressions still pass.
+
+Actual commands/results in the clear measurement window:
+
+```text
+bun .artifacts/pages-parity-20261028/services/prepare-css.ts
+exit0; generated CSS diff contains exactly six AR mask-rule corrections
+
+bun test src/sections/services/services-css-profile.test.ts
+6 passed, 0 failed, 67 assertions
+
+bunx eslint src/sections/services/services-css-profile.test.ts
+exit0, no output
+```
+
+Logs and frozen hashes are retained under
+`.artifacts/pages-parity-20261028/services/ar-mask-profile-*`. No CPU job
+remains active. The stylesheet, generator, profile tests and contract are
+frozen for root's combined checks/rebuild and fresh visual recheck. The
+served `yWFD32LNWavnwkZN_JMni` build predates this correction. Cascade fixture
+success does not establish full pixel or continuous-motion parity.
