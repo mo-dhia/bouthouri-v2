@@ -9,9 +9,9 @@ reclassifying the historical review candidates as accepted builds.
 ## Automated validation
 
 - `bun run check`: ESLint, route type generation, TypeScript, architecture audit,
-  **250 tests / 7,450 assertions**, all pass.
-- `bun run build `: EN/AR statically prerendered; final build
-  **`X_EOoaHYngRR_fHNpOwl-`**.
+  **252 tests / 7,562 assertions**, all pass.
+- `bun run build`: EN/AR statically prerendered; final build
+  **`QJTj_MU6uWWybPQ5AtMGp`**.
 - `bun run test:ssr -- http://localhost:3000`: both locales, RTL, metadata,
   redirects, 404s and **13 static assets** pass.
 - `bun install --frozen-lockfile`: passes without changes; Storio patch retained.
@@ -69,13 +69,43 @@ rasterization and subpixel metric residuals remain documented in R1.
 
 ## Evidence and cleanup
 
-Root logs, source/reference snapshots and final correction receipts:
-`/tmp/gazzar-fixed-vw/`. The root correction record is`final-corrections.json`;
-the review's190/70 state records and paired images are under
-`/tmp/gazzar-fixed-vw-review/`.
+Original root logs, source/reference snapshots and correction receipts were
+recorded under `/tmp/gazzar-fixed-vw/`; the review's190/70 state records and
+paired images were under `/tmp/gazzar-fixed-vw-review/`.
+
+Before the requested shutdown, these were copied persistently into the ignored
+`.artifacts/viewport-validation-20261028/root/` and `review/` directories.
+The same archive preserves source runtime/scene snapshots and the earlier R23
+accepted video with its evidence. `index.json` maps the original paths.
+Historical reports retain their original recording paths; use this archive
+after reboot if `/tmp` has been cleared. Large local media are intentionally
+excluded from Git. The final shutdown acceptance pass saves its new evidence
+directly under `.artifacts/final-parity-20261028/`.
 
 The existing two Vawzen tabs are left at EN/y0, native 1920×1080/DPR1, entry
 complete, motion enabled, sound off and menus closed; local 36 is selected and
 focused. RDM is closed on both tabs, original window hints restored, no new
 tabs/windows retained, and no page probes or recording jobs remain. The local
 production preview continues on port 3000. Local assistant guides stay untracked.
+
+
+## Final moving review and menu correction
+
+[The final reference review](home-final-reference-acceptance.md) recorded all
+six EN/AR reference contexts on build`X_EOoaHYngRR_fHNpOwl-`: twelve complete
+forward/footer/reverse native-wheel videos,6,080 trusted inputs,284 paired
+whole-route samples and seven contiguous transition windows. Its sole actionable
+finding was a selected-menu dash measured while the dialog was closed.
+
+Commit`fd6f513` retains selection but measures the visible row after opening,
+and refreshes it on selection, viewport or font-ready layout changes. It adds
+no journey-frame work or RAF. The full check, new static production build above
+and both-locale SSR/13-asset audit pass after that correction. Tooling now excludes
+the ignored local evidence archive from ESLint/TypeScript; it remains outside
+the application graph. [The independent menu recheck](home-final-menu-acceptance.md) confirms fresh-open
+alignment at all six references and preserves the full moving evidence hashes.
+It found a separate pre-existing reopening policy: source resets to VISION after
+a complete close. Commit`19b2e0c` now resets the row, description and rail only
+on a new open; an interrupted reverse retains selection. The full validation
+counts/build above include both corrections. A final focused reopen acceptance
+round is pending; both earlier reviews remain frozen historical evidence.

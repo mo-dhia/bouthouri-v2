@@ -53,11 +53,14 @@ See [the current scheduler map](animations.md).
 Use CSS Modules and one-line selector declarations with logical properties for
 RTL. Keep static layout out of inline styles; dynamic transforms, measurements,
 and CSS variables can remain inline. Match the reference's actual responsive
-geometry; do not import TFM's colors, content, breakpoints, or default animation
-bands blindly. Content belongs in server dictionaries/data or server JSX.
-Gazzar's measured fixed units, clamps and 700px breakpoint take precedence over
-blanket vw conversion. Preserve physical coordinates for deliberately LTR
-viewport controls in Arabic; use logical properties where they preserve geometry.
+geometry at the agreed reference screens; do not import TFM's colors, content,
+breakpoints, or default animation bands blindly. Content belongs in server
+dictionaries/data or server JSX. [Viewport design](viewport-design.md) owns the
+1920×1080 desktop, 768×1024 tablet and 412×915 mobile compositions and their
+uniform width scaling. Evaluate source breakpoints at the selected reference;
+physical height does not recompose the design. Keep native buffer, visibility
+and scroll mechanics physical. Preserve deliberately LTR controls in Arabic;
+use logical properties where they preserve geometry.
 
 `bun run format:css` formats one selector per line and checks the ordered CSS AST
 before writing. It preserves units, cascade and embedded URL payloads. URLs
