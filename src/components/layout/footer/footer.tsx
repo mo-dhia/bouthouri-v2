@@ -70,7 +70,9 @@ export default function Footer({
         data-footer-grab="true"
       >
         <div className="footer-word-text" data-footer-word="true" dir="ltr">
-          {brand.wordmark}
+          <span className={styles.ink} data-footer-ink="true">
+            {brand.wordmark}
+          </span>
         </div>
       </div>
       <span

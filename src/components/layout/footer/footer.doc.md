@@ -261,3 +261,51 @@ hid the overlay, and returned cleanly at714 with BOUTHOURI/contact@bouthouri.co
 intact. The existing dev server was retained; the separate validation server is
 shut down after returning the browser to localhost3000. All diagnostic wrappers
 and event collectors are removed.
+
+
+## Taller, heavier wordmark (2026-10-28)
+
+User approved a taller treatment, then asked to try a modest weight increase.
+The retained design keeps the fitted full width but restores the reference
+vertical footprint: per1843.2px mask width, line451.4px, ink top43.2px and
+ink height339px. This restores the gaps above/below the word without moving
+the information, colophon, pin or animation clocks. Height values scale by
+mask width and are emitted in vw. The three reference profiles remain intact.
+
+An SSR ink span owns only the vertical transform. The parent word still owns
+the journey reveal. `footerGlyphBoxes` reads the span's transformed offset/
+height once during measurement, so Canvas contours, idle fields, drag hit
+geometry and the return morph use the same taller ink. The logo's reference
+anchor and dimensions remain independent of font fitting. Fallback text and
+keyboard focus decoration remain real server-rendered text.
+
+The bolder face is a1420-byte subset derived from the existing local Questrial
+under its retained SIL OFL. It is renamed `Bouthouri Wordmark` and scoped to the
+word mask; headings, information, clock and thought typography keep their fonts.
+`scripts/generate-footer-wordmark.py` uses FontTools4.60.1 plus system FreeType
+[outline emboldening](https://freetype.org/freetype2/docs/reference/ft2-outline_processing.html#ft_outline_embolden)
+with20font-unit strength. Then `bun scripts/generate-footer-glyphs.mjs` produces
+the corresponding normalized contours from that same WOFF. Both outputs are
+byte-reproducible in the recorded generation environment. These are offline
+tools only; no font processor, synthetic stroke or new frame work ships to the
+browser. The generated assets are committed.
+
+Example regeneration with the local tooling archive:
+`PYTHONPATH=.artifacts/footer-spacing-fix/font-tools python3 scripts/generate-footer-wordmark.py`,
+then `bun scripts/generate-footer-glyphs.mjs`. Else install FontTools4.60.1 in
+a development Python environment and run the same script normally. Existing
+`public/assets/fonts/questrial-OFL.txt` and embedded attribution cover the
+upstream and derivative face. Generation hashes, regular/bold comparisons and
+all three EN/AR profile images live in `.artifacts/footer-spacing-fix/`.
+
+Validation after the heavier face:258 tests/9,936 assertions pass, CSS/initial-
+graph audit passes after the fallback-size/focus styling updates, production
+build`Eslnbg7m8yvl3snt-MueZ` and both-locale SSR/new-font asset checks pass.
+Live EN/AR images at1920×1080,768×1024 and412×915 show the taller/heavier
+wordmark with no horizontal overflow. Production desktop DOM ink measures
+top585.399px/height339px versus the reference top585.400px/height339px.
+88 trusted native wheel inputs produce current-pose canvas placement (max
+recorded translation error0px). Native Enter reaches the complete three-part
+logo; native Escape returns to the matching DOM word. The first Enter attempted
+without an actual native content focus did not activate and is excluded. No
+RAF/clock changes or runtime font-processing dependency were introduced.

@@ -45,7 +45,7 @@ for (const locale of ["en", "ar"]) {
 for (const path of ["/fr", "/en/not-a-page"]) {
   assert.equal((await fetch(new URL(path, base))).status, 404, path);
 }
-for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/identity-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2"]) {
+for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/identity-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2", "/assets/fonts/bouthouri-wordmark.woff"]) {
   assert.equal((await fetch(new URL(path, base))).status, 200, path);
 }
 await Promise.all([...assets].map(async (url) => {

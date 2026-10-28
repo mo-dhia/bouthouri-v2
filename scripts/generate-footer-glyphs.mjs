@@ -6,7 +6,7 @@ import woffFactory from 'troika-three-text/libs/woff2otf.factory.js';
 
 globalThis.self = globalThis;
 const Typr = typrFactory();
-const file = new URL('../public/assets/textures/questrial-studio.woff', import.meta.url);
+const file = new URL('../public/assets/fonts/bouthouri-wordmark.woff', import.meta.url);
 const bytes = await readFile(file);
 const font = Typr.parse(woffFactory()(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)))[0];
 const output = new URL('../src/components/layout/footer/footer-glyph-contours.json', import.meta.url);

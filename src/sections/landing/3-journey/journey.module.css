@@ -228,7 +228,7 @@
   .journey :global(.footer-navigation nav) { flex-wrap: wrap; gap: 0.9375vw; display: flex }
   .journey :global(.footer-clock time) { font-size: calc(0.9375vw * var(--type-scale, 1)); font-variant-numeric: tabular-nums; letter-spacing: calc(-.04em * var(--tracking-scale, 1)); display: block }
   .journey :global(.footer-word-mask) { inset-inline: 2%; bottom: var(--footer-word-bottom); pointer-events: none; direction: ltr; position: absolute; overflow: clip }
-  .journey :global(.footer-word-text) { font: var(--weight-500, 500) 17.9406vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
+  .journey :global(.footer-word-text) { font: var(--weight-500, 500) 17.3567vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
   .journey :global(.footer-colophon) { inset-inline: 4%; bottom: min(3.5%, max(0.625vw, calc(var(--footer-word-bottom) / 2))); justify-content: space-between; align-items: baseline; gap: 0.833334vw; display: flex; position: absolute }
   .journey :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
   .journey :global(.footer-socials) { font-size: calc(0.520834vw * var(--type-scale, 1)); align-items: baseline; gap: 1.25vw; display: flex }
@@ -729,7 +729,7 @@
   .journey :global(.footer-navigation nav) { flex-wrap: wrap; gap: 2.34375vw; display: flex }
   .journey :global(.footer-clock time) { font-size: calc(2.34375vw * var(--type-scale, 1)); font-variant-numeric: tabular-nums; letter-spacing: calc(-.04em * var(--tracking-scale, 1)); display: block }
   .journey :global(.footer-word-mask) { inset-inline: 2%; bottom: var(--footer-word-bottom); pointer-events: none; direction: ltr; position: absolute; overflow: clip }
-  .journey :global(.footer-word-text) { font: var(--weight-500, 500) 17.9406vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
+  .journey :global(.footer-word-text) { font: var(--weight-500, 500) 17.3567vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
   .journey :global(.footer-colophon) { inset-inline: 4%; bottom: min(3.5%, max(1.5625vw, calc(var(--footer-word-bottom) / 2))); justify-content: space-between; align-items: baseline; gap: 2.08334vw; display: flex; position: absolute }
   .journey :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
   .journey :global(.footer-socials) { font-size: calc(1.30209vw * var(--type-scale, 1)); align-items: baseline; gap: 3.125vw; display: flex }
@@ -1304,7 +1304,7 @@
   .journey :global(.footer-navigation nav) { flex-wrap: wrap; gap: 4.36894vw; display: flex }
   .journey :global(.footer-clock time) { font-size: calc(4.36894vw * var(--type-scale, 1)); font-variant-numeric: tabular-nums; letter-spacing: calc(-.04em * var(--tracking-scale, 1)); display: block }
   .journey :global(.footer-word-mask) { inset-inline: 2%; bottom: var(--footer-word-bottom); pointer-events: none; direction: ltr; position: absolute; overflow: clip }
-  .journey :global(.footer-word-text) { font: var(--weight-500, 500) 18.3144vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
+  .journey :global(.footer-word-text) { font: var(--weight-500, 500) 17.7183vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
   .journey :global(.footer-colophon) { inset-inline: 4%; bottom: min(3.5%, max(2.91263vw, calc(var(--footer-word-bottom) / 2))); justify-content: space-between; align-items: baseline; gap: 3.8835vw; display: flex; position: absolute }
   .journey :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
   .journey :global(.footer-socials) { font-size: calc(2.42719vw * var(--type-scale, 1)); align-items: baseline; gap: 5.82525vw; display: flex }

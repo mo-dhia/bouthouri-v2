@@ -6,7 +6,7 @@ import { brand } from "@/config/brand";
 import * as viewport from "@/lib/viewport-design";
 import type * as geometry from "./footer-geometry";
 
-function measure(width: number, actualHeight: number, restUnit = "vw") {
+function measure(width: number, actualHeight: number, restUnit = "vw", stretched = true) {
   const scale = viewport.designScale(width), reference = viewport.viewportDesign(width);
   const pixels = (value: string) => parseFloat(value) * (value.endsWith("vw") ? width / 100 : 1);
   const style = () => Object.assign({
@@ -15,8 +15,13 @@ function measure(width: number, actualHeight: number, restUnit = "vw") {
     removeProperty(name: string) { if (name === "line-height") this.lineHeight = ""; },
   }, {} as Record<string, string>);
   const word = { style: style(), textContent: brand.wordmark, get offsetHeight() { return Math.round(word.getBoundingClientRect().height); },
-    getBoundingClientRect: () => ({ height: word.style.lineHeight ? pixels(word.style.lineHeight) : 0.9 * pixels(word.style.fontSize) }),
+    querySelector: () => stretched ? ink : null,
+    getBoundingClientRect: () => ({ top: 0, height: word.style.lineHeight ? pixels(word.style.lineHeight) : 0.9 * pixels(word.style.fontSize) }),
   };
+  const ink = { getBoundingClientRect: () => ({
+    top: pixels(word.style["--footer-ink-offset-y"]),
+    height: pixels(word.style["--footer-ink-line-height"]) * Number(word.style["--footer-ink-scale-y"]),
+  }) };
   const information = { offsetHeight: 90 * scale };
   const root = { style: style(), offsetHeight: reference.height * scale, querySelector: () => information };
   const mask = { getBoundingClientRect: () => ({ width: width * 0.96 }) };
@@ -39,7 +44,9 @@ function measure(width: number, actualHeight: number, restUnit = "vw") {
     innerWidth: width, innerHeight: actualHeight, document: { querySelectorAll: () => [] },
     getComputedStyle(element: unknown) {
       if (element === word) return { fontFamily: "Questrial", fontSize: `${pixels(word.style.fontSize)}px`, letterSpacing: `${pixels(word.style.letterSpacing)}px`,
-        lineHeight: `${word.getBoundingClientRect().height}px`, left: `${pixels(word.style.left)}px` };
+        lineHeight: `${word.getBoundingClientRect().height}px`, left: `${pixels(word.style.left)}px`,
+        getPropertyValue: (name: string) => word.style[name] ?? "" };
+      if (element === ink) return { lineHeight: `${pixels(word.style["--footer-ink-line-height"])}px` };
       if (element === information) return { top: `${0.35 * reference.height * scale}px` };
       return { getPropertyValue: () => restUnit === "vw" ? `${reference.height * 0.08 / reference.width * 100}vw` : "8%" };
     },
@@ -71,5 +78,26 @@ test("measured footer CSS uses vw while DOM glyph boxes retain physical coordina
     const tall = measure(reference.width, reference.height * 2), percentage = measure(reference.width, reference.height, "%");
     expect(tall.word.style).toMatchObject({ fontSize: a.word.style.fontSize, letterSpacing: a.word.style.letterSpacing, lineHeight: a.word.style.lineHeight });
     expect(percentage.boxes).toEqual(a.boxes);
+  }
+});
+
+test("taller word ink keeps its fitted width and matches the reference vertical footprint", () => {
+  for (const reference of Object.values(viewport.viewportDesigns)) {
+    const fitted = measure(reference.width, reference.height, "vw", false);
+    const tall = measure(reference.width, reference.height);
+    expect(tall.word.style.fontSize).toBe(fitted.word.style.fontSize);
+    expect(tall.word.style.letterSpacing).toBe(fitted.word.style.letterSpacing);
+    expect(tall.word.style.left).toBe(fitted.word.style.left);
+    const ratio = reference.width * 0.96 / 1843.2;
+    expect(tall.word.getBoundingClientRect().height).toBeCloseTo(451.4 * ratio, 10);
+    expect(Math.min(...tall.boxes.map(box => box.y))).toBeCloseTo(43.2 * ratio, 10);
+    expect(Math.max(...tall.boxes.map(box => box.y + box.height))).toBeCloseTo((43.2 + 339) * ratio, 10);
+    tall.boxes.forEach((box, index) => {
+      expect(box.x).toBe(fitted.boxes[index].x);
+      expect(box.width).toBe(fitted.boxes[index].width);
+    });
+    expect(Number(tall.word.style["--footer-ink-scale-y"])).toBeGreaterThan(1);
+    expect(tall.word.style["--footer-ink-offset-y"].endsWith("vw")).toBe(true);
+    expect(tall.word.style["--footer-ink-line-height"].endsWith("vw")).toBe(true);
   }
 });

@@ -19,15 +19,21 @@ export function footerGlyphBoxes(
   const metrics = context.measureText(text),
     ascent = metrics.fontBoundingBoxAscent ?? 0.95 * size,
     descent = metrics.fontBoundingBoxDescent ?? 0.25 * size;
-  const baseline = (word.getBoundingClientRect().height - ascent - descent) / 2 + ascent;
+  const bounds = word.getBoundingClientRect();
+  const ink = word.querySelector<HTMLElement>("[data-footer-ink]");
+  const scaleY = ink ? Number(style.getPropertyValue("--footer-ink-scale-y")) || 1 : 1;
+  const inkBounds = ink?.getBoundingClientRect();
+  const lineHeight = inkBounds ? inkBounds.height / scaleY : bounds.height;
+  const offsetY = inkBounds ? inkBounds.top - bounds.top : 0;
+  const baseline = (lineHeight - ascent - descent) / 2 + ascent;
   return [...text].map((letter, index) => {
     const prefix = context.measureText(text.slice(0, index)).width,
       m = context.measureText(letter);
     return {
       x: prefix - m.actualBoundingBoxLeft + origin,
-      y: baseline - m.actualBoundingBoxAscent,
+      y: offsetY + (baseline - m.actualBoundingBoxAscent) * scaleY,
       width: m.actualBoundingBoxLeft + m.actualBoundingBoxRight,
-      height: m.actualBoundingBoxAscent + m.actualBoundingBoxDescent,
+      height: (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) * scaleY,
     };
   });
 }
@@ -73,11 +79,28 @@ export function measureFooterWord(
     metrics = context.measureText(text),
     ascent = metrics.fontBoundingBoxAscent ?? 0.95 * size,
     descent = metrics.fontBoundingBoxDescent ?? 0.25 * size;
-  const minimum =
-    Math.max(
+  // Preserve the reference's vertical ink footprint while fitting nine letters
+  // horizontally. Scale only the word ink, never the assembled identity or clock.
+  const ink = word.querySelector<HTMLElement>("[data-footer-ink]");
+  const referenceScale = width / 1843.2;
+  const targetLine = 451.4 * referenceScale;
+  const targetInkTop = 43.2 * referenceScale;
+  const targetInkHeight = 339 * referenceScale;
+  const scaleY = targetInkHeight / Math.max(1, metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
+  if (ink) {
+    word.style.lineHeight = length(targetLine);
+    word.style.setProperty("--footer-ink-line-height", length(size * 0.9));
+    word.style.setProperty("--footer-ink-scale-y", String(scaleY));
+  }
+  const inkTopAt = (lineHeight: number) => ink
+    ? (lineHeight - targetLine) / 2 + targetInkTop
+    : (lineHeight - ascent - descent) / 2 + ascent - metrics.actualBoundingBoxAscent;
+  const minimum = (ink
+    ? Math.max(targetLine - 2 * targetInkTop, 2 * (targetInkTop + targetInkHeight) - targetLine)
+    : Math.max(
       2 * metrics.actualBoundingBoxAscent - ascent + descent,
       ascent - descent + 2 * metrics.actualBoundingBoxDescent,
-    ) + designPixels(2, innerWidth);
+    )) + designPixels(2, innerWidth);
   const information = root.querySelector<HTMLElement>(".footer-information");
   let navTop = 0,
     navBottom = 0;
@@ -106,10 +129,7 @@ export function measureFooterWord(
         parseFloat(getComputedStyle(information).top),
       );
       const wordHeight = word.getBoundingClientRect().height;
-      const inkTop =
-        (wordHeight - ascent - descent) / 2 +
-        ascent -
-        metrics.actualBoundingBoxAscent;
+      const inkTop = inkTopAt(wordHeight);
       const available =
         root.offsetHeight -
         Math.max(rest, navBottom) -
@@ -123,11 +143,16 @@ export function measureFooterWord(
   word.style.position = "relative";
   word.style.left = length(origin);
   const wordHeight = word.getBoundingClientRect().height;
-  const baseline = (wordHeight - ascent - descent) / 2 + ascent;
+  const inkTop = inkTopAt(wordHeight);
+  if (ink) {
+    const naturalLine = parseFloat(getComputedStyle(ink).lineHeight);
+    const baseline = (naturalLine - ascent - descent) / 2 + ascent;
+    word.style.setProperty("--footer-ink-offset-y", length(inkTop - (baseline - metrics.actualBoundingBoxAscent) * scaleY));
+  }
   root.style.setProperty("--footer-word-height", length(wordHeight));
   root.style.setProperty(
     "--footer-ink-top",
-    length(baseline - metrics.actualBoundingBoxAscent),
+    length(inkTop),
   );
   if (information)
     root.style.setProperty(
