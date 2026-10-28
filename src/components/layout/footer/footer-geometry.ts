@@ -120,7 +120,7 @@ export function measureFooterWord(
     });
   root.style.setProperty("--footer-nav-top", length(navTop));
   root.style.setProperty("--footer-nav-bottom", length(navBottom));
-  if (information)
+  if (information && root.dataset.footerVariant !== "standard")
     for (let i = 0; i < 3; i++) {
       const restValue = getComputedStyle(root).getPropertyValue("--footer-word-rest").trim();
       const rest = parseFloat(restValue) * (restValue.endsWith("vw") ? innerWidth / 100 : restValue.endsWith("%") ? root.offsetHeight / 100 : 1);

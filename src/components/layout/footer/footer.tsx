@@ -11,15 +11,17 @@ import styles from "./footer.module.css";
 export default function Footer({
   copy,
   locale,
+  variant = "home",
 }: {
   copy: Dictionary["footer"];
   locale: Locale;
+  variant?: "home" | "standard";
 }) {
   const labels = getShellCopy(locale);
   return (
     <footer
-      className={`home-footer global-footer ${styles.footer}`}
-      data-footer-variant="home"
+      className={`home-footer global-footer ${variant === "standard" ? "standard-footer" : ""} ${styles.footer}`}
+      data-footer-variant={variant}
       data-portfolio-footer="true"
       aria-label={labels.footerThought}
       dir={locale === "ar" ? "rtl" : "ltr"}

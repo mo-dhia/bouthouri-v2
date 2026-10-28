@@ -1,3 +1,6 @@
+import scrollManager from "@/lib/scrollInteraction/scrollManager";
+import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
+import { standardFooterPose, standardFooterTail } from "./standard-footer-pose";
 import { brand } from "@/config/brand";
 import { uiStore } from "@/store/uiStore";
 import { measureFooterWord } from "./footer-geometry";
@@ -25,12 +28,37 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     motion.matches ||
     uiStore.getState().quietMode ||
     uiStore.getState().homeSceneFailed;
+  let standardReveal = 1, footerTop = 0, footerHeight = 1;
+  let standardPoseKey = "";
+  const information = root.querySelector<HTMLElement>(".footer-information");
+  const colophon = root.querySelector<HTMLElement>(".footer-colophon");
+  const standardKey = `standard-footer-${Math.random().toString(36).slice(2)}`;
+  const originalInformationStyle = information?.getAttribute("style");
+  const originalColophonStyle = colophon?.getAttribute("style");
+  const updateStandard = () => {
+    if (!standard || disposed) return;
+    const pose = standardFooterPose(scrollY, footerTop, footerHeight, designHeight(innerWidth), reduced());
+    standardReveal = pose.visible ? pose.wordmark : 0;
+    const key = `${pose.progress}:${reduced()}:${innerWidth}`;
+    if (key === standardPoseKey) { syncMaterial(); return; }
+    standardPoseKey = key;
+    if (information) { information.style.opacity = String(pose.invitation); information.style.transform = `translate3d(0,${pixelsToVw(designPixels(pose.invitationY, innerWidth), innerWidth)},0)`; information.inert = pose.invitation < .1; }
+    word.style.transform = `translate3d(0,${(1 - pose.wordmark) * 112}%,0)`;
+    if (colophon) { colophon.style.opacity = String(pose.metadata); colophon.style.transform = `translate3d(0,${pixelsToVw(designPixels((1 - pose.metadata) * 10, innerWidth), innerWidth)},0)`; colophon.inert = pose.metadata < .1; }
+    syncMaterial();
+  };
+  const scrollTail = standard ? document.createElement("div") : null;
+  if (scrollTail) { scrollTail.dataset.footerScrollTail = "true"; scrollTail.setAttribute("aria-hidden", "true"); root.after(scrollTail); }
+  const measureTail = () => { if (scrollTail) scrollTail.style.height = pixelsToVw(standardFooterTail(innerWidth, innerHeight, reduced()), innerWidth); };
+  const onStandardViewport = () => { measureTail(); updateStandard(); };
+  if (standard) { window.addEventListener("resize", onStandardViewport, { passive: true }); measureTail(); }
   const originalWordStyle = word.getAttribute("style");
   const originalFooterStyle = root.getAttribute("style");
   const context = document.createElement("canvas").getContext("2d");
   const measureWord = () => {
     if (!context || disposed) return;
     measureFooterWord(root, mask, word, context);
+    if (standard) { footerTop = root.getBoundingClientRect().top + scrollY; footerHeight = root.offsetHeight; updateStandard(); }
     material?.measure();
   };
   const updateClock = () => {
@@ -50,7 +78,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   };
   // HOME's source material reveal remains zero in the unpinned reading layout.
   // A standard footer has its own scroll reveal and retains reduced interaction.
-  const syncMaterial = () => material?.setActive(visible && !root.inert && (standard || !reduced()));
+  const syncMaterial = () => material?.setActive(visible && !root.inert && (standard ? standardReveal > .001 : !reduced()));
   const ensureMaterial = () => {
     if (material || loading || disposed) return;
     loading = true;
@@ -97,10 +125,12 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   const syncMode = () => {
     const next = reduced();
     if (next !== previousReduced) {
+      measureTail();
       previousReduced = next;
       updateClock();
     }
     if (uiStore.getState().menuOpen) material?.reset();
+    updateStandard();
     syncMaterial();
   };
   const unsubscribe = uiStore.subscribe(syncMode);
@@ -110,14 +140,23 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   mask.addEventListener("focus", onIntent);
   const resize = new ResizeObserver(measureWord);
   resize.observe(mask);
+  // Standard footers move when preceding route content grows/shrinks. Their
+  // mask can retain identical dimensions, so observe the layout owner too.
+  if (standard && root.parentElement) {
+    resize.observe(root.parentElement);
+    const content = root.parentElement.querySelector("main");
+    if (content) resize.observe(content);
+  }
   document.addEventListener("visibilitychange", updateClock);
   void document.fonts.ready.then(() => {
     if (!disposed) measureWord();
   });
   updateClock();
   measureWord();
+  if (standard) scrollManager.createInstance(standardKey, updateStandard, { useRAF: false });
   return () => {
     disposed = true;
+    if (standard) { scrollManager.removeInstance(standardKey); window.removeEventListener("resize", onStandardViewport); scrollTail?.remove(); }
     observer.disconnect();
     resize.disconnect();
     unsubscribe();
@@ -128,6 +167,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     stage?.removeEventListener("journey-frame", onJourney);
     mask.removeEventListener("pointerenter", onIntent);
     mask.removeEventListener("focus", onIntent);
+    if (standard) for (const [node, previous] of [[information, originalInformationStyle], [colophon, originalColophonStyle]] as const) { if (node) { if (previous == null) node.removeAttribute("style"); else node.setAttribute("style", previous); node.inert = false; } }
     if (originalWordStyle === null) word.removeAttribute("style");
     else word.setAttribute("style", originalWordStyle);
     if (originalFooterStyle === null) root.removeAttribute("style");

@@ -7,7 +7,7 @@ import * as viewport from "@/lib/viewport-design";
 
 // Exercise the mounted controller with counted DOM operations. Layout values
 // are supplied explicitly; this checks ownership/invalidation, not CSS parity.
-function harness({ reading = false, late = false, locale = "en", width = 1920, physicalHeight = 1080, menu = false } = {}) {
+function harness({ reading = false, late = false, locale = "en", width = 1920, physicalHeight = 1080, menu = false, editorial = false } = {}) {
   const counts = { queries: 0, geometry: 0, writes: 0 };
   let y = 0;
   class Surface extends EventTarget {
@@ -83,6 +83,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
   const identity = new Surface(), chapter = new Surface(), original = new Surface();
   body.connected = true; body.append(root);
   root.dataset.locale = locale;
+  if (editorial) root.dataset.shellVariant = "editorial";
   root.append(utilities); root.append(dialog); utilities.append(entrance); utilities.append(side); side.append(sideRoll);
   root.queries.set("#portfolio-navigation", dialog);
   root.queries.set("[data-hero-utilities]", utilities);
@@ -333,4 +334,19 @@ test("reopening an interrupted closing timeline preserves its selected row until
   expect(h.menuItems[2].dataset.selected).toBe("false");
   expect(h.menuDescriptions[0].getAttribute("aria-hidden")).toBe("false");
   dispose(); expect(h.clean).toBe(true);
+});
+
+
+test("editorial shell keeps its fixed navigation while sharing menu lifecycle and precision ink", () => {
+  const h = harness({ editorial: true, menu: true });
+  const dispose = h.mount();
+  h.counts.writes = h.counts.geometry = h.counts.queries = 0;
+  h.window.dispatchEvent(new CustomEvent(heroWorld.heroWorldEvent, { detail: { progress: .8 } }));
+  h.window.dispatchEvent(new Event("scroll"));
+  expect(h.counts.writes).toBe(0);
+  expect(h.counts.geometry).toBe(0);
+  expect(h.utilities.style.transform).toBeUndefined();
+  h.toggleMenu(); expect(h.dialog.open).toBe(true);
+  h.toggleMenu(); h.finishMenuReverse(); expect(h.dialog.open).toBe(false);
+  dispose();
 });

@@ -30,10 +30,11 @@ const assembled = [
 ];
 
 export function mountHeader(root: HTMLElement): () => void {
+  const editorial = root.dataset.shellVariant === "editorial";
   const dialog = root.querySelector<HTMLDialogElement>("#portfolio-navigation");
   const utilities = root.querySelector<HTMLElement>("[data-hero-utilities]");
-  const hero = root.querySelector<HTMLElement>('[data-nav-layer="hero"]');
-  const persistent = root.querySelector<HTMLElement>(
+  const hero = editorial ? utilities : root.querySelector<HTMLElement>('[data-nav-layer="hero"]');
+  const persistent = editorial ? document.createElement("div") : root.querySelector<HTMLElement>(
     '[data-nav-layer="persistent"]',
   );
   if (!dialog || !utilities || !hero || !persistent) return () => {};
@@ -316,7 +317,7 @@ export function mountHeader(root: HTMLElement): () => void {
     document.documentElement.style.scrollbarGutter = savedGutter;
     delete document.documentElement.dataset.menuOpen;
     uiStore.getState().setMenuOpen(false);
-    if (uiStore.getState().entryPhase === "complete")
+    if (editorial || uiStore.getState().entryPhase === "complete")
     buttons().forEach((button) => {
       if (!button.hasAttribute("data-menu-close"))
         button.setAttribute("aria-expanded", "false");
@@ -508,6 +509,7 @@ export function mountHeader(root: HTMLElement): () => void {
         : "none";
   };
   const onWorld = (event: Event) => {
+    if (editorial) return;
     // Mode listeners own measurement. A synchronous publication during another
     // owner's mode transaction must not insert reads after its hero writes.
     if (readingMode !== reduced()) return;
@@ -547,6 +549,7 @@ export function mountHeader(root: HTMLElement): () => void {
     });
   };
   const onQuietScroll = () => {
+    if (editorial) return;
     if (readingMode !== reduced()) return;
     if (identity && readingMode)
       applyNavigation(heroWorldPose((scrollY - identityTop) / identityHeight));
@@ -582,6 +585,7 @@ export function mountHeader(root: HTMLElement): () => void {
   const measureNavigation = () => {
     if (disposed) return;
     viewportWidth = innerWidth;
+    if (editorial) return;
     const previousIdentity = identity;
     identity = document.querySelector<HTMLElement>("#identity");
     chapter = document.querySelector<HTMLElement>(".glasses-chapter");
@@ -650,7 +654,7 @@ export function mountHeader(root: HTMLElement): () => void {
   const mutationObserver = typeof MutationObserver === "undefined"
     ? undefined
     : new MutationObserver((records) => {
-      if (!identity?.isConnected || !chapter?.isConnected || records.some((record) => record.type === "attributes")) onResize();
+      if ((!editorial && (!identity?.isConnected || !chapter?.isConnected)) || records.some((record) => record.type === "attributes")) onResize();
     });
   mutationObserver?.observe(document.body, { childList: true, subtree: true });
   mutationObserver?.observe(root, { attributes: true, attributeFilter: ["data-locale"] });

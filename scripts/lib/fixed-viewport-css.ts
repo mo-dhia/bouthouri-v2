@@ -126,7 +126,9 @@ export function fixedViewportMedia(query: string, design: ViewportDesign): strin
       if (!matches) rejected = true;
       return "";
     }).replace(/\b(?:only|screen|all)\b/g, "").replace(/^\s*and\s*|\s*and\s*$/g, "").replace(/\band\s+and\b/g, "and").trim();
-    return rejected ? false : remaining;
+    // Multiple removed geometry clauses can leave a second leading conjunction.
+    const normalized = remaining.replace(/^(?:and\s*)+|(?:\s*and)+$/g, "").trim();
+    return rejected ? false : normalized;
   });
   if (branches.includes("")) return "";
   const retained = branches.filter((branch): branch is string => branch !== false);

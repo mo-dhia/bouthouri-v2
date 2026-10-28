@@ -31,6 +31,7 @@ See [loading](load-architecture.md) and [ownership](code-splitter.md).
 | Object scene | Samples shared clock/history synchronously; its retained controller owns the GPU demand RAF | Near-viewport boot is serialized. Render only eligible poses/ambient motion; park offscreen, hidden, under MENU and after the object interval. |
 | Background material | Current journey transaction owns moving submissions; an explicit handoff parks the independent idle/tail scheduler | One current-pose submission, no duplicate or previous-pose draw. Retain field/time across reading changes. |
 | Reading hero | Native scroll/measure/visibility wakes; no presentation RAF or advancing animation clock | Lightweight body/pose publication remains active. Its deferred portrait performs source-defined finite draws and resize/failure fallback handling. |
+| Editorial pages | Shared shell/menu and optional field; page-owned Vision/Services RAF or Contact finite entry/scrub owner | Server copy stays present. Custom scroll keys feed cached measured ranges; practice objects are a deferred renderer with no second clock. |
 | Footer material | Small clock/eligibility controller first, then dynamic Canvas/contour import | Its own interaction RAF handles morph, drag and waves; unchanged rest paths are cached. HOME reading disables the morph. |
 
 Choose one scheduler per update path. Default scroll-engine batching is suitable

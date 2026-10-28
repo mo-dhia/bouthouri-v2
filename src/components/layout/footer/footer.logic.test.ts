@@ -7,6 +7,7 @@ import { brand } from "@/config/brand";
 const GLYPHS = brand.wordmark.length;
 import * as materialField from "./footer-material-field";
 import * as viewport from "@/lib/viewport-design";
+import { standardFooterPose, standardFooterTail } from "./standard-footer-pose";
 import type { FooterThoughts } from "./footer-thoughts";
 import type { FooterMaterial } from "./footer-material";
 
@@ -23,8 +24,12 @@ class Surface extends EventTarget {
   rectReads = 0;
   rect = { x: 0, y: 0, top: 0, left: 0, width: 600, height: 100, bottom: 100, right: 600 };
   children: Surface[] = [];
+  afterNodes: Surface[] = [];
+  parentElement: Surface | null = null;
+  removed = false;
   append(child: Surface) { this.children.push(child); }
-  remove() {}
+  after(child: Surface) { this.afterNodes.push(child); }
+  remove() { this.removed = true; }
   setAttribute(name: string, value: string) { this.attributes.set(name, value); }
   getAttribute(name: string) { return this.attributes.get(name) ?? null; }
   removeAttribute(name: string) { this.attributes.delete(name); }
@@ -52,9 +57,9 @@ function load(file: string, globals: Record<string, unknown>, dependencies: Reco
 }
 
 function harness(variant = "home") {
-  const root = new Surface(), mask = new Surface(), word = new Surface(), clock = new Surface(), stage = new Surface();
+  const root = new Surface(), mask = new Surface(), word = new Surface(), clock = new Surface(), stage = new Surface(), information = new Surface(), colophon = new Surface();
   root.dataset.footerVariant = variant;
-  root.querySelector = (selector) => selector.includes("grab") ? mask : selector.includes("clock") ? clock : selector.includes("word") ? word : null;
+  root.querySelector = (selector) => selector.includes("grab") ? mask : selector.includes("clock") ? clock : selector.includes("word") ? word : selector === ".footer-information" ? information : selector === ".footer-colophon" ? colophon : null;
   root.closest = () => stage;
   type PathCommand = ["M" | "L", number, number] | ["Z"];
   class RecordedPath {
@@ -109,6 +114,7 @@ function harness(variant = "home") {
   let active = false, materialMounts = 0, materialDisposals = 0, soundCalls = 0;
   let mountedMaterial: FooterMaterial | undefined, wordMeasures = 0, maskResizeNotifications = 0;
   let maskResize: () => void = () => {};
+  const resizeTargets = new Set<Surface>();
   class ClockDate extends Date {
     constructor() { super(now); }
     static now() { return now; }
@@ -127,10 +133,13 @@ function harness(variant = "home") {
       constructor(callback: typeof intersect) { intersect = callback; }
       observe() {} disconnect() {}
     },
-    ResizeObserver: class { constructor(callback: () => void) { maskResize = callback; } observe() {} disconnect() {} },
+    ResizeObserver: class { constructor(callback: () => void) { maskResize = callback; } observe(target: Surface) { resizeTargets.add(target); } disconnect() { resizeTargets.clear(); } },
   };
   const dependencies = {
     "@/config/brand": { brand },
+    "@/lib/viewport-design": viewport,
+    "./standard-footer-pose": { standardFooterPose, standardFooterTail },
+    "@/lib/scrollInteraction/scrollManager": { __esModule: true, default: { createInstance() {}, removeInstance() {} } },
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe: (callback: () => void) => { subscribers.add(callback); return () => subscribers.delete(callback); } } },
     "./footer-geometry": { measureFooterWord() { wordMeasures++; } },
     "./footer-material": { mountFooterMaterial() {
@@ -141,7 +150,7 @@ function harness(variant = "home") {
   };
   const mount = load("./footer.logic.ts", globals, dependencies).mountFooterInteractions as unknown as (root: Surface) => () => void;
   return {
-    root, mask, word, clock, stage, document, window, motion, globals, timers, rafs, paint,
+    root, mask, word, clock, stage, information, colophon, resizeTargets, document, window, motion, globals, timers, rafs, paint,
     snapshot: () => paint.frameFills.map((path) => path.commands),
     step(ms = 1000 / 60) {
       now += ms;
@@ -583,4 +592,41 @@ test("physical buffer resize keeps width reset policy and disposed/no-context ha
   failed.document.createElement = () => Object.assign(new Surface(), { width: 0, height: 0, getContext: () => null }) as unknown as ReturnType<typeof failed.document.createElement>;
   const fallback = failed.material(); expect(() => fallback.resizeViewport()).not.toThrow(); fallback.dispose();
   expect(failed.rafs.size + failed.timers.size).toBe(0);
+});
+
+
+test("standalone standard footer owns its reachable extent even when the editorial shell import fails", async () => {
+  const h = harness("standard");
+  h.globals.innerWidth = 1280; h.globals.innerHeight = 1024;
+  h.root.offsetHeight = 633.6; h.root.rect.top = 4000;
+  const dispose = h.mount(); h.intersect(true); await flushImports();
+  const tail = h.root.afterNodes[0]; expect(tail.dataset.footerScrollTail).toBe("true");
+  expect(tail.style.height).toBe("23.75vw");
+  h.globals.scrollY = 4000 + 633.6 + 304 - 1024;
+  h.window.dispatchEvent(new Event("resize"));
+  expect(Number(h.colophon.style.opacity)).toBeCloseTo(1, 12); expect(h.colophon.inert).toBe(false);
+  expect(h.word.style.transform).toBe("translate3d(0,0%,0)");
+  h.mode({ quietMode: true }); expect(tail.style.height).toBe("0vw");
+  h.mode({ quietMode: false }); expect(tail.style.height).toBe("23.75vw");
+  h.globals.innerHeight = 600; h.window.dispatchEvent(new Event("resize")); expect(tail.style.height).toBe("0vw");
+  dispose(); expect(tail.removed).toBe(true);
+});
+
+
+test("standard footer remeasures upstream content changes without a mask resize", async () => {
+  const h = harness("standard"), layout = new Surface(), content = new Surface(); h.root.parentElement = layout;
+  layout.querySelector = (selector) => selector === "main" ? content : null;
+  h.globals.innerWidth = 1280; h.globals.innerHeight = 1024;
+  h.root.offsetHeight = 633.6; h.root.rect.top = 4000;
+  const dispose = h.mount(); await flushImports();
+  expect(h.resizeTargets.has(layout)).toBe(true); expect(h.resizeTargets.has(content)).toBe(true); expect(h.resizeTargets.has(h.mask)).toBe(true);
+  // Textarea/content shrinks while the mask width/height remains unchanged.
+  const maskRect = { ...h.mask.rect }; h.root.rect.top = 3840;
+  h.maskResize(); // The single RO callback now also receives the observed parent.
+  h.globals.scrollY = 3840 + 633.6 + 304 - 1024;
+  h.window.dispatchEvent(new Event("resize"));
+  expect(h.mask.rect).toEqual(maskRect);
+  expect(Number(h.colophon.style.opacity)).toBeCloseTo(1, 12); expect(h.colophon.inert).toBe(false);
+  expect(h.word.style.transform).toBe("translate3d(0,0%,0)");
+  dispose(); expect(h.resizeTargets.size).toBe(0);
 });

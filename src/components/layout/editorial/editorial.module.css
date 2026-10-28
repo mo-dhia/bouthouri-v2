@@ -1,0 +1,211 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: 2.25vw; --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 5.20834vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
+  .root :global(.footer-information) { top: var(--footer-information-top); grid-template-columns: 1.6fr 1fr auto; align-items: start; gap: 3vw; display: grid; position: absolute; inset-inline: 8% }
+  .root :global(.footer-label) { font-size: calc(0.416667vw * var(--type-scale, 1)); letter-spacing: calc(.13em * var(--tracking-scale, 1)); color: #a5a397; margin-bottom: 0.729167vw; display: block }
+  .root :global(.footer-link) { min-height: 1.45834vw; font-size: calc(0.520834vw * var(--type-scale, 1)); color: #c8c5ba; padding-block: 0.208334vw; line-height: 1.5; display: inline-block; position: relative }
+  .root :global(.footer-link:after) { content: ''; transform-origin: 50%; background: #a9a699; height: 0.0520834vw; transition: transform .25s; position: absolute; bottom: 0; left: 0; right: 0; transform: scaleX(0) }
+  .root :global(.footer-link:hover:after), .root :global(.footer-link:focus-visible:after) { transform: scaleX(1) }
+  .root :global(.footer-email) { font-size: calc(1.40625vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: #e0ddd4 }
+  .root :global(.footer-direct p) { font-size: calc(0.520834vw * var(--type-scale, 1)); color: #8d8c82; margin: 0.520834vw 0 0; line-height: 1.6 }
+  .root :global(.footer-navigation nav) { flex-wrap: wrap; gap: 0.9375vw; display: flex }
+  .root :global(.footer-clock time) { font-size: calc(0.9375vw * var(--type-scale, 1)); font-variant-numeric: tabular-nums; letter-spacing: calc(-.04em * var(--tracking-scale, 1)); display: block }
+  .root :global(.footer-word-mask) { inset-inline: 2%; bottom: var(--footer-word-bottom); pointer-events: none; direction: ltr; position: absolute; overflow: clip }
+  .root :global(.footer-word-text) { font: var(--weight-500, 500) 25vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
+  .root :global(.footer-colophon) { inset-inline: 4%; bottom: min(3.5%, max(0.625vw, calc(var(--footer-word-bottom) / 2))); justify-content: space-between; align-items: baseline; gap: 0.833334vw; display: flex; position: absolute }
+  .root :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
+  .root :global(.footer-socials) { font-size: calc(0.520834vw * var(--type-scale, 1)); align-items: baseline; gap: 1.25vw; display: flex }
+  .root :global(.footer-colophon small) { font-size: calc(0.416667vw * var(--type-scale, 1)); letter-spacing: calc(.06em * var(--tracking-scale, 1)); white-space: nowrap; color: #909085; align-items: baseline; gap: .9em; display: flex }
+  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 49.5vw; padding-block: 10.125vw 2.25vw; display: grid; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-information) { margin-inline: 8%; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(1.04167vw, calc(5.0625vw - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-colophon) { margin: 1.6875vw 4% 0; position: relative; inset: auto }
+  .root :global(.global-footer[dir=rtl]) { font-family: var(--font-arabic), sans-serif }
+  .root :global(.global-footer[dir=rtl] :is(.footer-label, .footer-direct p, .footer-link)) { letter-spacing: 0 }
+  .root :global(.global-footer :is(bdi, time)) { font-family: var(--font-latin), sans-serif; font-weight: 400 }
+  .root :global(.global-footer .footer-socials bdi[lang=ar]) { font-family: var(--font-arabic), sans-serif; letter-spacing: 0 }
+  @media (any-pointer:coarse) {
+    .root :global(.global-footer .footer-link) { align-items: center; min-height: 2.29167vw; display: inline-flex }
+    .root :global(.global-footer .footer-navigation nav) { row-gap: 0.104167vw }
+    .root :global(.global-footer .footer-colophon) { padding-bottom: env(safe-area-inset-bottom) }
+  }
+  .root :global(.global-footer .footer-label) { font-size: max(0.520834vw, calc(0.416667vw * var(--type-scale, 1))) }
+  .root :global(.global-footer .footer-colophon small) { font-size: max(0.520834vw, calc(0.46875vw * var(--type-scale, 1))) }
+  .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.0520834vw; height: 0.0520834vw; position: absolute; overflow: hidden }
+  .root { position: relative; isolation: isolate; min-height: var(--design-height) }
+  .root > main, .root > footer { position: relative; z-index: 1 }
+  .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
+  .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
+  .navigation { --nav-hit-height: 2.29167vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 1.04167vw; min-height: 4.89584vw; padding: 1.14584vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
+  .identity, .actions, .controls { pointer-events: auto; align-items: center; display: flex }
+  .identity { gap: 1.04167vw }
+  .identity > a { flex: none; width: 3.125vw; height: 2.29167vw; position: static; transform: none; display: grid; place-items: center }
+  .identity svg { display: block; width: 100%; height: 100% }
+  .role { font-size: calc(0.416667vw * var(--type-scale, 1)); color: #a7a397; letter-spacing: calc(.065em * var(--tracking-scale, 1)); line-height: 1.65 }
+  .role > span { white-space: nowrap; display: block }
+  .actions { gap: 1.45834vw }
+  .controls { gap: 0.15625vw }
+  .controls > * { min-width: 2.29167vw; font-size: calc(0.572917vw * var(--type-scale, 1)); color: #b6b1a5; place-items: center; display: grid; position: static; border: 0 !important; border-radius: 0 !important; width: 2.29167vw !important; height: 2.29167vw !important }
+  .controls :global([data-language-control]):before { display: none }
+  .identity > a { color: inherit }
+  .controls :global([data-language-control]) { color: #dedbd2 }
+  .controls :global([data-language-control][lang='ar'] [data-language-label]) { font-family: var(--font-arabic), sans-serif; font-weight: 450; font-size: calc(1.19792vw * var(--type-scale, 1)); line-height: 1.66667vw; display: block }
+  .controls :global([data-language-control][lang='en'] [data-language-label]) { font-family: var(--font-latin), sans-serif; font-weight: 400; font-size: calc(0.572917vw * var(--type-scale, 1)); letter-spacing: calc(.025em * var(--tracking-scale, 1)); line-height: 1.66667vw; display: block }
+  .controls :global([data-sound-control]) { color: #aaa9a2 }
+  .controls svg { width: 1.35417vw; height: 1.35417vw }
+  .navigation :global([data-menu-control]) { min-width: 3.33334vw }
+  :global(html[lang='ar']) .role { text-align: right; letter-spacing: 0; font-size: calc(0.572917vw * var(--type-scale, 1)); direction: rtl }
+}
+@media (600px < width <= 1024px) {
+  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: 5.33334vw; --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 13.0209vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
+  .root :global(.footer-information) { top: var(--footer-information-top); grid-template-columns: 1.6fr 1fr auto; align-items: start; gap: 3vw; display: grid; position: absolute; inset-inline: 8% }
+  .root :global(.footer-label) { font-size: calc(1.04167vw * var(--type-scale, 1)); letter-spacing: calc(.13em * var(--tracking-scale, 1)); color: #a5a397; margin-bottom: 1.82292vw; display: block }
+  .root :global(.footer-link) { min-height: 3.64584vw; font-size: calc(1.30209vw * var(--type-scale, 1)); color: #c8c5ba; padding-block: 0.520834vw; line-height: 1.5; display: inline-block; position: relative }
+  .root :global(.footer-link:after) { content: ''; transform-origin: 50%; background: #a9a699; height: 0.130209vw; transition: transform .25s; position: absolute; bottom: 0; left: 0; right: 0; transform: scaleX(0) }
+  .root :global(.footer-link:hover:after), .root :global(.footer-link:focus-visible:after) { transform: scaleX(1) }
+  .root :global(.footer-email) { font-size: calc(1.82292vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: #e0ddd4 }
+  .root :global(.footer-direct p) { font-size: calc(1.30209vw * var(--type-scale, 1)); color: #8d8c82; margin: 1.30209vw 0 0; line-height: 1.6 }
+  .root :global(.footer-navigation nav) { flex-wrap: wrap; gap: 2.34375vw; display: flex }
+  .root :global(.footer-clock time) { font-size: calc(2.34375vw * var(--type-scale, 1)); font-variant-numeric: tabular-nums; letter-spacing: calc(-.04em * var(--tracking-scale, 1)); display: block }
+  .root :global(.footer-word-mask) { inset-inline: 2%; bottom: var(--footer-word-bottom); pointer-events: none; direction: ltr; position: absolute; overflow: clip }
+  .root :global(.footer-word-text) { font: var(--weight-500, 500) 25vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
+  .root :global(.footer-colophon) { inset-inline: 4%; bottom: min(3.5%, max(1.5625vw, calc(var(--footer-word-bottom) / 2))); justify-content: space-between; align-items: baseline; gap: 2.08334vw; display: flex; position: absolute }
+  .root :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
+  .root :global(.footer-socials) { font-size: calc(1.30209vw * var(--type-scale, 1)); align-items: baseline; gap: 3.125vw; display: flex }
+  .root :global(.footer-colophon small) { font-size: calc(1.04167vw * var(--type-scale, 1)); letter-spacing: calc(.06em * var(--tracking-scale, 1)); white-space: nowrap; color: #909085; align-items: baseline; gap: .9em; display: flex }
+  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 117.334vw; padding-block: 24vw 5.33334vw; display: grid; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-information) { margin-inline: 8%; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(2.60417vw, calc(12vw - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-colophon) { margin: 4vw 4% 0; position: relative; inset: auto }
+  .root :global(.global-footer[dir=rtl]) { font-family: var(--font-arabic), sans-serif }
+  .root :global(.global-footer[dir=rtl] :is(.footer-label, .footer-direct p, .footer-link)) { letter-spacing: 0 }
+  .root :global(.global-footer :is(bdi, time)) { font-family: var(--font-latin), sans-serif; font-weight: 400 }
+  .root :global(.global-footer .footer-socials bdi[lang=ar]) { font-family: var(--font-arabic), sans-serif; letter-spacing: 0 }
+  .root :global(.global-footer .footer-link) { align-items: center; min-height: 5.72917vw; display: inline-flex }
+  .root :global(.global-footer .footer-navigation nav) { row-gap: 0.260417vw }
+  .root :global(.global-footer .footer-colophon) { padding-bottom: env(safe-area-inset-bottom) }
+  .root :global(.global-footer .footer-label) { font-size: max(1.30209vw, calc(1.04167vw * var(--type-scale, 1))) }
+  .root :global(.global-footer .footer-colophon small) { font-size: max(1.30209vw, calc(1.17188vw * var(--type-scale, 1))) }
+  .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.130209vw; height: 0.130209vw; position: absolute; overflow: hidden }
+  .root { position: relative; isolation: isolate; min-height: var(--design-height) }
+  .root > main, .root > footer { position: relative; z-index: 1 }
+  .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
+  .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
+  .navigation { --nav-hit-height: 5.72917vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 2.60417vw; min-height: 12.2396vw; padding: 2.86459vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
+  .identity, .actions, .controls { pointer-events: auto; align-items: center; display: flex }
+  .identity { gap: 2.60417vw }
+  .identity > a { flex: none; width: 7.8125vw; height: 5.72917vw; position: static; transform: none; display: grid; place-items: center }
+  .identity svg { display: block; width: 100%; height: 100% }
+  .role { font-size: calc(1.04167vw * var(--type-scale, 1)); color: #a7a397; letter-spacing: calc(.065em * var(--tracking-scale, 1)); line-height: 1.65 }
+  .role > span { white-space: nowrap; display: block }
+  .actions { gap: 3.64584vw }
+  .controls { gap: 0.390625vw }
+  .controls > * { min-width: 5.72917vw; font-size: calc(1.4323vw * var(--type-scale, 1)); color: #b6b1a5; place-items: center; display: grid; position: static; border: 0 !important; border-radius: 0 !important; width: 5.72917vw !important; height: 5.72917vw !important }
+  .controls :global([data-language-control]):before { display: none }
+  .identity > a { color: inherit }
+  .controls :global([data-language-control]) { color: #dedbd2 }
+  .controls :global([data-language-control][lang='ar'] [data-language-label]) { font-family: var(--font-arabic), sans-serif; font-weight: 450; font-size: calc(2.9948vw * var(--type-scale, 1)); line-height: 4.16667vw; display: block }
+  .controls :global([data-language-control][lang='en'] [data-language-label]) { font-family: var(--font-latin), sans-serif; font-weight: 400; font-size: calc(1.4323vw * var(--type-scale, 1)); letter-spacing: calc(.025em * var(--tracking-scale, 1)); line-height: 4.16667vw; display: block }
+  .controls :global([data-sound-control]) { color: #aaa9a2 }
+  .controls svg { width: 3.38542vw; height: 3.38542vw }
+  .navigation :global([data-menu-control]) { min-width: 8.33334vw }
+  :global(html[lang='ar']) .role { text-align: right; letter-spacing: 0; font-size: calc(1.4323vw * var(--type-scale, 1)); direction: rtl }
+  .actions { gap: 2.08334vw }
+  .identity { gap: 1.30209vw }
+  .role { font-size: calc(0.911459vw * var(--type-scale, 1)) }
+  .controls, .role { display: none }
+  .navigation { min-height: 10.1563vw; padding: 2.08334vw 6vw }
+  .navigation :global([data-menu-control]) { min-width: 8.33334vw; min-height: 5.72917vw }
+}
+@media (width <= 600px) {
+  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: 8.8835vw; --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 24.2719vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
+  .root :global(.footer-information) { top: var(--footer-information-top); grid-template-columns: 1.6fr 1fr auto; align-items: start; gap: 3vw; display: grid; position: absolute; inset-inline: 8% }
+  .root :global(.footer-label) { font-size: calc(1.94175vw * var(--type-scale, 1)); letter-spacing: calc(.13em * var(--tracking-scale, 1)); color: #a5a397; margin-bottom: 3.39806vw; display: block }
+  .root :global(.footer-link) { min-height: 6.79612vw; font-size: calc(2.42719vw * var(--type-scale, 1)); color: #c8c5ba; padding-block: 0.970874vw; line-height: 1.5; display: inline-block; position: relative }
+  .root :global(.footer-link:after) { content: ''; transform-origin: 50%; background: #a9a699; height: 0.242719vw; transition: transform .25s; position: absolute; bottom: 0; left: 0; right: 0; transform: scaleX(0) }
+  .root :global(.footer-link:hover:after), .root :global(.footer-link:focus-visible:after) { transform: scaleX(1) }
+  .root :global(.footer-email) { font-size: calc(3.39806vw * var(--type-scale, 1)); letter-spacing: calc(-.035em * var(--tracking-scale, 1)); color: #e0ddd4 }
+  .root :global(.footer-direct p) { font-size: calc(2.42719vw * var(--type-scale, 1)); color: #8d8c82; margin: 2.42719vw 0 0; line-height: 1.6 }
+  .root :global(.footer-navigation nav) { flex-wrap: wrap; gap: 4.36894vw; display: flex }
+  .root :global(.footer-clock time) { font-size: calc(4.36894vw * var(--type-scale, 1)); font-variant-numeric: tabular-nums; letter-spacing: calc(-.04em * var(--tracking-scale, 1)); display: block }
+  .root :global(.footer-word-mask) { inset-inline: 2%; bottom: var(--footer-word-bottom); pointer-events: none; direction: ltr; position: absolute; overflow: clip }
+  .root :global(.footer-word-text) { font: var(--weight-500, 500) 25vw/.9 var(--font-latin), sans-serif; letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #dbd8d0; text-align: left; transform: translateY(112%) }
+  .root :global(.footer-colophon) { inset-inline: 4%; bottom: min(3.5%, max(2.91263vw, calc(var(--footer-word-bottom) / 2))); justify-content: space-between; align-items: baseline; gap: 3.8835vw; display: flex; position: absolute }
+  .root :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
+  .root :global(.footer-socials) { font-size: calc(2.42719vw * var(--type-scale, 1)); align-items: baseline; gap: 5.82525vw; display: flex }
+  .root :global(.footer-colophon small) { font-size: calc(1.94175vw * var(--type-scale, 1)); letter-spacing: calc(.06em * var(--tracking-scale, 1)); white-space: nowrap; color: #909085; align-items: baseline; gap: .9em; display: flex }
+  .root :global(.home-footer) { --footer-word-rest: 17% }
+  .root :global(.footer-information) { grid-template-columns: 1fr auto; gap: 6.06797vw 4.36894vw; inset-inline: 8% }
+  .root :global(.footer-direct) { grid-column: 1/-1 }
+  .root :global(.footer-label) { font-size: calc(1.94175vw * var(--type-scale, 1)); margin-bottom: 2.18447vw }
+  .root :global(.footer-email) { font-size: calc(4.85437vw * var(--type-scale, 1)); min-height: 8.73787vw }
+  .root :global(.footer-direct p) { font-size: calc(2.42719vw * var(--type-scale, 1)) }
+  .root :global(.footer-navigation nav) { gap: 3.39806vw }
+  .root :global(.footer-link) { font-size: calc(2.66991vw * var(--type-scale, 1)); min-height: 8.73787vw }
+  .root :global(.footer-email) { font-size: calc(4.85437vw * var(--type-scale, 1)) }
+  .root :global(.footer-clock time) { font-size: calc(3.8835vw * var(--type-scale, 1)) }
+  .root :global(.footer-word-mask) { inset-inline: 1% }
+  .root :global(.footer-colophon) { bottom: 7%; inset-inline: 7% }
+  .root :global(.footer-colophon small) { text-align: end }
+  .root :global(.footer-socials) { gap: 4.36894vw }
+  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 195.437vw; padding-block: 39.9758vw 8.8835vw; display: grid; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-information) { margin-inline: 8%; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(4.85437vw, calc(19.9879vw - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-colophon) { margin: 6.66263vw 4% 0; position: relative; inset: auto }
+  .root :global(.global-footer[dir=rtl]) { font-family: var(--font-arabic), sans-serif }
+  .root :global(.global-footer[dir=rtl] :is(.footer-label, .footer-direct p, .footer-link)) { letter-spacing: 0 }
+  .root :global(.global-footer :is(bdi, time)) { font-family: var(--font-latin), sans-serif; font-weight: 400 }
+  .root :global(.global-footer .footer-socials bdi[lang=ar]) { font-family: var(--font-arabic), sans-serif; letter-spacing: 0 }
+  .root :global(.standard-footer) { min-height: 182.112vw; padding-top: 31.0923vw }
+  .root :global(.standard-footer .footer-information) { grid-template-columns: 1fr auto; gap: 6.06797vw 4.36894vw }
+  .root :global(.standard-footer .footer-direct) { grid-column: 1/-1 }
+  .root :global(.standard-footer .footer-label) { font-size: calc(1.94175vw * var(--type-scale, 1)); margin-bottom: 2.18447vw }
+  .root :global(.standard-footer .footer-link) { font-size: calc(2.66991vw * var(--type-scale, 1)); min-height: 8.73787vw }
+  .root :global(.standard-footer .footer-email) { font-size: calc(4.85437vw * var(--type-scale, 1)) }
+  .root :global(.standard-footer .footer-word-mask) { margin-inline: 1% }
+  .root :global(.standard-footer .footer-colophon) { margin-inline: 7% }
+  .root :global(.global-footer .footer-link) { align-items: center; min-height: 10.6797vw; display: inline-flex }
+  .root :global(.global-footer .footer-navigation nav) { row-gap: 0.485437vw }
+  .root :global(.global-footer .footer-colophon) { padding-bottom: env(safe-area-inset-bottom) }
+  .root :global(.global-footer .footer-label) { font-size: max(2.42719vw, calc(1.94175vw * var(--type-scale, 1))) }
+  .root :global(.global-footer .footer-colophon small) { font-size: max(2.42719vw, calc(2.18447vw * var(--type-scale, 1))) }
+  .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.242719vw; height: 0.242719vw; position: absolute; overflow: hidden }
+  .root { position: relative; isolation: isolate; min-height: var(--design-height) }
+  .root > main, .root > footer { position: relative; z-index: 1 }
+  .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
+  .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
+  .root :global(.standard-footer .footer-word-text) { font-size: 17.7189vw; line-height: 24.001vw; letter-spacing: -0.531564vw; left: -1.63604vw; --footer-ink-line-height: 15.947vw; --footer-ink-offset-y: 0.76511vw }
+  .navigation { --nav-hit-height: 10.6797vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 4.85437vw; min-height: 22.8156vw; padding: 5.33981vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
+  .identity, .actions, .controls { pointer-events: auto; align-items: center; display: flex }
+  .identity { gap: 4.85437vw }
+  .identity > a { flex: none; width: 14.5632vw; height: 10.6797vw; position: static; transform: none; display: grid; place-items: center }
+  .identity svg { display: block; width: 100%; height: 100% }
+  .role { font-size: calc(1.94175vw * var(--type-scale, 1)); color: #a7a397; letter-spacing: calc(.065em * var(--tracking-scale, 1)); line-height: 1.65 }
+  .role > span { white-space: nowrap; display: block }
+  .actions { gap: 6.79612vw }
+  .controls { gap: 0.728156vw }
+  .controls > * { min-width: 10.6797vw; font-size: calc(2.66991vw * var(--type-scale, 1)); color: #b6b1a5; place-items: center; display: grid; position: static; border: 0 !important; border-radius: 0 !important; width: 10.6797vw !important; height: 10.6797vw !important }
+  .controls :global([data-language-control]):before { display: none }
+  .identity > a { color: inherit }
+  .controls :global([data-language-control]) { color: #dedbd2 }
+  .controls :global([data-language-control][lang='ar'] [data-language-label]) { font-family: var(--font-arabic), sans-serif; font-weight: 450; font-size: calc(5.58253vw * var(--type-scale, 1)); line-height: 7.767vw; display: block }
+  .controls :global([data-language-control][lang='en'] [data-language-label]) { font-family: var(--font-latin), sans-serif; font-weight: 400; font-size: calc(2.66991vw * var(--type-scale, 1)); letter-spacing: calc(.025em * var(--tracking-scale, 1)); line-height: 7.767vw; display: block }
+  .controls :global([data-sound-control]) { color: #aaa9a2 }
+  .controls svg { width: 6.31068vw; height: 6.31068vw }
+  .navigation :global([data-menu-control]) { min-width: 15.534vw }
+  :global(html[lang='ar']) .role { text-align: right; letter-spacing: 0; font-size: calc(2.66991vw * var(--type-scale, 1)); direction: rtl }
+  .actions { gap: 3.8835vw }
+  .identity { gap: 2.42719vw }
+  .role { font-size: calc(1.69903vw * var(--type-scale, 1)) }
+  .navigation { gap: 2.42719vw; min-height: 18.9321vw; padding: 3.8835vw 5vw }
+  .role { display: none }
+  .identity > a { width: 10.6797vw }
+  .actions { gap: 1.94175vw }
+  .controls { gap: 0 }
+  .controls > * { min-width: 9.22331vw; width: 9.22331vw !important; height: 10.6797vw !important }
+  .navigation :global([data-menu-control]) { min-width: 11.6505vw; font-size: calc(2.18447vw * var(--type-scale, 1)) }
+  :global(html[lang='ar']) .navigation :global([data-menu-control]) { font-size: calc(2.91263vw * var(--type-scale, 1)) }
+  .controls, .role { display: none }
+  .navigation { min-height: 18.9321vw; padding: 3.8835vw 6vw }
+  .navigation :global([data-menu-control]) { min-width: 15.534vw; min-height: 10.6797vw }
+}

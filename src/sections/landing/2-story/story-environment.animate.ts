@@ -11,7 +11,7 @@ import { designHeight, viewportDesign } from "@/lib/viewport-design";
 export type SceneGuard = { x: number; y: number; rx: number; ry: number; weight: number };
 export type SceneInteraction = { guards: SceneGuard[]; grabbed: boolean };
 export type StoryEnvironmentController = { setReducedMode(enabled: boolean): void; dispose(): void };
-type StoryEnvironmentOptions = { reduced?: boolean };
+type StoryEnvironmentOptions = { reduced?: boolean; pose?: () => { time: number; environment: number; surfaceQuiet: number } };
 
 /** Cleanup-only adapter retained for imperative callers. */
 export function mountStoryEnvironment(stage: HTMLElement, options: StoryEnvironmentOptions = {}) {
@@ -21,7 +21,7 @@ export function mountStoryEnvironment(stage: HTMLElement, options: StoryEnvironm
 /** One fixed material controller for the HOME lifetime, including reading mode. */
 export function createStoryEnvironment(stage: HTMLElement, options: StoryEnvironmentOptions = {}): StoryEnvironmentController {
   let reduced = options.reduced ?? false;
-  const page = stage.closest<HTMLElement>("main") ?? stage.parentElement!;
+  const page = options.pose ? stage : stage.closest<HTMLElement>("main") ?? stage.parentElement!;
   const owner = stage.closest<HTMLElement>(".experience") ?? page;
   const host = document.createElement("div");
   host.className = `global-environment ${styles.environment}`; host.setAttribute("aria-hidden", "true");
@@ -55,7 +55,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
   let previousTravel = -1.2;
   let menuOpen = document.documentElement.dataset.menuOpen === "true";
   const heroRoot = page.querySelector<HTMLElement>("#identity");
-  let heroProgress = readHeroWorldPose(heroRoot)?.progress ?? worldProgressFromScroll(
+  let heroProgress = options.pose ? 1 : readHeroWorldPose(heroRoot)?.progress ?? worldProgressFromScroll(
     heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || designHeight(width), mobile,
   );
   const readFrame = (): StoryFrame => ({ time: Number(stage.dataset.storyTime ?? 0), openingTime: Number(stage.dataset.openingTime ?? 0), progress: Number(stage.dataset.progress ?? 0) });
@@ -86,7 +86,7 @@ export function createStoryEnvironment(stage: HTMLElement, options: StoryEnviron
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60); last = now; time += dt * (reduced ? 0.035 : 1);
     if (!reduced && refreshFrame) { frame = readFrame(); workTravel = readWorkTravel(); refreshFrame = false; }
     // Source resets initialNarrative on reading entry independently of DOM time.
-    const score = sampleStoryScore(reduced ? readingFrame : frame, mobile), input = pointer.state;
+    const score = { ...sampleStoryScore(reduced ? readingFrame : frame, mobile), ...options.pose?.() }, input = pointer.state;
     const pointerMoving = pointer.advance(dt, menuOpen);
     const workQuiet = smooth(280, 304, score.time) * (1 - smooth(426, 450, score.time));
     const heroBlend = smooth(0.25, 0.72, heroProgress);

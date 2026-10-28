@@ -112,3 +112,12 @@ not be added around pinned/sticky scenes indiscriminately.
 7. RAF spacing is not presented-frame FPS or isolated engine cost. Avoid ranking
    libraries from whole-site samples with different assets and load architectures.
 8. Run production SSR/asset checks; development mode cannot validate prefetch costs.
+
+## Editorial routes
+
+Vision, Services and Contact use server-only page compositions in both locales.
+Their common editorial shell is distinct from HOME geometry, reusing the menu,
+standard footer and deferred field controller. Page-only CSS stays out of HOME's
+server import graph. Page content and form controls are prerendered; controllers
+and practice-object graphics load across separate boundaries. See
+[editorial pages](editorial-pages-architecture.md) for ownership and delivery settings.

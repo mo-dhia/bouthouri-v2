@@ -1,6 +1,7 @@
 import "server-only";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { brand } from "@/config/brand";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
@@ -14,7 +15,7 @@ import menu from "./menu.module.css";
 
 type Copy = ReturnType<typeof getShellCopy>;
 
-function MenuButton({ copy, close = false }: { copy: Copy; close?: boolean }) {
+export function MenuButton({ copy, close = false }: { copy: Copy; close?: boolean }) {
   return (
     <button
       type="button"
@@ -38,7 +39,7 @@ function MenuButton({ copy, close = false }: { copy: Copy; close?: boolean }) {
   );
 }
 
-function SoundButton({
+export function SoundButton({
   copy,
   labelled = false,
 }: {
@@ -73,19 +74,21 @@ function SoundButton({
   );
 }
 
-function LanguageLink({
+export function LanguageLink({
   locale,
   copy,
   full = false,
+  route = "",
 }: {
   locale: Locale;
   copy: Copy;
   full?: boolean;
+  route?: string;
 }) {
   const otherLocale = locale === "en" ? "ar" : "en";
   return (
     <Link
-      href={`/${otherLocale}`}
+      href={`/${otherLocale}${route}`}
       prefetch={false}
       hrefLang={otherLocale}
       lang={otherLocale}
@@ -95,7 +98,7 @@ function LanguageLink({
       title={copy.languageLabel}
     >
       <span className={styles.languageMask}>
-        <span>
+        <span data-language-label="true">
           <NavInk>{full ? copy.fullLanguage : copy.language}</NavInk>
         </span>
       </span>
@@ -105,14 +108,21 @@ function LanguageLink({
 
 export default function Header({
   locale,
+  variant = "home",
+  route = "",
+  navigation,
 }: {
   locale: Locale;
-  dictionary: Dictionary;
+  navigation?: ReactNode;
+  dictionary?: Dictionary;
+  variant?: "home" | "editorial";
+  route?: string;
 }) {
   const copy = getShellCopy(locale);
   return (
-    <div className={styles.shell} data-portfolio-shell="true" data-locale={locale}>
+    <div className={styles.shell} data-portfolio-shell="true" data-locale={locale} data-shell-variant={variant}>
       <HeaderAnimateGate />
+      {variant === "editorial" ? navigation : <>
       <header className={styles.utilities} data-hero-utilities="true">
         <div className={styles.navEntrance} data-hero-nav-entrance="true">
           <div
@@ -258,6 +268,7 @@ export default function Header({
           </div>
         </div>
       </header>
+      </>}
       <dialog
         className={menu["navigation-scene"]}
         id="portfolio-navigation"
@@ -360,7 +371,7 @@ export default function Header({
                     <span className={menu["menu-meta-label"]}>
                       {copy.languageHeading}
                     </span>
-                    <LanguageLink locale={locale} copy={copy} full />
+                    <LanguageLink locale={locale} copy={copy} full route={route} />
                   </div>
                   <div>
                     <span className={menu["menu-meta-label"]}>
@@ -454,7 +465,7 @@ export default function Header({
               {item.label}
             </a>
           ))}
-          <a href={`/${locale === "en" ? "ar" : "en"}`}>{copy.fullLanguage}</a>
+          <a href={`/${locale === "en" ? "ar" : "en"}${route}`}>{copy.fullLanguage}</a>
         </nav>
       </noscript>
     </div>

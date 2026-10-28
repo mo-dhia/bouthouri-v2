@@ -23,7 +23,7 @@ function measure(width: number, actualHeight: number, restUnit = "vw", stretched
     height: pixels(word.style["--footer-ink-line-height"]) * Number(word.style["--footer-ink-scale-y"]),
   }) };
   const information = { offsetHeight: 90 * scale };
-  const root = { style: style(), offsetHeight: reference.height * scale, querySelector: () => information };
+  const root = { dataset: { footerVariant: "home" }, style: style(), offsetHeight: reference.height * scale, querySelector: () => information };
   const mask = { getBoundingClientRect: () => ({ width: width * 0.96 }) };
   const context = {
     font: "400 100px Questrial", letterSpacing: "-3px",
