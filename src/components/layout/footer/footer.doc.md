@@ -220,3 +220,42 @@ agreed profiles retain readable hero/menu/footer identity and zero horizontal
 page overflow. Native-window capture preserves the clean assembled ring; some
 MCP screenshot controls reset the material and are excluded from logo proof.
 Evidence:`.artifacts/rebrand-identity-20261028/validation.json`.
+
+
+## Resting footer scroll reversal correction (2026-10-28)
+
+Repeated scroll after a full-word pause exposed a scheduling bug: `setActive(true)`
+returned without waking the canvas whenever the idle-episode timeout existed.
+The parent still moved/clipped the DOM word, but its hidden typography and visible
+canvas diverged until pointer input or the timeout woke painting. This predates
+the branding change; BOUTHOURI geometry merely made the stale placement visible.
+
+Every eligible publication now requests the existing coalesced demand frame.
+The idle timer continues to schedule deformation, not placement. Rest geometry
+and paint caches still avoid rebuilding paths or painting an unchanged pose.
+There is no additional RAF owner, input smoother, clock, or branding change.
+The mounted regression starts a real material through its parent, parks at full
+reveal with an idle timer, then alternates partial/full reveal without pointer
+input. It verifies current transforms/clipping, coalesced callbacks, path reuse,
+unchanged-pose paint suppression and hiding/cleanup in EN and AR. It fails before
+the wake correction.
+
+Live baseline: at1920×1080, native31684→31310 changes story714→703.3905 and the
+BOUTHOURI DOM word top683.60→827.17px. Before correction no canvas paint followed
+within350ms; the original Gazzar repainted its equivalent reveal. After the fix,
+twelve alternating seeks repaint at the current DOM position, including returns
+to full reveal. Screenshots and bounded actual-call traces are in the ignored
+`.artifacts/footer-scroll-fix/` directory. Native-wheel and production validation
+are recorded there separately; these seek controls make no FPS claim.
+
+Final validation for this correction: `bun run check` passes257 tests/9,855
+assertions; static EN/AR production build`uLs1I2ral6LnMMx-6Jr6K` and the SSR
+audit (both locales, RTL, metadata and13 assets) pass. In production at1920×1080,
+EN and AR each received88 trusted XTest wheel inputs through repeated upward/
+downward reversals. Every observed actual Canvas translation matched the current
+DOM word top (maximum error0px); this is placement evidence, not an FPS claim.
+Native Enter followed by scrolling away during morph reset the material to word,
+hid the overlay, and returned cleanly at714 with BOUTHOURI/contact@bouthouri.co
+intact. The existing dev server was retained; the separate validation server is
+shut down after returning the browser to localhost3000. All diagnostic wrappers
+and event collectors are removed.

@@ -738,7 +738,10 @@ export function mountFooterMaterial(
       if (changed || frame || phase !== "word") reset();
       return;
     }
-    if (changed || phase !== "word" || !idleTimer) wake();
+    // Journey publications also move/clip the DOM word while eligibility stays
+    // true. The idle timer schedules deformation, not placement: it must never
+    // suppress a current-pose redraw. wake() coalesces; draw() skips unchanged rest.
+    wake();
   };
   const hit = (event: PointerEvent) => {
     if (!paths) return -1;

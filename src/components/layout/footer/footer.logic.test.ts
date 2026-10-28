@@ -258,6 +258,39 @@ test("inactive real material cannot reactivate itself through Enter or pointer i
   material.dispose(); expect(h.rafs.size).toBe(0);
 });
 
+test("journey reversals repaint a resting footer while its idle episode timer is pending", async () => {
+  for (const locale of ["en", "ar"]) {
+    const h = harness();
+    h.root.lang = locale;
+    h.mask.rect.top = h.word.rect.top = 200;
+    const material = h.material(), dispose = h.mount(material);
+    h.frame(714); await flushImports(); h.step();
+    expect(h.timers.size).toBe(2); // Clock plus the sleeping material's idle episode.
+    expect(h.rafs.size).toBe(0);
+    const builds = h.paint.pathBuilds;
+    for (const [score, shift] of [[703, 46], [714, 0], [699, 80], [714, 0], [710, 12], [703, 46]] as const) {
+      const clears = h.paint.clears;
+      h.word.rect.top = h.mask.rect.top + shift;
+      h.frame(score); h.frame(score); // Several publications still share one demand frame.
+      expect(h.rafs.size).toBe(1);
+      h.step();
+      expect(h.paint.clears).toBe(clears + 1);
+      const scale = viewport.designScale(h.globals.innerWidth);
+      expect(h.paint.transforms.at(-1)).toEqual([scale, 0, 0, scale, 0, 200 + shift]);
+      expect(h.word.style.visibility).toBe("hidden");
+      expect(h.mask.dataset.mode).toBe("word");
+    }
+    expect(h.paint.pathBuilds).toBe(builds); // Placement changes reuse the BOUTHOURI contours.
+    const clears = h.paint.clears;
+    h.frame(703); h.step();
+    expect(h.paint.clears).toBe(clears); // Unchanged pose still skips painting.
+    h.root.inert = true; h.frame(680);
+    expect(h.word.style.visibility).toBe("");
+    expect(h.rafs.size).toBe(0);
+    dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
+  }
+});
+
 function materialPair(locale = "en", reduced = false) {
   const scenes = [harness(), harness()];
   scenes.forEach((h) => {
