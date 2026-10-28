@@ -8,6 +8,7 @@ import {
 import { attachSectionWhispers } from "@/lib/audio/section-whispers";
 import menuStyles from "./menu.module.css";
 import styles from "./header.module.css";
+import { shellEmail } from "./shell-copy";
 import { createMenuTimeline } from "./menu-timeline";
 import {
   heroWorldEvent,
@@ -397,7 +398,7 @@ export function mountHeader(root: HTMLElement): () => void {
     if (copy) {
       const status = dialog.querySelector<HTMLElement>("[data-copy-status]");
       void navigator.clipboard
-        ?.writeText("hello@thisisgazzar.com")
+        ?.writeText(shellEmail)
         .then(() => {
           if (disposed) return;
           copy.textContent = copy.dataset.copiedLabel ?? "";

@@ -3,7 +3,7 @@ import "server-only";
 import Link from "next/link";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
-import GazzarLogo from "./gazzar-logo";
+import IdentityLogo from "./identity-logo";
 import KineticLink from "./kinetic-link";
 import NavInk from "./nav-ink";
 import HeaderAnimateGate from "./header-animate-gate";
@@ -110,7 +110,7 @@ export default function Header({
 }) {
   const copy = getShellCopy(locale);
   return (
-    <div className={styles.shell} data-gazzar-shell="true" data-locale={locale}>
+    <div className={styles.shell} data-portfolio-shell="true" data-locale={locale}>
       <HeaderAnimateGate />
       <header className={styles.utilities} data-hero-utilities="true">
         <div className={styles.navEntrance} data-hero-nav-entrance="true">
@@ -145,7 +145,7 @@ export default function Header({
                     data-home-link="true"
                     data-material-sound="true"
                   >
-                    <GazzarLogo />
+                    <IdentityLogo />
                   </Link>
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function Header({
                       data-home-link="true"
                       data-material-sound="true"
                     >
-                      <GazzarLogo />
+                      <IdentityLogo />
                     </Link>
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export default function Header({
                 aria-label={copy.home}
                 data-home-link="true"
               >
-                <GazzarLogo />
+                <IdentityLogo />
               </Link>
               <span className={menu["menu-owner"]}>
                 {copy.owner}

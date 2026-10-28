@@ -13,6 +13,7 @@
   .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: 100vw; max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
   .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 2.08334vw); position: absolute; bottom: 2.53125vw; right: 2.2vw }
+  :global(html[lang='en']) .information { min-width: 31.9367vw }
   .copyEntrance { opacity: 0; position: relative }
   .information h1 { font-size: calc(3.64931vw * var(--type-scale, 1)); font-weight: var(--weight-440, 440); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 0.15625vw; line-height: 1.05 }
   .information p { width: 0; min-width: 100%; font-size: calc(0.949653vw * var(--type-scale, 1)); font-weight: var(--weight-400, 400); letter-spacing: calc(-.017em * var(--tracking-scale, 1)); color: #aaa8a1; margin: 0; line-height: 1.48 }
@@ -90,6 +91,7 @@
   .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: 200vw; max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
   .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 5.20834vw); position: absolute; bottom: 6vw; right: 2.60417vw }
+  :global(html[lang='en']) .information { min-width: 42.0053vw }
   .copyEntrance { opacity: 0; position: relative }
   .information h1 { font-size: calc(3.90625vw * var(--type-scale, 1)); font-weight: var(--weight-440, 440); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 0.390625vw; line-height: 1.05 }
   .information p { width: 0; min-width: 100%; font-size: calc(1.5625vw * var(--type-scale, 1)); font-weight: var(--weight-400, 400); letter-spacing: calc(-.017em * var(--tracking-scale, 1)); color: #aaa8a1; margin: 0; line-height: 1.48 }
@@ -172,6 +174,7 @@
   .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: 333.132vw; max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
   .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 9.70874vw); position: absolute; bottom: 9.99394vw; right: 4.85437vw }
+  :global(html[lang='en']) .information { min-width: 58.3698vw }
   .copyEntrance { opacity: 0; position: relative }
   .information h1 { font-size: calc(7.28156vw * var(--type-scale, 1)); font-weight: var(--weight-440, 440); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 0.728156vw; line-height: 1.05 }
   .information p { width: 0; min-width: 100%; font-size: calc(2.91263vw * var(--type-scale, 1)); font-weight: var(--weight-400, 400); letter-spacing: calc(-.017em * var(--tracking-scale, 1)); color: #aaa8a1; margin: 0; line-height: 1.48 }

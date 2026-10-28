@@ -11,7 +11,7 @@ export function useHeaderController() {
     let cleanup: (() => void) | undefined;
     void loadShell()
       .then(({ mountHeader }) => {
-        const root = document.querySelector<HTMLElement>("[data-gazzar-shell]");
+        const root = document.querySelector<HTMLElement>("[data-portfolio-shell]");
         if (!cancelled && root) cleanup = mountHeader(root);
       })
       .catch(() => {});

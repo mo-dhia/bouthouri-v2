@@ -6,7 +6,7 @@ export const logoPaths = [
 ] as const;
 export const logoOrigins = [78.5, 133.5, 212.5] as const;
 
-export default function GazzarLogo({ className }: { className?: string }) {
+export default function IdentityLogo({ className }: { className?: string }) {
   return (
     <svg
       className={className}

@@ -8,7 +8,7 @@ export function useFooterController() {
   useEffect(() => {
     let disposed = false;
     let cleanup: (() => void) | undefined;
-    const root = document.querySelector<HTMLElement>("[data-gazzar-footer]");
+    const root = document.querySelector<HTMLElement>("[data-portfolio-footer]");
     if (!root) return;
     void loadFooter()
       .then(({ mountFooterInteractions }) => {

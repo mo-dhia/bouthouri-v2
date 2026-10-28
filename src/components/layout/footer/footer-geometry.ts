@@ -1,3 +1,4 @@
+import { brand } from "@/config/brand";
 import type { GlyphBox } from "./footer-paths";
 import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
 
@@ -8,7 +9,7 @@ export function footerGlyphBoxes(
 ): GlyphBox[] {
   const style = getComputedStyle(word),
     size = parseFloat(style.fontSize),
-    text = word.textContent ?? "GAZZAR",
+    text = word.textContent ?? brand.wordmark,
     origin = parseFloat(style.left) || 0;
   context.font = `400 ${size}px ${style.fontFamily}`;
   context.letterSpacing = style.letterSpacing;
@@ -38,7 +39,7 @@ export function measureFooterWord(
   context: CanvasRenderingContext2D,
 ): void {
   const family = getComputedStyle(word).fontFamily,
-    text = word.textContent ?? "GAZZAR",
+    text = word.textContent ?? brand.wordmark,
     width = mask.getBoundingClientRect().width,
     viewportHeight = designHeight(innerWidth),
     gap = designPixels(20, innerWidth),

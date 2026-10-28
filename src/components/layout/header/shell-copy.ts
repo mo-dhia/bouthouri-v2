@@ -1,6 +1,7 @@
+import { brand } from "@/config/brand";
 import type { Locale } from "@/i18n/routing";
 
-/** Verbatim labels recovered from the reference's EN/AR shell, not route copy. */
+/** Reference-derived EN/AR shell labels with the approved personal identity. */
 export const shellCopy = {
   en: {
     home: "Home",
@@ -11,7 +12,7 @@ export const shellCopy = {
     languageLabel: "Switch to Arabic",
     role: "Engineering & Creative Development",
     roleLines: ["ENGINEERING", "CREATIVE DEVELOPMENT"],
-    owner: "MOHAMED ELGAZZAR",
+    owner: brand.owner,
     menu: "MENU",
     open: "Open navigation",
     close: "CLOSE",
@@ -74,7 +75,7 @@ export const shellCopy = {
     footerThought: "A conversation can be the next beginning.",
     footerExplore: "CONTINUE EXPLORING",
     footerTime: "CAIRO / LOCAL TIME",
-    footerGrab: "GAZZAR — grab to reveal the identity",
+    footerGrab: `${brand.wordmark} — grab to reveal the identity`,
   },
   ar: {
     home: "الرئيسية",
@@ -85,7 +86,7 @@ export const shellCopy = {
     languageLabel: "التبديل إلى الإنجليزية",
     role: "هندسة وتطوير إبداعي",
     roleLines: ["هندسة", "تطوير إبداعي"],
-    owner: "محمد الجزار",
+    owner: brand.arabicName,
     menu: "القائمة",
     open: "افتح قائمة التنقل",
     close: "إغلاق",
@@ -144,13 +145,12 @@ export const shellCopy = {
     footerThought: "قد يكون الحوار بداية ما يأتي",
     footerExplore: "واصل الاستكشاف",
     footerTime: "القاهرة / التوقيت المحلي",
-    footerGrab: "GAZZAR — اضغط لاكتشاف أجزاء الهوية",
+    footerGrab: `${brand.wordmark} — اضغط لاكتشاف أجزاء الهوية`,
   },
 } as const;
 
 export function getShellCopy(locale: Locale) {
   return shellCopy[locale];
 }
-export const shellEmail = "hello@thisisgazzar.com";
-export const shellLinkedIn =
-  "https://www.linkedin.com/in/mohamed-elgazzar-550a98101";
+export const shellEmail = brand.email;
+export const shellLinkedIn = brand.linkedIn;

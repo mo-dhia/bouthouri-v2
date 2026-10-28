@@ -1,12 +1,13 @@
-# Source-compatible home footer
+# HOME footer and identity wordmark
 
 Fixed design policy (2026-10-28): desktop1920×1080 (>1024px), tablet768×1024
 (600<width<=1024), mobile412×915 (<=600) supersede live700px layout decisions.
 `footer-material.ts` normalizes measured DOM glyph boxes, positions and pointer
 motion by shared `designScale(innerWidth)`, then applies that scale exactly once
 with DPR in the drawing transform. Fonts/caps, labels, morph/bridge offsets,
-pulls and refraction waves all run in reference pixels; pure path/field APIs and
-their source fixtures remain intact. `FooterThoughts`' optional final rasterScale
+pulls and refraction waves all run in reference pixels; path/field APIs retain
+that coordinate basis. The rebranding section below records the new glyph
+topology. `FooterThoughts`' optional final rasterScale
 only controls bitmap resolution; it does not resize logical layout. DOM font,
 tracking, origin and measured footer variables are emitted in vw, and the glyph
 reader uses computed physical left rather than parsing an inline vw value.
@@ -36,7 +37,7 @@ verifies listener/API cleanup and the no-context handle. Physical overlay CSS
 and buffers stay paired; production review remains root-owned.
 
 `Footer copy={dictionary.footer}` is inserted **once inside `.systems-story`**
-by Journey. Optional `locale` is also accepted. It renders the original
+by Journey, with an explicit required`locale`. It renders the original
 `.home-footer`, `.footer-information`, `.footer-word-mask`, `.footer-word-text`,
 `.footer-thought` and `.footer-colophon`, links, Cairo time and EN/AR copy. There
 is no second page footer. Parent's scoped source CSS and systems timeline own
@@ -175,3 +176,47 @@ The null gate view delegates mounting and teardown to
 `footer-animate-gate.logic.ts`. Footer markup is guarded by `server-only`.
 The small clock/eligibility controller mounts independently of reading mode;
 contour data and the interactive Canvas material remain behind its dynamic import.
+
+
+## Bouthouri identity — 2026-10-28
+
+The current visible word is`BOUTHOURI`, driven by`src/config/brand.ts`. The
+English owner is`Med D. Bouthouri` (uppercase where the original shell was
+uppercase); Arabic uses`محمد ضياء بوثوري`. Contact links use the user-supplied
+email and LinkedIn URL. Historical source comparisons above describe the
+pre-rebranding six-letter word, not the current outline topology.
+
+`scripts/generate-footer-glyphs.mjs` reproducibly generates normalized uppercase
+contours from the existing local Questrial WOFF through pinned Troika's Typr
+parser. No new runtime font or package is required. The nine displayed letters
+share seven distinct glyph outlines; counters stay separate, including B's two
+counters. Source contour correspondence survives forward/reverse, pull and
+refraction. Seven middle letters form seven adjoining sectors of the original
+identity ring; first/last letters reach its half-ring/dash. Assembled sectors
+paint together using the existing Path2D, avoiding antialias seams. Hit testing
+continues to map the assembled motif to the same three concept parts.
+
+Logo diameter, bottom anchor and intermediate bridge use the measured original
+reference geometry, independent of the new fitted word's size. At1920×1080 the
+source mask is1843.2px, line451.4px, first ink y43.2/height339; the logo center
+stays734.56px when the new fitted line is310px tall. Width scaling preserves
+that relationship. Mobile retains its original above-word positioning.
+
+Font family, relative tracking, mask margins, ink fitting, easing, resolving
+phase, reveal and return durations remain owned by their existing controllers.
+Six idle episodes now target the new B/O counters, U/T and O/U pairs, R counter
+and H crossbar. Field histories, wave packet count and RAF ownership are
+unchanged. CSS fallback font sizes are measured to fit the nine-letter word
+without requiring JavaScript. Private legacy event/history keys and historical
+reference documentation retain their compatibility/provenance roles.
+
+
+Rebranding validation: full`bun run check` passes256 tests/9,781 assertions,
+including nine-letter morph endpoints, counter topology, seven-sector coverage,
+last-letter interaction, identity-anchor and cache/scale/cleanup regressions.
+Static EN/AR build and the SSR audit pass new identity/contact assertions and
+13 assets. Glyph regeneration is byte-reproducible. Browser checks at the three
+agreed profiles retain readable hero/menu/footer identity and zero horizontal
+page overflow. Native-window capture preserves the clean assembled ring; some
+MCP screenshot controls reset the material and are excluded from logo proof.
+Evidence:`.artifacts/rebrand-identity-20261028/validation.json`.

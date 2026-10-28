@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { brand } from "../src/config/brand";
 
 const base = new URL(process.argv[2] || "http://localhost:3000");
 const root = await fetch(base, { redirect: "manual" });
@@ -13,6 +14,13 @@ for (const locale of ["en", "ar"]) {
   const markup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
   assert.match(markup, new RegExp(`<html[^>]*lang="${locale}"[^>]*dir="${locale === "ar" ? "rtl" : "ltr"}"`));
   assert.match(markup, /<main\b/);
+  const visible = markup.replace(/<[^>]*>/g, " ");
+  assert.doesNotMatch(visible, /gazzar|elgazzar|محمد الجزار/i);
+  assert.ok(visible.includes(locale === "ar" ? brand.arabicName : brand.name));
+  assert.ok(visible.includes(brand.wordmark));
+  assert.ok(markup.includes(`mailto:${brand.email}`));
+  assert.ok(markup.includes(brand.linkedIn));
+  assert.ok(html.includes(brand.name), "Metadata/schema should identify the new owner");
   assert.match(markup, /<h1[^>]*id="hero-name"/);
   assert.match(markup, /id="beyond"/);
   assert.match(markup, /id="work-wujhat-title"/);
@@ -32,7 +40,7 @@ for (const locale of ["en", "ar"]) {
 for (const path of ["/fr", "/en/not-a-page"]) {
   assert.equal((await fetch(new URL(path, base))).status, 404, path);
 }
-for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/gazzar-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2"]) {
+for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/identity-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2"]) {
   assert.equal((await fetch(new URL(path, base))).status, 200, path);
 }
 await Promise.all([...assets].map(async (url) => {

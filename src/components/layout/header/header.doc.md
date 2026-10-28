@@ -219,3 +219,10 @@ remain unchanged.
 The mounted regression models zero closed offsets across EN/AR at all three
 reference widths, selection changes, proportional resize, font completion and
 reopen. No new RAF or geometry reads are added to ordinary journey frames.
+
+
+2026-10-28 identity update: shell owner labels and contact links now derive from
+`src/config/brand.ts`. COPY reads the same email as its visible/mailto link.
+The inline mark is named`IdentityLogo`; its paths and all menu/header timing
+remain unchanged. Shell/foot gates use neutral`data-portfolio-*` mount markers.
+English display name is`Med D. Bouthouri`; Arabic is`محمد ضياء بوثوري`.

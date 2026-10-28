@@ -4,7 +4,7 @@ import Image from "next/image";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
 import { getShellCopy } from "@/components/layout/header/shell-copy";
-import { logoOrigins, logoPaths } from "@/components/layout/header/gazzar-logo";
+import { logoOrigins, logoPaths } from "@/components/layout/header/identity-logo";
 import KineticLink from "@/components/layout/header/kinetic-link";
 import HeroAnimateGate from "./hero-animate-gate";
 import styles from "./hero.module.css";
@@ -30,12 +30,11 @@ const signature = [
 
 export default function Hero({
   copy,
-  locale: suppliedLocale,
+  locale,
 }: {
   copy: Dictionary["hero"];
-  locale?: Locale;
+  locale: Locale;
 }) {
-  const locale = suppliedLocale ?? (copy.title === "محمد الجزار" ? "ar" : "en");
   const labels = getShellCopy(locale);
   return (
     <section

@@ -2,7 +2,7 @@ import {
   playMaterialSound,
   setFooterFriction,
 } from "@/lib/audio/material-audio";
-import { FooterPaths } from "./footer-paths";
+import { FooterPaths, footerPartMap } from "./footer-paths";
 import { footerGlyphBoxes } from "./footer-geometry";
 import { FooterThoughts } from "./footer-thoughts";
 import {
@@ -40,7 +40,7 @@ const thoughts = {
   ],
 };
 
-/** Native outline morph: six original Questrial glyphs become the three identity parts. */
+/** Native outline morph: the fitted Questrial wordmark becomes the three identity parts. */
 export function mountFooterMaterial(
   root: HTMLElement,
   reduced: () => boolean,
@@ -133,7 +133,7 @@ export function mountFooterMaterial(
     returnDelta: MaterialContours | undefined;
   let silkX = 0,
     silkY = 0;
-  const partMap = [0, 1, 1, 1, 1, 2];
+  const partMap = footerPartMap;
   const canInteract = () =>
     enabled &&
     !root.inert &&
@@ -169,7 +169,7 @@ export function mountFooterMaterial(
     paths = new FooterPaths(footerGlyphBoxes(word, ctx).map((box) => ({
       x: box.x / scale, y: box.y / scale,
       width: box.width / scale, height: box.height / scale,
-    })), width);
+    })), width, height);
     idleTargets = createIdleTargets(paths.source, paths.boxes);
     idle.reset();
     waves.clear();
@@ -423,7 +423,13 @@ export function mountFooterMaterial(
       ctx.rect(0, -shift, width, height);
       ctx.clip();
     }
+    // Paint the assembled ring as one path, avoiding seams between the seven
+    // sectors. These paths are rebuilt outside rest mode; the word cache and
+    // per-glyph contour correspondence remain untouched for the return morph.
+    const assembled = phase === "logo" || phase === "clearing";
+    if (assembled) for (let i = 2; i < drawn.length - 1; i++) drawn[1].addPath(drawn[i]);
     drawn.forEach((path, index) => {
+      if (assembled && index > 1 && index < drawn.length - 1) return;
       ctx.fillStyle =
         phase === "logo" && partMap[index] === concept ? "#e1ded6" : "#dbd8d0";
       ctx.fill(path, "evenodd");

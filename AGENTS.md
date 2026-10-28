@@ -1,6 +1,6 @@
 # Gazzar clone project rules
 
-- Goal: make an identical clone of https://www.thisisgazzar.com/en, including its Arabic experience, using Storio and the custom scroll engine. Keep the same text, animations, logos, assets, layouts, and routes. Bouthouri is only the directory name; do not rebrand the site or substitute generic effects. Do not introduce GSAP.
+- Foundation: the accepted Gazzar HOME clone, including Arabic, uses Storio and the custom scroll engine. The user began rebranding on 2026-10-28: use Med D. Bouthouri / محمد ضياء بوثوري, BOUTHOURI, contact@bouthouri.co and the approved portrait. Keep the established visual style, layout, spacing and animation behavior while applying explicitly requested identity changes. Historical Gazzar references document provenance. Do not introduce GSAP or generic replacement effects.
 - This is a Next.js App Router project. Keep route content, headings, navigation, images, and structured data server-rendered. Prefer static prerendering for static content.
 - Read `docs/load-architecture.md` and `docs/code-splitter.md` before changing boundaries or loading. They adapt the useful patterns from Artifact and TFM Site Entry to this project.
 - Keep sections under `src/sections/<route>/<order>-<name>/`; shared shell and controls belong under `src/components/`.

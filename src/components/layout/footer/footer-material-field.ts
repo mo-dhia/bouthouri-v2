@@ -1,5 +1,6 @@
 import glyphData from "./footer-glyph-contours.json";
-import type { GlyphBox } from "./footer-paths";
+import { footerPartMap, type GlyphBox } from "./footer-paths";
+import { brand } from "@/config/brand";
 
 export type MaterialPoint = { x: number; y: number };
 export type MaterialContours = MaterialPoint[][][];
@@ -13,161 +14,36 @@ const smooth = (value: number) => {
   return t * t * (3 - 2 * t);
 };
 
-/** The six reference episodes: aperture, narrow counter, ZZ, R, crossbar, paired ZZ. */
+/** Preserve the six quiet episodes, adapted to the actual wordmark's counters and stems. */
 export function createIdleTargets(
   source: MaterialContours,
   boxes: GlyphBox[],
 ): MaterialContours[] {
-  const normalized = (glyph: number) =>
-    glyphData["GAZZAR"[glyph] as keyof typeof glyphData].contours.map(
-      (contour) => contour.map(([x, y]) => ({ x, y })),
-    );
-  const project = (point: MaterialPoint, box: GlyphBox) => ({
-    x: box.x + point.x * box.width,
-    y: box.y + point.y * box.height,
-  });
-  return Array.from({ length: 6 }, (_, episode) =>
-    source.map((contours, glyph) => {
-      const box = boxes[glyph];
+  return Array.from({ length: 6 }, (_, episode) => source.map((contours, glyph) => {
+    const box = boxes[glyph];
+    const normalized = glyphData[brand.wordmark[glyph] as keyof typeof glyphData].contours;
+    return contours.map((contour, contourIndex) => contour.map((original, index) => {
+      const [u, v] = normalized[contourIndex][index];
+      let x = u, y = v;
+      // B aperture and O counter breathing; retain all contour correspondence.
       if (episode === 0 && glyph === 0) {
-        const original = normalized(0)[0],
-          font = original.map((p) => ({
-            x: 39 + 633 * p.x,
-            y: 670 - 678 * p.y,
-          }));
-        const find = (x: number, y: number) =>
-          font.findIndex((p) => Math.hypot(p.x - x, p.y - y) < 0.01);
-        const a = find(550.5, 617.5),
-          b = find(666, 482),
-          c = find(584, 482),
-          d = find(371, 597);
-        const fractions = (from: number, to: number) => {
-          const values = [0];
-          for (let i = from + 1; i <= to; i++)
-            values.push(
-              values.at(-1)! +
-                Math.hypot(
-                  font[i].x - font[i - 1].x,
-                  font[i].y - font[i - 1].y,
-                ),
-            );
-          return values.map((value) => value / values.at(-1)!);
+        if (contourIndex) x = 0.5 + (x - 0.5) * 0.5;
+        else x += 0.06 * smooth(x) * Math.sin(Math.PI * y);
+      } else if (episode === 1 && glyph === 1 && contourIndex) x = 0.5 + (x - 0.5) * 0.46;
+      // The R counter closes and H crossbar shifts, using the original episode timing.
+      else if (episode === 3 && glyph === 7 && contourIndex) { x = 0.4; y = 0.31; }
+      else if (episode === 4 && glyph === 4) y += 0.12 * Math.exp(-(((y - 0.5) / 0.16) ** 2));
+      else if ((episode === 2 && (glyph === 2 || glyph === 3)) || (episode === 5 && (glyph === 5 || glyph === 6))) {
+        const first = episode === 2 ? 2 : 5;
+        const left = boxes[first], span = boxes[first + 1].x + boxes[first + 1].width - left.x;
+        return {
+          x: left.x + span * ((glyph - first) * 0.48 + 0.1 * (1 - y) + 0.36 * x),
+          y: left.y + left.height * (episode === 5 ? 0.06 + y * 0.86 : y),
         };
-        const outer = fractions(a, b),
-          inner = fractions(c, d);
-        const bezier = (
-          p: MaterialPoint,
-          q: MaterialPoint,
-          r: MaterialPoint,
-          s: MaterialPoint,
-          t: number,
-        ) => {
-          const u = 1 - t;
-          return {
-            x:
-              u ** 3 * p.x +
-              3 * u * u * t * q.x +
-              3 * u * t * t * r.x +
-              t ** 3 * s.x,
-            y:
-              u ** 3 * p.y +
-              3 * u * u * t * q.y +
-              3 * u * t * t * r.y +
-              t ** 3 * s.y,
-          };
-        };
-        return [
-          font.map((point, index) => {
-            let target = point;
-            if (index >= a && index <= b)
-              target = bezier(
-                { x: 550.5, y: 617.5 },
-                { x: 638, y: 559 },
-                { x: 672, y: 462 },
-                { x: 672, y: 352 },
-                outer[index - a],
-              );
-            else if (index > b && index < c)
-              target = { x: 672 - ((index - b) / (c - b)) * 69, y: 352 };
-            else if (index >= c && index <= d)
-              target = bezier(
-                { x: 603, y: 352 },
-                { x: 603, y: 502 },
-                { x: 520, y: 597 },
-                { x: 371, y: 597 },
-                inner[index - c],
-              );
-            return project(
-              target === point
-                ? original[index]
-                : { x: (target.x - 39) / 633, y: (670 - target.y) / 678 },
-              box,
-            );
-          }),
-        ];
-      }
-      if ((episode === 1 && glyph === 1) || (episode === 4 && glyph === 4))
-        return normalized(glyph).map((contour, index) =>
-          contour.map((point) => {
-            let { x, y } = point;
-            if (episode === 1 && index === 1) x = 0.5 + (x - 0.5) * 0.46;
-            if (episode === 4) {
-              if (index === 1) y = 78 / 662 + (y - 78 / 662) * 0.75;
-              else {
-                const px = 3 + 656 * x,
-                  py = 662 - 662 * y;
-                if (
-                  py <= 192.001 &&
-                  px >= 86 + (81 / 192) * py - 0.01 &&
-                  px <= 576 - (81 / 192) * py + 0.01
-                )
-                  y = 1 - (py / 662) * 1.36;
-              }
-            }
-            return project({ x, y }, box);
-          }),
-        );
-      if (episode === 3 && glyph === 5)
-        return normalized(glyph).map((contour, index) =>
-          contour.map((p) =>
-            project(index === 1 ? { x: 0.4, y: 0.31 } : p, box),
-          ),
-        );
-      if ((episode === 2 || episode === 5) && (glyph === 2 || glyph === 3)) {
-        const first = boxes[2],
-          span = boxes[3].x + boxes[3].width - first.x;
-        return normalized(glyph).map((contour) => {
-          const corner = contour.findIndex(
-            (p) => Math.abs(p.x - 1) < 0.00001 && p.y < 0.00001,
-          );
-          return contour.map((p, index) =>
-            episode === 5
-              ? {
-                  x:
-                    first.x +
-                    span *
-                      ((glyph === 3 ? 0.51 : 0.04) +
-                        0.12 * (1 - p.y) +
-                        0.32 * (index < corner ? 0 : 1)),
-                  y:
-                    first.y +
-                    first.height * ((glyph === 3 ? 0.12 : 0.02) + 0.86 * p.y),
-                }
-              : {
-                  x:
-                    first.x +
-                    span *
-                      (0.18 * (1 - p.y) +
-                        0.36 *
-                          (Number(glyph !== 2) + (index < corner ? 0 : 1))),
-                  y: first.y + p.y * first.height,
-                },
-          );
-        });
-      }
-      return contours.map((contour) => contour.map((point) => ({ ...point })));
-    }),
-  );
+      } else return { ...original };
+      return { x: box.x + x * box.width, y: box.y + y * box.height };
+    }));
+  }));
 }
 
 export class FooterIdleEpisodes {
@@ -180,7 +56,7 @@ export class FooterIdleEpisodes {
   private cancelling = false;
   private from = 0;
   private cancelAge = 0;
-  private readonly families = ["G", "A", "ZZ", "R", "A", "ZZ"];
+  private readonly families = ["B", "O", "UT", "R", "H", "OU"];
   private random() {
     this.seed = (1664525 * this.seed + 1013904223) >>> 0;
     return this.seed / 4294967296;
@@ -242,7 +118,7 @@ export class FooterIdleEpisodes {
 
 /** Coordinates, velocities and capped displacements share reference pixel space. */
 export class FooterRefractionWaves {
-  private readonly partMap = [0, 1, 1, 1, 1, 2];
+  private readonly partMap = footerPartMap;
   private readonly packets = Array.from({ length: 6 }, () => ({
     x: 0,
     y: 0,

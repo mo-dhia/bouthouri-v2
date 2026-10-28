@@ -1,5 +1,6 @@
 import "server-only";
 
+import { brand } from "@/config/brand";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
 import { getShellCopy, shellEmail, shellLinkedIn } from "../header/shell-copy";
@@ -9,19 +10,17 @@ import styles from "./footer.module.css";
 /** This is the single footer, inserted inside the journey's original .systems-story. */
 export default function Footer({
   copy,
-  locale: suppliedLocale,
+  locale,
 }: {
   copy: Dictionary["footer"];
-  locale?: Locale;
+  locale: Locale;
 }) {
-  const locale =
-    suppliedLocale ?? (copy.copyright === "محمد الجزار" ? "ar" : "en");
   const labels = getShellCopy(locale);
   return (
     <footer
       className={`home-footer global-footer ${styles.footer}`}
       data-footer-variant="home"
-      data-gazzar-footer="true"
+      data-portfolio-footer="true"
       aria-label={labels.footerThought}
       dir={locale === "ar" ? "rtl" : "ltr"}
       lang={locale}
@@ -71,7 +70,7 @@ export default function Footer({
         data-footer-grab="true"
       >
         <div className="footer-word-text" data-footer-word="true" dir="ltr">
-          GAZZAR
+          {brand.wordmark}
         </div>
       </div>
       <span
@@ -95,7 +94,7 @@ export default function Footer({
         </div>
         <small dir={locale === "ar" ? "rtl" : "ltr"}>
           <bdi dir="ltr">© 2026</bdi>
-          <span>{labels.owner}</span>
+          <span>{locale === "en" ? copy.copyright.toUpperCase() : copy.copyright}</span>
         </small>
       </div>
     </footer>

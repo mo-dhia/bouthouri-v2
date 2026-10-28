@@ -57,7 +57,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
   stage.dataset.storyBoot = "context";
   const canvas = document.createElement("canvas");
   canvas.className = styles.canvas; canvas.setAttribute("aria-hidden", "true");
-  canvas.dataset.asset = "original-gazzar-glasses-and-sculptures";
+  canvas.dataset.asset = "portfolio-glasses-and-sculptures";
   let renderer: WebGLRenderer;
   try {
     renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance" });
@@ -93,7 +93,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     if (disposed) return;
     lost = true; stopFrame(); canvas.style.opacity = "0";
     stage.dataset.storyBoot = "failed"; stage.dataset.storyScene = "failed"; options.onFailure?.();
-    if (error) console.error("Optional Gazzar story scene failed.", error);
+    if (error) console.error("Optional portfolio story scene failed.", error);
   };
   function requestRender() {
     if (!frameId && sceneReady && isActive()) frameId = requestAnimationFrame(render);

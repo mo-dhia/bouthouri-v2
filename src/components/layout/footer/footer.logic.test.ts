@@ -2,7 +2,9 @@ import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
-import { FooterPaths } from "./footer-paths";
+import { FooterPaths, footerPartMap } from "./footer-paths";
+import { brand } from "@/config/brand";
+const GLYPHS = brand.wordmark.length;
 import * as materialField from "./footer-material-field";
 import * as viewport from "@/lib/viewport-design";
 import type { FooterThoughts } from "./footer-thoughts";
@@ -61,10 +63,11 @@ function harness(variant = "home") {
     moveTo(x: number, y: number) { this.commands.push(["M", x, y]); }
     lineTo(x: number, y: number) { this.commands.push(["L", x, y]); }
     closePath() { this.commands.push(["Z"]); }
+    addPath(path: RecordedPath) { this.commands.push(...path.commands); }
   }
   const paint = {
     pathBuilds: 0, contourCalls: 0, clears: 0,
-    fills: [] as RecordedPath[], transforms: [] as number[][], clips: [] as number[][],
+    fills: [] as RecordedPath[], frameFills: [] as RecordedPath[], transforms: [] as number[][], clips: [] as number[][],
     hits: [] as { path: RecordedPath; x: number; y: number }[], hitPath: undefined as RecordedPath | undefined,
     fonts: [] as string[], images: [] as number[][],
     thoughts: [] as { mobile: boolean; x: number; y: number; titleSize: number }[],
@@ -78,9 +81,9 @@ function harness(variant = "home") {
     measureText(text: string) { return { width: text.length * parseFloat(this._font.split(" ")[1]) * 0.5, actualBoundingBoxLeft: 0, actualBoundingBoxRight: 0 }; },
     fillText() {},
     drawImage(_canvas: unknown, ...values: number[]) { paint.images.push(values); },
-    clearRect() { paint.clears++; },
+    clearRect() { paint.clears++; paint.frameFills = []; },
     setTransform(...values: number[]) { paint.transforms.push(values); },
-    fill(path?: RecordedPath) { if (path) paint.fills.push(path); },
+    fill(path?: RecordedPath) { if (path) { paint.fills.push(path); paint.frameFills.push(path); } },
     rect(...values: number[]) { paint.clips.push(values); },
     isPointInPath(path: RecordedPath, x: number, y: number) {
       paint.hits.push({ path, x, y }); return path === paint.hitPath;
@@ -138,7 +141,7 @@ function harness(variant = "home") {
   const mount = load("./footer.logic.ts", globals, dependencies).mountFooterInteractions as unknown as (root: Surface) => () => void;
   return {
     root, mask, word, clock, stage, document, window, motion, globals, timers, rafs, paint,
-    snapshot: () => paint.fills.slice(-6).map((path) => path.commands),
+    snapshot: () => paint.frameFills.map((path) => path.commands),
     step(ms = 1000 / 60) {
       now += ms;
       const pending = [...rafs.values()]; rafs.clear();
@@ -176,9 +179,9 @@ function harness(variant = "home") {
       }
       const exports = load("./footer-material.ts", globals, {
         "@/lib/audio/material-audio": { playMaterialSound() { soundCalls++; }, setFooterFriction() {} },
-        "./footer-paths": { FooterPaths: TrackedPaths },
+        "./footer-paths": { FooterPaths: TrackedPaths, footerPartMap },
         "@/lib/viewport-design": viewport,
-        "./footer-geometry": { footerGlyphBoxes: () => Array.from({ length: 6 }, (_, i) => ({ x: i * word.rect.width / 6, y: 0, width: word.rect.width / 6 * 0.8, height: word.offsetHeight })) },
+        "./footer-geometry": { footerGlyphBoxes: () => Array.from({ length: GLYPHS }, (_, i) => ({ x: i * word.rect.width / GLYPHS, y: 0, width: word.rect.width / GLYPHS * 0.8, height: word.offsetHeight })) },
         "./footer-thoughts": { FooterThoughts: TrackedThoughts },
         "./footer-material-field": materialField,
         "../header/material-protection": { emitMaterialProtection() {} },
@@ -284,8 +287,8 @@ test("partial-reveal and reverse scroll reuse exact rest paths with one mask/wor
   for (const locale of ["en", "ar"]) for (const reduced of [false, true]) {
     const pair = materialPair(locale, reduced), [cached, control] = pair.scenes;
     pair.wake(); pair.step();
-    const paths = cached.paint.fills.slice(-6);
-    expect(cached.paint.pathBuilds).toBe(6); expect(cached.paint.contourCalls).toBe(1);
+    const paths = cached.paint.fills.slice(-GLYPHS);
+    expect(cached.paint.pathBuilds).toBe(GLYPHS); expect(cached.paint.contourCalls).toBe(1);
     const positions = [
       [0, 199, 239], [0, 198, 236], [0, 199, 239],
       [0, 199, 239], [12, 199, 239], [12, 199, 194],
@@ -300,10 +303,10 @@ test("partial-reveal and reverse scroll reuse exact rest paths with one mask/wor
       const scale = viewport.designScale(cached.globals.innerWidth);
       expect(cached.paint.transforms.at(-1)).toEqual([scale, 0, 0, scale, left, top + (wordTop - top)]);
       if (wordTop > top) expect(cached.paint.clips.at(-1)).toEqual([0, (top - wordTop) / scale, 600 / scale, 100 / scale]);
-      cached.paint.fills.slice(-6).forEach((path, i) => expect(path).toBe(paths[i]));
+      cached.paint.fills.slice(-GLYPHS).forEach((path, i) => expect(path).toBe(paths[i]));
     }
-    expect(cached.paint.pathBuilds).toBe(6); expect(cached.paint.contourCalls).toBe(1);
-    expect(control.paint.pathBuilds).toBe(6 * (positions.length + 1));
+    expect(cached.paint.pathBuilds).toBe(GLYPHS); expect(cached.paint.contourCalls).toBe(1);
+    expect(control.paint.pathBuilds).toBe(GLYPHS * (positions.length + 1));
     expect(control.paint.contourCalls).toBe(positions.length + 1);
     pair.dispose();
   }
@@ -316,8 +319,9 @@ test("resolving, morph, thought impulse and reverse retain uncached path coordin
     pair.key("Enter"); expect(cached.mask.dataset.mode).toBe("resolving");
     for (let i = 0; i < 70 && cached.mask.dataset.mode !== "logo"; i++) pair.step();
     expect(cached.mask.dataset.mode).toBe("logo");
+    expect(cached.paint.frameFills).toHaveLength(3);
     for (let i = 0; i < 12; i++) {
-      const builds = cached.paint.pathBuilds; pair.step(); expect(cached.paint.pathBuilds - builds).toBe(6);
+      const builds = cached.paint.pathBuilds; pair.step(); expect(cached.paint.pathBuilds - builds).toBe(GLYPHS);
     }
     expect(cached.snapshot()).not.toEqual(rest);
     pair.key("Escape"); expect(cached.mask.dataset.mode).toBe("logo"); // Phase is published on the next RAF.
@@ -327,8 +331,8 @@ test("resolving, morph, thought impulse and reverse retain uncached path coordin
     }
     expect(sawReturn).toBe(true); expect(cached.mask.dataset.mode).toBe("word");
     const builds = cached.paint.pathBuilds; pair.wake(); pair.step();
-    expect(cached.paint.pathBuilds - builds).toBe(6); expect(cached.snapshot()).toEqual(rest);
-    pair.wake(); pair.step(); expect(cached.paint.pathBuilds - builds).toBe(6);
+    expect(cached.paint.pathBuilds - builds).toBe(GLYPHS); expect(cached.snapshot()).toEqual(rest);
+    pair.wake(); pair.step(); expect(cached.paint.pathBuilds - builds).toBe(GLYPHS);
     pair.dispose();
     pair.scenes.forEach((h) => { expect(h.rafs.size).toBe(0); expect(h.timers.size).toBe(0); });
   }
@@ -343,7 +347,7 @@ test("idle takeover, hover/waves and pull bypass rest geometry; hits, measure an
   expect(Number(cached.mask.dataset.idleAmount)).toBeGreaterThan(0);
   expect(cached.snapshot()).not.toEqual(rest);
   pair.scenes.forEach((h) => {
-    const path = h.paint.fills.at(-6)!;
+    const path = h.paint.fills.at(-GLYPHS)!;
     h.paint.hitPath = path; h.mask.rect.left = 31; h.mask.rect.top = 180; h.word.rect.top = 185;
     h.window.dispatchEvent(pointer("pointermove", 56, 235, 1000));
     const hit = h.paint.hits.at(-1)!;
@@ -354,14 +358,14 @@ test("idle takeover, hover/waves and pull bypass rest geometry; hits, measure an
   pair.step(); expect(cached.mask.dataset.idleKind).toBe("-1");
   expect(Number(cached.mask.dataset.waveEnergy)).toBeGreaterThan(0);
   for (let i = 0; i < 6; i++) {
-    const builds = cached.paint.pathBuilds; pair.step(); expect(cached.paint.pathBuilds - builds).toBe(6);
+    const builds = cached.paint.pathBuilds; pair.step(); expect(cached.paint.pathBuilds - builds).toBe(GLYPHS);
   }
   pair.scenes.forEach((h) => { h.paint.hitPath = undefined; h.window.dispatchEvent(pointer("pointermove", 800, 800, 1400)); });
   for (let i = 0; i < 25; i++) pair.step();
   expect(cached.snapshot()).toEqual(rest);
   const settled = cached.paint.pathBuilds; pair.wake(); pair.step(); expect(cached.paint.pathBuilds).toBe(settled);
   pair.scenes.forEach((h) => {
-    h.paint.hitPath = h.paint.fills.at(-6);
+    h.paint.hitPath = h.paint.fills.at(-GLYPHS);
     h.document.dispatchEvent(pointer("pointerdown", 56, 235, 3000));
   });
   pair.equal(); pair.step(); expect(cached.mask.dataset.mode).toBe("pull"); expect(cached.snapshot()).not.toEqual(rest);
@@ -371,13 +375,13 @@ test("idle takeover, hover/waves and pull bypass rest geometry; hits, measure an
   pair.materials.forEach((material) => material.reset()); pair.wake(); pair.step();
   expect(cached.snapshot()).toEqual(rest);
   for (const invalidate of ["measure", "reset"] as const) {
-    const paths = cached.paint.fills.slice(-6), builds = cached.paint.pathBuilds, previous = cached.snapshot();
+    const paths = cached.paint.fills.slice(-GLYPHS), builds = cached.paint.pathBuilds, previous = cached.snapshot();
     if (invalidate === "measure") pair.scenes.forEach((h) => {
       h.mask.rect.width = h.word.rect.width = 720; h.word.offsetHeight = h.word.rect.height = 120; h.globals.devicePixelRatio = 2;
     });
     pair.materials.forEach((material) => material[invalidate]()); pair.wake(); pair.step();
-    expect(cached.paint.pathBuilds - builds).toBe(6);
-    cached.paint.fills.slice(-6).forEach((path, i) => expect(path).not.toBe(paths[i]));
+    expect(cached.paint.pathBuilds - builds).toBe(GLYPHS);
+    cached.paint.fills.slice(-GLYPHS).forEach((path, i) => expect(path).not.toBe(paths[i]));
     const ratio = 2 * viewport.designScale(cached.globals.innerWidth);
     expect(cached.paint.transforms.at(-1)).toEqual([ratio, 0, 0, ratio, 62, 370]);
     if (invalidate === "measure") expect(cached.snapshot()).not.toEqual(previous);
@@ -429,7 +433,7 @@ test("each fixed reference draws at factor one; proportional fonts, morphs, wave
     const physicalTitleB = b.h.paint.thoughts[0].titleSize * b.h.paint.transforms.at(-1)![0] / 2;
     expect(physicalTitleB / physicalTitleA).toBeCloseTo(1.25, 12);
     for (const [pair, x, y, at] of [[a, 50, 40, 1000], [b, 50, 40, 1000], [a, 90, 55, 1100], [b, 90, 55, 1100]] as const) {
-      pair.h.paint.hitPath = pair.h.paint.fills.at(-6);
+      pair.h.paint.hitPath = pair.h.paint.fills.at(-GLYPHS);
       pair.h.window.dispatchEvent(pointer("pointermove", (20 + x) * pair.scale, (180 + y) * pair.scale, at));
       expect(pair.h.paint.hits.at(-1)!.x).toBeCloseTo(x, 10);
       expect(pair.h.paint.hits.at(-1)!.y).toBeCloseTo(y, 10);
@@ -459,13 +463,13 @@ test("each fixed reference draws at factor one; proportional fonts, morphs, wave
 
 test("footer reference typography ignores actual height and the former 680/700 tablet switches", () => {
   const cases = [designMaterial(650, 400), designMaterial(700, 1400), designMaterial(900, 600), designMaterial(900, 1800)];
-  for (const { h, material } of cases) {
+  for (const { h } of cases) {
     expect(h.paint.thoughts[0].mobile).toBe(false);
     expect(h.paint.thoughts[0].titleSize).toBeCloseTo(cases[0].h.paint.thoughts[0].titleSize, 12);
     expect(fontSizes(h)).toEqual(fontSizes(cases[0].h));
     equalDesignPaths(h, cases[0].h);
-    material.dispose();
   }
+  cases.forEach(({ material }) => material.dispose());
 });
 
 test("mounted footer resizes its physical buffer without mask RO or material history resets", async () => {
@@ -505,7 +509,7 @@ test("mounted footer resizes its physical buffer without mask RO or material his
   expect(Number(resized.mask.dataset.idleAmount)).toBeGreaterThan(0);
   resizeCurrentPose(2);
   pairs.forEach(({ h }) => {
-    h.paint.hitPath = h.paint.fills.at(-6);
+    h.paint.hitPath = h.paint.fills.at(-GLYPHS);
     h.window.dispatchEvent(pointer("pointermove", 70, 220, 1000));
   }); step();
   expect(Number(resized.mask.dataset.waveEnergy)).toBeGreaterThan(0);

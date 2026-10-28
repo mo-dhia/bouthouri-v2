@@ -426,3 +426,18 @@ remapping and its presentation RAF; it needs no interpolated range values.
 This replaces the redundant range callback plus separate native listener.
 It still samples large/restored seeks outside the visible hero, and cleanup
 removes only its own key. Source clock/easing, shared pose and magnet are unchanged.
+
+
+2026-10-28 identity copy: hero titles, metadata, copyright and chapter identity
+use`Med D. Bouthouri` /`محمد ضياء بوثوري`. Locale is now an explicit required
+server prop rather than being inferred from the former person's name. This
+retains the Cairo/Questrial profiles, alignment, masks, tracking and motion
+while allowing personal copy to change independently of locale selection.
+
+
+The English identity column reserves its original measured width so changing
+the name does not rewrap the supporting copy or move the block vertically:
+613.18335px at1920,322.60001px at768 and240.48334px at412, emitted as vw
+minimums. Questrial size/tracking and the existing aligned column remain intact.
+Arabic retains its existing fixed column and Cairo metrics; the approved longer
+name fits all three profiles.

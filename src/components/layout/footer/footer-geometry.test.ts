@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
+import { brand } from "@/config/brand";
 import * as viewport from "@/lib/viewport-design";
 import type * as geometry from "./footer-geometry";
 
@@ -13,7 +14,7 @@ function measure(width: number, actualHeight: number, restUnit = "vw") {
     setProperty(name: string, value: string) { Object.assign(this, { [name]: value }); },
     removeProperty(name: string) { if (name === "line-height") this.lineHeight = ""; },
   }, {} as Record<string, string>);
-  const word = { style: style(), textContent: "GAZZAR", get offsetHeight() { return Math.round(word.getBoundingClientRect().height); },
+  const word = { style: style(), textContent: brand.wordmark, get offsetHeight() { return Math.round(word.getBoundingClientRect().height); },
     getBoundingClientRect: () => ({ height: word.style.lineHeight ? pixels(word.style.lineHeight) : 0.9 * pixels(word.style.fontSize) }),
   };
   const information = { offsetHeight: 90 * scale };
@@ -44,6 +45,7 @@ function measure(width: number, actualHeight: number, restUnit = "vw") {
     },
   };
   runInContext(`(function(require,module,exports){${js}\n})`, createContext(globals))((name: string) => {
+    if (name === "@/config/brand") return { brand };
     if (name !== "@/lib/viewport-design") throw new Error(`Unexpected footer geometry dependency: ${name}`);
     return viewport;
   }, evaluated, evaluated.exports);
