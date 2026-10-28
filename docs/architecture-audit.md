@@ -2,8 +2,11 @@
 
 2026-10-28. Audited the HOME implementation against the scroll library README,
 `animations.md`, local assistant styling/splitting guides, load architecture,
-SSR/CSR and Storio contracts. This cleanup preserves the measured reference
-geometry and choreography; it is not a new visual redesign or parity review.
+SSR/CSR and Storio contracts. The initial cleanup below preserved the existing
+fluid geometry. A subsequent user-confirmed migration now fixes the three
+[reference canvases](viewport-design.md) and scales design geometry by width.
+The initial validation numbers below are historical baseline evidence; current
+viewport validation is recorded separately in the fixed-viewport review reports.
 
 ## Results
 
@@ -14,7 +17,7 @@ geometry and choreography; it is not a new visual redesign or parity review.
 | Scroll engine | Native scroll only. Removed the unused Lenis package, CSS, initializer and compatibility hooks. Hero raw input now registers once through `scrollManager` with `useRAF: false`, without a duplicate native/range subscription. Journey retains the ranged custom trigger and its presentation owner. |
 | Animation ownership | Source clocks, easing, pin geometry, GPU demand scheduling and current-frame background handoff are preserved. Frame values stay outside React and Storio. Lifecycle tests cover retained resources, cancellation, modes and restoration. |
 | Storio | Primitive/stable hook slices and use-prefixed React aliases remain. Entry/audio/failure are shared UI transitions; route mapping and animation clocks remain outside stores. The Bun patch stays registered and reproducible. |
-| Styling | All 10 stylesheets follow one-line selector declarations. Formatting preserves the ordered CSS semantics: 1,161 rules and 3,202 declarations. Measured clamps, units, reference breakpoints, cascade and URL payloads remain intact. |
+| Styling | All 10 stylesheets follow one-line selector declarations. The initial formatter preserved 1,161 rules and 3,202 declarations. The subsequent sizing migration intentionally replaces fluid geometry queries and lengths with three exclusive width-scaled profiles; URL payloads remain intact. |
 | Cleanup | Removed the unused transition-state placeholder and normalized debug statistics to a serialized payload. Owned scroll keys, gate effects and async adoption retain explicit teardown. |
 | Maintained guides | Replaced obsolete baseline-hero/Lenis descriptions with the actual gate, scheduler, reading and resource ownership map. Local `assistant/` guides remain untracked. |
 
@@ -33,11 +36,14 @@ background's visible ambient drift and MENU quiet tail have their own cadence;
 hidden/offscreen owners still park. Audio resource creation remains gated by
 explicit SOUND intent. See the adjacent scene and audio contracts.
 
-The styling guide's Gazzar precedence applies: blanket px/rem-to-vw conversion
-or deleting clamps would change the clone. Physical left/right coordinates are
-also retained for deliberately LTR viewport controls in Arabic. Logical
-properties are used where they preserve that geometry. Static article custom
-properties are server data; live transforms/measurements stay controller-owned.
+The user replaced the former Gazzar fluid-breakpoint exception with explicit
+1920×1080, 768×1024 and 412×915 reference compositions. Design lengths and scene
+framing scale by width; height/orientation do not recompose them. CSS-pixel paint
+hairlines/filter kernels and physical browser measurements remain intentional
+exceptions. SVG-local strokes/path lengths stay in their viewBox coordinate
+space. Physical left/right coordinates are retained for deliberately LTR controls
+in Arabic. Static article custom properties are server data; live transforms
+and measurements stay controller-owned. See the fixed viewport contract.
 
 The local SVG renderers remain section-owned JavaScript modules in the deferred
 journey graph; the engine's inherited camel-case public paths remain compatible.

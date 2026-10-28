@@ -46,6 +46,12 @@ Changing them requires a matched continuous regression, not only resting pixels.
 
 ## Geometry, state and cleanup
 
+Design geometry follows the [three fixed reference canvases](viewport-design.md).
+Scale the composition by width; use actual viewport height only for physical
+visibility/scroll limits. DOM measurements are already scaled. SVG/Canvas/Three
+normalize once into their reference camera or drawing space; do not multiply
+measured geometry by the design scale again.
+
 Read [the engine API](../src/lib/scrollInteraction/README.md) before choosing
 range tuples. `v` contains configured values, not implicit percentages. Pinning
 and sticky geometry belong to the section; the engine does not implement a
