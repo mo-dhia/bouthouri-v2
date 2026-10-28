@@ -55,10 +55,16 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   const originalWordStyle = word.getAttribute("style");
   const originalFooterStyle = root.getAttribute("style");
   const context = document.createElement("canvas").getContext("2d");
+  const measureStandardPosition = () => {
+    if (!standard || disposed) return;
+    footerTop = root.getBoundingClientRect().top + scrollY;
+    footerHeight = root.offsetHeight;
+    updateStandard();
+  };
   const measureWord = () => {
     if (!context || disposed) return;
     measureFooterWord(root, mask, word, context);
-    if (standard) { footerTop = root.getBoundingClientRect().top + scrollY; footerHeight = root.offsetHeight; updateStandard(); }
+    measureStandardPosition();
     material?.measure();
   };
   const updateClock = () => {
@@ -138,7 +144,12 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   const onIntent = () => ensureMaterial();
   mask.addEventListener("pointerenter", onIntent, { passive: true });
   mask.addEventListener("focus", onIntent);
-  const resize = new ResizeObserver(measureWord);
+  const resize = new ResizeObserver((entries) => {
+    // Upstream content and the physical scroll tail can move the footer while
+    // its word geometry stays unchanged. Preserve idle/wave history then.
+    if (entries.some((entry) => entry.target === mask)) measureWord();
+    else measureStandardPosition();
+  });
   resize.observe(mask);
   // Standard footers move when preceding route content grows/shrinks. Their
   // mask can retain identical dimensions, so observe the layout owner too.

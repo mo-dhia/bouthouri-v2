@@ -36,6 +36,16 @@ states, checks DPR-only redraw and comparison with an unresized control, and
 verifies listener/API cleanup and the no-context handle. Physical overlay CSS
 and buffers stay paired; production review remains root-owned.
 
+Runtime Canvas2D failure uses a per-material latch. A `contextlost` event, an
+unusable context detected before drawing, or a paint exception restores the
+server-rendered word, hides the overlay and releases the material RAF, idle
+timer, capture and protection/audio influence. Later input, eligibility,
+measurement and context-restoration events cannot hide the DOM again. The
+controller may try a new material only after its normal lifetime ends. This
+does not change healthy rendering or allocate another RAF. EN/AR normal and
+reduced fixtures exercise lost paint, restoration and post-startup draw failure;
+these are controlled CPU adapters, not a live GPU-loss certification.
+
 `Footer copy={dictionary.footer}` is inserted **once inside `.systems-story`**
 by Journey, with an explicit required`locale`. It renders the original
 `.home-footer`, `.footer-information`, `.footer-word-mask`, `.footer-word-text`,

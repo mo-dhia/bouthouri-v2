@@ -67,6 +67,7 @@ export function mountFooterMaterial(
     labels = thoughts[root.lang === "ar" ? "ar" : "en"],
     rtl = root.lang === "ar";
   let disposed = false,
+    failed = false,
     frame = 0,
     last = 0,
     phase:
@@ -136,6 +137,7 @@ export function mountFooterMaterial(
   const partMap = footerPartMap;
   const canInteract = () =>
     enabled &&
+    !failed &&
     !root.inert &&
     root.getAttribute("aria-hidden") !== "true" &&
     !document.hidden &&
@@ -143,11 +145,14 @@ export function mountFooterMaterial(
   const restore = () => {
     word.style.visibility = "";
     canvas.style.visibility = "hidden";
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (failed) return;
+    try {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    } catch { fail(); }
   };
   const sizeViewport = () => {
-    if (disposed) return false;
+    if (disposed || failed) return false;
     const nextDpr = Math.min(devicePixelRatio || 1, 2);
     const nextWidth = Math.ceil(innerWidth * nextDpr), nextHeight = Math.ceil(innerHeight * nextDpr);
     if (nextDpr === dpr && canvas.width === nextWidth && canvas.height === nextHeight) return false;
@@ -159,7 +164,7 @@ export function mountFooterMaterial(
     return true;
   };
   const measure = () => {
-    if (disposed) return;
+    if (disposed || failed) return;
     // DOM bounds/input are physical pixels. All material formulas, capped
     // fonts and offsets below run once in the selected reference pixel space.
     scale = designScale(innerWidth);
@@ -385,7 +390,7 @@ export function mountFooterMaterial(
       wordTop = word.getBoundingClientRect().top;
     return { left: rect.left / scale, top: rect.top / scale, shift: (wordTop - rect.top) / scale, wordTop: wordTop / scale };
   };
-  const draw = (geometry = readGeometry()) => {
+  const paint = (geometry = readGeometry()) => {
     if (!paths) return;
     if (sizeViewport()) paintedRest = undefined;
     const { left, top, shift } = geometry;
@@ -458,6 +463,13 @@ export function mountFooterMaterial(
     }
     paintedRest = restWord ? geometry : undefined;
   };
+  const draw = (geometry?: ReturnType<typeof readGeometry>) => {
+    if (disposed || failed) return;
+    try {
+      if (ctx.isContextLost?.()) { fail(); return; }
+      paint(geometry);
+    } catch { fail(); }
+  };
   const resizeViewport = () => {
     if (!sizeViewport()) return;
     paintedRest = undefined;
@@ -467,7 +479,7 @@ export function mountFooterMaterial(
   };
   const tick = (now: number) => {
     frame = 0;
-    if (disposed || document.hidden) return;
+    if (disposed || failed || document.hidden) return;
     const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;
     last = now;
     age += dt;
@@ -587,6 +599,7 @@ export function mountFooterMaterial(
     word.style.visibility = "hidden";
     mask.dataset.mode = phase;
     draw(geometry);
+    if (failed) return;
     const raw =
       phase === "to-logo"
         ? clamp(age / (reduced() ? 0.48 : 2.24))
@@ -631,7 +644,7 @@ export function mountFooterMaterial(
     }
   };
   function wake() {
-    if (!disposed && !frame && !document.hidden)
+    if (!disposed && !failed && !frame && !document.hidden)
       frame = requestAnimationFrame(tick);
   }
   const captureRelease = () => {
@@ -646,6 +659,7 @@ export function mountFooterMaterial(
       );
   };
   const activate = (fromPull = false) => {
+    if (disposed || failed) return;
     if (fromPull) captureRelease();
     else {
       if (!transfer) {
@@ -732,6 +746,7 @@ export function mountFooterMaterial(
     restore();
   };
   const setActive = (value: boolean) => {
+    if (failed) return;
     const changed = value !== enabled;
     enabled = value;
     if (!value) {
@@ -743,12 +758,22 @@ export function mountFooterMaterial(
     // suppress a current-pose redraw. wake() coalesces; draw() skips unchanged rest.
     wake();
   };
+  function fail() {
+    if (disposed || failed) return;
+    // Keep the server word usable for this material lifetime. Restoration of a
+    // lost context cannot make a cached empty bitmap hide it again.
+    failed = true;
+    enabled = false;
+    reset();
+    setFooterFriction(0, 0, 0);
+  }
   const hit = (event: PointerEvent) => {
-    if (!paths) return -1;
+    if (!paths || failed) return -1;
     const geometry = readGeometry(),
       x = event.clientX / scale - geometry.left,
       y = event.clientY / scale - geometry.wordTop;
     if (!drawn.length) draw(geometry);
+    if (failed) return -1;
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     const tolerance = Math.max(7, Math.min(14, 0.045 * height));
@@ -1007,6 +1032,7 @@ export function mountFooterMaterial(
   window.addEventListener("resize", resize);
   document.addEventListener("visibilitychange", visibility);
   window.addEventListener("portfolio-route-start", reset);
+  canvas.addEventListener("contextlost", fail);
   measure();
   reset();
   return {
@@ -1020,6 +1046,7 @@ export function mountFooterMaterial(
       disposed = true;
       editorial?.dispose();
       canvas.remove();
+      canvas.removeEventListener("contextlost", fail);
       document.removeEventListener("pointerdown", down, true);
       window.removeEventListener("pointermove", move, true);
       window.removeEventListener("pointerup", up);

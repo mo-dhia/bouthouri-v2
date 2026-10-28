@@ -72,6 +72,7 @@ function harness(variant = "home") {
   }
   const paint = {
     pathBuilds: 0, contourCalls: 0, clears: 0,
+    throwOnFill: false,
     fills: [] as RecordedPath[], frameFills: [] as RecordedPath[], transforms: [] as number[][], clips: [] as number[][],
     hits: [] as { path: RecordedPath; x: number; y: number }[], hitPath: undefined as RecordedPath | undefined,
     fonts: [] as string[], images: [] as number[][],
@@ -88,7 +89,10 @@ function harness(variant = "home") {
     drawImage(_canvas: unknown, ...values: number[]) { paint.images.push(values); },
     clearRect() { paint.clears++; paint.frameFills = []; },
     setTransform(...values: number[]) { paint.transforms.push(values); },
-    fill(path?: RecordedPath) { if (path) { paint.fills.push(path); paint.frameFills.push(path); } },
+    fill(path?: RecordedPath) {
+      if (paint.throwOnFill) throw new Error("Injected Canvas2D draw failure");
+      if (path) { paint.fills.push(path); paint.frameFills.push(path); }
+    },
     rect(...values: number[]) { paint.clips.push(values); },
     isPointInPath(path: RecordedPath, x: number, y: number) {
       paint.hits.push({ path, x, y }); return path === paint.hitPath;
@@ -112,8 +116,8 @@ function harness(variant = "home") {
   const state = { quietMode: false, homeSceneFailed: false, menuOpen: false };
   let intersect: (entries: { isIntersecting: boolean }[]) => void = () => {};
   let active = false, materialMounts = 0, materialDisposals = 0, soundCalls = 0;
-  let mountedMaterial: FooterMaterial | undefined, wordMeasures = 0, maskResizeNotifications = 0;
-  let maskResize: () => void = () => {};
+  let mountedMaterial: FooterMaterial | undefined, wordMeasures = 0, materialMeasures = 0, maskResizeNotifications = 0;
+  let resizeCallback: (entries: { target: Surface }[]) => void = () => {};
   const resizeTargets = new Set<Surface>();
   class ClockDate extends Date {
     constructor() { super(now); }
@@ -133,7 +137,7 @@ function harness(variant = "home") {
       constructor(callback: typeof intersect) { intersect = callback; }
       observe() {} disconnect() {}
     },
-    ResizeObserver: class { constructor(callback: () => void) { maskResize = callback; } observe(target: Surface) { resizeTargets.add(target); } disconnect() { resizeTargets.clear(); } },
+    ResizeObserver: class { constructor(callback: typeof resizeCallback) { resizeCallback = callback; } observe(target: Surface) { resizeTargets.add(target); } disconnect() { resizeTargets.clear(); } },
   };
   const dependencies = {
     "@/config/brand": { brand },
@@ -145,7 +149,7 @@ function harness(variant = "home") {
     "./footer-material": { mountFooterMaterial() {
       materialMounts++;
       if (mountedMaterial) return mountedMaterial;
-      return { measure() {}, reset() {}, setActive(value: boolean) { active = value; }, dispose() { materialDisposals++; } };
+      return { measure() { materialMeasures++; }, reset() {}, setActive(value: boolean) { active = value; }, dispose() { materialDisposals++; } };
     } },
   };
   const mount = load("./footer.logic.ts", globals, dependencies).mountFooterInteractions as unknown as (root: Surface) => () => void;
@@ -158,8 +162,9 @@ function harness(variant = "home") {
       pending.forEach((callback) => callback(now));
     },
     mount(material?: FooterMaterial) { mountedMaterial = material; return mount(root); },
-    maskResize() { maskResizeNotifications++; maskResize(); },
-    get measurements() { return { word: wordMeasures, maskResizeNotifications }; },
+    maskResize() { maskResizeNotifications++; resizeCallback([{ target: mask }]); },
+    layoutResize(target: Surface) { resizeCallback([{ target }]); },
+    get measurements() { return { word: wordMeasures, material: materialMeasures, maskResizeNotifications }; },
     frame(time: number) { stage.dispatchEvent(new CustomEvent("journey-frame", { detail: { time } })); },
     intersect(value: boolean) { intersect([{ isIntersecting: value }]); },
     mode(change: Partial<typeof state>) { Object.assign(state, change); subscribers.forEach((callback) => callback()); },
@@ -622,11 +627,71 @@ test("standard footer remeasures upstream content changes without a mask resize"
   expect(h.resizeTargets.has(layout)).toBe(true); expect(h.resizeTargets.has(content)).toBe(true); expect(h.resizeTargets.has(h.mask)).toBe(true);
   // Textarea/content shrinks while the mask width/height remains unchanged.
   const maskRect = { ...h.mask.rect }; h.root.rect.top = 3840;
-  h.maskResize(); // The single RO callback now also receives the observed parent.
+  h.layoutResize(content);
   h.globals.scrollY = 3840 + 633.6 + 304 - 1024;
   h.window.dispatchEvent(new Event("resize"));
   expect(h.mask.rect).toEqual(maskRect);
   expect(Number(h.colophon.style.opacity)).toBeCloseTo(1, 12); expect(h.colophon.inert).toBe(false);
   expect(h.word.style.transform).toBe("translate3d(0,0%,0)");
   dispose(); expect(h.resizeTargets.size).toBe(0);
+});
+
+test("standard footer layout/tail notifications preserve word material geometry on height-only resize", async () => {
+  const h = harness("standard"), layout = new Surface(), content = new Surface(); h.root.parentElement = layout;
+  layout.querySelector = (selector) => selector === "main" ? content : null;
+  h.globals.innerWidth = 1280; h.globals.innerHeight = 1024;
+  const dispose = h.mount(); h.intersect(true); await flushImports();
+  const before = { ...h.measurements };
+  h.globals.innerHeight = 1200;
+  h.window.dispatchEvent(new Event("resize"));
+  h.layoutResize(layout); // The changed native tail resizes the observed parent.
+  h.layoutResize(content); // A textarea edit can also move the same word box.
+  expect(h.root.afterNodes[0].style.height).toBe("37.5vw");
+  expect(h.measurements).toEqual(before);
+  h.maskResize(); // Real glyph/width changes still invalidate material geometry.
+  expect(h.measurements.word).toBe(before.word + 1);
+  expect(h.measurements.material).toBe(before.material + 1);
+  dispose(); expect(h.resizeTargets.size).toBe(0);
+});
+
+test("painted footer falls back to its server word after context loss and ignores later restoration/input", () => {
+  for (const locale of ["en", "ar"]) for (const reduced of [false, true]) {
+    const h = harness(); h.root.lang = locale; h.mode({ quietMode: reduced });
+    const material = h.material(); material.setActive(true); h.step();
+    const overlay = h.paint.canvases.find((canvas) => canvas.dataset.footerMaterial === "native-paths")!;
+    expect(h.word.style.visibility).toBe("hidden");
+    expect(h.paint.frameFills.length).toBeGreaterThan(0);
+    h.paint.frameFills = []; // A lost native bitmap no longer contains its paint.
+    overlay.dispatchEvent(new Event("contextlost", { cancelable: true }));
+    expect(h.word.style.visibility).toBe("");
+    expect(overlay.style.visibility).toBe("hidden");
+    expect(h.rafs.size + h.timers.size).toBe(0);
+    const builds = h.paint.pathBuilds;
+    overlay.dispatchEvent(new Event("contextrestored"));
+    material.setActive(true); material.measure(); material.resizeViewport();
+    h.mask.dispatchEvent(Object.assign(new Event("keydown", { cancelable: true }), { key: "Enter" }));
+    h.window.dispatchEvent(new Event("resize")); h.step(50);
+    expect(h.word.style.visibility).toBe("");
+    expect(h.paint.pathBuilds).toBe(builds);
+    expect(h.rafs.size + h.timers.size).toBe(0);
+    material.dispose(); expect(overlay.removed).toBe(true);
+  }
+});
+
+test("post-startup footer draw failure restores readable DOM and stops the material clock", () => {
+  for (const locale of ["en", "ar"]) for (const reduced of [false, true]) {
+    const h = harness(); h.root.lang = locale; h.mode({ quietMode: reduced });
+    const material = h.material(); material.setActive(true); h.step();
+    expect(h.word.style.visibility).toBe("hidden");
+    h.paint.throwOnFill = true;
+    h.word.rect.top += 1; // Force a placement repaint past the unchanged-rest cache.
+    material.setActive(true);
+    expect(() => h.step()).not.toThrow();
+    expect(h.word.style.visibility).toBe("");
+    expect(h.paint.frameFills).toEqual([]);
+    expect(h.rafs.size + h.timers.size).toBe(0);
+    material.setActive(true); h.step();
+    expect(h.word.style.visibility).toBe("");
+    expect(() => material.dispose()).not.toThrow();
+  }
 });
