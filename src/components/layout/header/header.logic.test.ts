@@ -64,6 +64,11 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     });
     return item;
   });
+  const menuDescriptions = menuItems.map((_, index) => {
+    const description = new Surface();
+    description.dataset.menuDescription = String(index);
+    return description;
+  });
   Object.assign(menuControl, {
     closest: (selector: string) => selector === "[data-menu-control]" ? menuControl : null,
     matches: () => false,
@@ -71,6 +76,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
   if (menu) {
     dialog.queries.set("[data-menu-item]", menuItems);
     dialog.queries.set("[data-menu-rail]", menuRail);
+    dialog.queries.set("[data-menu-description]", menuDescriptions);
   }
   const hero = new Surface(), persistent = new Surface(), side = new Surface(), sideRoll = new Surface();
   const rolls = Array.from({ length: 4 }, () => new Surface());
@@ -121,13 +127,17 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
       observe() {} disconnect() { mutationDisconnected = true; }
     },
   };
+  let finishMenuReverse = () => {};
   const dependencies: Record<string, unknown> = {
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe: (callback: () => void) => { subscribers.add(callback); return () => subscribers.delete(callback); } } },
     "@/lib/audio/material-audio": { attachAudioLifecycle: () => () => {}, playMaterialSound() {} },
     "@/lib/audio/section-whispers": { attachSectionWhispers: () => () => {} },
     "./menu.module.css": { default: {} },
     "./header.module.css": { default: { readingNavigation: "reading-viewport", readingFrame: "reading-frame" } },
-    "./menu-timeline": { createMenuTimeline: () => ({ dispose() {}, play() {}, pause() {}, reverse() {}, time: () => 1, duration: 1 }) },
+    "./menu-timeline": { createMenuTimeline: (_root: unknown, callbacks: { reverseComplete: () => void }) => {
+      finishMenuReverse = callbacks.reverseComplete;
+      return { dispose() {}, play() {}, pause() {}, reverse() {}, time: () => 1, duration: 1 };
+    } },
     "@/sections/landing/1-hero/hero-world": heroWorld,
     "@/lib/viewport-design": viewport,
   };
@@ -139,7 +149,8 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     return dependencies[name];
   }, evaluated, evaluated.exports);
   return {
-    counts, root, utilities, entrance, hero, side, identity, chapter, original, motion, window, menuItems, menuRail, dialog,
+    counts, root, utilities, entrance, hero, side, identity, chapter, original, motion, window, menuItems, menuDescriptions, menuRail, dialog,
+    finishMenuReverse: () => finishMenuReverse(),
     toggleMenu() {
       const event = new Event("click");
       Object.defineProperty(event, "target", { value: menuControl });
@@ -260,7 +271,7 @@ test("profile navigation scales measured geometry once and ignores physical view
 });
 
 
-test("menu rail measures visible rows on open and retains selection through layout, fonts and reopen", async () => {
+test("menu rail retains selection through layout and fonts but resets it after a complete close", async () => {
   for (const [width, physicalHeight, nextWidth, enCenter, arCenter] of [
     [1920, 1080, 1440, 70, 97],
     [768, 1024, 650, 34, 59],
@@ -289,12 +300,36 @@ test("menu rail measures visible rows on open and retains selection through layo
       h.fontsReady(); await Promise.resolve();
       const expected = `translateY(${viewport.pixelsToVw(center * 3 * scale + 4 * scale, nextWidth)})`;
       expect(Number.parseFloat((h.menuRail.style.transform as string).slice(11))).toBeCloseTo(Number.parseFloat(expected.slice(11)), 10);
-      const positioned = h.menuRail.style.transform;
       h.toggleMenu(); expect(h.dialog.open).toBe(false);
       h.toggleMenu(); expect(h.dialog.open).toBe(true);
-      expect(h.menuItems[1].dataset.selected).toBe("true");
-      expect(h.menuRail.style.transform).toBe(positioned);
+      expect(h.menuItems[0].dataset.selected).toBe("true");
+      expect(h.menuItems[1].dataset.selected).toBe("false");
+      expect(h.menuDescriptions[0].getAttribute("aria-hidden")).toBe("false");
+      expect(h.menuDescriptions[1].getAttribute("aria-hidden")).toBe("true");
+      expect(h.menuRail.style.transform).toBe(`translateY(${viewport.pixelsToVw(center * scale, nextWidth)})`);
       dispose(); expect(h.clean).toBe(true);
     }
   }
+});
+
+
+test("reopening an interrupted closing timeline preserves its selected row until a complete close", () => {
+  const h = harness({ menu: true });
+  const dispose = h.mount();
+  h.toggleMenu();
+  h.menuItems[2].dispatchEvent(new Event("focus"));
+  h.toggleMenu();
+  expect(h.dialog.dataset.phase).toBe("closing");
+  expect(h.dialog.open).toBe(true);
+  h.toggleMenu();
+  expect(h.dialog.dataset.phase).toBe("opening");
+  expect(h.menuItems[2].dataset.selected).toBe("true");
+  expect(h.menuDescriptions[2].getAttribute("aria-hidden")).toBe("false");
+  h.toggleMenu(); h.finishMenuReverse();
+  expect(h.dialog.open).toBe(false);
+  h.toggleMenu();
+  expect(h.menuItems[0].dataset.selected).toBe("true");
+  expect(h.menuItems[2].dataset.selected).toBe("false");
+  expect(h.menuDescriptions[0].getAttribute("aria-hidden")).toBe("false");
+  dispose(); expect(h.clean).toBe(true);
 });

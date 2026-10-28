@@ -212,8 +212,10 @@ independently of animation preferences and viewport position.
 the native dialog was closed measured zero offsets. Selection is now retained
 without hidden geometry reads; after `showModal()` the rail measures the visible
 selected row and emits its center in `vw`. Pointer/focus selection, window and
-font-ready layout changes remeasure the same selected row. Reopening preserves
-selection; the dialog's native scroll reset and reversible timeline are unchanged.
+font-ready layout changes remeasure the same selected row. Reopening an
+interrupted close preserves selection. A new open after a complete close resets to VISION, matching the source closed-branch `C(0)`; the row, rail
+and description reset together. Native scroll reset and reversible timeline
+remain unchanged.
 The mounted regression models zero closed offsets across EN/AR at all three
 reference widths, selection changes, proportional resize, font completion and
 reopen. No new RAF or geometry reads are added to ordinary journey frames.

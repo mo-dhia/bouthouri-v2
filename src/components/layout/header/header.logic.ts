@@ -362,7 +362,9 @@ export function mountHeader(root: HTMLElement): () => void {
       const scroller = dialog.querySelector<HTMLElement>("[data-menu-scroll]");
       if (scroller) scroller.scrollTop = 0;
       measureInk();
-      positionMenuRail();
+      // Source resets selection only for a new open, not an interrupted reverse.
+      const first = dialog.querySelector<HTMLElement>("[data-menu-item]");
+      if (first) selectMenu(first);
       dialog
         .querySelector<HTMLButtonElement>("[data-menu-close]")
         ?.focus({ preventScroll: true });
