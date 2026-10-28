@@ -1,2 +1,13 @@
-.frame { position: relative; overflow: hidden }
-.image { object-fit: cover; border-radius: inherit }
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .frame { position: relative; overflow: hidden }
+  .image { object-fit: cover; border-radius: inherit }
+}
+@media (600px < width <= 1024px) {
+  .frame { position: relative; overflow: hidden }
+  .image { object-fit: cover; border-radius: inherit }
+}
+@media (width <= 600px) {
+  .frame { position: relative; overflow: hidden }
+  .image { object-fit: cover; border-radius: inherit }
+}

@@ -1,3 +1,19 @@
-.canvas { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; opacity: 0; pointer-events: auto }
-.environment { z-index: 0; pointer-events: none; position: fixed; inset: 0 }
-.environmentCanvas { display: block; inline-size: 100%; block-size: 100% }
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .canvas { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; opacity: 0; pointer-events: auto }
+  .environment { z-index: 0; pointer-events: none; position: fixed; inset: 0 }
+  .environmentCanvas { display: block; inline-size: 100%; block-size: 100% }
+  .environment { height: 56.25vw; bottom: auto }
+}
+@media (600px < width <= 1024px) {
+  .canvas { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; opacity: 0; pointer-events: auto }
+  .environment { z-index: 0; pointer-events: none; position: fixed; inset: 0 }
+  .environmentCanvas { display: block; inline-size: 100%; block-size: 100% }
+  .environment { height: 133.334vw; bottom: auto }
+}
+@media (width <= 600px) {
+  .canvas { position: absolute; inset: 0; display: block; inline-size: 100%; block-size: 100%; opacity: 0; pointer-events: auto }
+  .environment { z-index: 0; pointer-events: none; position: fixed; inset: 0 }
+  .environmentCanvas { display: block; inline-size: 100%; block-size: 100% }
+  .environment { height: 222.088vw; bottom: auto }
+}

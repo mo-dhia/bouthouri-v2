@@ -1,67 +1,169 @@
-@font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
-@font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
-:root { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ink: #090909; --paper: #e4e1d9; --reading-direction: ltr; --background: #090909; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
-* { box-sizing: border-box }
-html, body { margin: 0; min-block-size: 100%; background: var(--background); color: var(--foreground) }
-body { font-family: 'Questrial', Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip }
-html[lang='ar'] body { font-family: 'Cairo', Arial, sans-serif }
-main[data-page='landing']:has(.experience.is-reduced) { overflow-anchor: none }
-button, input, textarea { font: inherit }
-button, a { -webkit-tap-highlight-color: transparent }
-a { color: inherit; text-decoration: none }
-button { color: inherit; background: transparent; border: 0; cursor: pointer }
-button:focus-visible, a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px }
-button[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 0.3em }
-p, h1, h2 { margin: 0 }
-::selection { color: var(--background); background: var(--foreground) }
-.skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
-.skip-link:focus { transform: translateY(0) }
-.not-found { min-block-size: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
-.not-found h1 { font-size: 4.17vw; font-weight: 400 }
-.not-found a { text-decoration: underline }
-@media (max-width: 1024px) {
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  :root { --design-height: 56.25vw }
+  @font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
+  @font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
+  :root { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ink: #090909; --paper: #e4e1d9; --reading-direction: ltr; --background: #090909; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
+  * { box-sizing: border-box }
+  html, body { margin: 0; min-block-size: 100%; background: var(--background); color: var(--foreground) }
+  body { font-family: 'Questrial', Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip }
+  html[lang='ar'] body { font-family: 'Cairo', Arial, sans-serif }
+  main[data-page='landing']:has(.experience.is-reduced) { overflow-anchor: none }
+  button, input, textarea { font: inherit }
+  button, a { -webkit-tap-highlight-color: transparent }
+  a { color: inherit; text-decoration: none }
+  button { color: inherit; background: transparent; border: 0; cursor: pointer }
+  button:focus-visible, a:focus-visible { outline: 2px solid currentColor; outline-offset: 0.208334vw }
+  button[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 0.3em }
+  p, h1, h2 { margin: 0 }
+  ::selection { color: var(--background); background: var(--foreground) }
+  .skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
+  .skip-link:focus { transform: translateY(0) }
+  .not-found { min-block-size: 56.25vw; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
+  .not-found h1 { font-size: 4.17vw; font-weight: 400 }
+  .not-found a { text-decoration: underline }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important }
+  }
+  /* Reference typography metrics shared by server content and local motion islands. */
+  html[data-typography=questrial-cairo] { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
+  html[data-typography=questrial-cairo][lang=ar] { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
+  html[data-typography=questrial-cairo] { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
+  html[data-typography=questrial-cairo] :is(h1, h2, h3, .project-name, .case-project-name, .opening-heading, .post-line) { --type-scale: 1.085 }
+  html[data-typography=questrial-cairo] :is(.editorial-eyebrow, .editorial-kicker, .case-route-label, .case-story-label, .chapter-side, .chapter-role, .chapter-person, .nav-menu-footer) { --type-scale: 1.04; --tracking-scale: .8 }
+  html[data-typography=questrial-cairo] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 48ch; line-height: 1.75 }
+  html[data-typography=questrial-cairo] .service-index .service-index-row>p { max-width: 47ch; line-height: 1.7 }
+  html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: 1.14584vw }
+  html[data-typography=questrial-cairo] .footer-word-text { --tracking-scale: .6; --type-scale: 1; direction: ltr; font-weight: 400 }
+  html[data-typography=questrial-cairo][lang=en] .about-moving-thought h2 { letter-spacing: -.036em }
+  html[data-typography=questrial-cairo][lang=ar] { --type-scale: 1.02; --ar-body-leading: 1.85; --ar-mask-pad: .19em; --ar-heading-leading: 1.5 }
+  html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --type-scale: 1.035; font-weight: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 42ch; font-weight: 450; line-height: 1.9 }
+  html[data-typography=questrial-cairo][lang=ar] .service-index .service-index-row>p { max-width: 42ch; font-weight: 450; line-height: 1.85 }
+  html[data-typography=questrial-cairo][lang=ar] .solving-page .services-intro h2 { font-weight: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.masked-text-line, .editorial-line) { margin-block: -.19em; padding-block: .19em }
+  html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name, [lang=en]) { --tracking-scale: .6; font-weight: 400 }
+  html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name), html[data-typography=questrial-cairo] [data-hero-name-line] { --type-scale: 1.075 }
+  html[data-typography=questrial-cairo][lang=ar] [data-hero-name-line] { --type-scale: 1.035; line-height: 1.25 }
+  html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --weight-400: 500; --weight-430: 500; --weight-440: 500; --weight-450: 500; --weight-470: 500; --weight-480: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title, .case-project-name, .project-name) { --weight-400: 400; --weight-430: 400; --weight-450: 400; --weight-500: 400; --tracking-scale: .6; --type-scale: 1.075; font-weight: 400 !important }
+  html[data-typography] :is(.project-name, .case-hero-title, .case-project-name)[lang=ar] { --type-scale: 1.035; direction: rtl; font-family: var(--font-arabic), sans-serif !important; letter-spacing: 0 !important; font-weight: 500 !important; line-height: 1.5 !important }
+  body { font-size: 0.833334vw }
+}
+@media (600px < width <= 1024px) {
+  :root { --design-height: 133.334vw }
+  @font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
+  @font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
+  :root { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ink: #090909; --paper: #e4e1d9; --reading-direction: ltr; --background: #090909; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
+  * { box-sizing: border-box }
+  html, body { margin: 0; min-block-size: 100%; background: var(--background); color: var(--foreground) }
+  body { font-family: 'Questrial', Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip }
+  html[lang='ar'] body { font-family: 'Cairo', Arial, sans-serif }
+  main[data-page='landing']:has(.experience.is-reduced) { overflow-anchor: none }
+  button, input, textarea { font: inherit }
+  button, a { -webkit-tap-highlight-color: transparent }
+  a { color: inherit; text-decoration: none }
+  button { color: inherit; background: transparent; border: 0; cursor: pointer }
+  button:focus-visible, a:focus-visible { outline: 2px solid currentColor; outline-offset: 0.520834vw }
+  button[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 0.3em }
+  p, h1, h2 { margin: 0 }
+  ::selection { color: var(--background); background: var(--foreground) }
+  .skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
+  .skip-link:focus { transform: translateY(0) }
+  .not-found { min-block-size: 133.334vw; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
+  .not-found h1 { font-size: 4.17vw; font-weight: 400 }
+  .not-found a { text-decoration: underline }
   .skip-link { inset-block-start: 2.08vw; inset-inline-start: 2.08vw; padding: 2.08vw 3.13vw }
   .not-found { gap: 3.13vw; padding: 8.33vw }
   .not-found h1 { font-size: 7.29vw }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important }
+  }
+  /* Reference typography metrics shared by server content and local motion islands. */
+  html[data-typography=questrial-cairo] { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
+  html[data-typography=questrial-cairo][lang=ar] { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
+  html[data-typography=questrial-cairo] { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
+  html[data-typography=questrial-cairo] :is(h1, h2, h3, .project-name, .case-project-name, .opening-heading, .post-line) { --type-scale: 1.085 }
+  html[data-typography=questrial-cairo] :is(.editorial-eyebrow, .editorial-kicker, .case-route-label, .case-story-label, .chapter-side, .chapter-role, .chapter-person, .nav-menu-footer) { --type-scale: 1.04; --tracking-scale: .8 }
+  html[data-typography=questrial-cairo] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 48ch; line-height: 1.75 }
+  html[data-typography=questrial-cairo] .service-index .service-index-row>p { max-width: 47ch; line-height: 1.7 }
+  html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: 2.21355vw }
+  html[data-typography=questrial-cairo] .footer-word-text { --tracking-scale: .6; --type-scale: 1; direction: ltr; font-weight: 400 }
+  html[data-typography=questrial-cairo][lang=en] .about-moving-thought h2 { letter-spacing: -.036em }
+  html[data-typography=questrial-cairo][lang=ar] { --type-scale: 1.02; --ar-body-leading: 1.85; --ar-mask-pad: .19em; --ar-heading-leading: 1.5 }
+  html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --type-scale: 1.035; font-weight: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 42ch; font-weight: 450; line-height: 1.9 }
+  html[data-typography=questrial-cairo][lang=ar] .service-index .service-index-row>p { max-width: 42ch; font-weight: 450; line-height: 1.85 }
+  html[data-typography=questrial-cairo][lang=ar] .solving-page .services-intro h2 { font-weight: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.masked-text-line, .editorial-line) { margin-block: -.19em; padding-block: .19em }
+  html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name, [lang=en]) { --tracking-scale: .6; font-weight: 400 }
+  html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name), html[data-typography=questrial-cairo] [data-hero-name-line] { --type-scale: 1.075 }
+  html[data-typography=questrial-cairo][lang=ar] [data-hero-name-line] { --type-scale: 1.035; line-height: 1.25 }
+  html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --weight-400: 500; --weight-430: 500; --weight-440: 500; --weight-450: 500; --weight-470: 500; --weight-480: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title, .case-project-name, .project-name) { --weight-400: 400; --weight-430: 400; --weight-450: 400; --weight-500: 400; --tracking-scale: .6; --type-scale: 1.075; font-weight: 400 !important }
+  html[data-typography] :is(.project-name, .case-hero-title, .case-project-name)[lang=ar] { --type-scale: 1.035; direction: rtl; font-family: var(--font-arabic), sans-serif !important; letter-spacing: 0 !important; font-weight: 500 !important; line-height: 1.5 !important }
+  body { font-size: 2.08334vw }
 }
-@media (max-width: 600px) {
+@media (width <= 600px) {
+  :root { --design-height: 222.088vw }
+  @font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
+  @font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
+  :root { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ink: #090909; --paper: #e4e1d9; --reading-direction: ltr; --background: #090909; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
+  * { box-sizing: border-box }
+  html, body { margin: 0; min-block-size: 100%; background: var(--background); color: var(--foreground) }
+  body { font-family: 'Questrial', Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; overflow-x: clip }
+  html[lang='ar'] body { font-family: 'Cairo', Arial, sans-serif }
+  main[data-page='landing']:has(.experience.is-reduced) { overflow-anchor: none }
+  button, input, textarea { font: inherit }
+  button, a { -webkit-tap-highlight-color: transparent }
+  a { color: inherit; text-decoration: none }
+  button { color: inherit; background: transparent; border: 0; cursor: pointer }
+  button:focus-visible, a:focus-visible { outline: 2px solid currentColor; outline-offset: 0.970874vw }
+  button[aria-pressed='true'] { text-decoration: underline; text-underline-offset: 0.3em }
+  p, h1, h2 { margin: 0 }
+  ::selection { color: var(--background); background: var(--foreground) }
+  .skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
+  .skip-link:focus { transform: translateY(0) }
+  .not-found { min-block-size: 222.088vw; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
+  .not-found h1 { font-size: 4.17vw; font-weight: 400 }
+  .not-found a { text-decoration: underline }
+  .skip-link { inset-block-start: 2.08vw; inset-inline-start: 2.08vw; padding: 2.08vw 3.13vw }
+  .not-found { gap: 3.13vw; padding: 8.33vw }
+  .not-found h1 { font-size: 7.29vw }
   .skip-link { inset-block-start: 3.88vw; inset-inline-start: 3.88vw; padding: 3.88vw 5.83vw }
   .not-found { gap: 5.83vw; padding: 5.83vw }
   .not-found h1 { font-size: 10.68vw }
-}
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important }
-}
-/* Reference typography metrics shared by server content and local motion islands. */
-html[data-typography=questrial-cairo] { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
-html[data-typography=questrial-cairo][lang=ar] { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
-html[data-typography=questrial-cairo] { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
-html[data-typography=questrial-cairo] :is(h1, h2, h3, .project-name, .case-project-name, .opening-heading, .post-line) { --type-scale: 1.085 }
-html[data-typography=questrial-cairo] :is(.editorial-eyebrow, .editorial-kicker, .case-route-label, .case-story-label, .chapter-side, .chapter-role, .chapter-person, .nav-menu-footer) { --type-scale: 1.04; --tracking-scale: .8 }
-html[data-typography=questrial-cairo] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 48ch; line-height: 1.75 }
-html[data-typography=questrial-cairo] .service-index .service-index-row>p { max-width: 47ch; line-height: 1.7 }
-html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: clamp(17px, 1.44vw, 22px) }
-html[data-typography=questrial-cairo] .footer-word-text { --tracking-scale: .6; --type-scale: 1; direction: ltr; font-weight: 400 }
-html[data-typography=questrial-cairo][lang=en] .about-moving-thought h2 { letter-spacing: -.036em }
-html[data-typography=questrial-cairo][lang=ar] { --type-scale: 1.02; --ar-body-leading: 1.85; --ar-mask-pad: .19em; --ar-heading-leading: 1.5 }
-html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --type-scale: 1.035; font-weight: 500 }
-html[data-typography=questrial-cairo][lang=ar] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 42ch; font-weight: 450; line-height: 1.9 }
-html[data-typography=questrial-cairo][lang=ar] .service-index .service-index-row>p { max-width: 42ch; font-weight: 450; line-height: 1.85 }
-html[data-typography=questrial-cairo][lang=ar] .solving-page .services-intro h2 { font-weight: 500 }
-html[data-typography=questrial-cairo][lang=ar] :is(.masked-text-line, .editorial-line) { margin-block: -.19em; padding-block: .19em }
-html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name, [lang=en]) { --tracking-scale: .6; font-weight: 400 }
-html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name), html[data-typography=questrial-cairo] [data-hero-name-line] { --type-scale: 1.075 }
-html[data-typography=questrial-cairo][lang=ar] [data-hero-name-line] { --type-scale: 1.035; line-height: 1.25 }
-@media (max-width:760px) {
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important }
+  }
+  /* Reference typography metrics shared by server content and local motion islands. */
+  html[data-typography=questrial-cairo] { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
+  html[data-typography=questrial-cairo][lang=ar] { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
+  html[data-typography=questrial-cairo] { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
+  html[data-typography=questrial-cairo] :is(h1, h2, h3, .project-name, .case-project-name, .opening-heading, .post-line) { --type-scale: 1.085 }
+  html[data-typography=questrial-cairo] :is(.editorial-eyebrow, .editorial-kicker, .case-route-label, .case-story-label, .chapter-side, .chapter-role, .chapter-person, .nav-menu-footer) { --type-scale: 1.04; --tracking-scale: .8 }
+  html[data-typography=questrial-cairo] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 48ch; line-height: 1.75 }
+  html[data-typography=questrial-cairo] .service-index .service-index-row>p { max-width: 47ch; line-height: 1.7 }
+  html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: 4.12622vw }
+  html[data-typography=questrial-cairo] .footer-word-text { --tracking-scale: .6; --type-scale: 1; direction: ltr; font-weight: 400 }
+  html[data-typography=questrial-cairo][lang=en] .about-moving-thought h2 { letter-spacing: -.036em }
+  html[data-typography=questrial-cairo][lang=ar] { --type-scale: 1.02; --ar-body-leading: 1.85; --ar-mask-pad: .19em; --ar-heading-leading: 1.5 }
+  html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --type-scale: 1.035; font-weight: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.practice-copy, .case-story-system p[data-story-reveal], .case-hero-deck p) { max-width: 42ch; font-weight: 450; line-height: 1.9 }
+  html[data-typography=questrial-cairo][lang=ar] .service-index .service-index-row>p { max-width: 42ch; font-weight: 450; line-height: 1.85 }
+  html[data-typography=questrial-cairo][lang=ar] .solving-page .services-intro h2 { font-weight: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.masked-text-line, .editorial-line) { margin-block: -.19em; padding-block: .19em }
+  html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name, [lang=en]) { --tracking-scale: .6; font-weight: 400 }
+  html[data-typography=questrial-cairo] :is(.case-hero-title, .case-project-name, .project-name), html[data-typography=questrial-cairo] [data-hero-name-line] { --type-scale: 1.075 }
+  html[data-typography=questrial-cairo][lang=ar] [data-hero-name-line] { --type-scale: 1.035; line-height: 1.25 }
   html[data-typography=questrial-cairo] :is(h1, h2, h3, .project-name, .case-project-name) { --type-scale: 1.055 }
-  html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: 16px; line-height: 1.75 }
+  html[data-typography=questrial-cairo] .case-story-system p[data-story-reveal] { font-size: 3.8835vw; line-height: 1.75 }
   html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --type-scale: 1.01 }
-  html[data-typography=questrial-cairo][lang=ar] .case-story-system p[data-story-reveal] { font-size: 18px; line-height: 1.9 }
+  html[data-typography=questrial-cairo][lang=ar] .case-story-system p[data-story-reveal] { font-size: 4.36894vw; line-height: 1.9 }
   html[data-typography=questrial-cairo] .service-index .service-index-row>p { max-width: 100% }
-}
-html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --weight-400: 500; --weight-430: 500; --weight-440: 500; --weight-450: 500; --weight-470: 500; --weight-480: 500 }
-html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title, .case-project-name, .project-name) { --weight-400: 400; --weight-430: 400; --weight-450: 400; --weight-500: 400; --tracking-scale: .6; --type-scale: 1.075; font-weight: 400 !important }
-@media (max-width:760px) {
+  html[data-typography=questrial-cairo][lang=ar] :is(h1, h2, h3) { --weight-400: 500; --weight-430: 500; --weight-440: 500; --weight-450: 500; --weight-470: 500; --weight-480: 500 }
+  html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title, .case-project-name, .project-name) { --weight-400: 400; --weight-430: 400; --weight-450: 400; --weight-500: 400; --tracking-scale: .6; --type-scale: 1.075; font-weight: 400 !important }
   html[data-typography=questrial-cairo][lang=ar] :is(.case-hero-title, .case-project-name, .project-name) { --type-scale: 1.055 }
+  html[data-typography] :is(.project-name, .case-hero-title, .case-project-name)[lang=ar] { --type-scale: 1.035; direction: rtl; font-family: var(--font-arabic), sans-serif !important; letter-spacing: 0 !important; font-weight: 500 !important; line-height: 1.5 !important }
+  body { font-size: 3.8835vw }
 }
-html[data-typography] :is(.project-name, .case-hero-title, .case-project-name)[lang=ar] { --type-scale: 1.035; direction: rtl; font-family: var(--font-arabic), sans-serif !important; letter-spacing: 0 !important; font-weight: 500 !important; line-height: 1.5 !important }

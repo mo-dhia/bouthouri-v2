@@ -1,42 +1,133 @@
-.action { max-width: 100%; min-height: 44px; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; justify-content: center; align-items: center; gap: 14px; text-decoration: none; display: inline-flex; position: relative }
-.action[data-kinetic] { min-height: 44px }
-.action[hidden] { display: none }
-.window { white-space: nowrap; padding-block: 2px; line-height: 1.45; display: block; position: relative; overflow: hidden }
-.label { transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; transform: translate(0, 0) }
-.echo { pointer-events: none; transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; position: absolute; top: 2px; left: 0; transform: translate(-3px, 115%) }
-.boundary { pointer-events: none; opacity: .5; transform-origin: 0; background: currentColor; height: 1px; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; display: block; position: absolute }
-.frame { pointer-events: none; position: absolute; inset: 0 }
-.primary { font-size: calc(12px * var(--type-scale, 1)); letter-spacing: calc(.015em * var(--tracking-scale, 1)); min-height: 44px; padding: 0 20px }
-.primary .frame:before, .primary .frame:after { content: ''; pointer-events: none; opacity: .5; border-color: currentColor; width: 6px; height: 9px; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute }
-.primary .frame:before { border-top: 1px solid; border-left: 1px solid; top: 10px; left: 0 }
-.primary .frame:after { border-bottom: 1px solid; border-right: 1px solid; bottom: 10px; right: 0 }
-.primary .boundary { bottom: 5px; left: 20px; right: 20px; transform: scaleX(.18) }
-.primary:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translate(82%)scaleX(.18) }
-.primary:is(:hover, :focus-visible) .label { transform: translate(3px) }
-.primary:is(:hover, :focus-visible) .frame:before { opacity: .9; transform: translateY(8px) }
-.primary:is(:hover, :focus-visible) .frame:after { opacity: .9; transform: translateY(-8px) }
-.editorial { justify-content: flex-start; padding: 0 22px 0 0 }
-.editorial .boundary { width: 10px; bottom: calc(50% - 1px); right: 0; transform: scaleX(1) }
-.editorial:is(:hover, :focus-visible) .label { transform: translate(3px, -115%) }
-.editorial:is(:hover, :focus-visible) .echo { transform: translate(0, 0) }
-.editorial:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translateY(7px)scaleX(.55) }
-.action:focus-visible { outline-offset: 5px; outline: 1px solid #aaa69b }
-.action:active .window { transform: translateY(1px) }
-@media (prefers-reduced-motion:reduce) {
-  .action *, .action:before, .action:after { transition: none !important }
-  .editorial:is(:hover, :focus-visible) .label { transform: none }
-  .editorial .echo { display: none }
-  .action:is(:hover, :focus-visible) { color: var(--paper, #e4e1d9) }
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .action { max-width: 100%; min-height: 2.29167vw; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; justify-content: center; align-items: center; gap: 0.729167vw; text-decoration: none; display: inline-flex; position: relative }
+  .action[data-kinetic] { min-height: 2.29167vw }
+  .action[hidden] { display: none }
+  .window { white-space: nowrap; padding-block: 0.104167vw; line-height: 1.45; display: block; position: relative; overflow: hidden }
+  .label { transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; transform: translate(0, 0) }
+  .echo { pointer-events: none; transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; position: absolute; top: 0.104167vw; left: 0; transform: translate(-0.15625vw, 115%) }
+  .boundary { pointer-events: none; opacity: .5; transform-origin: 0; background: currentColor; height: 0.0520834vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; display: block; position: absolute }
+  .frame { pointer-events: none; position: absolute; inset: 0 }
+  .primary { font-size: calc(0.625vw * var(--type-scale, 1)); letter-spacing: calc(.015em * var(--tracking-scale, 1)); min-height: 2.29167vw; padding: 0 1.04167vw }
+  .primary .frame:before, .primary .frame:after { content: ''; pointer-events: none; opacity: .5; border-color: currentColor; width: 0.3125vw; height: 0.46875vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute }
+  .primary .frame:before { border-top: 1px solid; border-left: 1px solid; top: 0.520834vw; left: 0 }
+  .primary .frame:after { border-bottom: 1px solid; border-right: 1px solid; bottom: 0.520834vw; right: 0 }
+  .primary .boundary { bottom: 0.260417vw; left: 1.04167vw; right: 1.04167vw; transform: scaleX(.18) }
+  .primary:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translate(82%)scaleX(.18) }
+  .primary:is(:hover, :focus-visible) .label { transform: translate(0.15625vw) }
+  .primary:is(:hover, :focus-visible) .frame:before { opacity: .9; transform: translateY(0.416667vw) }
+  .primary:is(:hover, :focus-visible) .frame:after { opacity: .9; transform: translateY(-0.416667vw) }
+  .editorial { justify-content: flex-start; padding: 0 1.14584vw 0 0 }
+  .editorial .boundary { width: 0.520834vw; bottom: calc(50% - 0.0520834vw); right: 0; transform: scaleX(1) }
+  .editorial:is(:hover, :focus-visible) .label { transform: translate(0.15625vw, -115%) }
+  .editorial:is(:hover, :focus-visible) .echo { transform: translate(0, 0) }
+  .editorial:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translateY(0.364584vw)scaleX(.55) }
+  .action:focus-visible { outline-offset: 0.260417vw; outline: 1px solid #aaa69b }
+  .action:active .window { transform: translateY(0.0520834vw) }
+  @media (prefers-reduced-motion:reduce) {
+    .action *, .action:before, .action:after { transition: none !important }
+    .editorial:is(:hover, :focus-visible) .label { transform: none }
+    .editorial .echo { display: none }
+    .action:is(:hover, :focus-visible) { color: var(--paper, #e4e1d9) }
+  }
+  .rollover .echo { transform: translateY(115%) }
+  .rollover:is(:hover, :focus-visible) .label { transform: translate3d(0, var(--rollover-exit, -115%), 0) }
+  .rollover:is(:hover, :focus-visible) .echo { transform: translate3d(0, var(--rollover-enter, 0%), 0) }
+  .rollover:active .window { transform: none }
+  @media (prefers-reduced-motion:reduce) {
+    .rollover:is(:hover, :focus-visible) .label { transform: none }
+    .rollover .echo { display: none }
+  }
+  .window:lang(ar) { letter-spacing: 0; line-height: 1.6 }
+  .editorial { padding-inline: 0 1.14584vw }
+  .editorial .boundary { right: auto; inset-inline-end: 0 }
+  .echo { left: auto; inset-inline-start: 0 }
 }
-.rollover .echo { transform: translateY(115%) }
-.rollover:is(:hover, :focus-visible) .label { transform: translate3d(0, var(--rollover-exit, -115%), 0) }
-.rollover:is(:hover, :focus-visible) .echo { transform: translate3d(0, var(--rollover-enter, 0%), 0) }
-.rollover:active .window { transform: none }
-@media (prefers-reduced-motion:reduce) {
-  .rollover:is(:hover, :focus-visible) .label { transform: none }
-  .rollover .echo { display: none }
+@media (600px < width <= 1024px) {
+  .action { max-width: 100%; min-height: 5.72917vw; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; justify-content: center; align-items: center; gap: 1.82292vw; text-decoration: none; display: inline-flex; position: relative }
+  .action[data-kinetic] { min-height: 5.72917vw }
+  .action[hidden] { display: none }
+  .window { white-space: nowrap; padding-block: 0.260417vw; line-height: 1.45; display: block; position: relative; overflow: hidden }
+  .label { transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; transform: translate(0, 0) }
+  .echo { pointer-events: none; transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; position: absolute; top: 0.260417vw; left: 0; transform: translate(-0.390625vw, 115%) }
+  .boundary { pointer-events: none; opacity: .5; transform-origin: 0; background: currentColor; height: 0.130209vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; display: block; position: absolute }
+  .frame { pointer-events: none; position: absolute; inset: 0 }
+  .primary { font-size: calc(1.5625vw * var(--type-scale, 1)); letter-spacing: calc(.015em * var(--tracking-scale, 1)); min-height: 5.72917vw; padding: 0 2.60417vw }
+  .primary .frame:before, .primary .frame:after { content: ''; pointer-events: none; opacity: .5; border-color: currentColor; width: 0.78125vw; height: 1.17188vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute }
+  .primary .frame:before { border-top: 1px solid; border-left: 1px solid; top: 1.30209vw; left: 0 }
+  .primary .frame:after { border-bottom: 1px solid; border-right: 1px solid; bottom: 1.30209vw; right: 0 }
+  .primary .boundary { bottom: 0.651042vw; left: 2.60417vw; right: 2.60417vw; transform: scaleX(.18) }
+  .primary:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translate(82%)scaleX(.18) }
+  .primary:is(:hover, :focus-visible) .label { transform: translate(0.390625vw) }
+  .primary:is(:hover, :focus-visible) .frame:before { opacity: .9; transform: translateY(1.04167vw) }
+  .primary:is(:hover, :focus-visible) .frame:after { opacity: .9; transform: translateY(-1.04167vw) }
+  .editorial { justify-content: flex-start; padding: 0 2.86459vw 0 0 }
+  .editorial .boundary { width: 1.30209vw; bottom: calc(50% - 0.130209vw); right: 0; transform: scaleX(1) }
+  .editorial:is(:hover, :focus-visible) .label { transform: translate(0.390625vw, -115%) }
+  .editorial:is(:hover, :focus-visible) .echo { transform: translate(0, 0) }
+  .editorial:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translateY(0.911459vw)scaleX(.55) }
+  .action:focus-visible { outline-offset: 0.651042vw; outline: 1px solid #aaa69b }
+  .action:active .window { transform: translateY(0.130209vw) }
+  @media (prefers-reduced-motion:reduce) {
+    .action *, .action:before, .action:after { transition: none !important }
+    .editorial:is(:hover, :focus-visible) .label { transform: none }
+    .editorial .echo { display: none }
+    .action:is(:hover, :focus-visible) { color: var(--paper, #e4e1d9) }
+  }
+  .rollover .echo { transform: translateY(115%) }
+  .rollover:is(:hover, :focus-visible) .label { transform: translate3d(0, var(--rollover-exit, -115%), 0) }
+  .rollover:is(:hover, :focus-visible) .echo { transform: translate3d(0, var(--rollover-enter, 0%), 0) }
+  .rollover:active .window { transform: none }
+  @media (prefers-reduced-motion:reduce) {
+    .rollover:is(:hover, :focus-visible) .label { transform: none }
+    .rollover .echo { display: none }
+  }
+  .window:lang(ar) { letter-spacing: 0; line-height: 1.6 }
+  .editorial { padding-inline: 0 2.86459vw }
+  .editorial .boundary { right: auto; inset-inline-end: 0 }
+  .echo { left: auto; inset-inline-start: 0 }
 }
-.window:lang(ar) { letter-spacing: 0; line-height: 1.6 }
-.editorial { padding-inline: 0 22px }
-.editorial .boundary { right: auto; inset-inline-end: 0 }
-.echo { left: auto; inset-inline-start: 0 }
+@media (width <= 600px) {
+  .action { max-width: 100%; min-height: 10.6797vw; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; justify-content: center; align-items: center; gap: 3.39806vw; text-decoration: none; display: inline-flex; position: relative }
+  .action[data-kinetic] { min-height: 10.6797vw }
+  .action[hidden] { display: none }
+  .window { white-space: nowrap; padding-block: 0.485437vw; line-height: 1.45; display: block; position: relative; overflow: hidden }
+  .label { transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; transform: translate(0, 0) }
+  .echo { pointer-events: none; transition: transform .38s cubic-bezier(.65, 0, .25, 1); display: block; position: absolute; top: 0.485437vw; left: 0; transform: translate(-0.728156vw, 115%) }
+  .boundary { pointer-events: none; opacity: .5; transform-origin: 0; background: currentColor; height: 0.242719vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; display: block; position: absolute }
+  .frame { pointer-events: none; position: absolute; inset: 0 }
+  .primary { font-size: calc(2.91263vw * var(--type-scale, 1)); letter-spacing: calc(.015em * var(--tracking-scale, 1)); min-height: 10.6797vw; padding: 0 4.85437vw }
+  .primary .frame:before, .primary .frame:after { content: ''; pointer-events: none; opacity: .5; border-color: currentColor; width: 1.45632vw; height: 2.18447vw; transition: transform .38s cubic-bezier(.65, 0, .25, 1), opacity .25s; position: absolute }
+  .primary .frame:before { border-top: 1px solid; border-left: 1px solid; top: 2.42719vw; left: 0 }
+  .primary .frame:after { border-bottom: 1px solid; border-right: 1px solid; bottom: 2.42719vw; right: 0 }
+  .primary .boundary { bottom: 1.2136vw; left: 4.85437vw; right: 4.85437vw; transform: scaleX(.18) }
+  .primary:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translate(82%)scaleX(.18) }
+  .primary:is(:hover, :focus-visible) .label { transform: translate(0.728156vw) }
+  .primary:is(:hover, :focus-visible) .frame:before { opacity: .9; transform: translateY(1.94175vw) }
+  .primary:is(:hover, :focus-visible) .frame:after { opacity: .9; transform: translateY(-1.94175vw) }
+  .editorial { justify-content: flex-start; padding: 0 5.33981vw 0 0 }
+  .editorial .boundary { width: 2.42719vw; bottom: calc(50% - 0.242719vw); right: 0; transform: scaleX(1) }
+  .editorial:is(:hover, :focus-visible) .label { transform: translate(0.728156vw, -115%) }
+  .editorial:is(:hover, :focus-visible) .echo { transform: translate(0, 0) }
+  .editorial:is(:hover, :focus-visible) .boundary { opacity: .9; transform: translateY(1.69903vw)scaleX(.55) }
+  .action:focus-visible { outline-offset: 1.2136vw; outline: 1px solid #aaa69b }
+  .action:active .window { transform: translateY(0.242719vw) }
+  @media (prefers-reduced-motion:reduce) {
+    .action *, .action:before, .action:after { transition: none !important }
+    .editorial:is(:hover, :focus-visible) .label { transform: none }
+    .editorial .echo { display: none }
+    .action:is(:hover, :focus-visible) { color: var(--paper, #e4e1d9) }
+  }
+  .rollover .echo { transform: translateY(115%) }
+  .rollover:is(:hover, :focus-visible) .label { transform: translate3d(0, var(--rollover-exit, -115%), 0) }
+  .rollover:is(:hover, :focus-visible) .echo { transform: translate3d(0, var(--rollover-enter, 0%), 0) }
+  .rollover:active .window { transform: none }
+  @media (prefers-reduced-motion:reduce) {
+    .rollover:is(:hover, :focus-visible) .label { transform: none }
+    .rollover .echo { display: none }
+  }
+  .window:lang(ar) { letter-spacing: 0; line-height: 1.6 }
+  .editorial { padding-inline: 0 5.33981vw }
+  .editorial .boundary { right: auto; inset-inline-end: 0 }
+  .echo { left: auto; inset-inline-start: 0 }
+}

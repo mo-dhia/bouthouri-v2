@@ -60,3 +60,20 @@ test("architecture audit rejects forbidden runtimes, non-hook store subscription
     expect(result.status).toBe(1); expect(result.stderr).toContain(message);
   }
 });
+
+test("viewport design audit rejects fixed layout lengths and height-based composition", () => {
+  for (const [source, reason] of [
+    [".a { width: 20px }\n", "fixed px design length"],
+    [".a { height: 100svh }\n", "design uses svh"],
+    [".a { font-size: 1rem }\n", "design uses rem"],
+    [".a { font-size: clamp(1vw, 2vw, 3vw) }\n", "clamp must be resolved"],
+    ["@media (max-height: 600px) {\n  .a { display: none }\n}\n", "three fixed width profiles"],
+  ]) {
+    const result = inspect({ "src/layout.css": source });
+    expect(result.status).toBe(1); expect(result.stderr).toContain(reason);
+  }
+  const result = inspect({ "src/layout.css": ".a { width: 5vw; height: 10vw; border: 1px solid #fff; filter: blur(2px); letter-spacing: .1em }\n" });
+  expect(result.status).toBe(0);
+  expect(inspect({ "src/layout.css": ".journey[data-enhanced]::after { height: max(0vw, calc(100dvh - var(--design-height))) }\n" }).status).toBe(0);
+  expect(inspect({ "src/layout.css": ".journey[data-enhanced]::after { height: 100dvh }\n" }).status).toBe(1);
+});

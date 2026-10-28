@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
 import ts from "typescript";
 import { formatStylesheet } from "./lib/css-format";
+import { viewportCssProblems } from "./lib/viewport-css-audit";
 
 const root = process.cwd();
 const files = [...new Bun.Glob("src/**/*.{ts,tsx,js,mjs}").scanSync()].filter((file) => !/\.(test|d)\.ts$/.test(file)).sort();
@@ -81,6 +82,7 @@ const css = [...new Bun.Glob("src/**/*.css").scanSync()].sort();
 for (const file of css) {
   const source = readFileSync(file, "utf8");
   if (formatStylesheet(source, file) !== source) fail(file, "run bun run format:css for one-line selector formatting");
+  for (const problem of viewportCssProblems(source)) fail(file, problem);
 }
 const manifest = JSON.parse(readFileSync("package.json", "utf8"));
 for (const name of Object.keys(manifest.dependencies)) if (prohibited.test(name)) fail("package.json", `prohibited dependency ${name}`);

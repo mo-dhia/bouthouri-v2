@@ -1,30 +1,68 @@
-.loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
-.loading[hidden] { display: none }
-.anchor, .mark { aspect-ratio: 2; inline-size: clamp(320px, 42vw, 560px); block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%) }
-.anchor { visibility: hidden }
-.mark { will-change: transform; overflow: visible }
-.choices { visibility: hidden; inline-size: clamp(290px, 31vw, 430px); direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + clamp(80px, 10.5vw, 140px) + 20px); left: 50%; transform: translateX(-50%) }
-.choiceMask { margin: -4px; padding: 4px; display: block; overflow: hidden }
-.choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 90px; min-block-size: 48px; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 10px 12px; font-size: 13px; transition: color .22s; display: block; transform: translateY(115%) }
-.choices button:hover, .choices button:focus-visible { color: #fffdf4 }
-.choices button:focus-visible { outline-offset: -3px; outline: 1px solid #77756c }
-.choices[inert] button { pointer-events: none }
-.continue { pointer-events: auto; color: #aaa79e; min-block-size: 44px; font: inherit; white-space: nowrap; padding: 12px 16px; font-size: 12px; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
-.srOnly { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
-:global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 18px }
-:global(html[lang='ar']) .continue { font-size: 14px }
-@media (max-width: 700px) {
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
+  .loading[hidden] { display: none }
+  .anchor, .mark { aspect-ratio: 2; inline-size: 29.1667vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%) }
+  .anchor { visibility: hidden }
+  .mark { will-change: transform; overflow: visible }
+  .choices { visibility: hidden; inline-size: 22.3959vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 7.29167vw + 1.04167vw); left: 50%; transform: translateX(-50%) }
+  .choiceMask { margin: -0.208334vw; padding: 0.208334vw; display: block; overflow: hidden }
+  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 4.6875vw; min-block-size: 2.5vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 0.520834vw 0.625vw; font-size: 0.677084vw; transition: color .22s; display: block; transform: translateY(115%) }
+  .choices button:hover, .choices button:focus-visible { color: #fffdf4 }
+  .choices button:focus-visible { outline-offset: -0.15625vw; outline: 1px solid #77756c }
+  .choices[inert] button { pointer-events: none }
+  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 2.29167vw; font: inherit; white-space: nowrap; padding: 0.625vw 0.833334vw; font-size: 0.625vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
+  .srOnly { position: absolute; inline-size: 0.0520834vw; block-size: 0.0520834vw; padding: 0; margin: -0.0520834vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 0.9375vw }
+  :global(html[lang='ar']) .continue { font-size: 0.729167vw }
+  @media (prefers-reduced-motion: reduce) {
+    .mark { will-change: auto }
+    .choices button { transition: none }
+  }
+}
+@media (600px < width <= 1024px) {
+  .loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
+  .loading[hidden] { display: none }
+  .anchor, .mark { aspect-ratio: 2; inline-size: 42vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%) }
+  .anchor { visibility: hidden }
+  .mark { will-change: transform; overflow: visible }
+  .choices { visibility: hidden; inline-size: 37.7605vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 10.5vw + 2.60417vw); left: 50%; transform: translateX(-50%) }
+  .choiceMask { margin: -0.520834vw; padding: 0.520834vw; display: block; overflow: hidden }
+  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 11.7188vw; min-block-size: 6.25vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 1.30209vw 1.5625vw; font-size: 1.69271vw; transition: color .22s; display: block; transform: translateY(115%) }
+  .choices button:hover, .choices button:focus-visible { color: #fffdf4 }
+  .choices button:focus-visible { outline-offset: -0.390625vw; outline: 1px solid #77756c }
+  .choices[inert] button { pointer-events: none }
+  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 5.72917vw; font: inherit; white-space: nowrap; padding: 1.5625vw 2.08334vw; font-size: 1.5625vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
+  .srOnly { position: absolute; inline-size: 0.130209vw; block-size: 0.130209vw; padding: 0; margin: -0.130209vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 2.34375vw }
+  :global(html[lang='ar']) .continue { font-size: 1.82292vw }
+  @media (prefers-reduced-motion: reduce) {
+    .mark { will-change: auto }
+    .choices button { transition: none }
+  }
+}
+@media (width <= 600px) {
+  .loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
+  .loading[hidden] { display: none }
+  .anchor, .mark { aspect-ratio: 2; inline-size: 77.67vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%) }
+  .anchor { visibility: hidden }
+  .mark { will-change: transform; overflow: visible }
+  .choices { visibility: hidden; inline-size: 70.3884vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 19.4175vw + 4.85437vw); left: 50%; transform: translateX(-50%) }
+  .choiceMask { margin: -0.970874vw; padding: 0.970874vw; display: block; overflow: hidden }
+  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 21.8447vw; min-block-size: 11.6505vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 2.42719vw 2.91263vw; font-size: 3.15534vw; transition: color .22s; display: block; transform: translateY(115%) }
+  .choices button:hover, .choices button:focus-visible { color: #fffdf4 }
+  .choices button:focus-visible { outline-offset: -0.728156vw; outline: 1px solid #77756c }
+  .choices[inert] button { pointer-events: none }
+  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 10.6797vw; font: inherit; white-space: nowrap; padding: 2.91263vw 3.8835vw; font-size: 2.91263vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
+  .srOnly { position: absolute; inline-size: 0.242719vw; block-size: 0.242719vw; padding: 0; margin: -0.242719vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 4.36894vw }
+  :global(html[lang='ar']) .continue { font-size: 3.39806vw }
   .anchor, .mark { inline-size: 86vw; inset-block-start: 42% }
-  .choices { inline-size: 76vw; inset-block-start: calc(42% + 21.5vw + 20px) }
-  .choices button { font-size: 13px }
+  .choices { inline-size: 76vw; inset-block-start: calc(42% + 21.5vw + 4.85437vw) }
+  .choices button { font-size: 3.15534vw }
   .continue { inset-block-end: 10% }
-}
-@media (max-height: 600px) and (min-aspect-ratio: 6/5) {
-  .anchor, .mark { inline-size: min(54vw, 58svh); inset-block-start: 42% }
-  .choices { inline-size: min(60vw, 360px); inset-block-start: 72% }
-  .continue { inset-block-end: 3% }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mark { will-change: auto }
-  .choices button { transition: none }
+  @media (prefers-reduced-motion: reduce) {
+    .mark { will-change: auto }
+    .choices button { transition: none }
+  }
 }
