@@ -106,6 +106,11 @@ Logs and the input-source manifest are retained under
 Independent R13 found no confirmed P1/P2 in the supported lifecycle: seven
 independent controls and 75 scoped tests passed. Its two artificial boundary
 failures and normal-reachability limits remain explicit in
-`docs/pages-persistent-background-code-review-r13.md`. New-build GPU persistence,
-stacking and continuous visual acceptance remain pending. Neither the tests nor
-the build establish visual parity or presented FPS.
+`docs/pages-persistent-background-code-review-r13.md`. At that code-review stage,
+new-build GPU persistence, stacking and continuous visual acceptance were pending.
+The later [R3 production review](../../../../docs/pages-new-production-review-r3.md)
+and [R7 controls](../../../../docs/pages-reduced-readiness-review-r7.md) record
+the supported live continuity and journey-submission checks. Neither the tests
+nor the build establish visual parity or presented FPS; see the
+[current verification status](../../../../docs/editorial-parity-status.md)
+for the outstanding native footer path and retained review limits.

@@ -16,7 +16,9 @@ and paragraph weights still override that inheritance. The source declaration is
 `html[lang=ar] body { font-weight: var(--weight-400,400) }` in the retained common
 stylesheet; the scoped editorial root supplies the missing inheritance locally.
 R2's 412px Arabic Vision control reproduced the exact source line fragments by
-changing only this weight. The new production build still needs its paired recheck.
+changing only this weight. [R3](pages-new-production-review-r3.md) subsequently
+verified the correction in the named Arabic production controls. The current
+scope and remaining checks are recorded in [verification status](editorial-parity-status.md).
 
 The shell publishes `--ed-gutter` on its server-rendered main: English uses
 5.3vw desktop and 7vw for compact practice pages; Arabic retains 6vw at every

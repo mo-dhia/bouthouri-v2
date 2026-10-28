@@ -288,10 +288,11 @@ the value before comparison. That first-run log and the final passing logs
 are retained under `.artifacts/pages-parity-20261028/services/gutter-profile-*`.
 No additional app correction resulted from that fixture-only mismatch.
 
-The stylesheet, generator, focused profile test and this contract are frozen.
-The root's earlier build does not validate the unserved CSS correction;
-root owns combined TypeScript, rebuild and renewed geometry acceptance.
-Static CSS cascade checks do not establish full pixel or moving parity.
+At this repair's freeze, the root's earlier build did not validate the unserved
+CSS correction; combined TypeScript, rebuild and renewed geometry acceptance
+were still required. Later production verification and its remaining limits are
+linked in [the current status](editorial-parity-status.md). Static CSS cascade
+checks alone do not establish full pixel or moving parity.
 
 ## Arabic masked-line source cascade repair
 
