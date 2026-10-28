@@ -42,6 +42,33 @@ for (const locale of ["en", "ar"]) {
   }
 }
 
+for (const locale of ["en", "ar"]) {
+  for (const page of ["vision", "services", "contact"]) {
+    const path = `/${locale}/${page}`;
+    const response = await fetch(new URL(path, base));
+    assert.equal(response.status, 200, path);
+    const html = await response.text();
+    const markup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+    const visible = markup.replace(/<[^>]*>/g, " ");
+    assert.match(markup, /<h1\b/, `${path}: SSR heading`);
+    assert.match(markup, /<main\b/, `${path}: SSR main`);
+    assert.ok(markup.includes(`data-page="${page}"`), `${path}: page identity`);
+    assert.ok(markup.includes(`href="/${locale === "en" ? "ar" : "en"}/${page}"`), `${path}: locale retains route`);
+    assert.ok(markup.includes(`mailto:${brand.email}`), `${path}: branded contact`);
+    assert.ok(visible.includes(brand.wordmark), `${path}: branded footer`);
+    assert.doesNotMatch(visible, /gazzar|elgazzar|محمد الجزار/i, path);
+    assert.match(html, new RegExp(`<link[^>]+rel="canonical"[^>]+href="[^"]*${path}"`), `${path}: canonical`);
+    assert.ok(visible.length > (page === "contact" ? 1000 : 1800), `${path}: server copy`);
+    if (page === "vision") { assert.equal((markup.match(/data-chapter-moment/g) || []).length, 3, `${path}: all three narrative moments`); assert.ok((markup.match(/<h2\b/g) || []).length >= 10, `${path}: all narrative headings`); }
+    if (page === "services") assert.equal((markup.match(/class="[^"]*service-index-row[^"]*"/g) || []).length, 11, `${path}: all eleven complete service rows`);
+    if (page === "contact") { assert.match(markup, /<form\b/); for (const name of ["name", "email", "message"]) assert.ok(markup.includes(`name="${name}"`), `${path}: SSR ${name}`); }
+    for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+)"/g)) {
+      const url = new URL(match[1].replaceAll("&amp;", "&"), base);
+      if (url.origin === base.origin && url.pathname.startsWith("/_next/static/")) assets.add(url.href);
+    }
+  }
+}
+
 for (const path of ["/fr", "/en/not-a-page"]) {
   assert.equal((await fetch(new URL(path, base))).status, 404, path);
 }
@@ -51,4 +78,4 @@ for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/
 await Promise.all([...assets].map(async (url) => {
   assert.equal((await fetch(url)).status, 200, url);
 }));
-process.stdout.write(`SSR audit passed: both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);
+process.stdout.write(`SSR audit passed: HOME and three editorial pages in both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);
