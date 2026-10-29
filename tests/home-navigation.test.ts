@@ -1510,6 +1510,18 @@ describe("HOME browser lifecycle", () => {
     expect(getHomeRestoreIntent(fresh.win)?.kind).toBe("native");
   });
 
+  test("plain HTTP LAN navigation initializes and assigns new traversal identities without randomUUID", () => {
+    const b = browser("http://192.168.1.105:3000/en");
+    Object.defineProperty(b.runtime, "crypto", { value: { getRandomValues: crypto.getRandomValues.bind(crypto) } });
+    b.mount(); b.settle();
+    const first = homeHistoryId(b.runtime.history.state);
+    expect(first).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    b.runtime.history.state = { __NA: true, tree: { retained: true } };
+    b.runtime.dispatchEvent(new Event("popstate")); b.settle();
+    expect(homeHistoryId(b.runtime.history.state)).not.toBe(first);
+    expect(b.runtime.history.state.tree).toEqual({ retained: true });
+  });
+
   test("unavailable session storage does not block query or native navigation", () => {
     const b = browser("https://local.test/en?work=wujhat");
     Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });

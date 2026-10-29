@@ -34,7 +34,7 @@ const releases: (() => void)[] = [];
 afterEach(() => { while (releases.length) releases.pop()!(); });
 const flush = async () => { for (let index = 0; index < 8; index++) await Promise.resolve(); };
 
-function harness({ denied = false, type = "navigate", initialHold = false, deferPushSelection = false, initialState = {} as Record<string, unknown> } = {}) {
+function harness({ denied = false, type = "navigate", initialHold = false, deferPushSelection = false, insecure = false, initialState = {} as Record<string, unknown> } = {}) {
   let now = 0, serial = 0, menu = false, stopped = false;
   const frames = new Map<number, FrameRequestCallback>(), timers = new Map<number, { at: number; callback: () => void }>(), storage = new Map<string, string>();
   const writes: Record<string, unknown>[] = [], calls: string[] = [], hard: string[] = [], prefetches: string[] = [];
@@ -42,7 +42,8 @@ function harness({ denied = false, type = "navigate", initialHold = false, defer
   const owners: { main: ElementFixture; inner: ElementFixture; heading: ElementFixture; shell: ElementFixture; path: string }[] = [];
   const locationAt = (path: string) => Object.assign(new URL(path, "https://local.test"), { assign: (target: string) => { hard.push(target); } });
   const win = Object.assign(new EventTarget(), {
-    location: locationAt("/en/vision"), innerWidth: 1920, innerHeight: 1080, scrollY: 0, crypto,
+    location: locationAt("/en/vision"), innerWidth: 1920, innerHeight: 1080, scrollY: 0,
+    crypto: insecure ? { getRandomValues: crypto.getRandomValues.bind(crypto) } as Crypto : crypto,
     performance: { now: () => now, getEntriesByType: () => [{ type }] },
     matchMedia: () => ({ matches: false }),
     history: { state: { __NA: true, retained: "next", ...initialState }, replaceState(value: Record<string, unknown>) { this.state = structuredClone(value) as typeof this.state; writes.push(structuredClone(value)); } },
@@ -122,6 +123,17 @@ function harness({ denied = false, type = "navigate", initialHold = false, defer
     traverse(path: string, state: Record<string, unknown>) { win.location = locationAt(path); win.history.state = state as typeof win.history.state; win.dispatchEvent(new Event("popstate")); },
   };
 }
+
+test("plain HTTP LAN editorial arrival and soft navigation do not require randomUUID", async () => {
+  const h = harness({ insecure: true }); await h.advance(600);
+  const first = ((h.win.history.state as Record<string, unknown>)[ROUTE_HISTORY_STATE_KEY] as { id: string }).id;
+  expect(first).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  expect(h.click("/en/contact").defaultPrevented).toBe(true); await h.advance(320);
+  const next = h.owner("/en/contact"); h.install(next); h.ready(next); await h.advance(1000);
+  expect(h.surface.dataset.phase).toBe("idle");
+  expect(((h.win.history.state as Record<string, unknown>)[ROUTE_HISTORY_STATE_KEY] as { id: string }).id).not.toBe(first);
+  expect(h.hard).toEqual([]); h.stop();
+});
 
 test("mounted body capture waits for full cover, releases old menu before routing and ignores connected old page readiness", async () => {
   const h = harness(); h.menu(); h.win.scrollY = 700;

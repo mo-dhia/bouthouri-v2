@@ -1,5 +1,6 @@
 import { frameFromProgress, type JourneyFrame } from "../../sections/landing/3-journey/journey-clock";
 import { viewportDesign } from "../viewport-design";
+import { createNavigationId } from "./navigation-id";
 import {
   captureHomePosition, homePinProgress, homeScrollTarget, homeWorkPosition,
   isHomeGeometry, isHomePosition, type HomeGeometry, type HomePosition,
@@ -223,7 +224,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
   let state = restoreState(win, undefined, options.historyTarget !== undefined, options.historyTarget), disposed = false, suspended = false, departed = false;
   const ownerHome = homePath(win.location.pathname)!;
   let path = win.location.pathname + win.location.search;
-  let entryId = homeHistoryId(win.history.state) ?? win.crypto.randomUUID();
+  let entryId = homeHistoryId(win.history.state) ?? createNavigationId(win.crypto);
   let checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now(), retainedCheckpoint(win));
   let raf: number | null = null, captureTimer: number | null = null;
   let signature = "", stable = 0, fontsReady = !doc.fonts;
@@ -430,7 +431,7 @@ export function mountHomeNavigation(options: HomeNavigationOptions = {}): () => 
     }
     state = destination;
     path = win.location.pathname + win.location.search;
-    entryId = homeHistoryId(win.history.state) ?? win.crypto.randomUUID();
+    entryId = homeHistoryId(win.history.state) ?? createNavigationId(win.crypto);
     checkpoint = homeCheckpointFromState(win.history.state, safeRead(win, HOME_POSITIONS_KEY), path, Date.now(), retainedCheckpoint(win));
     signature = ""; stable = 0;
     prepareEntry();

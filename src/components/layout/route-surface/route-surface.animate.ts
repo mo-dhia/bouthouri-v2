@@ -8,6 +8,7 @@ import {
   type RouteCheckpoint,
 } from "@/lib/navigation/route-navigation-state";
 import { designPixels } from "@/lib/viewport-design";
+import { createNavigationId } from "@/lib/navigation/navigation-id";
 
 type Owner = { main: HTMLElement; inner: HTMLElement; path: string; home: boolean };
 type Selection = { owner: Owner; id: string | null; path: string; scrollY: number };
@@ -78,7 +79,7 @@ export function mountRouteSurface(surface: HTMLElement, push: (href: string) => 
   const identify = (owner: Owner, fresh = false): Selection => {
     let id = owner.home ? homeHistoryId(win.history.state) : routeEntryId(win.history.state);
     if (!owner.home && (fresh || !id)) {
-      id = win.crypto.randomUUID();
+      id = createNavigationId(win.crypto);
       try { win.history.replaceState({ ...win.history.state, [ROUTE_HISTORY_STATE_KEY]: { version: 1, id } }, ""); } catch { /* In-memory selection still works. */ }
     }
     return { owner, id, path: win.location.pathname + win.location.search, scrollY: Math.max(0, win.scrollY) };
