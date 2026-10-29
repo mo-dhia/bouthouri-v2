@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'bun:test';
 import { loadIsolatedModule } from '@/sections/services/test-support/isolated-module';
 import { routeEntries } from '@/lib/navigation/route-entry';
+import { gridLayout } from './grid-geometry';
 
 const cleanups: (() => void)[] = [];
 afterEach(() => { while (cleanups.length) cleanups.pop()!(); });
@@ -30,7 +31,8 @@ function harness({ coarse = false, heldFonts = false, width = 1920, height = 108
     }
     querySelectorAll() { return this.children; }
     closest() { return { dataset: { routePath: '/en/projects' } }; }
-    getBoundingClientRect() { return { left: 0, top: 0, width: win.innerWidth, height: win.innerHeight }; }
+    // Before enhancement the viewport is the padded static list, far taller than the window.
+    getBoundingClientRect() { return this === viewport && !root.dataset.gridEnhanced ? { left: 24, top: 120, width: win.innerWidth - 48, height: 4493 } : { left: 0, top: 0, width: win.innerWidth, height: win.innerHeight }; }
     hasPointerCapture(id: number) { return this.capture.has(id); }
     // One capture owner per pointer; a handoff notifies the previous owner, and
     // capture events bubble with their original target like the DOM's.
@@ -94,6 +96,14 @@ function harness({ coarse = false, heldFonts = false, width = 1920, height = 108
   };
 }
 const pointer = (x: number, y: number) => ({ pointerId: 1, pointerType: 'mouse', button: 0, clientX: x, clientY: y });
+
+test('the first layout uses the physical window, not the static list it enhances', async () => {
+  const h = harness({ width: 1440, height: 900 }); await h.advance(100);
+  const style = h.root.style as unknown as Record<string, string>;
+  expect(parseFloat(style['--grid-card-width'])).toBeCloseTo(gridLayout(1920, 1200).cardWidth * .75 / 1440 * 100, 6);
+  h.win.innerHeight = 1600; h.fire(h.win, 'resize'); await h.advance(200);
+  expect(parseFloat(style['--grid-card-width'])).toBeCloseTo(gridLayout(1920, 1600 / .75).cardWidth * .75 / 1440 * 100, 6);
+});
 
 test('actual controller has one presentation request, sleeps at rest and releases visual clones', async () => {
   const h = harness(); await h.advance(4000); expect(h.plane.children).toHaveLength(36); expect(h.frames.size).toBe(0); expect(h.maxFrames).toBe(1);

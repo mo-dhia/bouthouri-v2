@@ -13,8 +13,10 @@ export function mountProjectsGrid(root: HTMLElement) {
   if (!originals.length) return () => {};
   const abort = new AbortController(), media = win.matchMedia('(prefers-reduced-motion: reduce)'), fine = win.matchMedia('(hover: hover) and (pointer: fine)');
   let reduced = media.matches || uiStore.getState().quietMode, disposed = false, frame = 0, previousTime = 0, dirty = true, measuring = true;
-  // The viewport is the physical stage; width alone selects the profile and scale.
-  const stage = () => referenceStage(win.innerWidth, viewport.getBoundingClientRect().height || win.innerHeight);
+  // Width alone selects the profile and scale. Enhanced CSS sizes the viewport to
+  // the physical stage; before it applies, the viewport is the static list's flow
+  // height, so the first layout reads the window instead.
+  const stage = () => referenceStage(win.innerWidth, root.dataset.gridEnhanced && viewport.getBoundingClientRect().height || win.innerHeight);
   let design = stage(), scale = design.scale, layout = gridLayout(design.width, design.height);
   const motion = createGridMotion(layout, GRID_START);
   const originalRootStyle = root.getAttribute('style'), saved = originals.map(element => ({ element, style: element.getAttribute('style') }));
@@ -52,6 +54,8 @@ export function mountProjectsGrid(root: HTMLElement) {
     root.style.setProperty('--grid-anchor-inset', length(layout.anchorInset));
     root.style.setProperty('--grid-caption-band', length(captionBand));
     root.dataset.gridEnhanced = 'true'; root.dataset.gridReady = 'true'; measuring = false; dirty = true;
+    // The first measure ran on the padded static list; map pointers in the enhanced box.
+    bounds = viewport.getBoundingClientRect();
   }
   function paint() {
     const age = entryAge, entry = reduced || age >= 2.4 ? { offset: 0, bow: 1, reveal: 1 } : {
