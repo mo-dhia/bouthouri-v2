@@ -3,12 +3,13 @@
 `public/assets/{images,models,textures,sounds,fonts}` is reserved for local
 assets for the Gazzar-derived experience and user-directed rebranding. The
 active hero portrait is now the user-supplied image, converted to lossless WebP;
-the original portrait remains as reference evidence. The original logo, favicon,
-Questrial, and Cairo fonts are local. Their provenance is in
-[reference-assets.md](reference-assets.md). The home additionally uses the
-original folded glasses, sculpture model/texture, LTC tables, scene fonts,
-fallback poster, ambient audio and localized whisper stems. Home work marks are
-local SVG drawings. Media for the remaining routes is outside the home pass.
+the original portrait remains as reference evidence. The original logo,
+Questrial, and Cairo fonts are local; the active favicon is generated from the
+BOUTHOURI mark. Their provenance is in [reference-assets.md](reference-assets.md).
+The home additionally uses the original folded glasses, sculpture
+model/texture, LTC tables, scene fonts, fallback poster, ambient audio and
+localized whisper stems. Home work marks are local SVG drawings. Media for the
+remaining routes is outside the home pass.
 
 Record a local asset's source, role, dimensions, format, and version when adding
 it. Preserve the reference's crop, typography, material, and composition. Keep
