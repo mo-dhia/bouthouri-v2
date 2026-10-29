@@ -37,19 +37,27 @@ application inputs and visual scope remain historical evidence.
 The subsequent [LAN startup repair](lan-development.md) adds an explicit
 development-host allowlist and replaces HTTPS-only navigation ID creation. It
 changes no authored geometry, motion clock or rebranding. The current production
-build is `QgSJsfmAOr4rrHZoSrdLt`; the user confirms MENU and scroll animations
+build is `kHRxV73n38JEPXijOa628`; the user confirms MENU and scroll animations
 work in Arc/macOS at the previously broken LAN URL.
 That build also retains the separately committed portrait-brightness restoration
 `21d4caf`; the LAN repair does not edit its CSS.
 
 Root validation passed:
 
-- `bun run check`: lint, route types, TypeScript, architecture and **378 tests /
-  15,758 assertions** (the earlier review baseline was
-  376 tests / 15,748 assertions).
+- `bun run check`: lint, route types, TypeScript, architecture and **403 tests /
+  16,131 assertions** (the preceding LAN validation was
+  378 tests / 15,758 assertions).
 - `bun run build`: localized static pages and the Contact API.
 - `bun run test:ssr -- http://localhost:3100`: HOME and all three pages in both
   locales, RTL/metadata, redirects, 404s and 20 static assets.
+
+The [final architecture/performance review](pages-final-architecture-review-r13.md)
+corrects typography profile selection, cancelled model loading, pending boot
+waiter cleanup and Vision's numbered server-section ownership. An independent
+repair review found no remaining concrete P1/P2 or explicit architecture
+violation in that scope. Vision's EN/AR production `<main>` HTML is byte-for-byte
+identical after extraction. Fixed-profile, script-blocked fallback and live
+resource controls pass within the report's stated scope; no FPS gain is claimed.
 
 [R2](pages-full-production-review-r2.md) and [R3](pages-new-production-review-r3.md)
 record the complete 18-context body comparison and explicitly scoped reuse.
