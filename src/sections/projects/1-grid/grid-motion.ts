@@ -35,9 +35,11 @@ export function createGridMotion(layout: GridLayout, start: number) {
       down = null;
     },
     consumeClick() { const suppressed = suppressClick; suppressClick = false; return suppressed; },
-    resize(next: GridLayout, previous: GridLayout) {
+    /** A held contact is re-anchored at its current point in the new layout. */
+    resize(next: GridLayout, previous: GridLayout, contact?: Point) {
       for (const point of [target, pan]) { point.x *= next.stepX / previous.stepX; point.y *= next.stepY / previous.stepY; }
-      velocity.x = velocity.y = 0; down = null;
+      velocity.x = velocity.y = 0;
+      if (down && contact) Object.assign(down, { ...contact, pan: { ...target }, previous: { ...contact } }); else down = null;
     },
     step(delta: number, reduced: boolean) {
       const frames = Math.min(delta, 50) / 16.667;

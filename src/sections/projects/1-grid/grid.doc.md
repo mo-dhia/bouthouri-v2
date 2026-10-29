@@ -91,6 +91,17 @@ physical at the adapter boundary.
   (Gecko EN/AR, Chromium EN), with the drag held until `pointerup`; in Gecko a
   tap still opens its card and a drag does not. The harness models capture
   handoff and bubbling.
+- Three adjacent contact losses were found in adversarial review. Gecko's APZ
+  turns a long press on a card link into `contextmenu` and then `pointercancel`,
+  so the viewport prevents that menu only while a touch/pen contact is held;
+  mouse context menus are untouched. The route surface claims link clicks in
+  the body's capture phase, before the root, so a catching tap on a gliding
+  grid navigated. Suppression now runs in the window's capture phase and stops
+  the click there. It applies only to pointer clicks (`detail > 0`): a touch
+  drag ends without a click, and its leftover flag must not swallow a later
+  keyboard Enter. A breakpoint or scale change during a held drag re-anchors
+  the contact at its current point under the new mapping instead of dropping it
+  while capture and `data-grid-dragging` remain.
 - Fine pointers get the source damped repulsion. Focus brings the selected
   original card into the nearest wrapped position; Enter follows its real link.
 - A 220ms hover intention starts a muted inline reel. Coarse pointers choose the

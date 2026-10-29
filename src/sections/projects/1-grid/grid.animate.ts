@@ -26,7 +26,7 @@ export function mountProjectsGrid(root: HTMLElement) {
   const savedChildren = items.slice(0, originals.length).flatMap(item => [item.card, item.image, item.caption].map(element => ({ element, style: element.getAttribute('style') })));
   items.forEach(item => item.element.append(item.caption));
   let captionBand = 30, captionGap = 8;
-  let entryAge = Infinity, pointerId: number | null = null, bounds = viewport.getBoundingClientRect();
+  let entryAge = Infinity, pointerId: number | null = null, contact: PointerEvent | null = null, bounds = viewport.getBoundingClientRect();
   let hovered: HTMLAnchorElement | null = null, resizeTimer = 0, lastInput = 0;
   const blocked = () => disposed || doc.hidden || uiStore.getState().menuOpen;
   const length = (value: number) => pixelsToVw(value * scale, win.innerWidth);
@@ -40,9 +40,9 @@ export function mountProjectsGrid(root: HTMLElement) {
   });
   function measure() {
     const old = layout; design = viewportDesign(win.innerWidth); scale = win.innerWidth / design.width;
-    layout = gridLayout(design.width, design.height);
-    if (layout.stepX !== old.stepX || layout.stepY !== old.stepY) motion.resize(layout, old);
-    bounds = viewport.getBoundingClientRect();
+    layout = gridLayout(design.width, design.height); bounds = viewport.getBoundingClientRect();
+    // A held contact keeps following from its current point under the new mapping.
+    if (contact || layout.stepX !== old.stepX || layout.stepY !== old.stepY) motion.resize(layout, old, contact ? localPoint(contact) : undefined);
     captionGap = parseFloat(win.getComputedStyle(items[0].card).rowGap) / scale || 8;
     captionBand = items[0].caption.offsetHeight / scale + captionGap;
     root.style.setProperty('--grid-card-width', length(layout.cardWidth)); root.style.setProperty('--grid-card-height', length(layout.cardHeight));
@@ -93,7 +93,7 @@ export function mountProjectsGrid(root: HTMLElement) {
   };
   const onDown = (event: PointerEvent) => {
     if (blocked() || event.button !== 0 || event.isPrimary === false || pointerId !== null) return;
-    bounds = viewport.getBoundingClientRect(); pointerId = event.pointerId;
+    bounds = viewport.getBoundingClientRect(); pointerId = event.pointerId; contact = event;
     motion.begin(localPoint(event), win.performance.now(), event.pointerType === 'touch' || event.pointerType === 'pen'); lastInput = win.performance.now();
     if (!fine.matches) preview.clear();
     if (motion.dragged) root.dataset.gridDragging = 'true'; wake();
@@ -103,14 +103,14 @@ export function mountProjectsGrid(root: HTMLElement) {
     const point = localPoint(event);
     if (!reduced && event.pointerType !== 'touch' && fine.matches) motion.hover({ x: point.x - design.width / 2, y: point.y - design.height / 2 });
     if (motion.dragging && pointerId === event.pointerId) {
-      motion.move(point, win.performance.now()); lastInput = win.performance.now();
+      contact = event; motion.move(point, win.performance.now()); lastInput = win.performance.now();
       if (motion.dragged) { root.dataset.gridDragging = 'true'; if (!root.hasPointerCapture(event.pointerId)) { try { root.setPointerCapture(event.pointerId); } catch {} } }
     }
     wake();
   };
   const release = (cancel: boolean) => {
     motion.release(win.performance.now(), cancel, reduced); delete root.dataset.gridDragging;
-    const id = pointerId; pointerId = null;
+    const id = pointerId; pointerId = null; contact = null;
     if (id !== null && root.hasPointerCapture(id)) root.releasePointerCapture(id);
     wake();
   };
@@ -127,7 +127,15 @@ export function mountProjectsGrid(root: HTMLElement) {
   win.addEventListener('blur', () => release(true), { signal: abort.signal });
   viewport.addEventListener('pointerleave', () => { motion.hover(null); hovered = null; if (fine.matches) preview.clear(); wake(); }, { signal: abort.signal });
   viewport.addEventListener('dragstart', event => event.preventDefault(), { signal: abort.signal });
-  root.addEventListener('click', event => { if (motion.consumeClick()) { event.preventDefault(); event.stopPropagation(); } }, { capture: true, signal: abort.signal });
+  // A held touch's long-press menu cancels the contact (Gecko sends
+  // pointercancel), so a pause before dragging would end the gesture.
+  viewport.addEventListener('contextmenu', event => { if (contact && contact.pointerType !== 'mouse') event.preventDefault(); }, { signal: abort.signal });
+  // The route surface claims link clicks in the body's capture phase; a dragged
+  // or catching release must be suppressed before it, whichever card it hits.
+  // A touch drag generates no click, so keyboard activation (detail 0) is exempt.
+  win.addEventListener('click', event => {
+    if (event.detail > 0 && (event.target === root || viewport.contains(event.target as Node)) && motion.consumeClick()) { event.preventDefault(); event.stopImmediatePropagation(); }
+  }, { capture: true, signal: abort.signal });
   items.forEach((item, index) => {
     item.element.addEventListener('pointerenter', () => { hovered = item.element; if (fine.matches) preview.choose(item.element); }, { signal: abort.signal });
     item.element.addEventListener('pointerleave', () => { if (hovered === item.element) { hovered = null; if (fine.matches) preview.clear(); } }, { signal: abort.signal });

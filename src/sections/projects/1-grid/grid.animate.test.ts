@@ -30,7 +30,7 @@ function harness({ coarse = false, heldFonts = false, width = 1920, height = 108
     }
     querySelectorAll() { return this.children; }
     closest() { return { dataset: { routePath: '/en/projects' } }; }
-    getBoundingClientRect() { return { left: 0, top: 0, width, height }; }
+    getBoundingClientRect() { return { left: 0, top: 0, width: win.innerWidth, height: win.innerHeight }; }
     hasPointerCapture(id: number) { return this.capture.has(id); }
     // One capture owner per pointer; a handoff notifies the previous owner, and
     // capture events bubble with their original target like the DOM's.
@@ -112,14 +112,18 @@ test('captured drag consumes the root click without swallowing the following key
   const h = harness(); await h.advance(4000);
   h.fire(h.viewport, 'pointerdown', pointer(900, 500)); h.fire(h.win, 'pointermove', { ...pointer(1200, 650), target: h.root });
   expect(h.root.capture.has(1)).toBe(true); h.fire(h.win, 'pointerup', pointer(1200, 650)); expect(h.root.capture.size).toBe(0);
-  expect(h.fire(h.root, 'click').defaultPrevented).toBe(true); expect(h.fire(h.root, 'click').defaultPrevented).toBe(false); h.stop();
+  expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(true); expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(false);
+  // A touch drag ends without a click; Enter on a card must still follow its link.
+  const touch = (clientX: number) => ({ ...pointer(clientX, 500), pointerType: 'touch' });
+  h.fire(h.viewport, 'pointerdown', touch(900)); h.fire(h.viewport, 'pointermove', touch(1100)); h.fire(h.win, 'pointerup', touch(1100));
+  expect(h.fire(h.win, 'click', { target: h.original[8], detail: 0 }).defaultPrevented).toBe(false); h.stop();
 });
 
 test('coarse settled previews stop during a touch drag and cancellation leaves no stale click', async () => {
   const h = harness({ coarse: true }); await h.advance(5000); expect(h.videos).toHaveLength(1); expect(h.videos[0].paused).toBe(false);
   h.fire(h.viewport, 'pointerdown', { ...pointer(900, 500), pointerType: 'touch' });
   h.fire(h.win, 'pointermove', { ...pointer(1100, 650), pointerType: 'touch', target: h.root }); await h.advance(220);
-  expect(h.videos[0].paused).toBe(true); h.fire(h.win, 'pointercancel', pointer(1100, 650)); expect(h.fire(h.root, 'click').defaultPrevented).toBe(false);
+  expect(h.videos[0].paused).toBe(true); h.fire(h.win, 'pointercancel', pointer(1100, 650)); expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(false);
   h.stop(); expect(h.videos[0].src).toBe(''); expect(h.videos[0].loads).toBe(1);
 });
 
@@ -132,10 +136,10 @@ for (const width of [375, 412, 600, 768]) test(`touch follows physical finger di
   expect(position()[0] - before[0]).toBeCloseTo(120, 7); expect(position()[1] - before[1]).toBeCloseTo(60, 7);
   h.fire(h.viewport, 'pointermove', point(140, 270)); await h.advance(16.667);
   expect(position()[0] - before[0]).toBeCloseTo(60, 7); expect(position()[1] - before[1]).toBeCloseTo(-30, 7);
-  h.fire(h.win, 'pointerup', point(140)); expect(h.fire(h.root, 'click').defaultPrevented).toBe(true);
+  h.fire(h.win, 'pointerup', point(140)); expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(true);
   await h.advance(8000); expect(h.frames.size).toBe(0); expect(h.maxFrames).toBe(1);
   h.fire(h.viewport, 'pointerdown', point(140)); h.fire(h.win, 'pointerup', point(140));
-  expect(h.fire(h.root, 'click').defaultPrevented).toBe(false);
+  expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(false);
   h.stop(); expect(h.frames.size + h.timers.size + h.subscribers.size).toBe(0);
 });
 
@@ -148,13 +152,51 @@ test('implicit touch capture handing off to the root keeps the drag alive', asyn
   for (let i = 1; i <= 6; i++) { h.fire(h.viewport, 'pointermove', contact(80 + i * 20)); await h.advance(16.667); }
   expect(card.capture.size).toBe(0); expect(h.root.capture.has(1)).toBe(true); expect(h.root.dataset.gridDragging).toBe('true');
   expect(x() - before).toBeCloseTo(120, 7);
-  h.fire(h.win, 'pointerup', contact(200)); expect(h.root.capture.size).toBe(0); expect(h.fire(h.root, 'click').defaultPrevented).toBe(true);
+  h.fire(h.win, 'pointerup', contact(200)); expect(h.root.capture.size).toBe(0); expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(true);
   await h.advance(8000);
   // Losing the root's own capture without a pointerup still ends the contact.
   card.setPointerCapture(1); h.fire(h.viewport, 'pointerdown', contact(200)); h.fire(h.viewport, 'pointermove', contact(240)); await h.advance(16.667);
   const lost = x(); h.root.releasePointerCapture(1); expect(h.root.dataset.gridDragging).toBeUndefined();
   h.fire(h.viewport, 'pointermove', contact(300)); await h.advance(16.667); expect(x()).toBeCloseTo(lost, 7);
-  expect(h.fire(h.root, 'click').defaultPrevented).toBe(false); h.stop();
+  expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(false); h.stop();
+});
+
+test('a catching tap on a gliding grid is consumed before the route surface claims its card link', async () => {
+  const h = harness({ coarse: true, width: 412, height: 915 }); await h.advance(4000);
+  const card = h.original[8].card!, contact = (clientX: number) => ({ ...pointer(clientX, 300), pointerType: 'touch', target: card });
+  // Stands in for the route surface's earlier document-level capture listener.
+  let routed = 0; h.win.addEventListener('click', () => { routed++; }, { capture: true });
+  h.fire(h.viewport, 'pointerdown', contact(80));
+  for (let i = 1; i <= 4; i++) { h.fire(h.viewport, 'pointermove', contact(80 + i * 40)); await h.advance(16.667); }
+  h.fire(h.win, 'pointerup', contact(240)); await h.advance(16.667); expect(h.root.dataset.gridDragging).toBeUndefined();
+  h.fire(h.viewport, 'pointerdown', contact(200)); h.fire(h.win, 'pointerup', contact(200));
+  expect(h.fire(h.win, 'click', { target: card, detail: 1 }).defaultPrevented).toBe(true); expect(routed).toBe(0);
+  await h.advance(8000); h.fire(h.viewport, 'pointerdown', contact(200)); h.fire(h.win, 'pointerup', contact(200));
+  expect(h.fire(h.win, 'click', { target: card, detail: 1 }).defaultPrevented).toBe(false); expect(routed).toBe(1); h.stop();
+});
+
+test('a held touch keeps its long-press menu from cancelling the contact; mouse keeps the native menu', async () => {
+  const h = harness({ coarse: true, width: 412, height: 915 }); await h.advance(4000);
+  const touch = (clientX: number) => ({ ...pointer(clientX, 300), pointerType: 'touch' });
+  expect(h.fire(h.viewport, 'contextmenu').defaultPrevented).toBe(false);
+  h.fire(h.viewport, 'pointerdown', touch(80)); await h.advance(600); expect(h.fire(h.viewport, 'contextmenu').defaultPrevented).toBe(true);
+  h.fire(h.viewport, 'pointermove', touch(140)); await h.advance(16.667); expect(h.root.dataset.gridDragging).toBe('true');
+  h.fire(h.win, 'pointerup', touch(140)); expect(h.fire(h.viewport, 'contextmenu').defaultPrevented).toBe(false);
+  h.fire(h.viewport, 'pointerdown', pointer(80, 300)); expect(h.fire(h.viewport, 'contextmenu').defaultPrevented).toBe(false);
+  h.fire(h.win, 'pointerup', pointer(80, 300)); h.stop();
+});
+
+test('a profile resize during a held drag re-anchors the contact instead of dropping it', async () => {
+  const h = harness({ coarse: true, width: 500, height: 915 }); await h.advance(4000);
+  const x = () => parseFloat(h.original[8].style.transform.match(/translate3d\(([^,]+)/)![1]) * h.win.innerWidth / 100;
+  const touch = (clientX: number) => ({ ...pointer(clientX, 300), pointerType: 'touch' });
+  h.fire(h.viewport, 'pointerdown', touch(80)); h.fire(h.viewport, 'pointermove', touch(140)); await h.advance(16.667);
+  h.win.innerWidth = 700; h.fire(h.win, 'resize'); await h.advance(200);
+  const anchored = x();
+  for (let i = 1; i <= 3; i++) { h.fire(h.viewport, 'pointermove', touch(140 + i * 20)); await h.advance(16.667); }
+  expect(x() - anchored).toBeCloseTo(60, 7); expect(h.root.dataset.gridDragging).toBe('true');
+  h.fire(h.win, 'pointerup', touch(200)); expect(h.root.dataset.gridDragging).toBeUndefined();
+  expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(true); h.stop();
 });
 
 test('touch and pen stay direct on hybrid devices; additional contacts cannot steal or cancel the drag', async () => {
@@ -166,7 +208,7 @@ test('touch and pen stay direct on hybrid devices; additional contacts cannot st
   h.fire(h.viewport, 'pointerdown', { ...contact(300), pointerId: 2, isPrimary: false });
   h.fire(h.win, 'pointercancel', { ...contact(300), pointerId: 2 });
   h.fire(h.viewport, 'pointermove', contact(140)); await h.advance(16.667); expect(x() - before).toBeCloseTo(80, 7);
-  h.fire(h.win, 'pointercancel', contact(140)); expect(h.fire(h.root, 'click').defaultPrevented).toBe(false);
+  h.fire(h.win, 'pointercancel', contact(140)); expect(h.fire(h.win, 'click', { target: h.root, detail: 1 }).defaultPrevented).toBe(false);
   await h.advance(2000); expect(h.frames.size).toBe(0);
   h.media.matches = true; h.fire(h.media, 'change'); await h.advance(100);
   const reducedStart = x(); h.fire(h.viewport, 'pointerdown', { ...contact(140), pointerType: 'touch' });
