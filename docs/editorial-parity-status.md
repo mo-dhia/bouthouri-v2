@@ -28,16 +28,25 @@ See [editorial architecture](editorial-pages-architecture.md),
 
 ## Validation and evidence
 
-The reviewed code is `e84f7c77baeecd54407f79556d06cdc1820d3327`, with review HEAD
+The body/motion reviews use code `e84f7c77baeecd54407f79556d06cdc1820d3327`, with review HEAD
 `a92c6d553135adc17c606013ce55cfb933c4fe77`, production build
 `ETSBMuTNkBFMyZQ0iwhPG` on localhost3100. Its 259 code/config input hashes were
-independently checked without differences. Later documentation commits do not
-change that build's application inputs.
+independently checked without differences at those reviews. Their recorded
+application inputs and visual scope remain historical evidence.
+
+The subsequent [LAN startup repair](lan-development.md) adds an explicit
+development-host allowlist and replaces HTTPS-only navigation ID creation. It
+changes no authored geometry, motion clock or rebranding. The current production
+build is `QgSJsfmAOr4rrHZoSrdLt`; the user confirms MENU and scroll animations
+work in Arc/macOS at the previously broken LAN URL.
+That build also retains the separately committed portrait-brightness restoration
+`21d4caf`; the LAN repair does not edit its CSS.
 
 Root validation passed:
 
-- `bun run check`: lint, route types, TypeScript, architecture and **376 tests /
-  15,748 assertions**.
+- `bun run check`: lint, route types, TypeScript, architecture and **378 tests /
+  15,758 assertions** (the earlier review baseline was
+  376 tests / 15,748 assertions).
 - `bun run build`: localized static pages and the Contact API.
 - `bun run test:ssr -- http://localhost:3100`: HOME and all three pages in both
   locales, RTL/metadata, redirects, 404s and 20 static assets.
