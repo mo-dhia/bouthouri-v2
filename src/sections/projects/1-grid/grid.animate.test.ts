@@ -4,7 +4,7 @@ import { routeEntries } from '@/lib/navigation/route-entry';
 
 const cleanups: (() => void)[] = [];
 afterEach(() => { while (cleanups.length) cleanups.pop()!(); });
-function harness({ coarse = false, heldFonts = false } = {}) {
+function harness({ coarse = false, heldFonts = false, width = 1920, height = 1080 } = {}) {
   let now = 0, serial = 0, maxFrames = 0, resolveFonts!: () => void;
   const frames = new Map<number, FrameRequestCallback>(), timers = new Map<number, { time: number; run: () => void }>();
   const subscribers = new Set<() => void>(), state = { menuOpen: false, quietMode: false };
@@ -30,7 +30,7 @@ function harness({ coarse = false, heldFonts = false } = {}) {
     }
     querySelectorAll() { return this.children; }
     closest() { return { dataset: { routePath: '/en/projects' } }; }
-    getBoundingClientRect() { return { left: 0, top: 0, width: 1920, height: 1080 }; }
+    getBoundingClientRect() { return { left: 0, top: 0, width, height }; }
     hasPointerCapture(id: number) { return this.capture.has(id); }
     setPointerCapture(id: number) { this.capture.add(id); }
     releasePointerCapture(id: number) { this.capture.delete(id); this.dispatchEvent(new Event('lostpointercapture')); }
@@ -45,7 +45,7 @@ function harness({ coarse = false, heldFonts = false } = {}) {
   }
   const videos: Video[] = [];
   const win = Object.assign(new EventTarget(), {
-    innerWidth: 1920, innerHeight: 1080, navigator: {}, performance: { now: () => now },
+    innerWidth: width, innerHeight: height, navigator: {}, performance: { now: () => now },
     getComputedStyle: () => ({ rowGap: '8px' }),
     matchMedia: (query: string) => query.includes('reduced') ? media : fine,
     setTimeout(run: () => void, delay: number) { const id = ++serial; timers.set(id, { time: now + delay, run }); return id; },
@@ -112,6 +112,40 @@ test('coarse settled previews stop during a touch drag and cancellation leaves n
   h.fire(h.win, 'pointermove', { ...pointer(1100, 650), pointerType: 'touch', target: h.root }); await h.advance(220);
   expect(h.videos[0].paused).toBe(true); h.fire(h.win, 'pointercancel', pointer(1100, 650)); expect(h.fire(h.root, 'click').defaultPrevented).toBe(false);
   h.stop(); expect(h.videos[0].src).toBe(''); expect(h.videos[0].loads).toBe(1);
+});
+
+for (const width of [375, 412, 600, 768]) test(`touch follows physical finger distance at ${width}px and reverses without lag`, async () => {
+  const h = harness({ coarse: true, width, height: 915 }); await h.advance(4000);
+  const position = () => h.original[8].style.transform.match(/translate3d\(([^,]+),([^,]+)/)!.slice(1).map(value => parseFloat(value) * width / 100);
+  const before = position(), point = (clientX: number, clientY = 300) => ({ ...pointer(clientX, clientY), pointerType: 'touch' });
+  h.fire(h.viewport, 'pointerdown', point(80));
+  for (let i = 1; i <= 6; i++) { h.fire(h.viewport, 'pointermove', point(80 + i * 20, 300 + i * 10)); await h.advance(16.667); }
+  expect(position()[0] - before[0]).toBeCloseTo(120, 7); expect(position()[1] - before[1]).toBeCloseTo(60, 7);
+  h.fire(h.viewport, 'pointermove', point(140, 270)); await h.advance(16.667);
+  expect(position()[0] - before[0]).toBeCloseTo(60, 7); expect(position()[1] - before[1]).toBeCloseTo(-30, 7);
+  h.fire(h.win, 'pointerup', point(140)); expect(h.fire(h.root, 'click').defaultPrevented).toBe(true);
+  await h.advance(8000); expect(h.frames.size).toBe(0); expect(h.maxFrames).toBe(1);
+  h.fire(h.viewport, 'pointerdown', point(140)); h.fire(h.win, 'pointerup', point(140));
+  expect(h.fire(h.root, 'click').defaultPrevented).toBe(false);
+  h.stop(); expect(h.frames.size + h.timers.size + h.subscribers.size).toBe(0);
+});
+
+test('touch and pen stay direct on hybrid devices; additional contacts cannot steal or cancel the drag', async () => {
+  const h = harness({ width: 412, height: 915 }); await h.advance(4000);
+  const x = () => parseFloat(h.original[8].style.transform.match(/translate3d\(([^,]+)/)![1]) * 412 / 100;
+  const contact = (clientX: number) => ({ ...pointer(clientX, 300), pointerType: 'pen', isPrimary: true });
+  const before = x(); h.fire(h.viewport, 'pointerdown', contact(60));
+  h.fire(h.viewport, 'pointermove', contact(100)); await h.advance(16.667); expect(x() - before).toBeCloseTo(40, 7);
+  h.fire(h.viewport, 'pointerdown', { ...contact(300), pointerId: 2, isPrimary: false });
+  h.fire(h.win, 'pointercancel', { ...contact(300), pointerId: 2 });
+  h.fire(h.viewport, 'pointermove', contact(140)); await h.advance(16.667); expect(x() - before).toBeCloseTo(80, 7);
+  h.fire(h.win, 'pointercancel', contact(140)); expect(h.fire(h.root, 'click').defaultPrevented).toBe(false);
+  await h.advance(2000); expect(h.frames.size).toBe(0);
+  h.media.matches = true; h.fire(h.media, 'change'); await h.advance(100);
+  const reducedStart = x(); h.fire(h.viewport, 'pointerdown', { ...contact(140), pointerType: 'touch' });
+  h.fire(h.viewport, 'pointermove', { ...contact(200), pointerType: 'touch' }); await h.advance(16.667);
+  expect(x() - reducedStart).toBeCloseTo(60, 7);
+  h.fire(h.win, 'pointerup', { ...contact(200), pointerType: 'touch' }); await h.advance(500); expect(h.frames.size).toBe(0);
 });
 
 test('hidden, MENU and reduced transitions pause media and do not accumulate frame owners', async () => {

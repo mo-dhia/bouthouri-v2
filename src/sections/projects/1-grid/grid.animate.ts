@@ -92,9 +92,9 @@ export function mountProjectsGrid(root: HTMLElement) {
     if (!fine.matches) preview.clear(); wake();
   };
   const onDown = (event: PointerEvent) => {
-    if (blocked() || event.button !== 0) return;
+    if (blocked() || event.button !== 0 || event.isPrimary === false || pointerId !== null) return;
     bounds = viewport.getBoundingClientRect(); pointerId = event.pointerId;
-    motion.begin(localPoint(event), win.performance.now()); lastInput = win.performance.now();
+    motion.begin(localPoint(event), win.performance.now(), event.pointerType === 'touch' || event.pointerType === 'pen'); lastInput = win.performance.now();
     if (!fine.matches) preview.clear();
     if (motion.dragged) root.dataset.gridDragging = 'true'; wake();
   };
@@ -119,7 +119,7 @@ export function mountProjectsGrid(root: HTMLElement) {
   viewport.addEventListener('pointermove', onMove, { passive: true, signal: abort.signal });
   win.addEventListener('pointermove', event => { if (motion.dragging && !viewport.contains(event.target as Node)) onMove(event); }, { passive: true, signal: abort.signal });
   win.addEventListener('pointerup', event => { if (event.pointerId === pointerId) release(false); }, { signal: abort.signal });
-  win.addEventListener('pointercancel', () => release(true), { signal: abort.signal });
+  win.addEventListener('pointercancel', event => { if (event.pointerId === pointerId) release(true); }, { signal: abort.signal });
   root.addEventListener('lostpointercapture', () => { if (motion.dragging) release(true); }, { signal: abort.signal });
   win.addEventListener('blur', () => release(true), { signal: abort.signal });
   viewport.addEventListener('pointerleave', () => { motion.hover(null); hovered = null; if (fine.matches) preview.clear(); wake(); }, { signal: abort.signal });

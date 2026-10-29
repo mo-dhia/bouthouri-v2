@@ -65,6 +65,20 @@ physical at the adapter boundary.
   3500 reference pixels/second, expires after a 90ms stationary hold and decays
   with the source .45-second exponential tail. A catch press stops existing
   motion; a dragged release suppresses only its generated click.
+- Touch and pen follow the contact directly on each presentation, with one
+  physical pixel of grid travel per physical pixel of input on both axes. They
+  retain the existing capped release momentum. This deliberately removes the
+  mouse drag's `.078` smoothing during contact: a quick 120px synthetic touch
+  drag previously presented only about31px before release in the mobile browser
+  control. Mouse and wheel damping are unchanged. Additional contacts cannot
+  replace or cancel the active primary drag; reduced motion has no momentum.
+  Mounted controller regressions cover375/412/600/768px widths, both axes,
+  immediate reversals, hybrid pen/touch, extra-contact cancellation, click
+  suppression, reduced motion and eventual RAF sleep. The rebuilt browser
+  control at actual484×915 presented119.998–120.003px for120px synthetic touch
+  input in English. This verifies input mapping, not physical-device latency or
+  presented FPS. Full validation:453 tests /19,230 assertions, build and local
+  production SSR audit pass; no CSS or content/loading boundary changed.
 - Fine pointers get the source damped repulsion. Focus brings the selected
   original card into the nearest wrapped position; Enter follows its real link.
 - A 220ms hover intention starts a muted inline reel. Coarse pointers choose the

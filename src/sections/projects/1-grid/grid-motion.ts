@@ -3,19 +3,19 @@ import { clamp, damp, gridTarget, type GridLayout, type Point } from './grid-geo
 /** One mutable input clock, independent of React and the page's scroll clock. */
 export function createGridMotion(layout: GridLayout, start: number) {
   const target = gridTarget(layout, start), pan = { ...target }, pointer = { x: 0, y: 0 }, pointerTarget = { x: 0, y: 0 }, velocity = { x: 0, y: 0 };
-  let pressure = 0, pressureTarget = 0, down: { x: number; y: number; pan: Point; time: number; previous: Point; dragged: boolean } | null = null;
+  let pressure = 0, pressureTarget = 0, down: { x: number; y: number; pan: Point; time: number; previous: Point; dragged: boolean; direct: boolean } | null = null;
   let suppressClick = false;
   return {
     target, pan, pointer, pointerTarget, velocity,
     get pressure() { return pressure; }, get dragging() { return down !== null; }, get dragged() { return !!down?.dragged; },
     wheel(x: number, y: number) { if (down) return; velocity.x = velocity.y = 0; target.x += x; target.y += y; },
     hover(point: Point | null) { if (point) { pointerTarget.x = point.x; pointerTarget.y = point.y; } pressureTarget = point ? 1 : 0; },
-    begin(point: Point, time: number) {
+    begin(point: Point, time: number, direct = false) {
       suppressClick = false;
       const moving = velocity.x !== 0 || velocity.y !== 0 || Math.abs(target.x - pan.x) + Math.abs(target.y - pan.y) > 12;
       velocity.x = velocity.y = 0;
       if (moving) { target.x = pan.x; target.y = pan.y; }
-      down = { ...point, pan: { ...target }, time, previous: { ...point }, dragged: moving };
+      down = { ...point, pan: { ...target }, time, previous: { ...point }, dragged: moving, direct };
     },
     move(point: Point, time: number) {
       if (!down) return;
@@ -49,7 +49,10 @@ export function createGridMotion(layout: GridLayout, start: number) {
         if (Math.abs(velocity.x) < 15 && Math.abs(velocity.y) < 15 || reduced) velocity.x = velocity.y = 0;
         changed = true;
       }
-      const ease = reduced ? 1 : damp(down ? .078 : .09, frames);
+      // Touch and pen are direct manipulation: follow the contact on the next
+      // presentation, then retain the existing release momentum. Mouse dragging
+      // keeps the reference's damped response.
+      const ease = reduced || down?.direct ? 1 : damp(down ? .078 : .09, frames);
       for (const key of ['x', 'y'] as const) {
         const before = pan[key]; pan[key] += (target[key] - pan[key]) * ease;
         if (Math.abs(target[key] - pan[key]) < .05) pan[key] = target[key];
