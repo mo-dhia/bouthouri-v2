@@ -40,7 +40,7 @@ restored persistent controls have the correct inertness. Control selectors shoul
 use data-nav-layer: the utilities ancestor’s data-nav-context is its current pose
 and can also equal persistent.
 
-The original three SVG paths assemble on logo hover/focus (480ms +35ms/piece),
+The three mark pieces assemble on logo hover/focus (480ms +35ms/piece),
 reverse from their current transforms, and reset on Escape/blur/leave. Nav labels
 have an inline baseline marker and the source's measured ink-centering correction.
 Conversation links retain the rollover; background marquee cue is editorial.
@@ -225,6 +225,13 @@ reopen. No new RAF or geometry reads are added to ordinary journey frames.
 
 2026-10-28 identity update: shell owner labels and contact links now derive from
 `src/config/brand.ts`. COPY reads the same email as its visible/mailto link.
-The inline mark is named`IdentityLogo`; its paths and all menu/header timing
-remain unchanged. Shell/foot gates use neutral`data-portfolio-*` mount markers.
+The inline mark is named`IdentityLogo`; all menu/header timing remains
+unchanged.
+
+2026-10-29 mark: `identity-mark.ts` owns the BOUTHOURI mark for the nav, hover,
+loader, footer and favicon. It keeps Gazzar's three flat pieces in the 280×140
+frame: a 15.2 stem and two equal half capsules (radius 29, run 16). At rest they
+read as a quiet line and a sound wave whose bowls share a leg. Assembled, each
+piece turns a quarter and they lock into a B. Hover keeps its matrix-start
+WAAPI path; quarter turns decompose without a long-way spin. Shell/foot gates use neutral`data-portfolio-*` mount markers.
 English display name is`Med D. Bouthouri`; Arabic is`محمد ضياء بوثوري`.

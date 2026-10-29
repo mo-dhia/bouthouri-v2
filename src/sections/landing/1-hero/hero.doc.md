@@ -261,8 +261,11 @@ Measured local/reference parity in active Vaelix tabs, DPR 1:
 
 A single owned RAF handles the entry, profile-scaled 133 reference-pixel/second marquee, world
 scrub and portrait invalidation. Animation progress never enters React/Storio.
-The three inline original logo shapes fill sequentially and assemble into the
-original mark; choices appear at ready +1.02..1.26s. QUIET mutes audio only.
+The BOUTHOURI mark loads in its row pose: the quiet line fills as a bar over
+the first third, then one stroke traces the sound wave through both bowls
+(`markTrace` clips along each stroke). Ready assembles every piece by a quarter
+turn into the B with the original .1..82s window; choices appear at ready
++1.02..1.26s. QUIET mutes audio only.
 
 On selection, the mark travels to the hero nav logo over 1.1s. Portrait resolve
 starts .06s / lasts 1.2s; nav masks start .15s with .06s stagger / .55s duration;

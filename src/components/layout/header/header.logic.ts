@@ -10,6 +10,7 @@ import menuStyles from "./menu.module.css";
 import styles from "./header.module.css";
 import { shellEmail } from "./shell-copy";
 import { createMenuTimeline } from "./menu-timeline";
+import { markAssembled, markRow } from "./identity-mark";
 import { ROUTE_ABORT_EVENT, ROUTE_COVERED_EVENT } from "@/lib/navigation/route-navigation-state";
 import {
   heroWorldEvent,
@@ -19,16 +20,6 @@ import {
 } from "@/sections/landing/1-hero/hero-world";
 
 const ease = "cubic-bezier(.65, 0, .25, 1)";
-const origins = [
-  [78.5, 70, 0],
-  [133.5, 70, 0],
-  [212.5, 70, 0],
-];
-const assembled = [
-  [118.913103479137, 88.38151229152174, -410.3550821110788 / Math.PI],
-  [137.4465684964374, 51.9042756629948, 0],
-  [163.5457992608359, 22.70018681765191, 0],
-];
 
 export function mountHeader(root: HTMLElement): () => void {
   const editorial = root.dataset.shellVariant === "editorial";
@@ -700,9 +691,9 @@ export function mountHeader(root: HTMLElement): () => void {
       motion.forEach((animation) => animation.cancel());
       motion = pieces.map((piece, i) => {
         const from = current[i];
-        const to = active ? assembled[i] : origins[i];
+        const to = active ? markAssembled[i] : markRow[i];
         // SVG px here are local viewBox coordinates, scaled by the CSS frame.
-        const transform = (v: number[]) =>
+        const transform = (v: readonly number[]) =>
           `translate(${v[0]}px,${v[1]}px) rotate(${v[2]}deg)`;
         const animation = piece.animate(
           [{ transform: from }, { transform: transform(to) }],

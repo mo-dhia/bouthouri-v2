@@ -4,7 +4,12 @@ import Image from "next/image";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
 import { getShellCopy } from "@/components/layout/header/shell-copy";
-import { logoOrigins, logoPaths } from "@/components/layout/header/identity-logo";
+import {
+  markGhosts,
+  markPaths,
+  markRow,
+  markTransform,
+} from "@/components/layout/header/identity-mark";
 import KineticLink from "@/components/layout/header/kinetic-link";
 import HeroAnimateGate from "./hero-animate-gate";
 import styles from "./hero.module.css";
@@ -66,26 +71,20 @@ export default function Hero({
             aria-hidden="true"
           >
             <defs>
-              {logoPaths.map((_, i) => (
+              {markPaths.map((_, i) => (
                 <clipPath key={i} id={`identity-piece-${i}`}>
-                  <rect
-                    data-identity-clip={i}
-                    x="-42"
-                    y="-42"
-                    width="84"
-                    height="0"
-                  />
+                  <path data-identity-clip={i} d="" />
                 </clipPath>
               ))}
             </defs>
-            {logoPaths.map((d, i) => (
+            {markPaths.map((d, i) => (
               <g
-                key={d}
+                key={i}
                 data-identity-piece={i}
-                transform={`translate(${logoOrigins[i]} 70) rotate(0)`}
+                transform={markTransform(markRow[i])}
               >
                 <path
-                  d={d}
+                  d={markGhosts[i]}
                   fillRule="evenodd"
                   opacity=".055"
                   data-identity-latent="true"

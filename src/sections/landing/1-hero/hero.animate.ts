@@ -22,17 +22,11 @@ import {
 import type { PortraitController } from "./hero-portrait";
 import { createHeroScrollMagnet } from "./hero-scroll-magnet";
 import { portraitFallbackMask } from "./hero-portrait-mask";
-
-const origins = [
-  [78.5, 70, 0],
-  [133.5, 70, 0],
-  [212.5, 70, 0],
-];
-const assembled = [
-  [118.913103479137, 88.38151229152174, -410.3550821110788 / Math.PI],
-  [137.4465684964374, 51.9042756629948, 0],
-  [163.5457992608359, 22.70018681765191, 0],
-];
+import {
+  markAssembled,
+  markRow,
+  markTrace,
+} from "@/components/layout/header/identity-mark";
 const easeInOut = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
@@ -75,7 +69,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     root.querySelectorAll<SVGElement>("[data-identity-piece]"),
   );
   const clips = Array.from(
-    root.querySelectorAll<SVGRectElement>("[data-identity-clip]"),
+    root.querySelectorAll<SVGPathElement>("[data-identity-clip]"),
   );
   const materials = Array.from(
     root.querySelectorAll<SVGElement>("[data-identity-material]"),
@@ -294,23 +288,23 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     }
   };
   const fillLogo = (assembly: number, fill: number) => {
+    // The quiet line fills like a bar, then one gesture traces the whole wave.
+    const wave = 2 * smoother(1 / 3, 1, fill),
+      traced = [smoother(0, 1 / 3, fill), clamp(wave), clamp(wave - 1)];
     pieces.forEach((piece, i) => {
-      const from = origins[i],
-        to = assembled[i],
+      const from = markRow[i],
+        to = markAssembled[i],
         a = clamp(assembly),
-        f = smoother(i / 3, (i + 1) / 3, fill),
-        latent = 1 - f;
+        f = traced[i];
       piece.setAttribute(
         "transform",
         `translate(${from[0] + (to[0] - from[0]) * a} ${from[1] + (to[1] - from[1]) * a}) rotate(${from[2] + (to[2] - from[2]) * a})`,
       );
-      clips[i].setAttribute("height", String(84 * f));
-      clips[i].setAttribute("y", String(42 - 84 * f));
-      latents[i].setAttribute("opacity", String(0.055 * latent));
-      const flutter = latent * Math.sin(0.75 * elapsed + 1.7 * i) * 1.2;
+      clips[i].setAttribute("d", markTrace(i, f));
+      latents[i].setAttribute("opacity", String(0.055 * (1 - f)));
       materials[i].setAttribute(
         "transform",
-        `translate(0 ${flutter + choicesTilt * Math.sin(1.3 * elapsed + i) * 0.55}) scale(${1 - 0.045 * latent} ${0.7 + 0.3 * f})`,
+        `translate(0 ${choicesTilt * Math.sin(1.3 * elapsed + i) * 0.55})`,
       );
     });
   };

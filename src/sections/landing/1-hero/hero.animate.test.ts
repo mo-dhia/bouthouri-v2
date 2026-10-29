@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import * as viewport from "@/lib/viewport-design";
+import * as identityMark from "@/components/layout/header/identity-mark";
 import type { HeroWorldPose } from "./hero-world";
 
 class Surface extends EventTarget {
@@ -125,6 +126,7 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe(listener: () => void) { listeners.add(listener); return () => listeners.delete(listener); } } },
     "@/lib/audio/material-audio": { setAudioEnabled() {} },
     "@/lib/navigation/home-navigation": { prepareHomeFreshEntry: () => false, getHomeRestoreIntent: () => undefined, HOME_NAVIGATION_RESTORE_EVENT: "home-navigation-restore" },
+    "@/components/layout/header/identity-mark": identityMark,
     "./hero-world": world,
     "./hero-portrait-mask": evaluate("./hero-portrait-mask.ts", { "./hero-world": world }),
     "./hero-scroll-magnet": { createHeroScrollMagnet(options: { bounds: typeof magnetBounds }) { magnetBounds = options.bounds; return { reset() {}, step: () => false, dispose() { magnetDisposed = true; } }; } },
