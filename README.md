@@ -12,7 +12,10 @@ Entry's server-first section architecture. The English and Arabic home now
 include the identity entry, portrait, pinned glasses/sculpture journey, project
 drawings, systems narrative, menu, footer and localized audio. Vision, Services
 and Contact also have complete English/Arabic server content and deferred
-interactions. Projects remains excluded. Follow [HOME review status](docs/home-parity-status.md)
+interactions. Projects adds the grid-only Lab interaction, with reference
+experiment previews and the existing Bouthouri shell/background. Follow
+[the grid contract](src/sections/projects/1-grid/grid.doc.md),
+[HOME review status](docs/home-parity-status.md)
 and [editorial verification status](docs/editorial-parity-status.md) for the
 tested scope and retained comparison limits.
 

@@ -1,7 +1,8 @@
 # Editorial implementation and verification status
 
 Vision, Services and Contact are implemented in English and Arabic with the
-approved Bouthouri identity. Projects remains outside this task. Fresh native
+approved Bouthouri identity. The historical reviews below exclude Projects;
+its subsequent grid-only implementation has a [separate review](projects-grid-review.md). Fresh native
 plain-footer Contact navigation completes locally in **all six** agreed
 locale/screen contexts. The original fails to visibly complete the same arrival
 in those controls, so that path has no fresh matched source/local pass.

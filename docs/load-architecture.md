@@ -124,3 +124,10 @@ eligible lease. Page-only CSS stays out of HOME's
 server import graph. Page content and form controls are prerendered; controllers
 and practice-object graphics load across separate boundaries. See
 [editorial pages](editorial-pages-architecture.md) for ownership and delivery settings.
+
+Projects reuses that shell and field lease without a standard footer. Its nine
+cards/posters/links are server content; a null gate dynamically imports the
+grid-only controller. Only this enhanced direct-manipulation surface consumes
+wheel and drag input for panning. It does not install a document scroll smoother.
+An intent-owned child shares one muted preview decoder; no reel is requested
+before eligible interest. See [the grid contract](../src/sections/projects/1-grid/grid.doc.md).

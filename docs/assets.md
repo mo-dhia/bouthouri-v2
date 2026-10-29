@@ -15,6 +15,14 @@ it. Preserve the reference's crop, typography, material, and composition. Keep
 font license files alongside self-hosted fonts. Avoid runtime hotlinking for
 critical visual assets.
 
+`public/assets/projects/lab/` holds the nine user-requested Carter Ogunsola Lab
+reference posters and muted preview reels. The complete original URLs and
+controller fingerprint are retained in the local `projects-grid-20261029`
+evidence; the card data links the original experiments and the page visibly
+attributes their author. These previews are not Bouthouri-authored portfolio
+claims. Images are local JPEG posters; reels remain their original MP4s, loaded
+only after intent. No source header, theme, presence service or analytics is used.
+
 `ResponsiveImage` is a server-compatible Next Image wrapper with mandatory
 alt text, an explicit `sizes` string, and an aspect-ratio reservation. Use
 Next 16's `preload` only for a genuine LCP image; below-fold images remain lazy.
