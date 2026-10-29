@@ -108,18 +108,17 @@ test("Contact motion adopts late entry, scrubs both source paths with one RAF an
   expect(h.reveal.map((line) => line.style.transform)).toEqual(["", ""]);
 });
 
-test("Contact restored AR pose mirrors the source shift and ignores physical height for design timing", async () => {
+test("Contact restored AR pose mirrors the source shift and times its ranges from the physical stage height", async () => {
   const h = harness({ locale: "ar", restored: 405 }), dispose = h.mount();
   h.resolveFonts(); await flush();
   expect(h.frames.size).toBe(0);
   expect(h.wrappers[1].style.transform).toBe("translate3d(-2%, 0, 0)");
-  const prior = h.wrappers[1].style.transform;
-  h.resize(1920, 650);
-  expect(h.wrappers[1].style.transform).toBe(prior);
+  h.opening.height = 2160; h.resize(1920, 2160); // The opening is a 100svh stage.
+  expect(h.wrappers[1].style.transform).toBe("translate3d(-1%, 0, 0)");
   h.visibility(true); h.scroll(810);
   expect(h.frames.size).toBe(0);
   h.visibility(false);
-  expect(h.wrappers[1].style.transform).toBe("translate3d(-4%, 0, 0)");
+  expect(h.wrappers[1].style.transform).toBe("translate3d(-2%, 0, 0)");
   dispose();
 });
 

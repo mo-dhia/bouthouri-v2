@@ -1,4 +1,4 @@
-import { pixelsToVw, viewportDesign } from '@/lib/viewport-design';
+import { pixelsToVw, referenceStage } from '@/lib/viewport-design';
 import { clamp01 } from '../1-opening/practice-hero';
 import { createMaskedReveal } from '../masked-reveal';
 import { range } from '../2-perspective/system-geometry';
@@ -18,7 +18,7 @@ export function createVisionNarrative(root: HTMLElement, rtl: boolean) {
   const top = (element: HTMLElement) => documentTop(element) / scale;
   return {
     measure(reduced: boolean) {
-      const design = viewportDesign(innerWidth); scale = innerWidth / design.width; width = design.width; height = design.height;
+      const stage = referenceStage(innerWidth, innerHeight); scale = stage.scale; width = stage.width; height = stage.height;
       const portrait = width <= 700 || height / width > 1.12;
       const navBottom = (root.closest('[data-editorial-page]')?.querySelector('.editorial-nav')?.getBoundingClientRect().bottom ?? 0) / scale;
       leadership.style.setProperty('--lead-safe-top', pixelsToVw((navBottom + Math.max(22, Math.min(42, .045 * height))) * scale, innerWidth));

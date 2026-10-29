@@ -10,7 +10,7 @@ import { createStoryBoot, waitForStoryTask } from "./story-boot";
 import { disposePrivateStoryAtlas } from "./story-atlas-ownership";
 import { loadStoryMotionAssets } from "./story-motion-assets";
 import { uiStore } from "@/store/uiStore";
-import { designHeight, viewportDesign } from "@/lib/viewport-design";
+import { viewportDesign } from "@/lib/viewport-design";
 import { sampleStoryScore, type StoryFrame } from "./story-score";
 import { createStoryHeroHandoff } from "./story-hero-handoff";
 import { heroWorldPose, readHeroWorldPose, worldProgressFromScroll } from "../1-hero/hero-world";
@@ -44,7 +44,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
   let disposed = false, lost = false, ready = false, frameId = 0;
   let width = Math.max(1, host.clientWidth), height = Math.max(1, host.clientHeight);
   let rendererSize = "";
-  let design = viewportDesign(innerWidth), aspect = design.width / design.height;
+  let design = viewportDesign(innerWidth), aspect = width / height;
   let visible = false, menuOpen = document.documentElement.dataset.menuOpen === "true";
   let elapsed = 0, lastRender = 0, sceneReady = false;
   let frame: StoryFrame = {
@@ -101,7 +101,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
   const pointer = createStoryPointer(canvas, camera, requestRender);
   const hero = stage.closest("main")?.querySelector<HTMLElement>("#identity") ?? null;
   const heroHandoff = createStoryHeroHandoff(() => readHeroWorldPose(hero) ?? heroWorldPose(worldProgressFromScroll(
-    hero ? -hero.getBoundingClientRect().top : scrollY, hero?.offsetHeight || designHeight(innerWidth), design.key === "mobile",
+    hero ? -hero.getBoundingClientRect().top : scrollY, hero?.offsetHeight || innerHeight, design.key === "mobile",
   )), () => {
     if (staticMode) return;
     frame = heroHandoff.sample(frame); requestRender();
@@ -152,7 +152,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
     const rect = host.getBoundingClientRect();
     width = Math.max(1, rect.width || host.clientWidth || stage.clientWidth);
     height = Math.max(1, rect.height || host.clientHeight || stage.clientHeight);
-    design = viewportDesign(innerWidth); aspect = design.width / design.height;
+    design = viewportDesign(innerWidth); aspect = width / height;
     visible = rect.bottom > 0 && rect.top < innerHeight && rect.width > 0;
     // Source react-use-measure routes ResizeObserver through its 50ms scroll
     // debounce too. Coalesce capture with that existing full-bounds measure:
@@ -164,7 +164,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
       renderer.setPixelRatio(dpr); renderer.setSize(width, height, false); rendererSize = size;
     }
     camera.aspect = aspect; camera.updateProjectionMatrix();
-    pointer.measure(); sculptures?.resize(aspect); typography?.resize(width, height, innerWidth);
+    pointer.measure(); sculptures?.resize(aspect); typography?.resize(width, height);
     canvas.dataset.dpr = String(renderer.getPixelRatio());
     requestRender();
   }
@@ -296,12 +296,12 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
       environments.setSculpture(true);
       ownSculptures = createSculptures(model, scene, environments.sculpture!.texture, aspect, document.documentElement.lang === "ar");
       ownSculptures.root.visible = false; ownSculptures.setEnvironment(null);
-      ownType = await createSpatialType(stage, scene, ownSculptures.root, camera, width, height, requestRender, motionAbort.signal, innerWidth);
+      ownType = await createSpatialType(stage, scene, ownSculptures.root, camera, width, height, requestRender, motionAbort.signal);
       if (!currentMotion(generation)) return;
       motionModel = model; releaseLighting = release;
       sculptures = ownSculptures; typography = ownType;
       sculptures.resize(aspect);
-      typography.resize(width, height, innerWidth); typography.update(frame.time);
+      typography.resize(width, height); typography.update(frame.time);
       pointer.setObjects([glasses!.hitPlane, ...sculptures.objects]);
       // Adoption transfers all ownership; stale async work cleans up below.
       ownSculptures = undefined; ownType = undefined;

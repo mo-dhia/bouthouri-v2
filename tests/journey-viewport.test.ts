@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { designHeight, designPixels, viewportDesign } from "../src/lib/viewport-design";
+import { designPixels, viewportDesign } from "../src/lib/viewport-design";
 import { journeyGeometry } from "../src/sections/landing/3-journey/journey-geometry";
 import { journeyDistance } from "../src/sections/landing/3-journey/journey-clock";
 import { createHorizontalRenderer } from "../src/sections/landing/3-journey/work-renderer.js";
@@ -34,9 +34,10 @@ function fixture(initialWidth: number, rtl: boolean) {
     tabIndex = 0;
     top = 0;
     height: number = viewportDesign(initialWidth).height;
+    physical = false;
     constructor() { super(); nodes.push(this); }
     get clientWidth() { return state.width; }
-    get clientHeight() { return designPixels(this.height, state.width); }
+    get clientHeight() { return this.physical ? state.physicalHeight : designPixels(this.height, state.width); }
     get offsetHeight() { return this.clientHeight; }
     get offsetTop() { return designPixels(this.top, state.width); }
     getBoundingClientRect() { return { top: this.offsetTop, height: this.clientHeight, width: state.width }; }
@@ -55,6 +56,7 @@ function fixture(initialWidth: number, rtl: boolean) {
     const child = new Node(); parent.singles.set(selector, child); return child;
   };
   const root = new Node(), stage = bind(root, ".stage"), work = bind(root, ".work-world");
+  stage.physical = true; // 100svh: the stage is the physical viewport.
   for (const selector of [".work-track", ".work-origin", ".work-outgoing", ".work-carry", ".work-outgoing-tip", ".work-carry-tip", ".work-carry-field"])
     bind(work, selector);
   const stroke = bind(work, ".work-stroke");
@@ -110,43 +112,54 @@ function fixture(initialWidth: number, rtl: boolean) {
   };
 }
 
-describe("fixed journey reference cameras", () => {
+describe("journey reference cameras", () => {
   for (const [width, height, scaled] of [[1920, 1080, 1440], [768, 1024, 640], [412, 915, 515]]) {
     test(`${width} × ${height} keeps source distance and scales one composition`, () => {
-      const camera = journeyGeometry(width);
+      const camera = journeyGeometry(width, height);
       expect([camera.width, camera.height]).toEqual([width, height]);
       expect(camera.distance).toBe(journeyDistance(height, width === 412));
-      const resized = journeyGeometry(scaled, designHeight(scaled));
-      expect([resized.width, resized.height]).toEqual([width, height]);
+      const resized = journeyGeometry(scaled, height * scaled / width);
+      expect(resized.width as number).toBe(width);
+      expect(resized.height).toBeCloseTo(height, 9);
       expect(resized.distance).toBeCloseTo(camera.distance * scaled / width, 8);
       expect(resized.heroInput).toBe(camera.heroInput);
       expect(resized.compactOpening).toBe(width !== 1920);
+      // The physical stage height enters in reference pixels; width alone sets the scale.
+      Object.defineProperty(globalThis, "innerHeight", { configurable: true, value: 1.5 * height * scaled / width });
+      const tall = journeyGeometry(scaled);
+      expect([tall.width, tall.scale]).toEqual([width, scaled / width]);
+      expect(tall.height).toBeCloseTo(1.5 * height, 9);
+      expect(tall.distance).toBeCloseTo(journeyDistance(1.5 * height, width === 412) * scaled / width, 8);
     });
-    for (const rtl of [false, true]) test(`${width} ${rtl ? "AR" : "EN"} work/systems ignore physical height and scale their SVG camera once`, () => {
+    for (const rtl of [false, true]) test(`${width} ${rtl ? "AR" : "EN"} work/systems follow the physical stage and scale their SVG camera once`, () => {
       const f = fixture(width, rtl);
       try {
         for (const time of [270, 308, 413, 444, 538, 627, 714, 413, 308]) {
           f.horizontal.update(time); f.relationships.update(time);
           const before = f.snapshot();
-          f.state.physicalHeight = 400;
-          f.resize();
-          expect(f.snapshot()).toEqual(before);
           f.state.width = scaled;
-          f.state.physicalHeight = 1800;
+          f.state.physicalHeight = height * scaled / width;
           f.resize();
           expect(f.snapshot()).toEqual(before);
+          f.state.physicalHeight = 1.5 * height * scaled / width;
+          f.resize(); f.horizontal.update(time); f.relationships.update(time);
+          expect(f.snapshot()).not.toEqual(before);
           f.state.width = width;
-          f.resize();
+          f.state.physicalHeight = height;
+          f.resize(); f.horizontal.update(time); f.relationships.update(time);
+          expect(f.snapshot()).toEqual(before);
         }
       } finally { f.dispose(); }
     });
   }
   test("tablet below the old 700px switch keeps tablet source decisions", () => {
-    const tablet = journeyGeometry(640);
+    const tablet = journeyGeometry(640, 1024 * 640 / 768);
     expect(tablet.reference.key).toBe("tablet");
     expect(tablet.mobile).toBe(false);
     expect(tablet.heroInput).toBe(100 / 6.8);
     expect(tablet.compactOpening).toBe(true);
+    // Compact opening follows the physical portrait proportions, as in the source.
+    expect(journeyGeometry(1024, 700).compactOpening).toBe(false);
     expect(journeyGeometry(600).reference.key).toBe("mobile");
     expect(journeyGeometry(601).reference.key).toBe("tablet");
     expect(journeyGeometry(1024).reference.key).toBe("tablet");

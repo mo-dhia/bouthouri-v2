@@ -6,7 +6,7 @@ import { environmentFragment, environmentVertex } from "./story-environment-shad
 import { clamp, sampleStoryScore, smooth, type StoryFrame } from "./story-score";
 import styles from "./story-scene.module.css";
 import { isJourneyRendering, journeyOwnsRender, journeyRenderOwnerEvent } from "../3-journey/journey-render-owner";
-import { designHeight, viewportDesign } from "@/lib/viewport-design";
+import { viewportDesign } from "@/lib/viewport-design";
 
 export type SceneGuard = { x: number; y: number; rx: number; ry: number; weight: number };
 export type SceneInteraction = { guards: SceneGuard[]; grabbed: boolean };
@@ -65,9 +65,9 @@ function createEnvironment(parking: HTMLElement, options: { reduced?: boolean },
   const canSimulate = renderer.extensions.has("EXT_color_buffer_float");
   const scene = new Scene(), camera = new Camera();
   const zero = new DataTexture(new Uint8Array(4), 1, 1); zero.needsUpdate = true;
-  let width = innerWidth, height = designHeight(width), design = viewportDesign(width);
+  let width = innerWidth, height = innerHeight;
   let rendererSize = "";
-  let aspect = design.width / design.height, mobile = design.key === "mobile";
+  let aspect = width / Math.max(1, height), mobile = viewportDesign(width).key === "mobile";
   let field = createEnvironmentField(aspect, mobile);
   const uniforms = {
     uState: { value: canSimulate ? field.texture : zero }, uCell: { value: field.uniforms.uCell.value },
@@ -99,7 +99,7 @@ function createEnvironment(parking: HTMLElement, options: { reduced?: boolean },
     if (timer) { clearTimeout(timer); timer = 0; }
     frameId = requestAnimationFrame(render);
   }
-  // The host is a fixed, top-anchored design canvas. Cache its logical bounds
+  // The host covers the fixed physical viewport. Cache its bounds
   // here rather than introducing a layout read into every native scroll input.
   const pointerBounds = { left: 0, top: 0, width, height };
   const pointer = createEnvironmentPointer(wake, () => pointerBounds);
@@ -179,9 +179,9 @@ function createEnvironment(parking: HTMLElement, options: { reduced?: boolean },
   const measure = () => {
     if (disposed || lost) return;
     try {
-      const nextDesign = viewportDesign(innerWidth), nextAspect = nextDesign.width / nextDesign.height, nextMobile = nextDesign.key === "mobile";
+      const nextAspect = innerWidth / Math.max(1, innerHeight), nextMobile = viewportDesign(innerWidth).key === "mobile";
       const fieldChanged = nextAspect !== aspect || nextMobile !== mobile, gridChanged = nextMobile !== mobile;
-      width = innerWidth; height = designHeight(width); design = nextDesign; aspect = nextAspect; mobile = nextMobile;
+      width = innerWidth; height = innerHeight; aspect = nextAspect; mobile = nextMobile;
       pointerBounds.width = width; pointerBounds.height = height;
       const dpr = Math.min(1.5, Math.max(1, devicePixelRatio)), size = `${width}:${height}:${dpr}`;
       if (size !== rendererSize) {
@@ -230,7 +230,7 @@ function createEnvironment(parking: HTMLElement, options: { reduced?: boolean },
       frame = readFrame(); workTravel = readWorkTravel();
       const heroRoot = next.heroRoot;
       heroProgress = readHeroWorldPose(heroRoot)?.progress ?? worldProgressFromScroll(
-        heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || designHeight(width), mobile,
+        heroRoot ? -heroRoot.getBoundingClientRect().top : scrollY, heroRoot?.offsetHeight || height, mobile,
       );
     } else heroProgress = 1;
     next.owner.prepend(host);

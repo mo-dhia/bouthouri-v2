@@ -38,7 +38,7 @@ function arithmetic(nodes: Node[]): Quantity | null {
   return index === tokens.length ? result : null;
 }
 
-/** Freeze reference lengths; leave percentages, font-relative metrics and payloads intact. */
+/** Scale reference lengths by width; leave viewport heights, percentages, font-relative metrics and payloads intact. */
 export function fixedViewportValue(value: string, design: ViewportDesign, prop = ""): string {
   const parsed = values(value);
   const visit = (nodes: Node[]) => {
@@ -52,8 +52,9 @@ export function fixedViewportValue(value: string, design: ViewportDesign, prop =
           node.value = number(q.value);
           continue;
         }
-        const px = q.unit === "px" ? q.value : q.unit === "rem" ? q.value * 16
-          : /^(?:s|d|l)?vh$/.test(q.unit) ? q.value * design.height / 100 : null;
+        // Viewport-height units stay live: the stage is the physical window,
+        // composed as the reference width at the window's proportions.
+        const px = q.unit === "px" ? q.value : q.unit === "rem" ? q.value * 16 : null;
         if (px !== null) {
           // Device hairlines and filter sampling are the guide's explicit exceptions.
           const hairline = /^(?:border(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?(?:-width)?|outline(?:-width)?|text-decoration-thickness)$/.test(prop);
@@ -104,24 +105,26 @@ export function fixedViewportValue(value: string, design: ViewportDesign, prop =
   return values.stringify(parsed.nodes);
 }
 
-/** Resolve geometry queries at the reference canvas, retaining input/accessibility queries. */
+/**
+ * Resolve width at the reference canvas. The reference stage keeps the
+ * window's proportions, so its height is physical height × reference width /
+ * width: height thresholds become aspect-ratio thresholds, while orientation
+ * and aspect-ratio queries stay live.
+ */
 export function fixedViewportMedia(query: string, design: ViewportDesign): string | false {
   const branches = postcss.list.comma(query).map((branch) => {
     let rejected = false;
     const remaining = branch.replace(/\(([-\w]+)\s*:\s*([^()]+)\)/g, (raw, feature: string, expected: string) => {
       const base = feature.replace(/^(min|max)-/, "");
-      let actual: number, target: number;
-      if (base === "orientation") {
-        if ((design.width >= design.height ? "landscape" : "portrait") !== expected.trim()) rejected = true;
-        return "";
+      if (base === "orientation" || base === "aspect-ratio") return raw;
+      if (base !== "width" && base !== "height") return raw;
+      if (!/^\s*[\d.]+px\s*$/.test(expected)) throw new Error(`Unsupported design query: ${raw}`);
+      const target = Number.parseFloat(expected);
+      if (base === "height") {
+        const ratio = `${design.width}/${number(target)}`;
+        return feature === "max-height" ? `(min-aspect-ratio:${ratio})` : feature === "min-height" ? `(max-aspect-ratio:${ratio})` : `(aspect-ratio:${ratio})`;
       }
-      if (base === "aspect-ratio") {
-        const [a, b = "1"] = expected.split("/");
-        actual = design.width / design.height; target = Number(a) / Number(b);
-      } else if (base === "width" || base === "height") {
-        if (!/^\s*[\d.]+px\s*$/.test(expected)) throw new Error(`Unsupported design query: ${raw}`);
-        actual = design[base]; target = Number.parseFloat(expected);
-      } else return raw;
+      const actual = design.width;
       const matches = feature.startsWith("min-") ? actual >= target : feature.startsWith("max-") ? actual <= target : actual === target;
       if (!matches) rejected = true;
       return "";
@@ -157,35 +160,16 @@ function profileNodes(source: Container, design: ViewportDesign): ChildNode[] {
 /** One-time migration helper. Exclusive ranges prevent desktop-only declarations leaking. */
 export function fixedViewportStylesheet(css: string, file: string): string {
   const source = postcss.parse(css, { from: file }), output = postcss.root();
-  output.append(postcss.comment({ text: "Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width." }));
+  output.append(postcss.comment({ text: "Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height." }));
   for (const design of Object.values(viewportDesigns)) {
     const params = design.key === "desktop" ? "(width > 1024px)" : design.key === "tablet" ? "(600px < width <= 1024px)" : "(width <= 600px)";
     const profile = postcss.atRule({ name: "media", params }).append(profileNodes(source, design));
     if (file === "src/app/globals.css") {
-      profile.prepend(postcss.rule({ selector: ":root" }).append({ prop: "--design-height", value: `${number(design.height / design.width * 100)}vw` }));
       profile.append(postcss.rule({ selector: "body" }).append({ prop: "font-size", value: `${number(16 / design.width * 100)}vw` }));
     }
-    // Fixed positioning describes ownership, not a second design-size input.
-    const boxes = file.endsWith("story-scene.module.css") ? ".environment"
-      : file.endsWith("journey.module.css") ? ".journey :global(.global-environment), .journey :global(.peripheral-viewport), .journey :global(.footer-material-layer)" : null;
-    if (boxes) profile.append(postcss.rule({ selector: boxes }).append({ prop: "height", value: `${number(design.height / design.width * 100)}vw` }, { prop: "bottom", value: "auto" }));
     if (file.endsWith("journey.module.css")) {
       profile.append(postcss.rule({ selector: ".journey :global(.systems-still path), .journey :global(.work-quiet-symbol path)" })
         .append({ prop: "stroke-width", value: fixedViewportValue("1.25px", design) }));
-      // Physical scroll mechanics only: a viewport taller than the fixed stage
-      // still needs enough document extent to reach the pin's final frame.
-      profile.append(postcss.rule({ selector: ".journey[data-enhanced]::after" }).append(
-        { prop: "content", value: "''" }, { prop: "display", value: "block" },
-        { prop: "height", value: "max(0vw, calc(100dvh - var(--design-height)))" },
-        { prop: "pointer-events", value: "none" },
-      ));
-    }
-    if (file.endsWith("menu.module.css")) {
-      // The modal owns a physical scrollport; its content is still one fixed
-      // design canvas. Short browser windows can reach every menu control.
-      profile.append(postcss.rule({ selector: ".navigation-scene" }).append({ prop: "height", value: "auto" }, { prop: "overflow", value: "hidden auto" }));
-      profile.append(postcss.rule({ selector: ".menu-scroller" }).append({ prop: "width", value: "100vw" }, { prop: "height", value: "var(--design-height)" }, { prop: "min-height", value: "var(--design-height)" }, { prop: "overflow", value: "visible" }));
-      profile.append(postcss.rule({ selector: ".menu-surface" }).append({ prop: "position", value: "fixed" }));
     }
     profile.walkDecls((decl) => {
       const parsed = values(decl.value);

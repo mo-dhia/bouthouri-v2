@@ -1,7 +1,7 @@
-/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+/* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
 @media (width > 1024px) {
-  .utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: 2.41875vw; left: 0 }
-  .navEntrance { z-index: 2; opacity: 0; width: 100%; height: 3.15vw; position: relative }
+  .utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: max(1.04167vw, min(4.3svh, 3.125vw)); left: 0 }
+  .navEntrance { z-index: 2; opacity: 0; width: 100%; height: max(2.08334vw, min(5.6svh, 3.95834vw)); position: relative }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
   .language { width: 2.29167vw; height: var(--nav-hit-height); font-size: calc(1.25vw * var(--type-scale, 1)); color: #a9a8a2; place-items: center; transition: color .2s; display: grid }
   .language:before { content: ''; width: 0.0520834vw; height: 0.9375vw; opacity: calc(1 - var(--nav-compact)); background: #3f3f3b; position: absolute; top: 50%; left: 0; transform: translateY(-50%) }
@@ -11,17 +11,20 @@
   .logo:hover, .logo:focus-visible { color: #e4e1d9 }
   .logo svg { width: 100%; height: auto; display: block; overflow: visible }
   .actions { align-items: center; gap: 1vw; display: flex }
-  .sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: 3.15vw; height: 3.15vw; transition: border-color .25s, color .25s; display: grid }
+  .sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: max(1.875vw, min(5.6svh, 3.95834vw)); height: max(1.875vw, min(5.6svh, 3.95834vw)); transition: border-color .25s, color .25s; display: grid }
   .sound svg { width: 1.35417vw; height: 1.35417vw; overflow: visible }
   .sound path { stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; transform-origin: 50% }
   .sound:hover { border-color: rgb(119 118 110/calc(1 - var(--nav-compact))); color: var(--paper, #e4e1d9) }
-  .talk[data-kinetic] { color: #191919; height: 2.53125vw; min-height: 0; font-size: calc(1.04948vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); background: #e5e3dd; border-radius: 2.08334vw; padding: 0 1.8vw; transition: background .2s, color .2s; box-shadow: 0 0.104167vw 1.04167vw #eee8d308 }
+  .talk[data-kinetic] { color: #191919; height: max(1.77084vw, min(4.5svh, 3.125vw)); min-height: 0; font-size: calc(1.04948vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); background: #e5e3dd; border-radius: 2.08334vw; padding: 0 1.8vw; transition: background .2s, color .2s; box-shadow: 0 0.104167vw 1.04167vw #eee8d308 }
   .talk[data-kinetic]:hover { background: #f3f1e9 }
   .talk[data-kinetic]:is(:hover, :focus-visible) { color: #191919 }
   .talk:focus-visible { outline-offset: 0.260417vw }
   .navLayer[data-nav-context=persistent] .talk[data-kinetic] { color: #aaa89f; box-shadow: none; background: 0 0 }
   .navLayer[data-nav-context=persistent] .talk[data-kinetic]:is(:hover, :focus-visible) { color: #e4e1d9; background: 0 0 }
   .reduced .sound:hover path { animation: none }
+  @media (min-aspect-ratio:1920/600) and (min-aspect-ratio:6/5) {
+    .utilities { top: 0.625vw }
+  }
   @media (prefers-reduced-motion:reduce) {
     .sound:hover path { animation: none }
   }
@@ -99,7 +102,7 @@
   .language[lang='ar'] { font-family: var(--font-arabic); font-weight: 450; line-height: 1.7 }
   .sound { padding: 0; text-decoration: none !important }
   .sideMenu { --type-scale: 1.04; --tracking-scale: .8; position: absolute; inset-inline-end: 4vw; inset-block-start: 50%; transform: translateY(-50%); overflow: clip; visibility: hidden; pointer-events: auto }
-  .readingNavigation { position: absolute; inset-inline: 0; block-size: 56.25vw; pointer-events: none; overflow: clip }
+  .readingNavigation { position: absolute; inset-inline: 0; block-size: 100svh; pointer-events: none; overflow: clip }
   .readingFrame { direction: ltr; position: absolute; inset-inline: 0; pointer-events: none }
   .sideMenu [data-menu-control] { inline-size: calc(4em + 2.91667vw); block-size: 2.29167vw; font-size: calc(0.572917vw * var(--type-scale, 1)); letter-spacing: 0; padding-inline: 0.416667vw; line-height: 1.45 }
   .sideMenu [data-menu-control] > span { inline-size: 4em }
@@ -107,7 +110,7 @@
   .menuLogo { display: grid; place-items: center; flex: none; inline-size: 3.125vw; block-size: 2.29167vw; color: #777772 }
   .menuLogo svg { display: block; inline-size: 100%; block-size: auto; overflow: visible }
   .srOnly { position: absolute; inline-size: 0.0520834vw; block-size: 0.0520834vw; padding: 0; margin: -0.0520834vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
-  .fallbackNavigation { position: absolute; inset: 5.0625vw 2.2vw auto; display: flex; gap: 2vw; font-size: 0.625vw }
+  .fallbackNavigation { position: absolute; inset: 9svh 2.2vw auto; display: flex; gap: 2vw; font-size: 0.625vw }
   @media (prefers-reduced-motion: reduce) {
     .shell *, .shell *::before, .shell *::after { transition: none !important }
   }
@@ -124,8 +127,8 @@
   .shell[data-locale='ar'] { font-weight: var(--weight-400, 450) }
 }
 @media (600px < width <= 1024px) {
-  .utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: 5.73334vw; left: 0 }
-  .navEntrance { z-index: 2; opacity: 0; width: 100%; height: 7.46667vw; position: relative }
+  .utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: max(2.60417vw, min(4.3svh, 7.8125vw)); left: 0 }
+  .navEntrance { z-index: 2; opacity: 0; width: 100%; height: max(5.20834vw, min(5.6svh, 9.89584vw)); position: relative }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
   .language { width: 5.72917vw; height: var(--nav-hit-height); font-size: calc(3.125vw * var(--type-scale, 1)); color: #a9a8a2; place-items: center; transition: color .2s; display: grid }
   .language:before { content: ''; width: 0.130209vw; height: 2.34375vw; opacity: calc(1 - var(--nav-compact)); background: #3f3f3b; position: absolute; top: 50%; left: 0; transform: translateY(-50%) }
@@ -135,17 +138,20 @@
   .logo:hover, .logo:focus-visible { color: #e4e1d9 }
   .logo svg { width: 100%; height: auto; display: block; overflow: visible }
   .actions { align-items: center; gap: 1.5625vw; display: flex }
-  .sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: 7.46667vw; height: 7.46667vw; transition: border-color .25s, color .25s; display: grid }
+  .sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: max(4.6875vw, min(5.6svh, 9.89584vw)); height: max(4.6875vw, min(5.6svh, 9.89584vw)); transition: border-color .25s, color .25s; display: grid }
   .sound svg { width: 3.38542vw; height: 3.38542vw; overflow: visible }
   .sound path { stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; transform-origin: 50% }
   .sound:hover { border-color: rgb(119 118 110/calc(1 - var(--nav-compact))); color: var(--paper, #e4e1d9) }
-  .talk[data-kinetic] { color: #191919; height: 6vw; min-height: 0; font-size: calc(1.5625vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); background: #e5e3dd; border-radius: 5.20834vw; padding: 0 1.8vw; transition: background .2s, color .2s; box-shadow: 0 0.260417vw 2.60417vw #eee8d308 }
+  .talk[data-kinetic] { color: #191919; height: max(4.42709vw, min(4.5svh, 7.8125vw)); min-height: 0; font-size: calc(1.5625vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); background: #e5e3dd; border-radius: 5.20834vw; padding: 0 1.8vw; transition: background .2s, color .2s; box-shadow: 0 0.260417vw 2.60417vw #eee8d308 }
   .talk[data-kinetic]:hover { background: #f3f1e9 }
   .talk[data-kinetic]:is(:hover, :focus-visible) { color: #191919 }
   .talk:focus-visible { outline-offset: 0.651042vw }
   .navLayer[data-nav-context=persistent] .talk[data-kinetic] { color: #aaa89f; box-shadow: none; background: 0 0 }
   .navLayer[data-nav-context=persistent] .talk[data-kinetic]:is(:hover, :focus-visible) { color: #e4e1d9; background: 0 0 }
   .reduced .sound:hover path { animation: none }
+  @media (min-aspect-ratio:768/600) and (min-aspect-ratio:6/5) {
+    .utilities { top: 1.5625vw }
+  }
   @media (prefers-reduced-motion:reduce) {
     .sound:hover path { animation: none }
   }
@@ -191,12 +197,12 @@
   .utilityFrame[data-utility-focus=language]:before, .utilityFrame[data-utility-focus=sound]:after { transform: scaleX(1) }
   .utilityRegistration { opacity: 0; transform-origin: 50%; background: #a5a196; width: 2.86459vw; height: 0.130209vw; position: absolute; bottom: 0.520834vw; left: 1.82292vw }
   .utilityRegistration+.utilityRegistration { left: 8.33334vw }
-  .utilities { height: 15.1vw }
+  .utilities { height: calc(20.8334vw - max(2.60417vw, min(4.3svh, 7.8125vw))) }
   .persistentIdentity { left: 3.125vw }
   .persistentLogo { width: 7.55209vw }
   .persistentLogo .logo { width: 7.03125vw }
   .persistentIdentityContent { gap: 1.5625vw }
-  .navDock { gap: 1.5625vw; top: 12.2355vw; right: 3.125vw }
+  .navDock { gap: 1.5625vw; top: calc(17.9688vw - max(2.60417vw, min(4.3svh, 7.8125vw))); right: 3.125vw }
   .persistentTalkWindow { width: 12.5vw }
   @media (prefers-reduced-motion:reduce) {
     .navControl>button, .navControl>a, .navLayer [data-nav-roll] { will-change: auto }
@@ -238,7 +244,7 @@
   .language[lang='ar'] { font-family: var(--font-arabic); font-weight: 450; line-height: 1.7 }
   .sound { padding: 0; text-decoration: none !important }
   .sideMenu { --type-scale: 1.04; --tracking-scale: .8; position: absolute; inset-inline-end: 4vw; inset-block-start: 50%; transform: translateY(-50%); overflow: clip; visibility: hidden; pointer-events: auto }
-  .readingNavigation { position: absolute; inset-inline: 0; block-size: 133.334vw; pointer-events: none; overflow: clip }
+  .readingNavigation { position: absolute; inset-inline: 0; block-size: 100svh; pointer-events: none; overflow: clip }
   .readingFrame { direction: ltr; position: absolute; inset-inline: 0; pointer-events: none }
   .sideMenu [data-menu-control] { inline-size: calc(4em + 7.29167vw); block-size: 5.72917vw; font-size: calc(1.4323vw * var(--type-scale, 1)); letter-spacing: 0; padding-inline: 1.04167vw; line-height: 1.45 }
   .sideMenu [data-menu-control] > span { inline-size: 4em }
@@ -246,7 +252,7 @@
   .menuLogo { display: grid; place-items: center; flex: none; inline-size: 7.8125vw; block-size: 5.72917vw; color: #777772 }
   .menuLogo svg { display: block; inline-size: 100%; block-size: auto; overflow: visible }
   .srOnly { position: absolute; inline-size: 0.130209vw; block-size: 0.130209vw; padding: 0; margin: -0.130209vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
-  .fallbackNavigation { position: absolute; inset: 12vw 2.2vw auto; display: flex; gap: 2vw; font-size: 1.5625vw }
+  .fallbackNavigation { position: absolute; inset: 9svh 2.2vw auto; display: flex; gap: 2vw; font-size: 1.5625vw }
   .sideMenu { inset-inline-end: max(6vw, env(safe-area-inset-right)); inset-block-start: calc(var(--nav-hit-height) / 2) }
   .sideMenu [data-menu-control] { inline-size: auto; min-inline-size: 8.33334vw }
   @media (prefers-reduced-motion: reduce) {
@@ -265,8 +271,8 @@
   .shell[data-locale='ar'] { font-weight: var(--weight-400, 450) }
 }
 @media (width <= 600px) {
-  .utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: 9.54976vw; left: 0 }
-  .navEntrance { z-index: 2; opacity: 0; width: 100%; height: 12.4369vw; position: relative }
+  .utilities { --nav-gutter: 2.2vw; --nav-compact: 0; z-index: 20; pointer-events: none; opacity: 0; width: 100vw; position: fixed; top: max(4.85437vw, min(4.3svh, 14.5632vw)); left: 0 }
+  .navEntrance { z-index: 2; opacity: 0; width: 100%; height: max(9.70874vw, min(5.6svh, 18.4467vw)); position: relative }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
   .language { width: 10.6797vw; height: var(--nav-hit-height); font-size: calc(5.82525vw * var(--type-scale, 1)); color: #a9a8a2; place-items: center; transition: color .2s; display: grid }
   .language:before { content: ''; width: 0.242719vw; height: 4.36894vw; opacity: calc(1 - var(--nav-compact)); background: #3f3f3b; position: absolute; top: 50%; left: 0; transform: translateY(-50%) }
@@ -276,11 +282,11 @@
   .logo:hover, .logo:focus-visible { color: #e4e1d9 }
   .logo svg { width: 100%; height: auto; display: block; overflow: visible }
   .actions { align-items: center; gap: 2.91263vw; display: flex }
-  .sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: 12.4369vw; height: 12.4369vw; transition: border-color .25s, color .25s; display: grid }
+  .sound { border: 1px solid rgb(55 55 51/calc(1 - var(--nav-compact))); color: #aaa9a2; border-radius: 50%; place-items: center; width: max(8.73787vw, min(5.6svh, 18.4467vw)); height: max(8.73787vw, min(5.6svh, 18.4467vw)); transition: border-color .25s, color .25s; display: grid }
   .sound svg { width: 6.31068vw; height: 6.31068vw; overflow: visible }
   .sound path { stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; transform-origin: 50% }
   .sound:hover { border-color: rgb(119 118 110/calc(1 - var(--nav-compact))); color: var(--paper, #e4e1d9) }
-  .talk[data-kinetic] { color: #191919; height: 9.99394vw; min-height: 0; font-size: calc(2.91263vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); background: #e5e3dd; border-radius: 9.70874vw; padding: 0 1.8vw; transition: background .2s, color .2s; box-shadow: 0 0.485437vw 4.85437vw #eee8d308 }
+  .talk[data-kinetic] { color: #191919; height: max(8.25243vw, min(4.5svh, 14.5632vw)); min-height: 0; font-size: calc(2.91263vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); background: #e5e3dd; border-radius: 9.70874vw; padding: 0 1.8vw; transition: background .2s, color .2s; box-shadow: 0 0.485437vw 4.85437vw #eee8d308 }
   .talk[data-kinetic]:hover { background: #f3f1e9 }
   .talk[data-kinetic]:is(:hover, :focus-visible) { color: #191919 }
   .talk:focus-visible { outline-offset: 1.2136vw }
@@ -295,6 +301,9 @@
   .sound { width: 9.70874vw; height: 9.70874vw }
   .sound svg { width: 5.33981vw }
   .talk[data-kinetic] { height: 9.70874vw; font-size: calc(2.66991vw * var(--type-scale, 1)); padding: 0 3.39806vw }
+  @media (min-aspect-ratio:412/600) and (min-aspect-ratio:6/5) {
+    .utilities { top: 2.91263vw }
+  }
   @media (prefers-reduced-motion:reduce) {
     .sound:hover path { animation: none }
   }
@@ -340,12 +349,12 @@
   .utilityFrame[data-utility-focus=language]:before, .utilityFrame[data-utility-focus=sound]:after { transform: scaleX(1) }
   .utilityRegistration { opacity: 0; transform-origin: 50%; background: #a5a196; width: 5.33981vw; height: 0.242719vw; position: absolute; bottom: 0.970874vw; left: 3.39806vw }
   .utilityRegistration+.utilityRegistration { left: 15.534vw }
-  .utilities { height: 29.2852vw }
+  .utilities { height: calc(38.835vw - max(4.85437vw, min(4.3svh, 14.5632vw))) }
   .persistentIdentity { left: 5.82525vw }
   .persistentLogo { width: 14.0777vw }
   .persistentLogo .logo { width: 13.1068vw }
   .persistentIdentityContent { gap: 2.91263vw }
-  .navDock { gap: 2.91263vw; top: 23.9454vw; right: 5.82525vw }
+  .navDock { gap: 2.91263vw; top: calc(33.4952vw - max(4.85437vw, min(4.3svh, 14.5632vw))); right: 5.82525vw }
   .persistentTalkWindow { width: 23.301vw }
   .utilities { height: 34.7088vw }
   .navDock { top: 29.369vw }
@@ -391,7 +400,7 @@
   .language[lang='ar'] { font-family: var(--font-arabic); font-weight: 450; line-height: 1.7 }
   .sound { padding: 0; text-decoration: none !important }
   .sideMenu { --type-scale: 1.04; --tracking-scale: .8; position: absolute; inset-inline-end: 4vw; inset-block-start: 50%; transform: translateY(-50%); overflow: clip; visibility: hidden; pointer-events: auto }
-  .readingNavigation { position: absolute; inset-inline: 0; block-size: 222.088vw; pointer-events: none; overflow: clip }
+  .readingNavigation { position: absolute; inset-inline: 0; block-size: 100svh; pointer-events: none; overflow: clip }
   .readingFrame { direction: ltr; position: absolute; inset-inline: 0; pointer-events: none }
   .sideMenu [data-menu-control] { inline-size: calc(4em + 13.5923vw); block-size: 10.6797vw; font-size: calc(2.66991vw * var(--type-scale, 1)); letter-spacing: 0; padding-inline: 1.94175vw; line-height: 1.45 }
   .sideMenu [data-menu-control] > span { inline-size: 4em }
@@ -399,7 +408,7 @@
   .menuLogo { display: grid; place-items: center; flex: none; inline-size: 14.5632vw; block-size: 10.6797vw; color: #777772 }
   .menuLogo svg { display: block; inline-size: 100%; block-size: auto; overflow: visible }
   .srOnly { position: absolute; inline-size: 0.242719vw; block-size: 0.242719vw; padding: 0; margin: -0.242719vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
-  .fallbackNavigation { position: absolute; inset: 19.9879vw 2.2vw auto; display: flex; gap: 2vw; font-size: 2.91263vw }
+  .fallbackNavigation { position: absolute; inset: 9svh 2.2vw auto; display: flex; gap: 2vw; font-size: 2.91263vw }
   .sideMenu { inset-inline-end: max(6vw, env(safe-area-inset-right)); inset-block-start: calc(var(--nav-hit-height) / 2) }
   .sideMenu [data-menu-control] { inline-size: auto; min-inline-size: 15.534vw }
   .menuLogo { inline-size: 10.6797vw }

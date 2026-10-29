@@ -53,11 +53,11 @@ export async function createPracticeObjects(canvas: HTMLCanvasElement, kind: Pra
   canvas.dataset.brandPart = meshName; canvas.dataset.objectsReady = 'true';
   return {
     resize(nextWidth, nextHeight) {
-      void nextHeight;
       // CSS chooses the composition with the viewport, not the scrollbar-narrowed
-      // host. The measured host still supplies buffer size and one normalization.
-      const viewportWidth = window.innerWidth, design = viewportDesign(viewportWidth);
-      width = design.width; height = design.height; outerScale = nextWidth / width;
+      // host. The measured host still supplies buffer size and one normalization;
+      // its physical height is the stage height in reference pixels.
+      const viewportWidth = window.innerWidth;
+      width = viewportDesign(viewportWidth).width; outerScale = nextWidth / width; height = nextHeight / outerScale;
       let maxExtent = height;
       for (const progress of [0, .5, 1]) for (const x of [-1, 0, 1]) for (const y of [-1, 1]) {
         const pose = practiceHeroPose(kind, width, height, rtl, progress, x, y);

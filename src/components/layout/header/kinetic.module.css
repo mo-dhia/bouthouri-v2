@@ -1,4 +1,4 @@
-/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+/* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
 @media (width > 1024px) {
   .action { max-width: 100%; min-height: 2.29167vw; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; justify-content: center; align-items: center; gap: 0.729167vw; text-decoration: none; display: inline-flex; position: relative }
   .action[data-kinetic] { min-height: 2.29167vw }

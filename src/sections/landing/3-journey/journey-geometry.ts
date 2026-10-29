@@ -1,8 +1,11 @@
-import { designHeight, designScale, viewportDesign } from "@/lib/viewport-design";
+import { designScale, viewportDesign } from "@/lib/viewport-design";
 import { journeyDistance } from "./journey-clock";
 
-/** Keep source SVG/score math in its reference camera; scale only at the DOM edge. */
-export function journeyGeometry(width: number, stageHeight = designHeight(width)) {
+/**
+ * Keep source SVG/score math in its reference camera; scale only at the DOM edge.
+ * The stage is the physical viewport, so the camera keeps the window's proportions.
+ */
+export function journeyGeometry(width: number, stageHeight = innerHeight) {
   const reference = viewportDesign(width);
   const scale = designScale(width);
   const height = stageHeight / scale;
@@ -15,6 +18,6 @@ export function journeyGeometry(width: number, stageHeight = designHeight(width)
     mobile,
     heroInput: 100 / (mobile ? 5.8 : 6.8),
     distance: journeyDistance(height, mobile) * scale,
-    compactOpening: mobile || (reference.width <= 900 && reference.height > reference.width),
+    compactOpening: mobile || (reference.width <= 900 && height > reference.width),
   };
 }

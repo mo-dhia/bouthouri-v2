@@ -48,24 +48,46 @@
     .editorial-line>span { transform: none !important }
   }
   :global(.practice-page) .editorial-line { overflow: visible }
-  .practice-opening { height: 56.25vw; min-height: 38.5417vw; padding: 10.125vw var(--ed-gutter) 3.9375vw; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
+  .practice-opening { height: 100svh; min-height: 38.5417vw; padding: max(6.66667vw, min(18svh, 10.4167vw)) var(--ed-gutter) 7svh; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
   .practice-hero-geometry { z-index: -1; pointer-events: none; height: 100%; position: absolute; inset: 0 0 auto; overflow: visible }
   .practice-depth { width: 100%; height: 100%; display: block }
   .practice-opening .editorial-kicker { position: relative }
-  .practice-opening h1 { font-size: calc(6.59983vw * var(--type-scale, 1)); max-width: 64%; margin-top: 5.625vw; position: relative }
+  .practice-opening h1 { font-size: calc(6.59983vw * var(--type-scale, 1)); max-width: 64%; margin-top: 10svh; position: relative }
   .practice-opening-foot { justify-content: space-between; align-items: end; gap: 2.60417vw; max-width: 64%; margin-top: auto; padding-top: 1.82292vw; display: flex; position: relative }
   .practice-opening-foot>p { max-width: 17.1875vw; font-size: calc(1.14584vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); color: #b4b0a5; line-height: 1.65 }
   .practice-copy { font-size: calc(1.09375vw * var(--type-scale, 1)); color: #b2aea2; letter-spacing: calc(-.015em * var(--tracking-scale, 1)); max-width: 21.3542vw; line-height: 1.8; margin-top: 2.08334vw !important }
-  .practice-end { padding: 10.6875vw var(--ed-gutter) 12.9375vw; min-height: 56.25vw; position: relative }
+  .practice-end { padding: 19svh var(--ed-gutter) 23svh; min-height: 100svh; position: relative }
   .practice-end h2 { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08; font-size: calc(8vw * var(--type-scale, 1)); margin-top: 3.125vw }
   .practice-end .editorial-action { margin-top: 2.34375vw }
   .practice-end-actions { gap: 7vw; display: flex }
   :global(html[lang='ar']) :global(.practice-page) .editorial-eyebrow { font-size: calc(0.625vw * var(--type-scale, 1)); letter-spacing: 0 }
-  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(6.75vw * var(--type-scale, 1)); max-width: 64%; margin-top: 4.5vw; line-height: 1.28 }
+  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(max(3.125vw, min(min(7.5vw, 12svh), 7.70834vw)) * var(--type-scale, 1)); max-width: 64%; margin-top: 8svh; line-height: 1.28 }
   :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(1.04167vw * var(--type-scale, 1)); max-width: 19.2709vw }
   :global(html[lang='ar']) .practice-copy { font-size: calc(0.989584vw * var(--type-scale, 1)); letter-spacing: 0; max-width: 22.3959vw; line-height: 1.9 }
   :global(html[lang='ar']) .practice-end h2 { font-size: calc(8.33334vw * var(--type-scale, 1)) }
-  .practice-opening { height: 56.25vw; min-height: 36.4584vw; overflow: hidden }
+  @media (max-aspect-ratio:8/9) {
+    .practice-opening { height: auto; min-height: 100svh; padding-top: max(5.72917vw, min(16svh, 8.33334vw)); padding-bottom: 7svh }
+    .practice-opening h1 { font-size: calc(4.27084vw * var(--type-scale, 1)); max-width: 100%; margin-top: max(11.198vw, min(28svh, 17.1875vw)); line-height: 1.08 }
+    .practice-opening-foot { max-width: 100%; margin-top: 1.5625vw; padding-top: 0; display: block }
+    .practice-opening-foot>p { font-size: calc(0.833334vw * var(--type-scale, 1)); max-width: 17.7084vw }
+    .practice-opening-foot .editorial-text-link { margin-top: 1.25vw }
+    .practice-opening .editorial-kicker { font-size: calc(0.416667vw * var(--type-scale, 1)); gap: 0.833334vw }
+    .practice-opening .editorial-kicker>span:last-child { text-align: end; max-width: 45% }
+    .practice-copy { font-size: calc(0.78125vw * var(--type-scale, 1)); max-width: 18.75vw; line-height: 1.8; margin-top: 1.66667vw !important }
+    .practice-end { min-height: 86svh; padding: 17svh var(--ed-gutter) 20svh }
+    .practice-end h2 { font-size: calc(9.2vw * var(--type-scale, 1)); margin-top: 1.97917vw }
+    .practice-end-actions { flex-direction: column; gap: 0 }
+    .practice-end .editorial-action { margin-top: 1.25vw }
+    :global(html[lang='ar']) .practice-opening h1 { font-size: calc(4.6875vw * var(--type-scale, 1)); max-width: 100%; margin-top: max(10.1563vw, min(26svh, 16.1459vw)); line-height: 1.3 }
+    :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(0.9375vw * var(--type-scale, 1)); max-width: 18.75vw }
+    :global(html[lang='ar']) .practice-copy { font-size: calc(0.885417vw * var(--type-scale, 1)); max-width: 18.75vw; line-height: 1.85 }
+    :global(html[lang='ar']) .practice-end h2 { font-size: calc(12vw * var(--type-scale, 1)) }
+  }
+  @media (min-aspect-ratio:1920/720) {
+    .practice-opening { min-height: 36.4584vw; padding-top: 6.51042vw }
+    .practice-opening h1 { margin-top: 8svh }
+  }
+  .practice-opening { height: 100svh; min-height: 36.4584vw; overflow: hidden }
   .practice-hero-type { left: var(--hero-copy-start, 34%); right: var(--ed-gutter); position: absolute; top: 50%; transform: translateY(-38%) }
   .practice-opening .practice-hero-type h1 { font-size: calc(5.83334vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.08 }
   .practice-opening .practice-opening-foot { gap: 1.45834vw; max-width: none; margin-top: 1.66667vw; padding: 0 }
@@ -75,21 +97,38 @@
   :global(.solving-page) .practice-opening h1 { font-size: calc(6.66667vw * var(--type-scale, 1)); text-shadow: 0 0.0520834vw 0.520834vw #09090955; line-height: 1.04 }
   :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 15% }
   :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 19% }
-  :global(.solving-page) .practice-opening-foot { text-align: start; align-items: center; max-width: 35.4167vw; margin: 5.0625vw auto 0 }
+  :global(.solving-page) .practice-opening-foot { text-align: start; align-items: center; max-width: 35.4167vw; margin: max(2.8125vw, min(9svh, 5.72917vw)) auto 0 }
   :global(.solving-page) .practice-opening-foot>p { max-width: 19.0105vw }
   :global(html[lang='ar']) .practice-opening .practice-hero-type h1 { font-size: calc(6.77084vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.32 }
   :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(1.09375vw * var(--type-scale, 1)) }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 { font-size: calc(6.66667vw * var(--type-scale, 1)); line-height: 1.2 }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 12% }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 16% }
+  @media (max-aspect-ratio:8/9) {
+    .practice-opening { height: 100svh; min-height: 36.4584vw; padding-top: max(6.14584vw, min(16svh, 8.33334vw)) }
+    .practice-hero-type { top: 36%; left: 48%; right: 5%; transform: none }
+    .practice-opening .practice-hero-type h1 { font-size: calc(3.4375vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.15 }
+    .practice-opening .practice-opening-foot { margin-top: 1.5625vw; display: block }
+    .practice-opening .practice-opening-foot>p { font-size: calc(0.833334vw * var(--type-scale, 1)); max-width: 15.625vw }
+    .practice-opening .practice-opening-foot .editorial-text-link { margin-top: 1.14584vw }
+    :global(.solving-page) .practice-hero-type { top: 33%; left: 7%; right: 7%; transform: none }
+    :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(4.16667vw * var(--type-scale, 1)); line-height: 1.08 }
+    :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 7% }
+    :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 19% }
+    :global(.solving-page) .practice-opening-foot { text-align: start; margin-top: max(5.20834vw, min(17svh, 8.59375vw)) }
+    :global(html[lang='ar']) .practice-opening .practice-hero-type h1 { font-size: calc(4.01042vw * var(--type-scale, 1)); line-height: 1.4 }
+    :global(html[lang='ar']) .practice-opening .practice-opening-foot>p { font-size: calc(0.9375vw * var(--type-scale, 1)); max-width: 16.1459vw }
+    :global(html[lang='ar']) :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(4.89584vw * var(--type-scale, 1)); line-height: 1.35 }
+    :global(html[lang='ar']) :global(.solving-page) .practice-opening-foot { margin-top: max(4.16667vw, min(12svh, 6.77084vw)) }
+  }
   .page-closing-cta .practice-end-actions { gap: 5vw; margin-top: 1.66667vw }
   .page-closing-cta .editorial-action { color: #e1ddd0; border-bottom: 1px solid #787469; align-self: flex-start; margin-top: 0; padding-block: 0.729167vw }
   .page-closing-cta>.editorial-eyebrow+h2 { margin-top: 1.45834vw }
   :global(html[lang='ar']) .page-closing-cta h2 { letter-spacing: 0; line-height: 1.35; font-weight: var(--weight-400, 400) }
   .practice-opening .editorial-kicker>span:only-child { text-align: start; max-width: 100% }
   .services-opening [hidden], .services-opening [data-layer-hidden=true] { display: none !important }
-  .services-opening { isolation: isolate; background: #080909; height: 219.375vw; scroll-margin-top: 0; position: relative }
-  .services-opening-stage { height: 56.25vw; min-height: 29.6875vw; position: sticky; top: 0; overflow: clip }
+  .services-opening { isolation: isolate; background: #080909; height: 390svh; scroll-margin-top: 0; position: relative }
+  .services-opening-stage { height: 100svh; min-height: 29.6875vw; position: sticky; top: 0; overflow: clip }
   .services-intro { inset: 25% var(--ed-gutter) auto; z-index: 2; pointer-events: none; position: absolute }
   :global(.solving-page) .services-intro h2 { font-size: calc(7.79948vw * var(--type-scale, 1)); font-weight: var(--weight-430, 430); letter-spacing: calc(-.045em * var(--tracking-scale, 1)); margin-top: 1.5625vw; line-height: 1.05 }
   :global(.solving-page) .services-intro p { margin-top: 2.08334vw; max-width: 23.9584vw; font-size: calc(1.25vw * var(--type-scale, 1)); color: #b8b4a9; letter-spacing: calc(-.02em * var(--tracking-scale, 1)); margin-inline-start: 43%; line-height: 1.65 }
@@ -120,17 +159,45 @@
   :global(html[lang='ar']) .services-gate-payoff { top: 38% }
   :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(6.45834vw * var(--type-scale, 1)); letter-spacing: 0; line-height: 1.35 }
   :global(html[lang='ar']) :global(.solving-page) .services-it-works { letter-spacing: 0; transform-origin: 100% }
+  @media (max-aspect-ratio:8/9) {
+    .services-opening { height: 370svh }
+    .services-opening-stage { min-height: 28.125vw }
+    .services-intro { top: 24% }
+    :global(.solving-page) .services-intro h2 { font-size: calc(4.27084vw * var(--type-scale, 1)); margin-top: 1.30209vw; line-height: 1.13 }
+    :global(.solving-page) .services-intro p { margin-inline-start: 10%; font-size: calc(0.885417vw * var(--type-scale, 1)); max-width: 21.875vw; margin-top: 1.5625vw; line-height: 1.7 }
+    .services-glyph-flight text { font-size: calc(2.5vw * var(--type-scale, 1)) }
+    .services-gate-underlay { --payoff-start: 14%; --payoff-end: 5% }
+    .services-gate-payoff { top: 44% }
+    .services-gate-payoff h2 { font-size: calc(3.54167vw * var(--type-scale, 1)) }
+    :global(.solving-page) .services-it-works { font-size: calc(15vw * var(--type-scale, 1)); top: 45% }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro h2 { font-size: calc(4.58334vw * var(--type-scale, 1)) }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro p { font-size: calc(0.989584vw * var(--type-scale, 1)); margin-inline-start: 4% }
+    :global(html[lang='ar']) .services-glyph-flight text { font-size: calc(6vw * var(--type-scale, 1)) }
+    :global(html[lang='ar']) .services-gate-underlay { --payoff-start: 14%; --payoff-end: 5% }
+    :global(html[lang='ar']) .services-gate-payoff { top: 42% }
+    :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(10.5vw * var(--type-scale, 1)) }
+  }
   @media (prefers-reduced-motion:reduce) {
-    .services-opening { height: 163.125vw }
+    .services-opening { height: 290svh }
     .services-gate-handle { scroll-margin: 6.25vw }
   }
-  .service-index { padding: 8.4375vw var(--ed-gutter) 4.5vw; background: 0 0; scroll-margin-top: 5.20834vw; position: relative }
+  @media (min-aspect-ratio:1920/600) {
+    .services-opening-stage { height: 100svh; min-height: 0 }
+    .services-intro { top: 23% }
+    :global(.solving-page) .services-intro h2 { font-size: calc(max(1.5625vw, min(min(5.5vw, 10svh), 3.125vw)) * var(--type-scale, 1)); margin-top: 0.625vw }
+    :global(.solving-page) .services-intro p { font-size: calc(0.78125vw * var(--type-scale, 1)); margin-top: 0.9375vw; max-width: 52%; margin-inline-start: 43%; line-height: 1.6 }
+    .services-gate-payoff h2 { font-size: calc(max(1.45834vw, min(8svh, 2.5vw)) * var(--type-scale, 1)) }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro h2 { font-size: calc(max(1.66667vw, min(10svh, 3.125vw)) * var(--type-scale, 1)) }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro p { font-size: calc(0.885417vw * var(--type-scale, 1)); line-height: 1.6 }
+    :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(max(1.66667vw, min(9svh, 2.70834vw)) * var(--type-scale, 1)) }
+  }
+  .service-index { padding: max(4.79167vw, min(15svh, 9.375vw)) var(--ed-gutter) max(2.29167vw, min(8svh, 5.20834vw)); background: 0 0; scroll-margin-top: 5.20834vw; position: relative }
   .service-index-heading, .service-index-row { direction: ltr; grid-template-columns: minmax(0, 44fr) minmax(0, 46fr); column-gap: 10%; display: grid }
-  .service-index-heading { row-gap: 1.97917vw; padding-bottom: 6.1875vw }
+  .service-index-heading { row-gap: 1.97917vw; padding-bottom: max(3.38542vw, min(11svh, 6.77084vw)) }
   .service-index-heading h2 { font-size: calc(9.16667vw * var(--type-scale, 1)); letter-spacing: calc(-.065em * var(--tracking-scale, 1)); line-height: 1.06; font-weight: var(--weight-450, 450); grid-column: 1/-1; margin: 0 }
   .service-index .service-index-heading p { font-size: calc(1.45834vw * var(--type-scale, 1)); color: var(--ed-muted); grid-column: 2; margin: 0; line-height: 1.5 }
   .service-index-list { margin: 0; padding: 0; list-style: none }
-  .service-index-row { align-items: center; min-height: 18vw; padding-block: 3.65625vw; position: relative }
+  .service-index-row { align-items: center; min-height: max(11.6667vw, min(32svh, 18.2292vw)); padding-block: max(2.39584vw, min(6.5svh, 4.0625vw)); position: relative }
   .service-index-rule { top: 0; transform-origin: 0; background: #c4beb34a; height: 0.0520834vw; position: absolute; inset-inline: 0 }
   .service-index-row:last-child:after { content: ''; bottom: 0; background: #c4beb34a; height: 0.0520834vw; position: absolute; inset-inline: 0 }
   .service-index-name { grid-column: 1; min-width: 0 }
@@ -217,41 +284,43 @@
     .editorial-line>span { transform: none !important }
   }
   :global(.practice-page) .editorial-line { overflow: visible }
-  .practice-opening { height: 133.334vw; min-height: 96.3542vw; padding: 24vw var(--ed-gutter) 9.33334vw; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
+  .practice-opening { height: 100svh; min-height: 96.3542vw; padding: max(16.6667vw, min(18svh, 26.0417vw)) var(--ed-gutter) 7svh; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
   .practice-hero-geometry { z-index: -1; pointer-events: none; height: 100%; position: absolute; inset: 0 0 auto; overflow: visible }
   .practice-depth { width: 100%; height: 100%; display: block }
   .practice-opening .editorial-kicker { position: relative }
-  .practice-opening h1 { font-size: calc(7.03125vw * var(--type-scale, 1)); max-width: 64%; margin-top: 13.3334vw; position: relative }
+  .practice-opening h1 { font-size: calc(7.03125vw * var(--type-scale, 1)); max-width: 64%; margin-top: 10svh; position: relative }
   .practice-opening-foot { justify-content: space-between; align-items: end; gap: 6.51042vw; max-width: 64%; margin-top: auto; padding-top: 4.5573vw; display: flex; position: relative }
   .practice-opening-foot>p { max-width: 42.9688vw; font-size: calc(2.08334vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); color: #b4b0a5; line-height: 1.65 }
   .practice-copy { font-size: calc(2.08334vw * var(--type-scale, 1)); color: #b2aea2; letter-spacing: calc(-.015em * var(--tracking-scale, 1)); max-width: 53.3855vw; line-height: 1.8; margin-top: 5.20834vw !important }
-  .practice-end { padding: 25.3334vw var(--ed-gutter) 30.6667vw; min-height: 133.334vw; position: relative }
+  .practice-end { padding: 19svh var(--ed-gutter) 23svh; min-height: 100svh; position: relative }
   .practice-end h2 { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08; font-size: calc(7.99914vw * var(--type-scale, 1)); margin-top: 7.8125vw }
   .practice-end .editorial-action { margin-top: 5.85938vw }
   .practice-end-actions { gap: 7vw; display: flex }
   :global(html[lang='ar']) :global(.practice-page) .editorial-eyebrow { font-size: calc(1.5625vw * var(--type-scale, 1)); letter-spacing: 0 }
-  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(7.8125vw * var(--type-scale, 1)); max-width: 64%; margin-top: 10.6667vw; line-height: 1.28 }
+  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(max(7.8125vw, min(min(7.5vw, 12svh), 19.2709vw)) * var(--type-scale, 1)); max-width: 64%; margin-top: 8svh; line-height: 1.28 }
   :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(2.60417vw * var(--type-scale, 1)); max-width: 48.1771vw }
   :global(html[lang='ar']) .practice-copy { font-size: calc(2.47396vw * var(--type-scale, 1)); letter-spacing: 0; max-width: 55.9896vw; line-height: 1.9 }
   :global(html[lang='ar']) .practice-end h2 { font-size: calc(8.99957vw * var(--type-scale, 1)) }
   .practice-opening h1 { font-size: calc(6.4vw * var(--type-scale, 1)) }
-  .practice-opening { height: auto; min-height: 133.334vw; padding-top: 20.8334vw; padding-bottom: 9.33334vw }
-  .practice-opening h1 { font-size: calc(10.1997vw * var(--type-scale, 1)); max-width: 100%; margin-top: 37.3334vw; line-height: 1.08 }
-  .practice-opening-foot { max-width: 100%; margin-top: 3.90625vw; padding-top: 0; display: block }
-  .practice-opening-foot>p { font-size: calc(2.08334vw * var(--type-scale, 1)); max-width: 44.2709vw }
-  .practice-opening-foot .editorial-text-link { margin-top: 3.125vw }
-  .practice-opening .editorial-kicker { font-size: calc(1.04167vw * var(--type-scale, 1)); gap: 2.08334vw }
-  .practice-opening .editorial-kicker>span:last-child { text-align: end; max-width: 45% }
-  .practice-copy { font-size: calc(1.95313vw * var(--type-scale, 1)); max-width: 46.875vw; line-height: 1.8; margin-top: 4.16667vw !important }
-  .practice-end { min-height: 114.667vw; padding: 22.6667vw var(--ed-gutter) 26.6667vw }
-  .practice-end h2 { font-size: calc(9.2vw * var(--type-scale, 1)); margin-top: 4.94792vw }
-  .practice-end-actions { flex-direction: column; gap: 0 }
-  .practice-end .editorial-action { margin-top: 3.125vw }
-  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(10.9983vw * var(--type-scale, 1)); max-width: 100%; margin-top: 34.6667vw; line-height: 1.3 }
-  :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(2.34375vw * var(--type-scale, 1)); max-width: 46.875vw }
-  :global(html[lang='ar']) .practice-copy { font-size: calc(2.21355vw * var(--type-scale, 1)); max-width: 46.875vw; line-height: 1.85 }
-  :global(html[lang='ar']) .practice-end h2 { font-size: calc(12vw * var(--type-scale, 1)) }
-  .practice-opening { height: 133.334vw; min-height: 91.1459vw; overflow: hidden }
+  @media (max-aspect-ratio:8/9) {
+    .practice-opening { height: auto; min-height: 100svh; padding-top: max(14.323vw, min(16svh, 20.8334vw)); padding-bottom: 7svh }
+    .practice-opening h1 { font-size: calc(10.1997vw * var(--type-scale, 1)); max-width: 100%; margin-top: max(27.9948vw, min(28svh, 42.9688vw)); line-height: 1.08 }
+    .practice-opening-foot { max-width: 100%; margin-top: 3.90625vw; padding-top: 0; display: block }
+    .practice-opening-foot>p { font-size: calc(2.08334vw * var(--type-scale, 1)); max-width: 44.2709vw }
+    .practice-opening-foot .editorial-text-link { margin-top: 3.125vw }
+    .practice-opening .editorial-kicker { font-size: calc(1.04167vw * var(--type-scale, 1)); gap: 2.08334vw }
+    .practice-opening .editorial-kicker>span:last-child { text-align: end; max-width: 45% }
+    .practice-copy { font-size: calc(1.95313vw * var(--type-scale, 1)); max-width: 46.875vw; line-height: 1.8; margin-top: 4.16667vw !important }
+    .practice-end { min-height: 86svh; padding: 17svh var(--ed-gutter) 20svh }
+    .practice-end h2 { font-size: calc(9.2vw * var(--type-scale, 1)); margin-top: 4.94792vw }
+    .practice-end-actions { flex-direction: column; gap: 0 }
+    .practice-end .editorial-action { margin-top: 3.125vw }
+    :global(html[lang='ar']) .practice-opening h1 { font-size: calc(10.9983vw * var(--type-scale, 1)); max-width: 100%; margin-top: max(25.3907vw, min(26svh, 40.3646vw)); line-height: 1.3 }
+    :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(2.34375vw * var(--type-scale, 1)); max-width: 46.875vw }
+    :global(html[lang='ar']) .practice-copy { font-size: calc(2.21355vw * var(--type-scale, 1)); max-width: 46.875vw; line-height: 1.85 }
+    :global(html[lang='ar']) .practice-end h2 { font-size: calc(12vw * var(--type-scale, 1)) }
+  }
+  .practice-opening { height: 100svh; min-height: 91.1459vw; overflow: hidden }
   .practice-hero-type { left: var(--hero-copy-start, 34%); right: var(--ed-gutter); position: absolute; top: 50%; transform: translateY(-38%) }
   .practice-opening .practice-hero-type h1 { font-size: calc(6.1198vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.08 }
   .practice-opening .practice-opening-foot { gap: 3.64584vw; max-width: none; margin-top: 4.16667vw; padding: 0 }
@@ -261,36 +330,44 @@
   :global(.solving-page) .practice-opening h1 { font-size: calc(7.03125vw * var(--type-scale, 1)); text-shadow: 0 0.130209vw 1.30209vw #09090955; line-height: 1.04 }
   :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 15% }
   :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 19% }
-  :global(.solving-page) .practice-opening-foot { text-align: start; align-items: center; max-width: 88.5417vw; margin: 12vw auto 0 }
+  :global(.solving-page) .practice-opening-foot { text-align: start; align-items: center; max-width: 88.5417vw; margin: max(7.03125vw, min(9svh, 14.323vw)) auto 0 }
   :global(.solving-page) .practice-opening-foot>p { max-width: 47.5261vw }
   :global(html[lang='ar']) .practice-opening .practice-hero-type h1 { font-size: calc(7.16146vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.32 }
   :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(2.21355vw * var(--type-scale, 1)) }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 { font-size: calc(7.42188vw * var(--type-scale, 1)); line-height: 1.2 }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 12% }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 16% }
-  .practice-opening { height: 133.334vw; min-height: 91.1459vw; padding-top: 20.8334vw }
-  .practice-hero-type { top: 36%; left: 48%; right: 5%; transform: none }
-  .practice-opening .practice-hero-type h1 { font-size: calc(7.3481vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.15 }
-  .practice-opening .practice-opening-foot { margin-top: 3.90625vw; display: block }
-  .practice-opening .practice-opening-foot>p { font-size: calc(2.08334vw * var(--type-scale, 1)); max-width: 39.0625vw }
-  .practice-opening .practice-opening-foot .editorial-text-link { margin-top: 2.86459vw }
-  :global(.solving-page) .practice-hero-type { top: 33%; left: 7%; right: 7%; transform: none }
-  :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(9.34896vw * var(--type-scale, 1)); line-height: 1.08 }
-  :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 7% }
+  @media (min-aspect-ratio:8/9) {
+    .practice-opening .practice-opening-foot { display: block }
+    .practice-opening .practice-opening-foot .editorial-text-link { margin-top: 2.60417vw }
+  }
+  @media (max-aspect-ratio:8/9) {
+    .practice-opening { height: 100svh; min-height: 91.1459vw; padding-top: max(15.3646vw, min(16svh, 20.8334vw)) }
+    .practice-hero-type { top: 36%; left: 48%; right: 5%; transform: none }
+    .practice-opening .practice-hero-type h1 { font-size: calc(7.3481vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.15 }
+    .practice-opening .practice-opening-foot { margin-top: 3.90625vw; display: block }
+    .practice-opening .practice-opening-foot>p { font-size: calc(2.08334vw * var(--type-scale, 1)); max-width: 39.0625vw }
+    .practice-opening .practice-opening-foot .editorial-text-link { margin-top: 2.86459vw }
+    :global(.solving-page) .practice-hero-type { top: 33%; left: 7%; right: 7%; transform: none }
+    :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(9.34896vw * var(--type-scale, 1)); line-height: 1.08 }
+    :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 7% }
+  }
   :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 19% }
-  :global(.solving-page) .practice-opening-foot { text-align: start; margin-top: 21.4844vw }
-  :global(html[lang='ar']) .practice-opening .practice-hero-type h1 { font-size: calc(7.99914vw * var(--type-scale, 1)); line-height: 1.4 }
-  :global(html[lang='ar']) .practice-opening .practice-opening-foot>p { font-size: calc(2.34375vw * var(--type-scale, 1)); max-width: 40.3646vw }
-  :global(html[lang='ar']) :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(10.9983vw * var(--type-scale, 1)); line-height: 1.35 }
-  :global(html[lang='ar']) :global(.solving-page) .practice-opening-foot { margin-top: 16vw }
+  @media (max-aspect-ratio:8/9) {
+    :global(.solving-page) .practice-opening-foot { text-align: start; margin-top: max(13.0209vw, min(17svh, 21.4844vw)) }
+    :global(html[lang='ar']) .practice-opening .practice-hero-type h1 { font-size: calc(7.99914vw * var(--type-scale, 1)); line-height: 1.4 }
+    :global(html[lang='ar']) .practice-opening .practice-opening-foot>p { font-size: calc(2.34375vw * var(--type-scale, 1)); max-width: 40.3646vw }
+    :global(html[lang='ar']) :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(10.9983vw * var(--type-scale, 1)); line-height: 1.35 }
+    :global(html[lang='ar']) :global(.solving-page) .practice-opening-foot { margin-top: max(10.4167vw, min(12svh, 16.9271vw)) }
+  }
   .page-closing-cta .practice-end-actions { gap: 5vw; margin-top: 4.16667vw }
   .page-closing-cta .editorial-action { color: #e1ddd0; border-bottom: 1px solid #787469; align-self: flex-start; margin-top: 0; padding-block: 1.82292vw }
   .page-closing-cta>.editorial-eyebrow+h2 { margin-top: 3.64584vw }
   :global(html[lang='ar']) .page-closing-cta h2 { letter-spacing: 0; line-height: 1.35; font-weight: var(--weight-400, 400) }
   .practice-opening .editorial-kicker>span:only-child { text-align: start; max-width: 100% }
   .services-opening [hidden], .services-opening [data-layer-hidden=true] { display: none !important }
-  .services-opening { isolation: isolate; background: #080909; height: 520vw; scroll-margin-top: 0; position: relative }
-  .services-opening-stage { height: 133.334vw; min-height: 74.2188vw; position: sticky; top: 0; overflow: clip }
+  .services-opening { isolation: isolate; background: #080909; height: 390svh; scroll-margin-top: 0; position: relative }
+  .services-opening-stage { height: 100svh; min-height: 74.2188vw; position: sticky; top: 0; overflow: clip }
   .services-intro { inset: 25% var(--ed-gutter) auto; z-index: 2; pointer-events: none; position: absolute }
   :global(.solving-page) .services-intro h2 { font-size: calc(7.79948vw * var(--type-scale, 1)); font-weight: var(--weight-430, 430); letter-spacing: calc(-.045em * var(--tracking-scale, 1)); margin-top: 3.90625vw; line-height: 1.05 }
   :global(.solving-page) .services-intro p { margin-top: 5.20834vw; max-width: 59.8959vw; font-size: calc(2.21355vw * var(--type-scale, 1)); color: #b8b4a9; letter-spacing: calc(-.02em * var(--tracking-scale, 1)); margin-inline-start: 43%; line-height: 1.65 }
@@ -321,33 +398,45 @@
   :global(html[lang='ar']) .services-gate-payoff { top: 38% }
   :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(7.19836vw * var(--type-scale, 1)); letter-spacing: 0; line-height: 1.35 }
   :global(html[lang='ar']) :global(.solving-page) .services-it-works { letter-spacing: 0; transform-origin: 100% }
-  .services-opening { height: 493.334vw }
-  .services-opening-stage { min-height: 70.3125vw }
-  .services-intro { top: 24% }
-  :global(.solving-page) .services-intro h2 { font-size: calc(9.4987vw * var(--type-scale, 1)); margin-top: 3.25521vw; line-height: 1.13 }
-  :global(.solving-page) .services-intro p { margin-inline-start: 10%; font-size: calc(2.21355vw * var(--type-scale, 1)); max-width: 54.6875vw; margin-top: 3.90625vw; line-height: 1.7 }
-  .services-glyph-flight text { font-size: calc(6.25vw * var(--type-scale, 1)) }
-  .services-gate-underlay { --payoff-start: 14%; --payoff-end: 5% }
-  .services-gate-payoff { top: 44% }
-  .services-gate-payoff h2 { font-size: calc(7.79948vw * var(--type-scale, 1)) }
-  :global(.solving-page) .services-it-works { font-size: calc(15vw * var(--type-scale, 1)); top: 45% }
-  :global(html[lang='ar']) :global(.solving-page) .services-intro h2 { font-size: calc(10.3994vw * var(--type-scale, 1)) }
-  :global(html[lang='ar']) :global(.solving-page) .services-intro p { font-size: calc(2.47396vw * var(--type-scale, 1)); margin-inline-start: 4% }
-  :global(html[lang='ar']) .services-glyph-flight text { font-size: calc(6vw * var(--type-scale, 1)) }
-  :global(html[lang='ar']) .services-gate-underlay { --payoff-start: 14%; --payoff-end: 5% }
-  :global(html[lang='ar']) .services-gate-payoff { top: 42% }
-  :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(10.5vw * var(--type-scale, 1)) }
+  @media (max-aspect-ratio:8/9) {
+    .services-opening { height: 370svh }
+    .services-opening-stage { min-height: 70.3125vw }
+    .services-intro { top: 24% }
+    :global(.solving-page) .services-intro h2 { font-size: calc(9.4987vw * var(--type-scale, 1)); margin-top: 3.25521vw; line-height: 1.13 }
+    :global(.solving-page) .services-intro p { margin-inline-start: 10%; font-size: calc(2.21355vw * var(--type-scale, 1)); max-width: 54.6875vw; margin-top: 3.90625vw; line-height: 1.7 }
+    .services-glyph-flight text { font-size: calc(6.25vw * var(--type-scale, 1)) }
+    .services-gate-underlay { --payoff-start: 14%; --payoff-end: 5% }
+    .services-gate-payoff { top: 44% }
+    .services-gate-payoff h2 { font-size: calc(7.79948vw * var(--type-scale, 1)) }
+    :global(.solving-page) .services-it-works { font-size: calc(15vw * var(--type-scale, 1)); top: 45% }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro h2 { font-size: calc(10.3994vw * var(--type-scale, 1)) }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro p { font-size: calc(2.47396vw * var(--type-scale, 1)); margin-inline-start: 4% }
+    :global(html[lang='ar']) .services-glyph-flight text { font-size: calc(6vw * var(--type-scale, 1)) }
+    :global(html[lang='ar']) .services-gate-underlay { --payoff-start: 14%; --payoff-end: 5% }
+    :global(html[lang='ar']) .services-gate-payoff { top: 42% }
+    :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(10.5vw * var(--type-scale, 1)) }
+  }
   @media (prefers-reduced-motion:reduce) {
-    .services-opening { height: 386.667vw }
+    .services-opening { height: 290svh }
     .services-gate-handle { scroll-margin: 15.625vw }
   }
-  .service-index { padding: 20vw var(--ed-gutter) 10.6667vw; background: 0 0; scroll-margin-top: 13.0209vw; position: relative }
+  @media (min-aspect-ratio:768/600) {
+    .services-opening-stage { height: 100svh; min-height: 0 }
+    .services-intro { top: 23% }
+    :global(.solving-page) .services-intro h2 { font-size: calc(max(3.90625vw, min(min(5.5vw, 10svh), 7.8125vw)) * var(--type-scale, 1)); margin-top: 1.5625vw }
+    :global(.solving-page) .services-intro p { font-size: calc(1.95313vw * var(--type-scale, 1)); margin-top: 2.34375vw; max-width: 52%; margin-inline-start: 43%; line-height: 1.6 }
+    .services-gate-payoff h2 { font-size: calc(max(3.64584vw, min(8svh, 6.25vw)) * var(--type-scale, 1)) }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro h2 { font-size: calc(max(4.16667vw, min(10svh, 7.8125vw)) * var(--type-scale, 1)) }
+    :global(html[lang='ar']) :global(.solving-page) .services-intro p { font-size: calc(2.21355vw * var(--type-scale, 1)); line-height: 1.6 }
+    :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(max(4.16667vw, min(9svh, 6.77084vw)) * var(--type-scale, 1)) }
+  }
+  .service-index { padding: max(11.9792vw, min(15svh, 23.4375vw)) var(--ed-gutter) max(5.72917vw, min(8svh, 13.0209vw)); background: 0 0; scroll-margin-top: 13.0209vw; position: relative }
   .service-index-heading, .service-index-row { direction: ltr; grid-template-columns: minmax(0, 44fr) minmax(0, 46fr); column-gap: 10%; display: grid }
-  .service-index-heading { row-gap: 4.94792vw; padding-bottom: 14.6667vw }
+  .service-index-heading { row-gap: 4.94792vw; padding-bottom: max(8.46355vw, min(11svh, 16.9271vw)) }
   .service-index-heading h2 { font-size: calc(9.39888vw * var(--type-scale, 1)); letter-spacing: calc(-.065em * var(--tracking-scale, 1)); line-height: 1.06; font-weight: var(--weight-450, 450); grid-column: 1/-1; margin: 0 }
   .service-index .service-index-heading p { font-size: calc(2.34375vw * var(--type-scale, 1)); color: var(--ed-muted); grid-column: 2; margin: 0; line-height: 1.5 }
   .service-index-list { margin: 0; padding: 0; list-style: none }
-  .service-index-row { align-items: center; min-height: 42.6667vw; padding-block: 8.66667vw; position: relative }
+  .service-index-row { align-items: center; min-height: max(29.1667vw, min(32svh, 45.573vw)); padding-block: max(5.98959vw, min(6.5svh, 10.1563vw)); position: relative }
   .service-index-rule { top: 0; transform-origin: 0; background: #c4beb34a; height: 0.130209vw; position: absolute; inset-inline: 0 }
   .service-index-row:last-child:after { content: ''; bottom: 0; background: #c4beb34a; height: 0.130209vw; position: absolute; inset-inline: 0 }
   .service-index-name { grid-column: 1; min-width: 0 }
@@ -449,40 +538,40 @@
     .editorial-line>span { transform: none !important }
   }
   :global(.practice-page) .editorial-line { overflow: visible }
-  .practice-opening { height: 222.088vw; min-height: 179.612vw; padding: 39.9758vw var(--ed-gutter) 15.5462vw; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
+  .practice-opening { height: 100svh; min-height: 179.612vw; padding: max(31.068vw, min(18svh, 48.5437vw)) var(--ed-gutter) 7svh; isolation: isolate; flex-direction: column; display: flex; position: relative; overflow: visible }
   .practice-hero-geometry { z-index: -1; pointer-events: none; height: 100%; position: absolute; inset: 0 0 auto; overflow: visible }
   .practice-depth { width: 100%; height: 100%; display: block }
   .practice-opening .editorial-kicker { position: relative }
-  .practice-opening h1 { font-size: calc(13.1068vw * var(--type-scale, 1)); max-width: 64%; margin-top: 22.2088vw; position: relative }
+  .practice-opening h1 { font-size: calc(13.1068vw * var(--type-scale, 1)); max-width: 64%; margin-top: 10svh; position: relative }
   .practice-opening-foot { justify-content: space-between; align-items: end; gap: 12.136vw; max-width: 64%; margin-top: auto; padding-top: 8.49515vw; display: flex; position: relative }
   .practice-opening-foot>p { max-width: 80.0971vw; font-size: calc(3.8835vw * var(--type-scale, 1)); letter-spacing: calc(-.025em * var(--tracking-scale, 1)); color: #b4b0a5; line-height: 1.65 }
   .practice-copy { font-size: calc(3.8835vw * var(--type-scale, 1)); color: #b2aea2; letter-spacing: calc(-.015em * var(--tracking-scale, 1)); max-width: 99.5146vw; line-height: 1.8; margin-top: 9.70874vw !important }
-  .practice-end { padding: 42.1967vw var(--ed-gutter) 51.0801vw; min-height: 222.088vw; position: relative }
+  .practice-end { padding: 19svh var(--ed-gutter) 23svh; min-height: 100svh; position: relative }
   .practice-end h2 { font-weight: var(--weight-430, 430); letter-spacing: calc(-.06em * var(--tracking-scale, 1)); line-height: 1.08; font-size: calc(13.3496vw * var(--type-scale, 1)); margin-top: 14.5632vw }
   .practice-end .editorial-action { margin-top: 10.9224vw }
   .practice-end-actions { gap: 7vw; display: flex }
   :global(html[lang='ar']) :global(.practice-page) .editorial-eyebrow { font-size: calc(2.91263vw * var(--type-scale, 1)); letter-spacing: 0 }
-  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(14.5632vw * var(--type-scale, 1)); max-width: 64%; margin-top: 17.767vw; line-height: 1.28 }
+  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(max(14.5632vw, min(min(7.5vw, 12svh), 35.9224vw)) * var(--type-scale, 1)); max-width: 64%; margin-top: 8svh; line-height: 1.28 }
   :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(4.85437vw * var(--type-scale, 1)); max-width: 89.8059vw }
   :global(html[lang='ar']) .practice-copy { font-size: calc(4.61166vw * var(--type-scale, 1)); letter-spacing: 0; max-width: 104.369vw; line-height: 1.9 }
   :global(html[lang='ar']) .practice-end h2 { font-size: calc(14.5632vw * var(--type-scale, 1)) }
-  .practice-opening { height: auto; min-height: 222.088vw; padding-top: 35.534vw; padding-bottom: 15.5462vw }
-  .practice-opening h1 { font-size: calc(10.1983vw * var(--type-scale, 1)); max-width: 100%; margin-top: 62.1845vw; line-height: 1.08 }
+  .practice-opening { height: auto; min-height: 100svh; padding-top: max(26.6991vw, min(16svh, 38.835vw)); padding-bottom: 7svh }
+  .practice-opening h1 { font-size: calc(10.1983vw * var(--type-scale, 1)); max-width: 100%; margin-top: max(52.1845vw, min(28svh, 80.0971vw)); line-height: 1.08 }
   .practice-opening-foot { max-width: 100%; margin-top: 7.28156vw; padding-top: 0; display: block }
   .practice-opening-foot>p { font-size: calc(3.8835vw * var(--type-scale, 1)); max-width: 82.5243vw }
   .practice-opening-foot .editorial-text-link { margin-top: 5.82525vw }
   .practice-opening .editorial-kicker { font-size: calc(1.94175vw * var(--type-scale, 1)); gap: 3.8835vw }
   .practice-opening .editorial-kicker>span:last-child { text-align: end; max-width: 45% }
   .practice-copy { font-size: calc(3.64078vw * var(--type-scale, 1)); max-width: 87.3787vw; line-height: 1.8; margin-top: 7.767vw !important }
-  .practice-end { min-height: 190.996vw; padding: 37.7549vw var(--ed-gutter) 44.4175vw }
+  .practice-end { min-height: 86svh; padding: 17svh var(--ed-gutter) 20svh }
   .practice-end h2 { font-size: calc(9.2vw * var(--type-scale, 1)); margin-top: 9.22331vw }
   .practice-end-actions { flex-direction: column; gap: 0 }
   .practice-end .editorial-action { margin-top: 5.82525vw }
-  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(10.9992vw * var(--type-scale, 1)); max-width: 100%; margin-top: 57.7428vw; line-height: 1.3 }
+  :global(html[lang='ar']) .practice-opening h1 { font-size: calc(10.9992vw * var(--type-scale, 1)); max-width: 100%; margin-top: max(47.3301vw, min(26svh, 75.2428vw)); line-height: 1.3 }
   :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(4.36894vw * var(--type-scale, 1)); max-width: 87.3787vw }
   :global(html[lang='ar']) .practice-copy { font-size: calc(4.12622vw * var(--type-scale, 1)); max-width: 87.3787vw; line-height: 1.85 }
   :global(html[lang='ar']) .practice-end h2 { font-size: calc(12vw * var(--type-scale, 1)) }
-  .practice-opening { height: 222.088vw; min-height: 169.903vw; overflow: hidden }
+  .practice-opening { height: 100svh; min-height: 169.903vw; overflow: hidden }
   .practice-hero-type { left: var(--hero-copy-start, 34%); right: var(--ed-gutter); position: absolute; top: 50%; transform: translateY(-38%) }
   .practice-opening .practice-hero-type h1 { font-size: calc(11.4078vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.08 }
   .practice-opening .practice-opening-foot { gap: 6.79612vw; max-width: none; margin-top: 7.767vw; padding: 0 }
@@ -492,14 +581,14 @@
   :global(.solving-page) .practice-opening h1 { font-size: calc(13.1068vw * var(--type-scale, 1)); text-shadow: 0 0.242719vw 2.42719vw #09090955; line-height: 1.04 }
   :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 15% }
   :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 19% }
-  :global(.solving-page) .practice-opening-foot { text-align: start; align-items: center; max-width: 165.049vw; margin: 19.9879vw auto 0 }
+  :global(.solving-page) .practice-opening-foot { text-align: start; align-items: center; max-width: 165.049vw; margin: max(13.1068vw, min(9svh, 26.6991vw)) auto 0 }
   :global(.solving-page) .practice-opening-foot>p { max-width: 88.5923vw }
   :global(html[lang='ar']) .practice-opening .practice-hero-type h1 { font-size: calc(13.3496vw * var(--type-scale, 1)); max-width: none; margin: 0; line-height: 1.32 }
   :global(html[lang='ar']) .practice-opening-foot>p { font-size: calc(4.12622vw * var(--type-scale, 1)) }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 { font-size: calc(13.835vw * var(--type-scale, 1)); line-height: 1.2 }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 12% }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 16% }
-  .practice-opening { height: 222.088vw; min-height: 169.903vw; padding-top: 35.534vw }
+  .practice-opening { height: 100svh; min-height: 169.903vw; padding-top: max(28.6408vw, min(16svh, 38.835vw)) }
   .practice-hero-type { top: 36%; left: 48%; right: 5%; transform: none }
   .practice-opening .practice-hero-type h1 { font-size: calc(7.34628vw * var(--type-scale, 1)); letter-spacing: calc(-.055em * var(--tracking-scale, 1)); line-height: 1.15 }
   .practice-opening .practice-opening-foot { margin-top: 7.28156vw; display: block }
@@ -509,19 +598,19 @@
   :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(10.1942vw * var(--type-scale, 1)); line-height: 1.08 }
   :global(.solving-page) .practice-opening h1 .editorial-line:first-child { padding-inline-end: 7% }
   :global(.solving-page) .practice-opening h1 .editorial-line:last-child { padding-inline-start: 19% }
-  :global(.solving-page) .practice-opening-foot { text-align: start; margin-top: 37.7549vw }
+  :global(.solving-page) .practice-opening-foot { text-align: start; margin-top: max(24.2719vw, min(17svh, 40.0486vw)) }
   :global(html[lang='ar']) .practice-opening .practice-hero-type h1 { font-size: calc(8.00971vw * var(--type-scale, 1)); line-height: 1.4 }
   :global(html[lang='ar']) .practice-opening .practice-opening-foot>p { font-size: calc(4.36894vw * var(--type-scale, 1)); max-width: 75.2428vw }
   :global(html[lang='ar']) :global(.solving-page) .practice-opening .practice-hero-type h1 { font-size: calc(10.9992vw * var(--type-scale, 1)); line-height: 1.35 }
-  :global(html[lang='ar']) :global(.solving-page) .practice-opening-foot { margin-top: 26.6505vw }
+  :global(html[lang='ar']) :global(.solving-page) .practice-opening-foot { margin-top: max(19.4175vw, min(12svh, 31.5534vw)) }
   .page-closing-cta .practice-end-actions { gap: 5vw; margin-top: 7.767vw }
   .page-closing-cta .editorial-action { color: #e1ddd0; border-bottom: 1px solid #787469; align-self: flex-start; margin-top: 0; padding-block: 3.39806vw }
   .page-closing-cta>.editorial-eyebrow+h2 { margin-top: 6.79612vw }
   :global(html[lang='ar']) .page-closing-cta h2 { letter-spacing: 0; line-height: 1.35; font-weight: var(--weight-400, 400) }
   .practice-opening .editorial-kicker>span:only-child { text-align: start; max-width: 100% }
   .services-opening [hidden], .services-opening [data-layer-hidden=true] { display: none !important }
-  .services-opening { isolation: isolate; background: #080909; height: 866.141vw; scroll-margin-top: 0; position: relative }
-  .services-opening-stage { height: 222.088vw; min-height: 138.35vw; position: sticky; top: 0; overflow: clip }
+  .services-opening { isolation: isolate; background: #080909; height: 390svh; scroll-margin-top: 0; position: relative }
+  .services-opening-stage { height: 100svh; min-height: 138.35vw; position: sticky; top: 0; overflow: clip }
   .services-intro { inset: 25% var(--ed-gutter) auto; z-index: 2; pointer-events: none; position: absolute }
   :global(.solving-page) .services-intro h2 { font-size: calc(11.6505vw * var(--type-scale, 1)); font-weight: var(--weight-430, 430); letter-spacing: calc(-.045em * var(--tracking-scale, 1)); margin-top: 7.28156vw; line-height: 1.05 }
   :global(.solving-page) .services-intro p { margin-top: 9.70874vw; max-width: 111.651vw; font-size: calc(4.12622vw * var(--type-scale, 1)); color: #b8b4a9; letter-spacing: calc(-.02em * var(--tracking-scale, 1)); margin-inline-start: 43%; line-height: 1.65 }
@@ -552,7 +641,7 @@
   :global(html[lang='ar']) .services-gate-payoff { top: 38% }
   :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(12.136vw * var(--type-scale, 1)); letter-spacing: 0; line-height: 1.35 }
   :global(html[lang='ar']) :global(.solving-page) .services-it-works { letter-spacing: 0; transform-origin: 100% }
-  .services-opening { height: 821.724vw }
+  .services-opening { height: 370svh }
   .services-opening-stage { min-height: 131.068vw }
   .services-intro { top: 24% }
   :global(.solving-page) .services-intro h2 { font-size: calc(9.49839vw * var(--type-scale, 1)); margin-top: 6.06797vw; line-height: 1.13 }
@@ -569,16 +658,16 @@
   :global(html[lang='ar']) .services-gate-payoff { top: 42% }
   :global(html[lang='ar']) .services-gate-payoff h2 { font-size: calc(10.5vw * var(--type-scale, 1)) }
   @media (prefers-reduced-motion:reduce) {
-    .services-opening { height: 644.054vw }
+    .services-opening { height: 290svh }
     .services-gate-handle { scroll-margin: 29.1263vw }
   }
-  .service-index { padding: 33.3132vw var(--ed-gutter) 17.767vw; background: 0 0; scroll-margin-top: 24.2719vw; position: relative }
+  .service-index { padding: max(22.3301vw, min(15svh, 43.6894vw)) var(--ed-gutter) max(10.6797vw, min(8svh, 24.2719vw)); background: 0 0; scroll-margin-top: 24.2719vw; position: relative }
   .service-index-heading, .service-index-row { direction: ltr; grid-template-columns: minmax(0, 44fr) minmax(0, 46fr); column-gap: 10%; display: grid }
-  .service-index-heading { row-gap: 9.22331vw; padding-bottom: 24.4297vw }
+  .service-index-heading { row-gap: 9.22331vw; padding-bottom: max(15.7767vw, min(11svh, 31.5534vw)) }
   .service-index-heading h2 { font-size: calc(15.0486vw * var(--type-scale, 1)); letter-spacing: calc(-.065em * var(--tracking-scale, 1)); line-height: 1.06; font-weight: var(--weight-450, 450); grid-column: 1/-1; margin: 0 }
   .service-index .service-index-heading p { font-size: calc(4.36894vw * var(--type-scale, 1)); color: var(--ed-muted); grid-column: 2; margin: 0; line-height: 1.5 }
   .service-index-list { margin: 0; padding: 0; list-style: none }
-  .service-index-row { align-items: center; min-height: 71.068vw; padding-block: 14.4357vw; position: relative }
+  .service-index-row { align-items: center; min-height: max(54.369vw, min(32svh, 84.9515vw)); padding-block: max(11.1651vw, min(6.5svh, 18.9321vw)); position: relative }
   .service-index-rule { top: 0; transform-origin: 0; background: #c4beb34a; height: 0.242719vw; position: absolute; inset-inline: 0 }
   .service-index-row:last-child:after { content: ''; bottom: 0; background: #c4beb34a; height: 0.242719vw; position: absolute; inset-inline: 0 }
   .service-index-name { grid-column: 1; min-width: 0 }

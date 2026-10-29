@@ -1,6 +1,6 @@
 import scrollManager from "@/lib/scrollInteraction/scrollManager";
-import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
-import { standardFooterPose, standardFooterTail } from "./standard-footer-pose";
+import { designPixels, pixelsToVw } from "@/lib/viewport-design";
+import { standardFooterPose } from "./standard-footer-pose";
 import { brand } from "@/config/brand";
 import { uiStore } from "@/store/uiStore";
 import { measureFooterWord } from "./footer-geometry";
@@ -37,7 +37,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   const originalColophonStyle = colophon?.getAttribute("style");
   const updateStandard = () => {
     if (!standard || disposed) return;
-    const pose = standardFooterPose(scrollY, footerTop, footerHeight, designHeight(innerWidth), reduced());
+    const pose = standardFooterPose(scrollY, footerTop, footerHeight, innerHeight, reduced());
     standardReveal = pose.visible ? pose.wordmark : 0;
     const key = `${pose.progress}:${reduced()}:${innerWidth}`;
     if (key === standardPoseKey) { syncMaterial(); return; }
@@ -47,11 +47,8 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     if (colophon) { colophon.style.opacity = String(pose.metadata); colophon.style.transform = `translate3d(0,${pixelsToVw(designPixels((1 - pose.metadata) * 10, innerWidth), innerWidth)},0)`; colophon.inert = pose.metadata < .1; }
     syncMaterial();
   };
-  const scrollTail = standard ? document.createElement("div") : null;
-  if (scrollTail) { scrollTail.dataset.footerScrollTail = "true"; scrollTail.setAttribute("aria-hidden", "true"); root.after(scrollTail); }
-  const measureTail = () => { if (scrollTail) scrollTail.style.height = pixelsToVw(standardFooterTail(innerWidth, innerHeight, reduced()), innerWidth); };
-  const onStandardViewport = () => { measureTail(); updateStandard(); };
-  if (standard) { window.addEventListener("resize", onStandardViewport, { passive: true }); measureTail(); }
+  const onStandardViewport = () => updateStandard();
+  if (standard) window.addEventListener("resize", onStandardViewport, { passive: true });
   const originalWordStyle = word.getAttribute("style");
   const originalFooterStyle = root.getAttribute("style");
   const context = document.createElement("canvas").getContext("2d");
@@ -131,7 +128,6 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   const syncMode = () => {
     const next = reduced();
     if (next !== previousReduced) {
-      measureTail();
       previousReduced = next;
       updateClock();
     }
@@ -167,7 +163,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   if (standard) scrollManager.createInstance(standardKey, updateStandard, { useRAF: false });
   return () => {
     disposed = true;
-    if (standard) { scrollManager.removeInstance(standardKey); window.removeEventListener("resize", onStandardViewport); scrollTail?.remove(); }
+    if (standard) { scrollManager.removeInstance(standardKey); window.removeEventListener("resize", onStandardViewport); }
     observer.disconnect();
     resize.disconnect();
     unsubscribe();

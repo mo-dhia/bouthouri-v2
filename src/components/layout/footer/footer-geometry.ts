@@ -1,6 +1,6 @@
 import { brand } from "@/config/brand";
 import type { GlyphBox } from "./footer-paths";
-import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
+import { designPixels, pixelsToVw } from "@/lib/viewport-design";
 
 /** Canvas uses the same local Questrial metrics as the reference's DOM word. */
 export function footerGlyphBoxes(
@@ -47,7 +47,7 @@ export function measureFooterWord(
   const family = getComputedStyle(word).fontFamily,
     text = word.textContent ?? brand.wordmark,
     width = mask.getBoundingClientRect().width,
-    viewportHeight = designHeight(innerWidth),
+    viewportHeight = innerHeight,
     gap = designPixels(20, innerWidth),
     length = (value: number) => pixelsToVw(value, innerWidth);
   context.font = `400 100px ${family}`;

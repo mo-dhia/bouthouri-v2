@@ -7,13 +7,13 @@ import { experimentLayout } from './experiment-layout';
 /** Resources belong to this physical mount, including user-intent audio/ML. */
 export function createExperimentEnvironment(root: HTMLElement, reduced: boolean, failure: (error: unknown) => void) {
   const win = root.ownerDocument.defaultView!, clock = createExperimentClock(win, failure);
-  let disposed = false, layout = experimentLayout(win.innerWidth);
+  let disposed = false, layout = experimentLayout(win.innerWidth, win.innerHeight);
   const media = new Set<HTMLAudioElement>(), workers = new Set<Worker>();
   const timers = new Set<number>(), intervals = new Set<number>();
   const resizers = new Map<ResizeObserver, ResizeObserverCallback>();
   const motion = createExperimentMotion(clock, win, designCss);
   const resize = () => {
-    layout = experimentLayout(win.innerWidth);
+    layout = experimentLayout(win.innerWidth, win.innerHeight);
     root.dataset.experimentScale = String(layout.scale);
     root.style.setProperty('--experiment-scale', String(layout.scale));
     root.style.setProperty('--experiment-reference-width', String(layout.design.width));

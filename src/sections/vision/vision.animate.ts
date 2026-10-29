@@ -1,5 +1,5 @@
 import scrollManager from '@/lib/scrollInteraction/scrollManager';
-import { pixelsToVw, viewportDesign } from '@/lib/viewport-design';
+import { pixelsToVw, referenceStage } from '@/lib/viewport-design';
 import { uiStore } from '@/store/uiStore';
 import { clamp01, practiceHeroLayout, practiceHeroPointer } from './1-opening/practice-hero';
 import type { PracticeObjects } from './1-opening/practice-objects';
@@ -42,7 +42,7 @@ export function mountVision(root: HTMLElement) {
     const progress = reduced ? 1 : entryStarted ? range(age, 0, 1.6) : 0; opening.dataset.heroEntry = String(progress); return progress;
   };
   const measure = () => {
-    const design = viewportDesign(innerWidth); width = design.width; height = design.height; scale = innerWidth / width;
+    const stage = referenceStage(innerWidth, innerHeight); width = stage.width; height = stage.height; scale = stage.scale;
     compositions.forEach(composition => composition.layers.forEach(layer => layer.element.style.removeProperty('transform')));
     root.dataset.motion = reduced ? 'reading' : 'true';
     heroMasks.forEach(mask => mask.measure()); system.measure(reduced); narrative.measure(reduced);

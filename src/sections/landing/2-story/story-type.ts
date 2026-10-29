@@ -3,7 +3,6 @@ import { clamp, smooth } from "./story-score";
 import { createSceneText, prepareSceneFont } from "./story-text";
 import { projectTerminalGlyph } from "./story-text-metrics";
 import { waitForStoryTask } from "./story-boot";
-import { viewportDesign } from "@/lib/viewport-design";
 
 export type WorkOrigin = { x: number; y: number; radius: number; ready: boolean; direction: "ltr" | "rtl" };
 type TextPlane = ReturnType<typeof createSceneText>;
@@ -18,7 +17,7 @@ function headingLines(heading: Element | null) {
   return lines.map((line) => line.trim()).filter(Boolean);
 }
 
-export async function createSpatialType(stage: HTMLElement, scene: Scene, sculptureRoot: Group, camera: PerspectiveCamera, width: number, _height: number, invalidate?: () => void, signal?: AbortSignal, designViewportWidth = width) {
+export async function createSpatialType(stage: HTMLElement, scene: Scene, sculptureRoot: Group, camera: PerspectiveCamera, width: number, height: number, invalidate?: () => void, signal?: AbortSignal) {
   const rtl = document.documentElement.lang === "ar";
   const headings = [...stage.querySelectorAll<HTMLElement>(".spatial-description h2")].slice(0, 3);
   const meaningCopy = headings.map((heading) => [heading.textContent ?? "", heading.nextElementSibling?.textContent ?? ""]);
@@ -35,8 +34,8 @@ export async function createSpatialType(stage: HTMLElement, scene: Scene, sculpt
   let planes: TextPlane[] = [];
   let meanings: { group: Group; title: TextPlane; copy: TextPlane; baseY: number; font: number; start: number; clear: number }[] = [];
   let ideas: TextPlane[] = [], intro: TextPlane | null = null;
-  // CSS viewport selects the composition; measured host width sizes projection.
-  let hostWidth = width, design = viewportDesign(designViewportWidth), portrait = false, ideaX = 0, ideaSize = 0, ideaY = [0.9, -0.24];
+  // The measured host is the physical stage; its proportions select the composition.
+  let hostWidth = width, hostHeight = height, portrait = false, ideaX = 0, ideaSize = 0, ideaY = [0.9, -0.24];
   const point = new Vector3(), edge = new Vector3();
   let previousOrigin: WorkOrigin | null = null;
   let generation = 0, disposed = false, layoutReady = false;
@@ -45,7 +44,7 @@ export async function createSpatialType(stage: HTMLElement, scene: Scene, sculpt
     layoutReady = false;
     for (const plane of planes) plane.dispose(); planes = []; meaningRoot.clear(); meanings = []; ideas = [];
     const make = (...args: Parameters<typeof createSceneText>) => { const plane = createSceneText(...args); planes.push(plane); return plane; };
-    const aspect = design.width / design.height;
+    const aspect = hostWidth / Math.max(1, hostHeight);
     portrait = aspect < 0.88;
     const viewHeight = 2 * Math.tan(34 * Math.PI / 360) * (10 * Math.max(1, 0.88 / aspect) + 0.4);
     const bodyY = -0.24 * viewHeight, scale = rtl ? 1.02 : 1.075;
@@ -109,12 +108,9 @@ export async function createSpatialType(stage: HTMLElement, scene: Scene, sculpt
   stage.dataset.storyTextRenderer = "troika-sdf";
   let latestTime = Number(stage.dataset.storyTime ?? 0);
   const controller = {
-    resize(width: number, _height: number, designViewportWidth = width) {
-      void _height; // Physical viewport height does not select or size the design.
-      hostWidth = width;
-      const nextDesign = viewportDesign(designViewportWidth);
-      if (nextDesign === design) return;
-      design = nextDesign;
+    resize(width: number, height: number) {
+      if (width === hostWidth && height === hostHeight) return;
+      hostWidth = width; hostHeight = height;
       void create().then((ready) => { if (!disposed && ready) { controller.update(latestTime); invalidate?.(); } }).catch((error: unknown) => {
         if (!disposed) { stage.dataset.storyScene = "failed"; console.error("Optional scene text resize failed.", error); }
       });

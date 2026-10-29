@@ -1,5 +1,5 @@
 import scrollManager from "@/lib/scrollInteraction/scrollManager";
-import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
+import { designPixels, pixelsToVw } from "@/lib/viewport-design";
 import { ContactScrub, contactEntryPose, contactLineOffset, contactRangeProgress } from "./contact-motion";
 import { pageEntryPath, routeEntries, skipPageEntry } from "@/lib/navigation/route-entry";
 
@@ -120,7 +120,7 @@ export function mountContactMotion(root: HTMLElement) {
     const hero = opening!.getBoundingClientRect();
     const later = alternative!.getBoundingClientRect();
     const scroll = window.scrollY;
-    const stage = designHeight(window.innerWidth);
+    const stage = window.innerHeight;
     ranges = {
       heroStart: hero.top + scroll,
       heroEnd: hero.bottom + scroll - stage * .25,

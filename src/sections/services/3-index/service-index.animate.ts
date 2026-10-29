@@ -1,4 +1,4 @@
-import { designHeight, designScale, pixelsToVw } from "@/lib/viewport-design";
+import { designScale, pixelsToVw } from "@/lib/viewport-design";
 import { createMaskedReveal } from "../masked-reveal";
 import { clamp, range } from "../2-opening/opening-score";
 
@@ -25,7 +25,7 @@ export function createServiceIndex(root: HTMLElement, reduced: boolean) {
   return {
     tick,
     measure() {
-      viewportHeight = designHeight(window.innerWidth); mobile = window.innerWidth <= 600; scale = designScale(window.innerWidth);
+      viewportHeight = window.innerHeight; mobile = window.innerWidth <= 600; scale = designScale(window.innerWidth);
       entries.forEach((entry) => { entry.title.style.removeProperty("transform"); entry.copy.style.removeProperty("transform"); entry.titleReveal.measure(); entry.copyReveal.measure(); });
       entries.forEach((entry) => { const rect = entry.element.getBoundingClientRect(); entry.top = rect.top + window.scrollY; entry.height = rect.height; entry.copyTop = entry.copy.getBoundingClientRect().top + window.scrollY; });
       lastScroll = NaN; tick(window.scrollY); section.dataset.indexReady = "true";

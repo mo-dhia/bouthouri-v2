@@ -1,7 +1,7 @@
-/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+/* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
 @media (width > 1024px) {
-  .hero { z-index: 12; height: 56.25vw; position: relative }
-  .scene { pointer-events: none; isolation: isolate; height: 56.25vw; position: fixed; inset: 0; overflow: clip }
+  .hero { z-index: 12; height: 100svh; position: relative }
+  .scene { pointer-events: none; isolation: isolate; height: 100svh; position: fixed; inset: 0; overflow: clip }
   .world { z-index: 1; isolation: isolate; position: absolute; inset: 0 }
   .marquee { -webkit-user-select: none; user-select: none; z-index: 0; pointer-events: none; direction: ltr; position: absolute; inset: 17.5% 0 auto }
   .track { will-change: transform; direction: ltr; width: max-content; display: flex; position: relative; left: 0; right: auto; transform: translate(100.417vw) }
@@ -10,14 +10,14 @@
   .cycle i { font-size: calc(.47em * var(--type-scale, 1)); font-style: normal; font-weight: var(--weight-250, 250); letter-spacing: 0; margin: 0 .6em }
   .portrait { z-index: 1; transform-origin: 45% 55%; position: absolute; inset: 0 }
   .portraitEntrance { opacity: 0; width: 100%; height: 100%; position: relative }
-  .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: 100vw; max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
+  .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: max(100vw, 150svh); max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
-  .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 2.08334vw); position: absolute; bottom: 2.53125vw; right: 2.2vw }
+  .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 2.08334vw); position: absolute; bottom: max(1.66667vw, min(4.5svh, 3.75vw)); right: 2.2vw }
   :global(html[lang='en']) .information { min-width: 31.9367vw }
   .copyEntrance { opacity: 0; position: relative }
   .information h1 { font-size: calc(3.64931vw * var(--type-scale, 1)); font-weight: var(--weight-440, 440); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 0.15625vw; line-height: 1.05 }
   .information p { width: 0; min-width: 100%; font-size: calc(0.949653vw * var(--type-scale, 1)); font-weight: var(--weight-400, 400); letter-spacing: calc(-.017em * var(--tracking-scale, 1)); color: #aaa8a1; margin: 0; line-height: 1.48 }
-  .signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence, 1)); position: absolute; bottom: -1.63334vw; left: -13vw; overflow: visible }
+  .signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence, 1)); position: absolute; bottom: calc(.8svh - 2.08334vw); left: -13vw; overflow: visible }
   .signature path { stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0 }
   .bottom { z-index: 4; align-items: center; gap: 1.04167vw; display: flex; position: absolute; inset: auto 3.4vw 1.40625vw }
   .pause { color: #92918a; border: 1px solid #393935; border-radius: 50%; place-items: center; width: 1.66667vw; height: 1.66667vw; transition: color .2s, border-color .2s; display: grid }
@@ -30,6 +30,20 @@
   .reduced .sound:hover path { animation: none }
   .reduced .track { transform: none }
   .bottom { bottom: 1.66667vw }
+  @media (max-aspect-ratio:6/5) {
+    .portrait img, .portraitCanvas { width: 130svh; top: 45%; left: calc(50% + 3.38542vw) }
+    .marquee { top: 34% }
+    .information { bottom: 8%; right: 2.08334vw }
+    .information h1 { font-size: calc(4.8vw * var(--type-scale, 1)) }
+    .information p { font-size: calc(0.729167vw * var(--type-scale, 1)) }
+    .signature { width: 47vw; left: -19vw }
+  }
+  @media (min-aspect-ratio:1920/600) and (min-aspect-ratio:6/5) {
+    .information { bottom: 8% }
+    .information h1 { font-size: calc(3.5vw * var(--type-scale, 1)) }
+    .information p { font-size: calc(0.572917vw * var(--type-scale, 1)) }
+    .bottom { bottom: 0.78125vw }
+  }
   @media (prefers-reduced-motion:reduce) {
     .track { transform: none }
   }
@@ -78,8 +92,8 @@
   .hero[data-locale='ar'] { font-weight: var(--weight-400, 450) }
 }
 @media (600px < width <= 1024px) {
-  .hero { z-index: 12; height: 133.334vw; position: relative }
-  .scene { pointer-events: none; isolation: isolate; height: 133.334vw; position: fixed; inset: 0; overflow: clip }
+  .hero { z-index: 12; height: 100svh; position: relative }
+  .scene { pointer-events: none; isolation: isolate; height: 100svh; position: fixed; inset: 0; overflow: clip }
   .world { z-index: 1; isolation: isolate; position: absolute; inset: 0 }
   .marquee { -webkit-user-select: none; user-select: none; z-index: 0; pointer-events: none; direction: ltr; position: absolute; inset: 17.5% 0 auto }
   .track { will-change: transform; direction: ltr; width: max-content; display: flex; position: relative; left: 0; right: auto; transform: translate(101.042vw) }
@@ -88,14 +102,14 @@
   .cycle i { font-size: calc(.47em * var(--type-scale, 1)); font-style: normal; font-weight: var(--weight-250, 250); letter-spacing: 0; margin: 0 .6em }
   .portrait { z-index: 1; transform-origin: 45% 55%; position: absolute; inset: 0 }
   .portraitEntrance { opacity: 0; width: 100%; height: 100%; position: relative }
-  .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: 200vw; max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
+  .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: max(100vw, 150svh); max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
-  .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 5.20834vw); position: absolute; bottom: 6vw; right: 2.60417vw }
+  .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 5.20834vw); position: absolute; bottom: max(4.16667vw, min(4.5svh, 9.375vw)); right: 2.60417vw }
   :global(html[lang='en']) .information { min-width: 42.0053vw }
   .copyEntrance { opacity: 0; position: relative }
   .information h1 { font-size: calc(3.90625vw * var(--type-scale, 1)); font-weight: var(--weight-440, 440); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 0.390625vw; line-height: 1.05 }
   .information p { width: 0; min-width: 100%; font-size: calc(1.5625vw * var(--type-scale, 1)); font-weight: var(--weight-400, 400); letter-spacing: calc(-.017em * var(--tracking-scale, 1)); color: #aaa8a1; margin: 0; line-height: 1.48 }
-  .signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence, 1)); position: absolute; bottom: -4.14167vw; left: -13vw; overflow: visible }
+  .signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence, 1)); position: absolute; bottom: calc(.8svh - 5.20834vw); left: -13vw; overflow: visible }
   .signature path { stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0 }
   .bottom { z-index: 4; align-items: center; gap: 2.60417vw; display: flex; position: absolute; inset: auto 3.4vw 3.51563vw }
   .pause { color: #92918a; border: 1px solid #393935; border-radius: 50%; place-items: center; width: 4.16667vw; height: 4.16667vw; transition: color .2s, border-color .2s; display: grid }
@@ -107,12 +121,20 @@
   .reduced .scene { position: absolute }
   .reduced .sound:hover path { animation: none }
   .reduced .track { transform: none }
-  .portrait img, .portraitCanvas { width: 173.334vw; top: 45%; left: calc(50% + 8.46355vw) }
-  .marquee { top: 34% }
-  .information { bottom: 8%; right: 2.60417vw }
-  .information h1 { font-size: calc(4.8vw * var(--type-scale, 1)) }
-  .information p { font-size: calc(1.82292vw * var(--type-scale, 1)) }
-  .signature { width: 47vw; left: -19vw }
+  @media (max-aspect-ratio:6/5) {
+    .portrait img, .portraitCanvas { width: 130svh; top: 45%; left: calc(50% + 8.46355vw) }
+    .marquee { top: 34% }
+    .information { bottom: 8%; right: 2.60417vw }
+    .information h1 { font-size: calc(4.8vw * var(--type-scale, 1)) }
+    .information p { font-size: calc(1.82292vw * var(--type-scale, 1)) }
+    .signature { width: 47vw; left: -19vw }
+  }
+  @media (min-aspect-ratio:768/600) and (min-aspect-ratio:6/5) {
+    .information { bottom: 8% }
+    .information h1 { font-size: calc(3.5vw * var(--type-scale, 1)) }
+    .information p { font-size: calc(1.4323vw * var(--type-scale, 1)) }
+    .bottom { bottom: 1.95313vw }
+  }
   @media (prefers-reduced-motion:reduce) {
     .track { transform: none }
   }
@@ -161,8 +183,8 @@
   .hero[data-locale='ar'] { font-weight: var(--weight-400, 450) }
 }
 @media (width <= 600px) {
-  .hero { z-index: 12; height: 222.088vw; position: relative }
-  .scene { pointer-events: none; isolation: isolate; height: 222.088vw; position: fixed; inset: 0; overflow: clip }
+  .hero { z-index: 12; height: 100svh; position: relative }
+  .scene { pointer-events: none; isolation: isolate; height: 100svh; position: fixed; inset: 0; overflow: clip }
   .world { z-index: 1; isolation: isolate; position: absolute; inset: 0 }
   .marquee { -webkit-user-select: none; user-select: none; z-index: 0; pointer-events: none; direction: ltr; position: absolute; inset: 17.5% 0 auto }
   .track { will-change: transform; direction: ltr; width: max-content; display: flex; position: relative; left: 0; right: auto; transform: translate(101.942vw) }
@@ -171,14 +193,14 @@
   .cycle i { font-size: calc(.47em * var(--type-scale, 1)); font-style: normal; font-weight: var(--weight-250, 250); letter-spacing: 0; margin: 0 .6em }
   .portrait { z-index: 1; transform-origin: 45% 55%; position: absolute; inset: 0 }
   .portraitEntrance { opacity: 0; width: 100%; height: 100%; position: relative }
-  .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: 333.132vw; max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
+  .portrait img, .portraitCanvas { -webkit-user-select: none; user-select: none; width: max(100vw, 150svh); max-width: none; height: auto; display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) }
   .language, .sound, .logo, .talk, .pause, .scrollLink { pointer-events: auto; -webkit-tap-highlight-color: transparent }
-  .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 9.70874vw); position: absolute; bottom: 9.99394vw; right: 4.85437vw }
+  .information { z-index: 3; outline: none; width: max-content; max-width: calc(100% - 9.70874vw); position: absolute; bottom: max(7.767vw, min(4.5svh, 17.4758vw)); right: 4.85437vw }
   :global(html[lang='en']) .information { min-width: 58.3698vw }
   .copyEntrance { opacity: 0; position: relative }
   .information h1 { font-size: calc(7.28156vw * var(--type-scale, 1)); font-weight: var(--weight-440, 440); letter-spacing: calc(-.05em * var(--tracking-scale, 1)); white-space: nowrap; color: #e4e1d9; margin: 0 0 0.728156vw; line-height: 1.05 }
   .information p { width: 0; min-width: 100%; font-size: calc(2.91263vw * var(--type-scale, 1)); font-weight: var(--weight-400, 400); letter-spacing: calc(-.017em * var(--tracking-scale, 1)); color: #aaa8a1; margin: 0; line-height: 1.48 }
-  .signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence, 1)); position: absolute; bottom: -7.93204vw; left: -13vw; overflow: visible }
+  .signature { pointer-events: none; color: #65645e; width: 32vw; height: auto; opacity: calc(.29 * var(--signature-presence, 1)); position: absolute; bottom: calc(.8svh - 9.70874vw); left: -13vw; overflow: visible }
   .signature path { stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0 }
   .bottom { z-index: 4; align-items: center; gap: 4.85437vw; display: flex; position: absolute; inset: auto 3.4vw 6.5534vw }
   .pause { color: #92918a; border: 1px solid #393935; border-radius: 50%; place-items: center; width: 7.767vw; height: 7.767vw; transition: color .2s, border-color .2s; display: grid }
@@ -190,7 +212,7 @@
   .reduced .scene { position: absolute }
   .reduced .sound:hover path { animation: none }
   .reduced .track { transform: none }
-  .portrait img, .portraitCanvas { width: 230.971vw; top: 44%; left: calc(50% + 15.7767vw); transform: translate(-50%, -50%); -webkit-mask-image: linear-gradient(#000 77%, #0000 100%); mask-image: linear-gradient(#000 77%, #0000 100%) }
+  .portrait img, .portraitCanvas { width: max(164vw, 104svh); top: 44%; left: calc(50% + 15.7767vw); transform: translate(-50%, -50%); -webkit-mask-image: linear-gradient(#000 77%, #0000 100%); mask-image: linear-gradient(#000 77%, #0000 100%) }
   .marquee { top: 29% }
   .cycle { font-size: calc(31.5534vw * var(--type-scale, 1)) }
   .information { width: max-content; max-width: calc(100% - 9.70874vw); bottom: 12%; left: auto; right: 4.85437vw }
@@ -200,6 +222,12 @@
   .bottom { gap: 3.39806vw; bottom: 5.82525vw; left: 7%; right: 7% }
   .scrollLink { font-size: calc(1.94175vw * var(--type-scale, 1)); min-height: var(--nav-hit-height); gap: 3.15534vw }
   .pause { width: 9.70874vw; height: 9.70874vw }
+  @media (min-aspect-ratio:412/600) and (min-aspect-ratio:6/5) {
+    .information { bottom: 8% }
+    .information h1 { font-size: calc(3.5vw * var(--type-scale, 1)) }
+    .information p { font-size: calc(2.66991vw * var(--type-scale, 1)) }
+    .bottom { bottom: 3.64078vw }
+  }
   @media (prefers-reduced-motion:reduce) {
     .track { transform: none }
   }

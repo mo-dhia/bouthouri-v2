@@ -17,8 +17,8 @@
   .new { border-radius: 360px }
   .item:hover .name, .item:focus-visible .name { color: #dedbd2 }
   .item:focus-visible .card { outline: 2px solid #dedbd2; outline-offset: 0.208333333333vw; border-radius: 0.416666666667vw }
-  .root[data-grid-enhanced] { padding: 0; block-size: var(--design-height); overflow: clip; user-select: none }
-  .root[data-grid-enhanced] .viewport { position: relative; block-size: var(--design-height); overflow: clip; touch-action: none; cursor: grab }
+  .root[data-grid-enhanced] { padding: 0; block-size: 100svh; overflow: clip; user-select: none }
+  .root[data-grid-enhanced] .viewport { position: relative; block-size: 100svh; overflow: clip; touch-action: none; cursor: grab }
   .root[data-grid-enhanced] .plane { display: block; position: relative; inline-size: 100%; block-size: 100% }
   .root[data-grid-enhanced] .item { position: absolute; inset-block-start: 0; inset-inline-start: var(--grid-anchor-inset, 0vw); inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: none }
   .root[data-grid-enhanced] .card { inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: auto }
@@ -53,8 +53,8 @@
   .new { border-radius: 360px }
   .item:hover .name, .item:focus-visible .name { color: #dedbd2 }
   .item:focus-visible .card { outline: 2px solid #dedbd2; outline-offset: 0.520833333333vw; border-radius: 1.04166666667vw }
-  .root[data-grid-enhanced] { padding: 0; block-size: var(--design-height); overflow: clip; user-select: none }
-  .root[data-grid-enhanced] .viewport { position: relative; block-size: var(--design-height); overflow: clip; touch-action: none; cursor: grab }
+  .root[data-grid-enhanced] { padding: 0; block-size: 100svh; overflow: clip; user-select: none }
+  .root[data-grid-enhanced] .viewport { position: relative; block-size: 100svh; overflow: clip; touch-action: none; cursor: grab }
   .root[data-grid-enhanced] .plane { display: block; position: relative; inline-size: 100%; block-size: 100% }
   .root[data-grid-enhanced] .item { position: absolute; inset-block-start: 0; inset-inline-start: var(--grid-anchor-inset, 0vw); inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: none }
   .root[data-grid-enhanced] .card { inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: auto }
@@ -89,8 +89,8 @@
   .new { border-radius: 360px }
   .item:hover .name, .item:focus-visible .name { color: #dedbd2 }
   .item:focus-visible .card { outline: 2px solid #dedbd2; outline-offset: 0.970873786408vw; border-radius: 1.94174757282vw }
-  .root[data-grid-enhanced] { padding: 0; block-size: var(--design-height); overflow: clip; user-select: none }
-  .root[data-grid-enhanced] .viewport { position: relative; block-size: var(--design-height); overflow: clip; touch-action: none; cursor: grab }
+  .root[data-grid-enhanced] { padding: 0; block-size: 100svh; overflow: clip; user-select: none }
+  .root[data-grid-enhanced] .viewport { position: relative; block-size: 100svh; overflow: clip; touch-action: none; cursor: grab }
   .root[data-grid-enhanced] .plane { display: block; position: relative; inline-size: 100%; block-size: 100% }
   .root[data-grid-enhanced] .item { position: absolute; inset-block-start: 0; inset-inline-start: var(--grid-anchor-inset, 0vw); inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: none }
   .root[data-grid-enhanced] .card { inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: auto }

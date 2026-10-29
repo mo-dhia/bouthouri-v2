@@ -68,8 +68,9 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   utilities.queries.set("[data-hero-nav-item]", navItems);
   utilities.queries.set("[data-hero-nav-window]", navWindows);
   utilities.queries.set('[data-nav-context="hero"] [data-home-link] svg', navLogo);
-  Object.defineProperty(root, "offsetHeight", { get: () => viewport.designHeight(width) });
-  root.rect = () => ({ top: -y, left: 0, width, height: viewport.designHeight(width) });
+  // The hero is a 100svh stage: its measured height is the physical viewport height.
+  Object.defineProperty(root, "offsetHeight", { get: () => physicalHeight });
+  root.rect = () => ({ top: -y, left: 0, width, height: physicalHeight });
   elements["hero-cycle"].rect = () => ({ left: 0, top: 0, width: 3000 * scale(), height: 200 * scale() });
   elements["identity-anchor"].rect = () => ({ left: 100 * scale(), top: 200 * scale(), width: 280 * scale(), height: 140 * scale() });
   navLogo.rect = () => ({ left: 600 * scale(), top: 40 * scale() + Number.parseFloat(navItems[1].dataset.entryY ?? "0") * width / 100, width: 80 * scale(), height: 40 * scale() });
@@ -143,15 +144,16 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
 const vertical = (transform: unknown, width: number) => Number(String(transform).match(/translate3d\(0,([^v]+)vw,0\)/)![1]) * width / 100;
 const horizontal = (transform: unknown, width: number) => Number(String(transform).match(/translate3d\(([^v]+)vw,0,0\)/)![1]) * width / 100;
 
-test("hero poses and native trigger span retain source reference geometry and scale uniformly within each profile", () => {
+test("hero poses and native trigger span follow the physical stage and scale uniformly at reference proportions", () => {
   for (const [referenceWidth, referenceHeight, widths] of [
     [1920, 1080, [1440, 2560]], [768, 1024, [650, 1000]], [412, 915, [320, 540]],
   ] as const) {
     let reference!: HeroWorldPose;
     for (const width of [referenceWidth, ...widths]) {
-      const h = harness(width, referenceHeight);
+      const scale = width / referenceWidth, mobile = referenceWidth <= 700;
+      const h = harness(width, referenceHeight * scale);
       h.scroll(.6); h.step(100); h.step(100);
-      const pose = h.pose(), scale = width / referenceWidth, mobile = referenceWidth <= 700;
+      const pose = h.pose();
       if (width === referenceWidth) reference = pose;
       expect(pose).toEqual(reference);
       expect(h.bounds().end).toBeCloseTo(referenceHeight * scale * (1 + (mobile ? .058 : .068) * 22), 10);
@@ -161,10 +163,12 @@ test("hero poses and native trigger span retain source reference geometry and sc
       expect(vertical(h.elements["hero-marquee"].style.transform, width)).toBeCloseTo(pose.marqueeY * designTravel * scale, 10);
       expect(h.elements["copy-lines"].children).toHaveLength(2);
       expect(h.elements["copy-lines"].children[1].style.cssText).toContain(`top:${18 / referenceWidth * 100}vw;height:${18 / referenceWidth * 100}vw`);
-      const transform = h.elements["hero-portrait"].style.transform;
-      h.resize(width, referenceHeight / 2);
-      expect(h.elements["hero-portrait"].style.transform).toBe(transform);
+      // A shorter window shortens the stage, its native span and its travel; progress keeps the pose.
+      h.resize(width, referenceHeight * scale / 2);
+      expect(h.bounds().end).toBeCloseTo(referenceHeight * scale / 2 * (1 + (mobile ? .058 : .068) * 22), 10);
+      h.scroll(.6); h.step(100); h.step(100);
       expect(h.pose()).toEqual(pose);
+      expect(vertical(h.elements["hero-portrait"].style.transform, width)).toBeCloseTo(pose.portraitY * designTravel / 2 * scale, 10);
       h.dispose(); expect(h.clean).toBe(true);
     }
   }

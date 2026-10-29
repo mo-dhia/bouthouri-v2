@@ -1,4 +1,4 @@
-import { viewportDesign, pixelsToVw } from '@/lib/viewport-design';
+import { referenceStage, pixelsToVw } from '@/lib/viewport-design';
 import { routeEntries, pageEntryPath } from '@/lib/navigation/route-entry';
 import { uiStore } from '@/store/uiStore';
 import { GRID_COUNT, GRID_START, gridCard, gridCaption, gridLayout, gridTarget, projectiveCss, wrap } from './grid-geometry';
@@ -13,7 +13,9 @@ export function mountProjectsGrid(root: HTMLElement) {
   if (!originals.length) return () => {};
   const abort = new AbortController(), media = win.matchMedia('(prefers-reduced-motion: reduce)'), fine = win.matchMedia('(hover: hover) and (pointer: fine)');
   let reduced = media.matches || uiStore.getState().quietMode, disposed = false, frame = 0, previousTime = 0, dirty = true, measuring = true;
-  let design = viewportDesign(win.innerWidth), scale = win.innerWidth / design.width, layout = gridLayout(design.width, design.height);
+  // The viewport is the physical stage; width alone selects the profile and scale.
+  const stage = () => referenceStage(win.innerWidth, viewport.getBoundingClientRect().height || win.innerHeight);
+  let design = stage(), scale = design.scale, layout = gridLayout(design.width, design.height);
   const motion = createGridMotion(layout, GRID_START);
   const originalRootStyle = root.getAttribute('style'), saved = originals.map(element => ({ element, style: element.getAttribute('style') }));
   const clones: HTMLAnchorElement[] = [];
@@ -39,7 +41,7 @@ export function mountProjectsGrid(root: HTMLElement) {
     assetsReady: () => root.dataset.gridReady === 'true',
   });
   function measure() {
-    const old = layout; design = viewportDesign(win.innerWidth); scale = win.innerWidth / design.width;
+    const old = layout; design = stage(); scale = design.scale;
     layout = gridLayout(design.width, design.height); bounds = viewport.getBoundingClientRect();
     // A held contact keeps following from its current point under the new mapping.
     if (layout.stepX !== old.stepX || layout.stepY !== old.stepY) motion.resize(layout, old, contact ? localPoint(contact) : undefined);

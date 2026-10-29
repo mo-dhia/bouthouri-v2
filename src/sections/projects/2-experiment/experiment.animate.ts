@@ -27,7 +27,7 @@ export function mountExperiment(root: HTMLElement) {
   const fields = [...root.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-config-key]')];
   const initial = fields.map(field => field.value);
   let disposed = false, generation = 0, environment: Environment | null = null, handle: Handle | null = null;
-  let reduced = query.matches || uiStore.getState().quietMode, profile = experimentLayout(win.innerWidth).design.key;
+  let reduced = query.matches || uiStore.getState().quietMode, profile = experimentLayout(win.innerWidth, win.innerHeight).design.key;
   let visible = true, resizeTimer = 0, prepared = false, announced = false, destroying = false;
   const announce = () => { if (!announced) { announced = true; root.dispatchEvent(new Event('experiment-ready')); } };
   const arrival = routeEntries(doc).register(root, pageEntryPath(root, 'projects'), {
@@ -113,7 +113,7 @@ export function mountExperiment(root: HTMLElement) {
   const observer = new IntersectionObserver(entries => { visible = entries.some(entry => entry.isIntersecting); sync(); }); observer.observe(root);
   win.addEventListener('resize', () => {
     win.clearTimeout(resizeTimer); resizeTimer = win.setTimeout(() => {
-      resizeTimer = 0; const next = experimentLayout(win.innerWidth).design.key;
+      resizeTimer = 0; const next = experimentLayout(win.innerWidth, win.innerHeight).design.key;
       if (next !== profile) { profile = next; boot(); } else environment?.resize();
     }, 150);
   }, { signal: abort.signal });

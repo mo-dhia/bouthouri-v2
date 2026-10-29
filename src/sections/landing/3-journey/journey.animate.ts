@@ -22,7 +22,7 @@ import { getSettledStoryOrigin } from "../2-story/story-origin";
 import { createJourneyScrubClock } from "./journey-scrub";
 import { createJourneyPresentation } from "./journey-presentation";
 import { createJourneyRenderOwner } from "./journey-render-owner";
-import { designHeight, pixelsToVw } from "@/lib/viewport-design";
+import { pixelsToVw } from "@/lib/viewport-design";
 import { journeyGeometry } from "./journey-geometry";
 
 export function mountJourney(root: HTMLElement) {
@@ -206,7 +206,7 @@ export function mountJourney(root: HTMLElement) {
       window.dispatchEvent(new Event("scroll"));
     };
     const measure = () => {
-      const stageHeight = stage.getBoundingClientRect().height || designHeight(innerWidth);
+      const stageHeight = stage.getBoundingClientRect().height || innerHeight;
       root.style.setProperty("--journey-distance", pixelsToVw(journeyGeometry(innerWidth, stageHeight).distance, innerWidth));
       const distance = chapter.getBoundingClientRect().height - stageHeight;
       pinDistance = distance;
@@ -263,8 +263,8 @@ export function mountJourney(root: HTMLElement) {
       const atEnd = frameFromProgress(clock.target).time >= 710;
       const hero = document.querySelector<HTMLElement>("#identity");
       const y = atEnd
-        ? (hero?.getBoundingClientRect().height || designHeight(innerWidth)) * (1 + 22 / journeyGeometry(innerWidth).heroInput)
-        : scrollY + 0.9 * (stage.getBoundingClientRect().height || designHeight(innerWidth));
+        ? (hero?.getBoundingClientRect().height || innerHeight) * (1 + 22 / journeyGeometry(innerWidth).heroInput)
+        : scrollY + 0.9 * (stage.getBoundingClientRect().height || innerHeight);
       window.scrollTo({ top: y, behavior: "smooth" });
     };
     const visibility = () => {

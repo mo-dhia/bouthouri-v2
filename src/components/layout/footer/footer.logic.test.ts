@@ -7,7 +7,7 @@ import { brand } from "@/config/brand";
 const GLYPHS = brand.wordmark.length;
 import * as materialField from "./footer-material-field";
 import * as viewport from "@/lib/viewport-design";
-import { standardFooterPose, standardFooterTail } from "./standard-footer-pose";
+import { standardFooterPose } from "./standard-footer-pose";
 import type { FooterThoughts } from "./footer-thoughts";
 import type { FooterMaterial } from "./footer-material";
 
@@ -142,7 +142,7 @@ function harness(variant = "home") {
   const dependencies = {
     "@/config/brand": { brand },
     "@/lib/viewport-design": viewport,
-    "./standard-footer-pose": { standardFooterPose, standardFooterTail },
+    "./standard-footer-pose": { standardFooterPose },
     "@/lib/scrollInteraction/scrollManager": { __esModule: true, default: { createInstance() {}, removeInstance() {} } },
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe: (callback: () => void) => { subscribers.add(callback); return () => subscribers.delete(callback); } } },
     "./footer-geometry": { measureFooterWord() { wordMeasures++; } },
@@ -600,21 +600,24 @@ test("physical buffer resize keeps width reset policy and disposed/no-context ha
 });
 
 
-test("standalone standard footer owns its reachable extent even when the editorial shell import fails", async () => {
+test("standalone standard footer completes at native max scroll without a tail even when the editorial shell import fails", async () => {
   const h = harness("standard");
-  h.globals.innerWidth = 1280; h.globals.innerHeight = 1024;
+  h.globals.innerWidth = 1280;
   h.root.offsetHeight = 633.6; h.root.rect.top = 4000;
   const dispose = h.mount(); h.intersect(true); await flushImports();
-  const tail = h.root.afterNodes[0]; expect(tail.dataset.footerScrollTail).toBe("true");
-  expect(tail.style.height).toBe("23.75vw");
-  h.globals.scrollY = 4000 + 633.6 + 304 - 1024;
-  h.window.dispatchEvent(new Event("resize"));
-  expect(Number(h.colophon.style.opacity)).toBeCloseTo(1, 12); expect(h.colophon.inert).toBe(false);
-  expect(h.word.style.transform).toBe("translate3d(0,0%,0)");
-  h.mode({ quietMode: true }); expect(tail.style.height).toBe("0vw");
-  h.mode({ quietMode: false }); expect(tail.style.height).toBe("23.75vw");
-  h.globals.innerHeight = 600; h.window.dispatchEvent(new Event("resize")); expect(tail.style.height).toBe("0vw");
-  dispose(); expect(tail.removed).toBe(true);
+  // The physical viewport is the pose length, so tall and short windows both finish at max scroll.
+  for (const height of [1024, 600]) {
+    h.globals.innerHeight = height;
+    h.globals.scrollY = 4000 + 633.6 - height - 633.6 / 2;
+    h.window.dispatchEvent(new Event("resize"));
+    expect(Number(h.colophon.style.opacity)).toBeLessThan(1);
+    h.globals.scrollY = 4000 + 633.6 - height;
+    h.window.dispatchEvent(new Event("resize"));
+    expect(Number(h.colophon.style.opacity)).toBeCloseTo(1, 12); expect(h.colophon.inert).toBe(false);
+    expect(h.word.style.transform).toBe("translate3d(0,0%,0)");
+  }
+  expect(h.root.afterNodes).toHaveLength(0);
+  dispose(); expect(h.root.afterNodes).toHaveLength(0);
 });
 
 
@@ -628,7 +631,7 @@ test("standard footer remeasures upstream content changes without a mask resize"
   // Textarea/content shrinks while the mask width/height remains unchanged.
   const maskRect = { ...h.mask.rect }; h.root.rect.top = 3840;
   h.layoutResize(content);
-  h.globals.scrollY = 3840 + 633.6 + 304 - 1024;
+  h.globals.scrollY = 3840 + 633.6 - 1024;
   h.window.dispatchEvent(new Event("resize"));
   expect(h.mask.rect).toEqual(maskRect);
   expect(Number(h.colophon.style.opacity)).toBeCloseTo(1, 12); expect(h.colophon.inert).toBe(false);
@@ -636,7 +639,7 @@ test("standard footer remeasures upstream content changes without a mask resize"
   dispose(); expect(h.resizeTargets.size).toBe(0);
 });
 
-test("standard footer layout/tail notifications preserve word material geometry on height-only resize", async () => {
+test("standard footer layout notifications preserve word material geometry on height-only resize", async () => {
   const h = harness("standard"), layout = new Surface(), content = new Surface(); h.root.parentElement = layout;
   layout.querySelector = (selector) => selector === "main" ? content : null;
   h.globals.innerWidth = 1280; h.globals.innerHeight = 1024;
@@ -644,9 +647,9 @@ test("standard footer layout/tail notifications preserve word material geometry 
   const before = { ...h.measurements };
   h.globals.innerHeight = 1200;
   h.window.dispatchEvent(new Event("resize"));
-  h.layoutResize(layout); // The changed native tail resizes the observed parent.
+  h.layoutResize(layout); // A taller physical stage resizes the observed parent.
   h.layoutResize(content); // A textarea edit can also move the same word box.
-  expect(h.root.afterNodes[0].style.height).toBe("37.5vw");
+  expect(h.root.afterNodes).toHaveLength(0);
   expect(h.measurements).toEqual(before);
   h.maskResize(); // Real glyph/width changes still invalidate material geometry.
   expect(h.measurements.word).toBe(before.word + 1);

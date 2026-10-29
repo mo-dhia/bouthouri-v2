@@ -6,7 +6,7 @@ export const viewportDesigns = {
 
 export type ViewportDesign = typeof viewportDesigns[keyof typeof viewportDesigns];
 
-/** Select a fixed design canvas, never a height/orientation-dependent layout. */
+/** Width selects the design profile and its scale; the physical height stays live. */
 export function viewportDesign(width: number): ViewportDesign {
   return width <= 600 ? viewportDesigns.mobile : width <= 1024 ? viewportDesigns.tablet : viewportDesigns.desktop;
 }
@@ -20,8 +20,10 @@ export function designPixels(value: number, width: number): number {
   return value * designScale(width);
 }
 
-export function designHeight(width: number): number {
-  return designPixels(viewportDesign(width).height, width);
+/** The physical stage in reference pixels: the reference width at the window's proportions. */
+export function referenceStage(width: number, height: number) {
+  const design = viewportDesign(width), scale = width / design.width;
+  return { key: design.key, width: design.width, height: height / scale, scale };
 }
 
 /** Measured browser pixels -> a CSS vw length; no fixed px styling is emitted. */

@@ -1,6 +1,5 @@
-/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+/* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
 @media (width > 1024px) {
-  :root { --design-height: 56.25vw }
   @font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
   @font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
   :root { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ink: #090909; --paper: #e4e1d9; --reading-direction: ltr; --background: #090909; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
@@ -19,7 +18,7 @@
   ::selection { color: var(--background); background: var(--foreground) }
   .skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
   .skip-link:focus { transform: translateY(0) }
-  .not-found { min-block-size: 56.25vw; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
+  .not-found { min-block-size: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
   .not-found h1 { font-size: 4.17vw; font-weight: 400 }
   .not-found a { text-decoration: underline }
   @media (prefers-reduced-motion: reduce) {
@@ -51,7 +50,6 @@
   body { font-size: 0.833334vw }
 }
 @media (600px < width <= 1024px) {
-  :root { --design-height: 133.334vw }
   @font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
   @font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
   :root { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ink: #090909; --paper: #e4e1d9; --reading-direction: ltr; --background: #090909; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
@@ -70,7 +68,7 @@
   ::selection { color: var(--background); background: var(--foreground) }
   .skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
   .skip-link:focus { transform: translateY(0) }
-  .not-found { min-block-size: 133.334vw; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
+  .not-found { min-block-size: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
   .not-found h1 { font-size: 4.17vw; font-weight: 400 }
   .not-found a { text-decoration: underline }
   .skip-link { inset-block-start: 2.08vw; inset-inline-start: 2.08vw; padding: 2.08vw 3.13vw }
@@ -105,7 +103,6 @@
   body { font-size: 2.08334vw }
 }
 @media (width <= 600px) {
-  :root { --design-height: 222.088vw }
   @font-face { font-family: 'Questrial'; src: url('/assets/fonts/questrial-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap }
   @font-face { font-family: 'Cairo'; src: url('/assets/fonts/cairo-variable.woff2') format('woff2'); font-weight: 200 1000; font-style: normal; font-display: swap }
   :root { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif; --ink: #090909; --paper: #e4e1d9; --reading-direction: ltr; --background: #090909; --foreground: #e4e1d9; --muted: #aaa89f; --border: #383832; color-scheme: dark }
@@ -124,7 +121,7 @@
   ::selection { color: var(--background); background: var(--foreground) }
   .skip-link { position: fixed; inset-block-start: 0.83vw; inset-inline-start: 0.83vw; z-index: 10; padding: 0.83vw 1.25vw; color: var(--background); background: var(--foreground); transform: translateY(-200%) }
   .skip-link:focus { transform: translateY(0) }
-  .not-found { min-block-size: 222.088vw; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
+  .not-found { min-block-size: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 1.25vw; padding: 8.33vw }
   .not-found h1 { font-size: 4.17vw; font-weight: 400 }
   .not-found a { text-decoration: underline }
   .skip-link { inset-block-start: 2.08vw; inset-inline-start: 2.08vw; padding: 2.08vw 3.13vw }

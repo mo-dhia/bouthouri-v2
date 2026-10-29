@@ -68,26 +68,31 @@ describe("shared practice-object viewport profile", () => {
     expect(modelUpdates).toBe(0); expect(rendererAllocations).toBe(0);
   });
 
-  test("both variants/locales choose CSS viewport profiles when scrollbars narrow their hosts", async () => {
+  test("both variants/locales choose CSS viewport profiles by width and frame the physical stage when scrollbars narrow their hosts", async () => {
     for (const [viewportWidth, hostWidth] of [[1025, 1010], [601, 586], [1024, 1009], [600, 585]]) {
-      const design = viewportDesign(viewportWidth), physicalStage = design.height * viewportWidth / design.width;
+      const design = viewportDesign(viewportWidth), outerScale = hostWidth / design.width;
       for (const kind of ["about", "services"] as const) for (const rtl of [false, true]) {
         const fixture = await rendererFixture(viewportWidth, kind, rtl);
         try {
-          const extent = fixture.objects.resize(hostWidth, physicalStage);
-          expect(fixture.poses.length).toBeGreaterThan(0);
-          expect(fixture.poses.every((pose) => pose.width === design.width && pose.height === design.height)).toBe(true);
-          expect(fixture.renderer.size).toEqual({ width: hostWidth, height: extent });
-          // Convert actual buffer extent with viewport vw, never host-width vw.
-          expect(parseFloat(fixture.host.style.height)).toBeCloseTo(extent / viewportWidth * 100, 10);
-          expect(fixture.host.style.height.endsWith("vw")).toBe(true);
-          const referenceExtent = extent / (hostWidth / design.width);
-          expect(referenceExtent).toBeCloseTo(Math.round(referenceExtent), 9);
-          expect(Math.round(referenceExtent)).toBeGreaterThanOrEqual(design.height);
-          // Repeating a measurement must not apply the outer scale twice.
-          expect(fixture.objects.resize(hostWidth, physicalStage)).toBe(extent);
-          fixture.objects.render(0, .5, -.2, false, 1, 1);
-          expect(fixture.poses.at(-1)).toEqual({ width: design.width, height: design.height });
+          // Reference proportions, then a taller physical window: height never selects the profile.
+          for (const physicalStage of [design.height * viewportWidth / design.width, 1.4 * viewportWidth]) {
+            const stageHeight = physicalStage / outerScale;
+            fixture.poses.length = 0;
+            const extent = fixture.objects.resize(hostWidth, physicalStage);
+            expect(fixture.poses.length).toBeGreaterThan(0);
+            expect(fixture.poses.every((pose) => pose.width === design.width && pose.height === stageHeight)).toBe(true);
+            expect(fixture.renderer.size).toEqual({ width: hostWidth, height: extent });
+            // Convert actual buffer extent with viewport vw, never host-width vw.
+            expect(parseFloat(fixture.host.style.height)).toBeCloseTo(extent / viewportWidth * 100, 10);
+            expect(fixture.host.style.height.endsWith("vw")).toBe(true);
+            const referenceExtent = extent / outerScale;
+            expect(referenceExtent).toBeCloseTo(Math.round(referenceExtent), 9);
+            expect(Math.round(referenceExtent)).toBeGreaterThanOrEqual(stageHeight);
+            // Repeating a measurement must not apply the outer scale twice.
+            expect(fixture.objects.resize(hostWidth, physicalStage)).toBe(extent);
+            fixture.objects.render(0, .5, -.2, false, 1, 1);
+            expect(fixture.poses.at(-1)).toEqual({ width: design.width, height: stageHeight });
+          }
         } finally { fixture.restore(); }
       }
     }
@@ -97,10 +102,10 @@ describe("shared practice-object viewport profile", () => {
     const fixture = await rendererFixture(1025, "services", false);
     try {
       for (const [viewportWidth, hostWidth] of [[1025, 1010], [1024, 1009], [601, 586], [600, 585], [1920, 1905]]) {
-        fixture.viewport.innerWidth = viewportWidth; const design = viewportDesign(viewportWidth);
-        fixture.objects.resize(hostWidth, design.height * viewportWidth / design.width);
+        fixture.viewport.innerWidth = viewportWidth; const design = viewportDesign(viewportWidth), physicalStage = design.height * viewportWidth / design.width;
+        fixture.objects.resize(hostWidth, physicalStage);
         fixture.objects.render(0, 0, 0, true);
-        expect(fixture.poses.at(-1)).toEqual({ width: design.width, height: design.height });
+        expect(fixture.poses.at(-1)).toEqual({ width: design.width, height: physicalStage / (hostWidth / design.width) });
         expect(fixture.renderer.size.width).toBe(hostWidth);
         expect(parseFloat(fixture.host.style.height)).toBeCloseTo(fixture.renderer.size.height / viewportWidth * 100, 10);
       }

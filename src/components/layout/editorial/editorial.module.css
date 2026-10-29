@@ -1,6 +1,6 @@
 /* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
 @media (width > 1024px) {
-  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: 2.25vw; --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 5.20834vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
+  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: max(1.25vw, min(4svh, 2.5vw)); --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 5.20834vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
   .root :global(.footer-information) { top: var(--footer-information-top); grid-template-columns: 1.6fr 1fr auto; align-items: start; gap: 3vw; display: grid; position: absolute; inset-inline: 8% }
   .root :global(.footer-label) { font-size: calc(0.416667vw * var(--type-scale, 1)); letter-spacing: calc(.13em * var(--tracking-scale, 1)); color: #a5a397; margin-bottom: 0.729167vw; display: block }
   .root :global(.footer-link) { min-height: 1.45834vw; font-size: calc(0.520834vw * var(--type-scale, 1)); color: #c8c5ba; padding-block: 0.208334vw; line-height: 1.5; display: inline-block; position: relative }
@@ -16,10 +16,24 @@
   .root :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
   .root :global(.footer-socials) { font-size: calc(0.520834vw * var(--type-scale, 1)); align-items: baseline; gap: 1.25vw; display: flex }
   .root :global(.footer-colophon small) { font-size: calc(0.416667vw * var(--type-scale, 1)); letter-spacing: calc(.06em * var(--tracking-scale, 1)); white-space: nowrap; color: #909085; align-items: baseline; gap: .9em; display: flex }
-  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 49.5vw; padding-block: 10.125vw 2.25vw; display: grid; position: relative; inset: auto }
+  @media (min-aspect-ratio:1920/600) {
+    .root :global(.home-footer) { --footer-information-top: 37%; --footer-word-rest: 7%; --footer-word-gap: max(0.833334vw, min(3svh, 1.25vw)) }
+    .root :global(.footer-information) { grid-template-columns: 1.7fr 1fr auto; gap: 0.729167vw }
+    .root :global(.footer-direct) { grid-column: auto }
+    .root :global(.footer-direct p) { font-size: calc(0.46875vw * var(--type-scale, 1)); margin-top: 0.260417vw }
+    .root :global(.footer-label) { font-size: calc(0.364584vw * var(--type-scale, 1)); margin-bottom: 0.15625vw }
+    .root :global(.footer-link) { font-size: calc(0.46875vw * var(--type-scale, 1)); min-height: 1.30209vw }
+    .root :global(.footer-email), .root :global(.footer-clock time) { font-size: calc(0.729167vw * var(--type-scale, 1)) }
+    .root :global(.footer-navigation nav) { gap: 0.625vw }
+    .root :global(.footer-word-mask) { width: 78%; inset-inline: 11% }
+    .root :global(.footer-colophon) { bottom: 2%; inset-inline: 4% }
+    .root :global(.footer-colophon small) { flex-direction: row }
+    .root :global(.footer-word-text) { line-height: .8 }
+  }
+  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 88svh; padding-block: max(5.72917vw, min(18svh, 10.4167vw)) max(1.25vw, min(4svh, 2.5vw)); display: grid; position: relative; inset: auto }
   .root :global(.standard-footer .footer-information) { margin-inline: 8%; position: relative; inset: auto }
-  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(1.04167vw, calc(5.0625vw - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
-  .root :global(.standard-footer .footer-colophon) { margin: 1.6875vw 4% 0; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(1.04167vw, calc(max(3.33334vw, min(9svh, 6.25vw)) - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-colophon) { margin: max(1.04167vw, min(3svh, 2.08334vw)) 4% 0; position: relative; inset: auto }
   .root :global(.global-footer[dir=rtl]) { font-family: var(--font-arabic), sans-serif }
   .root :global(.global-footer[dir=rtl] :is(.footer-label, .footer-direct p, .footer-link)) { letter-spacing: 0 }
   .root :global(.global-footer :is(bdi, time)) { font-family: var(--font-latin), sans-serif; font-weight: 400 }
@@ -32,10 +46,13 @@
   .root :global(.global-footer .footer-label) { font-size: max(0.520834vw, calc(0.416667vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(0.520834vw, calc(0.46875vw * var(--type-scale, 1))) }
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.0520834vw; height: 0.0520834vw; position: absolute; overflow: hidden }
-  .root { position: relative; isolation: isolate; min-height: var(--design-height); font-weight: var(--weight-400, 400) }
+  .root { position: relative; isolation: isolate; min-height: 100svh; font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
   :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
+  @media (max-aspect-ratio:8/9) {
+    .root > main:global(.practice-page) { --ed-gutter: 7vw }
+  }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
   .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
   .navigation { --nav-hit-height: 2.29167vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 1.04167vw; min-height: 4.89584vw; padding: 1.14584vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
@@ -59,7 +76,7 @@
   :global(html[lang='ar']) .role { text-align: right; letter-spacing: 0; font-size: calc(0.572917vw * var(--type-scale, 1)); direction: rtl }
 }
 @media (600px < width <= 1024px) {
-  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: 5.33334vw; --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 13.0209vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
+  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: max(3.125vw, min(4svh, 6.25vw)); --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 13.0209vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
   .root :global(.footer-information) { top: var(--footer-information-top); grid-template-columns: 1.6fr 1fr auto; align-items: start; gap: 3vw; display: grid; position: absolute; inset-inline: 8% }
   .root :global(.footer-label) { font-size: calc(1.04167vw * var(--type-scale, 1)); letter-spacing: calc(.13em * var(--tracking-scale, 1)); color: #a5a397; margin-bottom: 1.82292vw; display: block }
   .root :global(.footer-link) { min-height: 3.64584vw; font-size: calc(1.30209vw * var(--type-scale, 1)); color: #c8c5ba; padding-block: 0.520834vw; line-height: 1.5; display: inline-block; position: relative }
@@ -75,10 +92,24 @@
   .root :global(.global-footer[dir=rtl] .footer-colophon) { flex-direction: row-reverse }
   .root :global(.footer-socials) { font-size: calc(1.30209vw * var(--type-scale, 1)); align-items: baseline; gap: 3.125vw; display: flex }
   .root :global(.footer-colophon small) { font-size: calc(1.04167vw * var(--type-scale, 1)); letter-spacing: calc(.06em * var(--tracking-scale, 1)); white-space: nowrap; color: #909085; align-items: baseline; gap: .9em; display: flex }
-  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 117.334vw; padding-block: 24vw 5.33334vw; display: grid; position: relative; inset: auto }
+  @media (min-aspect-ratio:768/600) {
+    .root :global(.home-footer) { --footer-information-top: 37%; --footer-word-rest: 7%; --footer-word-gap: max(2.08334vw, min(3svh, 3.125vw)) }
+    .root :global(.footer-information) { grid-template-columns: 1.7fr 1fr auto; gap: 1.82292vw }
+    .root :global(.footer-direct) { grid-column: auto }
+    .root :global(.footer-direct p) { font-size: calc(1.17188vw * var(--type-scale, 1)); margin-top: 0.651042vw }
+    .root :global(.footer-label) { font-size: calc(0.911459vw * var(--type-scale, 1)); margin-bottom: 0.390625vw }
+    .root :global(.footer-link) { font-size: calc(1.17188vw * var(--type-scale, 1)); min-height: 3.25521vw }
+    .root :global(.footer-email), .root :global(.footer-clock time) { font-size: calc(1.82292vw * var(--type-scale, 1)) }
+    .root :global(.footer-navigation nav) { gap: 1.5625vw }
+    .root :global(.footer-word-mask) { width: 78%; inset-inline: 11% }
+    .root :global(.footer-colophon) { bottom: 2%; inset-inline: 4% }
+    .root :global(.footer-colophon small) { flex-direction: row }
+    .root :global(.footer-word-text) { line-height: .8 }
+  }
+  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 88svh; padding-block: max(14.323vw, min(18svh, 26.0417vw)) max(3.125vw, min(4svh, 6.25vw)); display: grid; position: relative; inset: auto }
   .root :global(.standard-footer .footer-information) { margin-inline: 8%; position: relative; inset: auto }
-  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(2.60417vw, calc(12vw - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
-  .root :global(.standard-footer .footer-colophon) { margin: 4vw 4% 0; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(2.60417vw, calc(max(8.33334vw, min(9svh, 15.625vw)) - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-colophon) { margin: max(2.60417vw, min(3svh, 5.20834vw)) 4% 0; position: relative; inset: auto }
   .root :global(.global-footer[dir=rtl]) { font-family: var(--font-arabic), sans-serif }
   .root :global(.global-footer[dir=rtl] :is(.footer-label, .footer-direct p, .footer-link)) { letter-spacing: 0 }
   .root :global(.global-footer :is(bdi, time)) { font-family: var(--font-latin), sans-serif; font-weight: 400 }
@@ -89,11 +120,13 @@
   .root :global(.global-footer .footer-label) { font-size: max(1.30209vw, calc(1.04167vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(1.30209vw, calc(1.17188vw * var(--type-scale, 1))) }
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.130209vw; height: 0.130209vw; position: absolute; overflow: hidden }
-  .root { position: relative; isolation: isolate; min-height: var(--design-height); font-weight: var(--weight-400, 400) }
+  .root { position: relative; isolation: isolate; min-height: 100svh; font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
   :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
-  .root > main:global(.practice-page) { --ed-gutter: 7vw }
+  @media (max-aspect-ratio:8/9) {
+    .root > main:global(.practice-page) { --ed-gutter: 7vw }
+  }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
   .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
   .navigation { --nav-hit-height: 5.72917vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 2.60417vw; min-height: 12.2396vw; padding: 2.86459vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
@@ -123,7 +156,7 @@
   .navigation :global([data-menu-control]) { min-width: 8.33334vw; min-height: 5.72917vw }
 }
 @media (width <= 600px) {
-  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: 8.8835vw; --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 24.2719vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
+  .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: max(5.82525vw, min(4svh, 11.6505vw)); --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 24.2719vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
   .root :global(.footer-information) { top: var(--footer-information-top); grid-template-columns: 1.6fr 1fr auto; align-items: start; gap: 3vw; display: grid; position: absolute; inset-inline: 8% }
   .root :global(.footer-label) { font-size: calc(1.94175vw * var(--type-scale, 1)); letter-spacing: calc(.13em * var(--tracking-scale, 1)); color: #a5a397; margin-bottom: 3.39806vw; display: block }
   .root :global(.footer-link) { min-height: 6.79612vw; font-size: calc(2.42719vw * var(--type-scale, 1)); color: #c8c5ba; padding-block: 0.970874vw; line-height: 1.5; display: inline-block; position: relative }
@@ -153,15 +186,29 @@
   .root :global(.footer-colophon) { bottom: 7%; inset-inline: 7% }
   .root :global(.footer-colophon small) { text-align: end }
   .root :global(.footer-socials) { gap: 4.36894vw }
-  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 195.437vw; padding-block: 39.9758vw 8.8835vw; display: grid; position: relative; inset: auto }
+  @media (min-aspect-ratio:412/600) {
+    .root :global(.home-footer) { --footer-information-top: 37%; --footer-word-rest: 7%; --footer-word-gap: max(3.8835vw, min(3svh, 5.82525vw)) }
+    .root :global(.footer-information) { grid-template-columns: 1.7fr 1fr auto; gap: 3.39806vw }
+    .root :global(.footer-direct) { grid-column: auto }
+    .root :global(.footer-direct p) { font-size: calc(2.18447vw * var(--type-scale, 1)); margin-top: 1.2136vw }
+    .root :global(.footer-label) { font-size: calc(1.69903vw * var(--type-scale, 1)); margin-bottom: 0.728156vw }
+    .root :global(.footer-link) { font-size: calc(2.18447vw * var(--type-scale, 1)); min-height: 6.06797vw }
+    .root :global(.footer-email), .root :global(.footer-clock time) { font-size: calc(3.39806vw * var(--type-scale, 1)) }
+    .root :global(.footer-navigation nav) { gap: 2.91263vw }
+    .root :global(.footer-word-mask) { width: 78%; inset-inline: 11% }
+    .root :global(.footer-colophon) { bottom: 2%; inset-inline: 4% }
+    .root :global(.footer-colophon small) { flex-direction: row }
+    .root :global(.footer-word-text) { line-height: .8 }
+  }
+  .root :global(.standard-footer) { visibility: visible; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); min-height: 88svh; padding-block: max(26.6991vw, min(18svh, 48.5437vw)) max(5.82525vw, min(4svh, 11.6505vw)); display: grid; position: relative; inset: auto }
   .root :global(.standard-footer .footer-information) { margin-inline: 8%; position: relative; inset: auto }
-  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(4.85437vw, calc(19.9879vw - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
-  .root :global(.standard-footer .footer-colophon) { margin: 6.66263vw 4% 0; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-word-mask) { width: auto; margin-inline: 2%; margin-top: max(4.85437vw, calc(max(15.534vw, min(9svh, 29.1263vw)) - var(--footer-ink-top, 0vw))); align-self: end; position: relative; inset: auto }
+  .root :global(.standard-footer .footer-colophon) { margin: max(4.85437vw, min(3svh, 9.70874vw)) 4% 0; position: relative; inset: auto }
   .root :global(.global-footer[dir=rtl]) { font-family: var(--font-arabic), sans-serif }
   .root :global(.global-footer[dir=rtl] :is(.footer-label, .footer-direct p, .footer-link)) { letter-spacing: 0 }
   .root :global(.global-footer :is(bdi, time)) { font-family: var(--font-latin), sans-serif; font-weight: 400 }
   .root :global(.global-footer .footer-socials bdi[lang=ar]) { font-family: var(--font-arabic), sans-serif; letter-spacing: 0 }
-  .root :global(.standard-footer) { min-height: 182.112vw; padding-top: 31.0923vw }
+  .root :global(.standard-footer) { min-height: 82svh; padding-top: max(21.8447vw, min(14svh, 36.4078vw)) }
   .root :global(.standard-footer .footer-information) { grid-template-columns: 1fr auto; gap: 6.06797vw 4.36894vw }
   .root :global(.standard-footer .footer-direct) { grid-column: 1/-1 }
   .root :global(.standard-footer .footer-label) { font-size: calc(1.94175vw * var(--type-scale, 1)); margin-bottom: 2.18447vw }
@@ -175,7 +222,7 @@
   .root :global(.global-footer .footer-label) { font-size: max(2.42719vw, calc(1.94175vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(2.42719vw, calc(2.18447vw * var(--type-scale, 1))) }
   .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.242719vw; height: 0.242719vw; position: absolute; overflow: hidden }
-  .root { position: relative; isolation: isolate; min-height: var(--design-height); font-weight: var(--weight-400, 400) }
+  .root { position: relative; isolation: isolate; min-height: 100svh; font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
   :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }

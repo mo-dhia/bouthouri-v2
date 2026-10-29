@@ -1,5 +1,5 @@
 import scrollManager from "@/lib/scrollInteraction/scrollManager";
-import { designHeight, designScale, pixelsToVw, viewportDesign } from "@/lib/viewport-design";
+import { designScale, pixelsToVw, referenceStage, viewportDesign } from "@/lib/viewport-design";
 import { uiStore } from "@/store/uiStore";
 import { createServicesOpening } from "./2-opening/opening.animate";
 import { createServiceIndex } from "./3-index/service-index.animate";
@@ -71,7 +71,7 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
       dirty = false; index.tick(scroll);
       const scale = designScale(window.innerWidth), portrait = viewportDesign(window.innerWidth).key !== "desktop";
       compositions.forEach((composition) => {
-        const stageHeight = designHeight(window.innerWidth);
+        const stageHeight = window.innerHeight;
         const progress = clamp((scroll + stageHeight - composition.top) / (composition.height + stageHeight));
         composition.layers.forEach((layer) => { const distance = ({ heading: 24, copy: 40, meta: 10 } as Record<string, number>)[layer.kind] ?? 0; const offset = reduced ? 0 : (1 - 2 * progress) * distance * (portrait ? .45 : 1) * scale; layer.element.style.transform = `translate3d(0,${pixelsToVw(offset, window.innerWidth)},0)`; });
       });
@@ -93,8 +93,8 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
     if (event.pointerType === "touch" || reduced || viewportDesign(window.innerWidth).key !== "desktop") return;
     const rect = hero.getBoundingClientRect(); if (event.clientY < rect.top || event.clientY > rect.bottom) return;
     // The source object pointer is attenuated outside its central influence ellipse.
-    const design = viewportDesign(window.innerWidth), referenceX = (event.clientX - rect.left) / (rect.width / design.width), referenceY = (event.clientY - rect.top) / (rect.width / design.width);
-    const size = Math.min(.36 * design.width, .58 * design.height) * 1.2, x = (referenceX - .5 * design.width) / (.65 * size), y = (.49 * design.height - referenceY) / (.65 * size);
+    const stage = referenceStage(rect.width, rect.height), referenceX = (event.clientX - rect.left) / stage.scale, referenceY = (event.clientY - rect.top) / stage.scale;
+    const size = Math.min(.36 * stage.width, .58 * stage.height) * 1.2, x = (referenceX - .5 * stage.width) / (.65 * size), y = (.49 * stage.height - referenceY) / (.65 * size);
     const t = clamp((Math.hypot(x, y) - .8) / .65), falloff = 1 - t * t * (3 - 2 * t);
     pointerTargetX = clamp(x, -1, 1) * falloff; pointerTargetY = clamp(y, -1, 1) * falloff; wake();
   };

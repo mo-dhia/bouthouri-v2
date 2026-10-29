@@ -62,12 +62,16 @@ test('DOM design writes retain assignment values and progress transforms use a r
   motion.dispose(); h.clock.dispose();
 });
 
-test('stage cameras freeze reference dimensions while physical width alone sets the outer scale', () => {
-  expect(experimentLayout(1920)).toMatchObject({ width: 1858, height: 946, top: 102, scale: 1 });
-  expect(experimentLayout(768)).toMatchObject({ width: 724, height: 899, top: 102, scale: 1 });
-  expect(experimentLayout(412)).toMatchObject({ width: 377, height: 817, top: 80, scale: 1 });
-  expect(experimentLayout(1440)).toMatchObject({ width: 1858, height: 946, scale: .75 });
-  expect(experimentLayout(650)).toMatchObject({ width: 724, height: 899, scale: 650 / 768 });
+test('stage cameras keep the reference width while the physical window sets the outer scale and stage height', () => {
+  expect(experimentLayout(1920, 1080)).toMatchObject({ width: 1858, height: 946, top: 102, scale: 1 });
+  expect(experimentLayout(768, 1024)).toMatchObject({ width: 724, height: 899, top: 102, scale: 1 });
+  expect(experimentLayout(412, 915)).toMatchObject({ width: 377, height: 817, top: 80, scale: 1 });
+  expect(experimentLayout(1440, 810)).toMatchObject({ width: 1858, height: 946, scale: .75 });
+  expect(experimentLayout(650, 1024 * 650 / 768)).toMatchObject({ width: 724, height: 899, scale: 650 / 768 });
+  // A taller or shorter window changes the stage height in reference pixels, never the width profile.
+  expect(experimentLayout(1920, 1600)).toMatchObject({ width: 1858, height: 1466, scale: 1 });
+  expect(experimentLayout(1440, 1200)).toMatchObject({ width: 1858, height: 1466, scale: .75 });
+  expect(experimentLayout(1920, 700)).toMatchObject({ width: 1858, height: 566, scale: 1 });
 });
 
 

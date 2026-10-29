@@ -57,7 +57,7 @@ function environmentHarness({ reduced = false, simulate = true, failCreation = f
   stage.closest = (selector) => selector === "main" ? page : selector === ".experience" ? owner : null;
   const document = Object.assign(new EventTarget(), {
     hidden: false, documentElement: new Surface(), createElement: () => Object.assign(new Surface(), {
-      getBoundingClientRect: () => ({ left: 0, top: 0, width: context.innerWidth, height: viewport.designHeight(context.innerWidth) }),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: context.innerWidth, height: context.innerHeight }),
     }), getElementById: () => stage,
   });
   const window = new EventTarget();
@@ -296,7 +296,7 @@ test("source reduced-prop updates retain material time, pointer, targets and wav
   expect(surface.material.uniforms.uTime.value - time).toBeCloseTo(0.035 / 60, 10);
   expect(pointer.state.fieldX).toBe(x); expect(field.clears).toBe(1);
   expect(pointer.state.hovering).toBe(false); expect(pointer.state.pressed).toBe(false); expect(pointer.state.targetX).toBe(0);
-  expect(field.field.uniforms.uStroke.value.x).toBeCloseTo(x * (1920 / 1080), 10);
+  expect(field.field.uniforms.uStroke.value.x).toBeCloseTo(x * 1.36, 10);
   expect(field.field.uniforms.uPulse.value.x).toBe(pulse.x); expect(field.field.uniforms.uPulse.value.y).toBe(pulse.y);
   expect(field.field.uniforms.uPulse.value.z / pulse.z).toBeCloseTo(0.32 * Math.exp(-10 / 60), 10);
   const reducedTime = surface.material.uniforms.uTime.value as number;
@@ -396,7 +396,7 @@ test("background gain/presence use the published displayed hero clock, never ope
   expect(h.fields).toHaveLength(1); expect(h.stats.creations).toBe(1); h.controller.dispose();
 });
 
-test("reference aspect keys preserve within-profile/height/DPR history and replace only the changed field/grid", () => {
+test("physical aspect keys preserve no-op/same-aspect/DPR history and replace only the changed field/grid", () => {
   const h = environmentHarness();
   h.event("pointerdown", { pointerType: "mouse", clientX: 1000, clientY: 400, pointerId: 1, button: 0 }); h.step();
   const first = h.fields[0], mesh = h.surfaces[0], geometry = mesh.geometry, material = mesh.material;
@@ -408,15 +408,18 @@ test("reference aspect keys preserve within-profile/height/DPR history and repla
   h.resize(2720, 2000); h.step();
   h.dpr(2); h.step();
   expect(h.fields).toHaveLength(1); expect(mesh.geometry).toBe(geometry); expect(first.clears).toBe(1);
-  expect(h.dimensions.at(-1)).toEqual([2720, viewport.designHeight(2720)]);
-  h.resize(1361, 1000); expect(h.fields).toHaveLength(1); expect(first.disposals).toBe(0);
+  expect(h.dimensions.at(-1)).toEqual([2720, 2000]);
+  // An aspect change reallocates even if the rounded target width is unchanged.
+  h.resize(1361, 1000); expect(h.fields).toHaveLength(2); expect(first.disposals).toBe(1);
+  expect(h.fields[1].field.uniforms.uCell.value.x).toBe(first.field.uniforms.uCell.value.x);
   expect(mesh.geometry).toBe(geometry); expect(gridDisposals).toBe(0); h.step();
-  expect(material.uniforms.uAspect.value).toBe(1920 / 1080);
+  expect(h.fields[1].clears).toBe(1); expect(h.fields[1].advances).toBe(1);
+  expect(material.uniforms.uAspect.value).toBe(1.361);
   h.resize(800, 1000); h.step(); const tablet = h.fields.at(-1)!;
-  expect(first.disposals).toBe(1); expect(h.fields).toHaveLength(2);
-  h.resize(640, 800); h.step(); // Both sides of the obsolete 700px boundary are tablet.
-  expect(tablet.disposals).toBe(0); expect(h.fields).toHaveLength(2); expect(mesh.geometry).toBe(geometry);
-  h.resize(600, 800);
+  expect(h.fields[1].disposals).toBe(1); expect(h.fields).toHaveLength(3);
+  h.resize(640, 800); h.step(); // Same .8 aspect on both sides of the obsolete 700px boundary.
+  expect(tablet.disposals).toBe(0); expect(h.fields).toHaveLength(3); expect(mesh.geometry).toBe(geometry);
+  h.resize(600, 750); // Same .8 aspect, different mobile key / geometry args.
   expect(tablet.disposals).toBe(1); expect(mesh.geometry).not.toBe(geometry); expect(gridDisposals).toBe(1);
   expect(mesh.geometry.parameters.widthSegments).toBe(96); expect(mesh.geometry.parameters.heightSegments).toBe(96);
   expect(mesh.material).toBe(material); h.step(); h.controller.dispose(); h.controller.dispose();
@@ -424,7 +427,7 @@ test("reference aspect keys preserve within-profile/height/DPR history and repla
   expect(h.stats.rendererDisposals).toBe(1); expect(h.stats.contextLosses).toBe(1);
 });
 
-test("background draw geometry and pointer mapping share the fixed profile independently of actual viewport height", () => {
+test("background draw geometry and pointer mapping follow the physical viewport in every profile", () => {
   const h = environmentHarness();
   for (const reference of Object.values(viewport.viewportDesigns)) {
     h.resize(reference.width, reference.height); h.step();
@@ -432,32 +435,36 @@ test("background draw geometry and pointer mapping share the fixed profile indep
     expect(viewport.designScale(reference.width)).toBe(1);
     expect(h.dimensions.at(-1)).toEqual([reference.width, reference.height]);
     expect(mesh.material.uniforms.uAspect.value).toBe(reference.width / reference.height);
-    const bufferMeasurements = h.dimensions.length;
-    h.resize(reference.width, reference.height / 2); h.step();
-    expect(h.dimensions).toHaveLength(bufferMeasurements);
-    expect(h.fields.at(-1)).toBe(field);
-    expect(h.dimensions.at(-1)).toEqual([reference.width, reference.height]);
-    const input = () => h.event("pointermove", { pointerType: "mouse", clientX: reference.width * 0.75, clientY: reference.height * 0.25 });
-    input();
+    const input = (width: number, height: number) => h.event("pointermove", { pointerType: "mouse", clientX: width * 0.75, clientY: height * 0.25 });
+    input(reference.width, reference.height);
     expect(h.pointers[0].state.targetX).toBe(0.5); expect(h.pointers[0].state.targetY).toBe(0.5);
-    h.resize(reference.width * 1.25, reference.height * 0.8); h.dpr(2); h.step();
+    // Equal proportions at another scale keep the field; the buffer follows the window.
+    h.resize(reference.width * 1.25, reference.height * 1.25); h.dpr(2); h.step();
     expect(h.fields.at(-1)).toBe(field);
     expect(h.dimensions.at(-1)).toEqual([reference.width * 1.25, reference.height * 1.25]);
-    h.event("pointermove", { pointerType: "mouse", clientX: reference.width * 1.25 * 0.75, clientY: reference.height * 1.25 * 0.25 });
+    input(reference.width * 1.25, reference.height * 1.25);
+    expect(h.pointers[0].state.targetX).toBe(0.5); expect(h.pointers[0].state.targetY).toBe(0.5);
+    // A height-only change is a new physical aspect: buffer, field and pointer basis follow it.
+    h.resize(reference.width * 1.25, reference.height * 0.625); h.step();
+    expect(h.dimensions.at(-1)).toEqual([reference.width * 1.25, reference.height * 0.625]);
+    expect(field.disposals).toBe(1); expect(h.fields.at(-1)).not.toBe(field);
+    expect(mesh.material.uniforms.uAspect.value).toBe(reference.width * 1.25 / (reference.height * 0.625));
+    input(reference.width * 1.25, reference.height * 0.625);
     expect(h.pointers[0].state.targetX).toBe(0.5); expect(h.pointers[0].state.targetY).toBe(0.5);
     expect([...mesh.material.uniforms.uCell.value.toArray(), mesh.material.uniforms.uAspect.value].every(Number.isFinite)).toBe(true);
   }
   h.controller.dispose(); expect(h.rafs.size + h.timers.size).toBe(0);
 });
 
-test("native scroll pressure uses the design canvas height across physical height and proportional width changes", () => {
+test("native scroll pressure is normalized by the physical viewport height", () => {
   for (const reference of Object.values(viewport.viewportDesigns)) {
     const cases = [environmentHarness(), environmentHarness(), environmentHarness()];
     cases[0].resize(reference.width, reference.height);
     cases[1].resize(reference.width, reference.height / 2);
     cases[2].resize(reference.width * 1.25, reference.height / 2);
     cases.forEach((h, i) => {
-      const delta = i === 2 ? 50 : 40;
+      // The same fraction of each physical viewport yields the same pressure.
+      const delta = i ? 20 : 40;
       h.hero(0.5); h.scroll(delta);
       expect(h.pointers[0].state.scrollVelocity).toBeCloseTo(40 / reference.height * 3, 12);
       h.step();
@@ -473,7 +480,7 @@ test("native scroll pressure uses the design canvas height across physical heigh
   }
 });
 
-test("standalone environment pointer defaults to design height and keeps a finite zero-sized bounds basis", () => {
+test("standalone environment pointer defaults to physical height and keeps a finite zero-sized bounds basis", () => {
   for (const supplied of [false, true]) {
     const window = new EventTarget(), fine = Object.assign(new EventTarget(), { matches: true });
     const context = createContext({ window, document: Object.assign(new EventTarget(), { hidden: false }),
@@ -483,7 +490,7 @@ test("standalone environment pointer defaults to design height and keeps a finit
     }).exports as { createEnvironmentPointer: typeof createEnvironmentPointer };
     const pointer = loaded.createEnvironmentPointer(() => {}, supplied ? () => ({ left: 0, top: 0, width: 0, height: 0 }) : undefined);
     context.scrollY = 40; window.dispatchEvent(new Event("scroll"));
-    expect(pointer.state.scrollVelocity).toBeCloseTo(supplied ? 1 : 40 / 1080 * 3, 12);
+    expect(pointer.state.scrollVelocity).toBeCloseTo(supplied ? 1 : 40 / 540 * 3, 12);
     expect(Number.isFinite(pointer.state.scrollVelocity)).toBe(true); pointer.dispose();
   }
 });
@@ -713,7 +720,8 @@ test("retained context loss/restore and paused profile changes stay lazy across 
   h.hidden(false); h.step();
   expect(h.canvas).toBe(canvas); expect(Number(canvas.dataset.materialTime)).toBeGreaterThan(phase);
   expect(h.fields.at(-1)!.clears).toBe(1); expect(h.stats.creations).toBe(1);
-  h.resize(500, 300); h.step(); expect(h.fields).toHaveLength(2);
+  h.resize(206, 228.75); h.step(); expect(h.fields).toHaveLength(2); // Same physical proportions.
+  h.resize(500, 300); h.step(); expect(h.fields).toHaveLength(3);
   lease.release(); h.controller.dispose(); expect(h.fields.every((field) => field.disposals === 1)).toBe(true);
   expect(h.stats.contextLosses).toBe(1); expect(h.rafs.size + h.timers.size).toBe(0);
 });

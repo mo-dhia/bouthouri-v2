@@ -1,4 +1,4 @@
-/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+/* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
 @media (width > 1024px) {
   .loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
   .loading[hidden] { display: none }
@@ -15,6 +15,11 @@
   .srOnly { position: absolute; inline-size: 0.0520834vw; block-size: 0.0520834vw; padding: 0; margin: -0.0520834vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
   :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 0.9375vw }
   :global(html[lang='ar']) .continue { font-size: 0.729167vw }
+  @media (min-aspect-ratio:1920/600) and (min-aspect-ratio: 6/5) {
+    .anchor, .mark { inline-size: min(54vw, 58svh); inset-block-start: 42% }
+    .choices { inline-size: 18.75vw; inset-block-start: 72% }
+    .continue { inset-block-end: 3% }
+  }
   @media (prefers-reduced-motion: reduce) {
     .mark { will-change: auto }
     .choices button { transition: none }
@@ -36,6 +41,11 @@
   .srOnly { position: absolute; inline-size: 0.130209vw; block-size: 0.130209vw; padding: 0; margin: -0.130209vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
   :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 2.34375vw }
   :global(html[lang='ar']) .continue { font-size: 1.82292vw }
+  @media (min-aspect-ratio:768/600) and (min-aspect-ratio: 6/5) {
+    .anchor, .mark { inline-size: min(54vw, 58svh); inset-block-start: 42% }
+    .choices { inline-size: 46.875vw; inset-block-start: 72% }
+    .continue { inset-block-end: 3% }
+  }
   @media (prefers-reduced-motion: reduce) {
     .mark { will-change: auto }
     .choices button { transition: none }
@@ -61,6 +71,11 @@
   .choices { inline-size: 76vw; inset-block-start: calc(42% + 21.5vw + 4.85437vw) }
   .choices button { font-size: 3.15534vw }
   .continue { inset-block-end: 10% }
+  @media (min-aspect-ratio:412/600) and (min-aspect-ratio: 6/5) {
+    .anchor, .mark { inline-size: min(54vw, 58svh); inset-block-start: 42% }
+    .choices { inline-size: 60vw; inset-block-start: 72% }
+    .continue { inset-block-end: 3% }
+  }
   @media (prefers-reduced-motion: reduce) {
     .mark { will-change: auto }
     .choices button { transition: none }

@@ -1,6 +1,6 @@
 import { heroWorldEvent, worldProgressFromScroll } from "../1-hero/hero-world";
 import { smoothRange } from "./journey-clock";
-import { designHeight, designPixels, pixelsToVw } from "@/lib/viewport-design";
+import { designPixels, pixelsToVw } from "@/lib/viewport-design";
 import { journeyGeometry } from "./journey-geometry";
 /** Reference glyph metrics and line masks, driven by the shared hero-world handoff. */
 export function createOpeningType(root) {
@@ -272,7 +272,7 @@ export function createOpeningType(root) {
   window.addEventListener(heroWorldEvent, update);
   progress = worldProgressFromScroll(
     scrollY,
-    document.getElementById("identity")?.getBoundingClientRect().height || designHeight(innerWidth),
+    document.getElementById("identity")?.getBoundingClientRect().height || innerHeight,
     journeyGeometry(innerWidth).mobile,
   );
   measure();

@@ -1,4 +1,4 @@
-import { viewportDesign, pixelsToVw } from '@/lib/viewport-design';
+import { referenceStage, pixelsToVw } from '@/lib/viewport-design';
 import { createMaskedReveal } from '../masked-reveal';
 import { systemStructures, systemPhases, systemReading, compileWord, extractWord, viewportProgress, editorialOffset } from './system-geometry';
 import outlines from './word-outlines.json';
@@ -37,7 +37,7 @@ export function createSystemPassage(chapter: HTMLElement, rtl: boolean) {
   };
   return {
     measure(reduced: boolean) {
-      width = viewportDesign(innerWidth).width; height = viewportDesign(innerWidth).height; scale = innerWidth / width; portrait = width <= 700 || height / width > 1.12;
+      const stage = referenceStage(innerWidth, innerHeight); width = stage.width; height = stage.height; scale = stage.scale; portrait = width <= 700 || height / width > 1.12;
       reading.style.removeProperty('transform'); passage.style.setProperty('--system-details-distance', '0vw'); descriptions.forEach(reveal => reveal.measure());
       const bounds = chapter.getBoundingClientRect(); top = (bounds.top + scrollY) / scale; left = bounds.left / scale; chapterHeight = bounds.height / scale; chapterWidth = bounds.width / scale;
       sourceWords.forEach(word => {

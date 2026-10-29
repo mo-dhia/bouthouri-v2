@@ -1,10 +1,9 @@
 import { clamp } from "./story-score";
 import { createMaterialProtection, type MaterialProtection } from "./story-material-protection";
-import { designHeight } from "@/lib/viewport-design";
 
 type PointerBounds = Pick<DOMRectReadOnly, "left" | "top" | "width" | "height">;
 
-export function createEnvironmentPointer(wake: () => void, bounds: () => PointerBounds = () => ({ left: 0, top: 0, width: innerWidth, height: designHeight(innerWidth) })) {
+export function createEnvironmentPointer(wake: () => void, bounds: () => PointerBounds = () => ({ left: 0, top: 0, width: innerWidth, height: innerHeight })) {
   const fine = matchMedia("(hover: hover) and (pointer: fine)");
   const state = {
     enabled: fine.matches, coarse: !fine.matches, hovering: false, pressed: false,
