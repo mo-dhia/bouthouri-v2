@@ -33,13 +33,9 @@ Scoped ESLint, architecture audit, static EN/AR production build and production
 SSR/13-asset audit pass. Evidence is under`.artifacts/rebrand-hero-20261028/`.
 A full reload was used to replace the previous dev/HMR Canvas texture.
 
-The subsequent user-requested darker treatment uses`brightness(.55)` on
-`.portraitEntrance` in all three design profiles. This applies the same exposure
-to the SSR/fallback photograph and its enhanced Canvas, including reading mode,
-while keeping image pixels, alpha, shader behavior, entry/scroll timing and
-layout intact. Text and marquee are outside this filtered layer. The live desktop
-Canvas capture is saved as`darker-desktop-en.png`; the architecture/CSS audit
-and whitespace checks pass.
+On 2026-10-29 the user reverted the darker treatment. The portrait layer has
+no added brightness filter in any design profile, restoring the supplied image’s
+original exposure for the photograph, Canvas and reading mode.
 
 ## Fixed design profiles (2026-10-28)
 
