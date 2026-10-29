@@ -86,7 +86,7 @@ export function routeEntries(doc: Document = document) {
   if (!registry) { registry = createRouteEntryRegistry<HTMLElement>(); registries.set(doc, registry); }
   return registry;
 }
-export function pageEntryPath(root: HTMLElement, page: "vision" | "services" | "contact") {
+export function pageEntryPath(root: HTMLElement, page: "vision" | "services" | "contact" | "projects") {
   return root.closest<HTMLElement>("[data-route-path]")?.dataset.routePath ?? `/${root.dataset.locale ?? (root.dir === "rtl" ? "ar" : "en")}/${page}`;
 }
 export function skipPageEntry(reduced: boolean, win: Pick<Window, "scrollY" | "innerWidth"> = window) {

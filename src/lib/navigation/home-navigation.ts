@@ -79,7 +79,7 @@ export function prepareHomeRoutePush(href: string, win = browserWindow()): boole
   if (!win) return false;
   let target: URL;
   try { target = new URL(href, win.location.href); } catch { return false; }
-  const destination = homePath(target.pathname), source = win.location.pathname.match(/^\/(en|ar)\/(vision|services|contact)\/?$/);
+  const destination = homePath(target.pathname), source = win.location.pathname.match(/^\/(en|ar)\/(vision|services|contact|projects)\/?$/);
   if (!destination || !source || destination !== `/${source[1]}` || target.origin !== win.location.origin || target.hash || target.searchParams.has("work")) return false;
   safeRemove(win, HOME_RETURN_KEY); safeRemove(win, HOME_WORK_RETURN_KEY);
   routePushes.set(win.document, { to: target.pathname + target.search, created: Date.now() });
@@ -92,7 +92,7 @@ export function prepareHomeRouteHistory(fromPath: string, href: string, id: stri
   if (!win || !Number.isFinite(target) || target < 0 || homeHistoryId(win.history.state) !== id) return false;
   let destination: URL;
   try { destination = new URL(href, win.location.href); } catch { return false; }
-  const source = fromPath.match(/^\/(en|ar)\/(vision|services|contact)\/?$/);
+  const source = fromPath.match(/^\/(en|ar)\/(vision|services|contact|projects)\/?$/);
   if (!source || homePath(destination.pathname) !== `/${source[1]}` || destination.href !== win.location.href || destination.hash) return false;
   routeHistoryTargets.set(win.document, { key: currentKey(win), target });
   states.delete(win.document);

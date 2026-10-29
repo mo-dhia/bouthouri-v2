@@ -13,7 +13,7 @@ export function createEnvironmentOwner(loadRuntime: () => Promise<Runtime> = loa
   let generation = 0, loading = false, failed = false, runtime: Runtime | undefined;
   let cancelIdle: (() => void) | undefined, media: MediaQueryList | undefined;
   let mountToken: object | undefined, releaseMedia: (() => void) | undefined;
-  const eligible = (value: string) => new RegExp(`^/${locale}(?:/(?:vision|services|contact))?$`).test(normalize(value));
+  const eligible = (value: string) => new RegExp(`^/${locale}(?:/(?:vision|services|contact|projects))?$`).test(normalize(value));
   const mode = () => current?.reduced || media?.matches || false;
   const detach = () => { current?.attachment?.release(); if (current) current.attachment = undefined; };
   const stop = () => {

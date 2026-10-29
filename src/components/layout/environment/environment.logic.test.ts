@@ -97,8 +97,8 @@ test("a route superseding idle/import uses the latest lease; a zero-binding comp
 test("excluded paths cancel old import generations and permit one fresh resource on eligible reentry", async () => {
   const h = coordinatorHarness(), dispose = h.owner.mount(h.host, "en", "/en");
   const old = h.owner.register(binding("home"), "/en", false); h.start();
-  h.owner.navigate("/en/projects"); old.release();
-  h.owner.register(binding("editorial"), "/en/projects", false);
+  h.owner.navigate("/en/archive"); old.release();
+  h.owner.register(binding("editorial"), "/en/archive", false);
   h.owner.navigate("/en/services"); const serviceBinding = binding("editorial");
   h.owner.register(serviceBinding, "/en/services", true);
   expect(h.requests).toHaveLength(2);
@@ -110,13 +110,23 @@ test("excluded paths cancel old import generations and permit one fresh resource
   dispose(); expect(h.stats.disposals).toBe(2); expect(h.idle.size + h.timers.size).toBe(0);
 });
 
+test('Projects retains the same shared field resource across editorial leases', async () => {
+  const h = coordinatorHarness(), dispose = h.owner.mount(h.host, 'en', '/en/contact');
+  const first = h.owner.register(binding('editorial'), '/en/contact', false);
+  h.requests[0].resolve(h.runtime); await flush();
+  const grid = binding('editorial'); h.owner.navigate('/en/projects');
+  const next = h.owner.register(grid, '/en/projects', false); first.release();
+  expect(h.stats.creations).toBe(1); expect(h.stats.disposals).toBe(0); expect(h.active).toBe(grid);
+  next.release(); dispose(); expect(h.stats.disposals).toBe(1);
+});
+
 test("import failure stays optional without per-route retries; layout cancellation cannot adopt late work", async () => {
   const h = coordinatorHarness(), dispose = h.owner.mount(h.host, "en", "/en/vision");
   h.owner.register(binding("editorial"), "/en/vision", false);
   h.requests[0].reject(new Error("chunk blocked")); await flush();
   h.owner.navigate("/en/contact"); h.owner.register(binding("editorial"), "/en/contact", false);
   expect(h.requests).toHaveLength(1); expect(h.stats.creations).toBe(0);
-  h.owner.navigate("/en/projects"); h.owner.navigate("/en/contact");
+  h.owner.navigate("/en/archive"); h.owner.navigate("/en/contact");
   h.owner.register(binding("editorial"), "/en/contact", false); expect(h.requests).toHaveLength(2);
   dispose(); h.requests[1].resolve(h.runtime); await flush();
   expect(h.stats.creations).toBe(0); expect(h.idle.size + h.timers.size).toBe(0);

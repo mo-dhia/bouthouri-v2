@@ -1,0 +1,103 @@
+@media (width > 1024px) {
+  .root { position: relative; padding: 6.25vw 1.25vw 2.5vw; color: #dbd8d0; isolation: isolate }
+  .title { font-size: 3.125vw; line-height: 1; font-weight: 400; letter-spacing: -.04em; margin: 0 0 1.04166666667vw }
+  .instructions { font-size: 0.729166666667vw; line-height: 1.7; margin: 0 0 1.5625vw; max-width: 31.25vw; color: #a7a397 }
+  .plane { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25vw; direction: ltr }
+  .item { display: block; color: inherit; text-decoration: none; outline: none; text-align: start }
+  .card { display: flex; flex-direction: column; gap: 0.416666666667vw; inline-size: 100%; transform-origin: 0 0; backface-visibility: hidden; transition: scale .16s cubic-bezier(.25, .46, .45, .94) }
+  .media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; min-block-size: 0; background: #191917; border-radius: 0.416666666667vw; isolation: isolate }
+  .media::after { content: ''; position: absolute; inset: 0; border: 1px solid #d6d1c122; border-radius: inherit; pointer-events: none; z-index: 3 }
+  .media img, .media video { object-fit: cover; inline-size: 100%; block-size: 100%; display: block; user-select: none; pointer-events: none }
+  .media video { position: absolute; inset: 0; z-index: 2; opacity: 1; transition: opacity .2s }
+  .media video[hidden] { display: block; opacity: 0 }
+  .caption { display: flex; justify-content: space-between; align-items: center; gap: 0.416666666667vw; direction: ltr; font-size: 0.625vw; line-height: 1.1; font-weight: 400; letter-spacing: 0; text-transform: uppercase; color: #aaa79c }
+  .name { font-family: var(--font-latin), sans-serif; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; transition: color .3s }
+  .tags { flex-shrink: 0; display: inline-flex; align-items: center }
+  .chip { padding: 0.208333333333vw 0.416666666667vw; border-radius: 0.208333333333vw; background: #d6d1c114; color: #d6d1c199; white-space: nowrap }
+  .new { border-radius: 360px }
+  .item:hover .name, .item:focus-visible .name { color: #dedbd2 }
+  .item:focus-visible .card { outline: 2px solid #dedbd2; outline-offset: 0.208333333333vw; border-radius: 0.416666666667vw }
+  .root[data-grid-enhanced] { padding: 0; block-size: var(--design-height); overflow: clip; user-select: none }
+  .root[data-grid-enhanced] .viewport { position: relative; block-size: var(--design-height); overflow: clip; touch-action: none; cursor: grab }
+  .root[data-grid-enhanced] .plane { display: block; position: relative; inline-size: 100%; block-size: 100% }
+  .root[data-grid-enhanced] .item { position: absolute; inset-block-start: 0; inset-inline-start: var(--grid-anchor-inset, 0vw); inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: none }
+  .root[data-grid-enhanced] .card { inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: auto }
+  .root[data-grid-enhanced] .media { flex: 1; aspect-ratio: auto }
+  .root[data-grid-enhanced] .title, .root[data-grid-enhanced] .instructions { position: absolute; inline-size: 0.0520833333333vw; block-size: 0.0520833333333vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; padding: 0 }
+  .root[data-grid-dragging] .viewport, .root[data-grid-dragging] .card { cursor: grabbing }
+  .root[data-grid-enhanced] .item:active .card { scale: .97 }
+  .root[data-grid-dragging] .item:active .card { scale: 1 }
+  .credit { position: relative; display: block; margin-block-start: 1.45833333333vw; font-size: 0.572916666667vw; line-height: 1.4; color: #aaa79c; text-decoration: none; direction: ltr }
+  .root[data-grid-enhanced] .credit { position: fixed; inset-block-end: 1.25vw; inset-inline-end: 1.25vw; z-index: 2; margin: 0; padding: 0.208333333333vw 0.416666666667vw; background: #090909b8 }
+  :global([data-editorial-page='projects']:has([data-grid-enhanced])) { position: fixed; inset: 0; inline-size: 100%; block-size: 100%; min-block-size: 0; overflow: clip }
+  :global(html:has([data-projects-root][data-grid-enhanced])) { overflow: hidden }
+}
+@media (600px < width <= 1024px) {
+  .root { position: relative; padding: 13.0208333333vw 3.125vw 6.25vw; color: #dbd8d0; isolation: isolate }
+  .title { font-size: 5.20833333333vw; line-height: 1; font-weight: 400; letter-spacing: -.04em; margin: 0 0 2.60416666667vw }
+  .instructions { font-size: 1.82291666667vw; line-height: 1.7; margin: 0 0 3.90625vw; max-width: 78.125vw; color: #a7a397 }
+  .plane { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3.125vw; direction: ltr }
+  .item { display: block; color: inherit; text-decoration: none; outline: none; text-align: start }
+  .card { display: flex; flex-direction: column; gap: 1.04166666667vw; inline-size: 100%; transform-origin: 0 0; backface-visibility: hidden; transition: scale .16s cubic-bezier(.25, .46, .45, .94) }
+  .media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; min-block-size: 0; background: #191917; border-radius: 1.04166666667vw; isolation: isolate }
+  .media::after { content: ''; position: absolute; inset: 0; border: 1px solid #d6d1c122; border-radius: inherit; pointer-events: none; z-index: 3 }
+  .media img, .media video { object-fit: cover; inline-size: 100%; block-size: 100%; display: block; user-select: none; pointer-events: none }
+  .media video { position: absolute; inset: 0; z-index: 2; opacity: 1; transition: opacity .2s }
+  .media video[hidden] { display: block; opacity: 0 }
+  .caption { display: flex; justify-content: space-between; align-items: center; gap: 1.04166666667vw; direction: ltr; font-size: 1.5625vw; line-height: 1.1; font-weight: 400; letter-spacing: 0; text-transform: uppercase; color: #aaa79c }
+  .name { font-family: var(--font-latin), sans-serif; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; transition: color .3s }
+  .tags { flex-shrink: 0; display: inline-flex; align-items: center }
+  .chip { padding: 0.520833333333vw 1.04166666667vw; border-radius: 0.520833333333vw; background: #d6d1c114; color: #d6d1c199; white-space: nowrap }
+  .new { border-radius: 360px }
+  .item:hover .name, .item:focus-visible .name { color: #dedbd2 }
+  .item:focus-visible .card { outline: 2px solid #dedbd2; outline-offset: 0.520833333333vw; border-radius: 1.04166666667vw }
+  .root[data-grid-enhanced] { padding: 0; block-size: var(--design-height); overflow: clip; user-select: none }
+  .root[data-grid-enhanced] .viewport { position: relative; block-size: var(--design-height); overflow: clip; touch-action: none; cursor: grab }
+  .root[data-grid-enhanced] .plane { display: block; position: relative; inline-size: 100%; block-size: 100% }
+  .root[data-grid-enhanced] .item { position: absolute; inset-block-start: 0; inset-inline-start: var(--grid-anchor-inset, 0vw); inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: none }
+  .root[data-grid-enhanced] .card { inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: auto }
+  .root[data-grid-enhanced] .media { flex: 1; aspect-ratio: auto }
+  .root[data-grid-enhanced] .title, .root[data-grid-enhanced] .instructions { position: absolute; inline-size: 0.130208333333vw; block-size: 0.130208333333vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; padding: 0 }
+  .root[data-grid-dragging] .viewport, .root[data-grid-dragging] .card { cursor: grabbing }
+  .root[data-grid-enhanced] .item:active .card { scale: .97 }
+  .root[data-grid-dragging] .item:active .card { scale: 1 }
+  .credit { position: relative; display: block; margin-block-start: 3.64583333333vw; font-size: 1.43229166667vw; line-height: 1.4; color: #aaa79c; text-decoration: none; direction: ltr }
+  .root[data-grid-enhanced] .credit { position: fixed; inset-block-end: 3.125vw; inset-inline-end: 3.125vw; z-index: 2; margin: 0; padding: 0.520833333333vw 1.04166666667vw; background: #090909b8 }
+  :global([data-editorial-page='projects']:has([data-grid-enhanced])) { position: fixed; inset: 0; inline-size: 100%; block-size: 100%; min-block-size: 0; overflow: clip }
+  :global(html:has([data-projects-root][data-grid-enhanced])) { overflow: hidden }
+}
+@media (width <= 600px) {
+  .root { position: relative; padding: 23.3009708738vw 5.82524271845vw 11.6504854369vw; color: #dbd8d0; isolation: isolate }
+  .title { font-size: 8.73786407767vw; line-height: 1; font-weight: 400; letter-spacing: -.04em; margin: 0 0 4.85436893204vw }
+  .instructions { font-size: 3.39805825243vw; line-height: 1.7; margin: 0 0 7.28155339806vw; max-width: 145.631067961vw; color: #a7a397 }
+  .plane { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 5.82524271845vw; direction: ltr }
+  .item { display: block; color: inherit; text-decoration: none; outline: none; text-align: start }
+  .card { display: flex; flex-direction: column; gap: 1.94174757282vw; inline-size: 100%; transform-origin: 0 0; backface-visibility: hidden; transition: scale .16s cubic-bezier(.25, .46, .45, .94) }
+  .media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; min-block-size: 0; background: #191917; border-radius: 1.94174757282vw; isolation: isolate }
+  .media::after { content: ''; position: absolute; inset: 0; border: 1px solid #d6d1c122; border-radius: inherit; pointer-events: none; z-index: 3 }
+  .media img, .media video { object-fit: cover; inline-size: 100%; block-size: 100%; display: block; user-select: none; pointer-events: none }
+  .media video { position: absolute; inset: 0; z-index: 2; opacity: 1; transition: opacity .2s }
+  .media video[hidden] { display: block; opacity: 0 }
+  .caption { display: flex; justify-content: space-between; align-items: center; gap: 1.94174757282vw; direction: ltr; font-size: 2.91262135922vw; line-height: 1.1; font-weight: 400; letter-spacing: 0; text-transform: uppercase; color: #aaa79c }
+  .name { font-family: var(--font-latin), sans-serif; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; transition: color .3s }
+  .tags { flex-shrink: 0; display: inline-flex; align-items: center }
+  .chip { padding: 0.970873786408vw 1.94174757282vw; border-radius: 0.970873786408vw; background: #d6d1c114; color: #d6d1c199; white-space: nowrap }
+  .new { border-radius: 360px }
+  .item:hover .name, .item:focus-visible .name { color: #dedbd2 }
+  .item:focus-visible .card { outline: 2px solid #dedbd2; outline-offset: 0.970873786408vw; border-radius: 1.94174757282vw }
+  .root[data-grid-enhanced] { padding: 0; block-size: var(--design-height); overflow: clip; user-select: none }
+  .root[data-grid-enhanced] .viewport { position: relative; block-size: var(--design-height); overflow: clip; touch-action: none; cursor: grab }
+  .root[data-grid-enhanced] .plane { display: block; position: relative; inline-size: 100%; block-size: 100% }
+  .root[data-grid-enhanced] .item { position: absolute; inset-block-start: 0; inset-inline-start: var(--grid-anchor-inset, 0vw); inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: none }
+  .root[data-grid-enhanced] .card { inline-size: var(--grid-card-width); block-size: var(--grid-card-height); pointer-events: auto }
+  .root[data-grid-enhanced] .media { flex: 1; aspect-ratio: auto }
+  .root[data-grid-enhanced] .title, .root[data-grid-enhanced] .instructions { position: absolute; inline-size: 0.242718446602vw; block-size: 0.242718446602vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0; padding: 0 }
+  .root[data-grid-dragging] .viewport, .root[data-grid-dragging] .card { cursor: grabbing }
+  .root[data-grid-enhanced] .item:active .card { scale: .97 }
+  .root[data-grid-dragging] .item:active .card { scale: 1 }
+  .credit { position: relative; display: block; margin-block-start: 6.79611650485vw; font-size: 2.66990291262vw; line-height: 1.4; color: #aaa79c; text-decoration: none; direction: ltr }
+  .root[data-grid-enhanced] .credit { position: fixed; inset-block-end: 5.82524271845vw; inset-inline-end: 5.82524271845vw; z-index: 2; margin: 0; padding: 0.970873786408vw 1.94174757282vw; background: #090909b8 }
+  :global([data-editorial-page='projects']:has([data-grid-enhanced])) { position: fixed; inset: 0; inline-size: 100%; block-size: 100%; min-block-size: 0; overflow: clip }
+  :global(html:has([data-projects-root][data-grid-enhanced])) { overflow: hidden }
+  .tags .new { display: none }
+}

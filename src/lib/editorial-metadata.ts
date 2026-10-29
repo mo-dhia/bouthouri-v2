@@ -4,11 +4,13 @@ import { brand } from "@/config/brand";
 import type { Locale } from "@/i18n/routing";
 import type { EditorialPage } from "@/components/layout/editorial/editorial";
 const titles = {
+  projects: { en: "Projects", ar: "المشاريع" },
   vision: { en: "Vision", ar: "الرؤية" },
   services: { en: "Services", ar: "الخدمات" },
   contact: { en: "Contact", ar: "تواصل" },
 };
 const descriptions = {
+  projects: { en: "Explore interaction and motion in a draggable grid of creative experiments.", ar: "استكشف التفاعل والحركة في شبكة تجارب إبداعية قابلة للسحب." },
   vision: { en: "A different point of view. How Med D. Bouthouri brings engineering, creative development and considered direction together.", ar: "وجهة نظر مختلفة. كيف يجمع محمد ضياء بوثوري بين الهندسة والتطوير الإبداعي والاتجاه الواضح." },
   services: { en: "From the first question to a working system. Engineering, creative development and leadership by Med D. Bouthouri.", ar: "من السؤال الأول إلى نظام يعمل. الهندسة والتطوير الإبداعي والقيادة مع محمد ضياء بوثوري." },
   contact: { en: "Start a conversation with Med D. Bouthouri about a project, a challenge, or an idea worth exploring.", ar: "ابدأ حوارًا مع محمد ضياء بوثوري حول مشروع أو تحدٍ أو فكرة تستحق الاستكشاف." },

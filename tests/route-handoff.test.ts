@@ -4,6 +4,7 @@ import { parseRouteCheckpoint, parseRouteHandoff, readRoutePositions, routeDurat
 
 describe("shared route classification and source clock", () => {
   test("plain anchors and Links share implemented routes while native exceptions remain unclaimed", () => {
+    expect(routeIntent("/en/projects", "https://local.test/en/contact")?.destination.page).toBe("projects");
     expect(routeIntent("/en/contact", "https://local.test/en/vision", "_SELF")?.hard).toBe(false);
     expect(routeIntent("/ar/services", "https://local.test/en/services")?.hard).toBe(true);
     expect(routeIntent("/ar/services", "https://local.test/en/services?campaign=1")?.href).toBe("/ar/services?campaign=1");
@@ -11,7 +12,7 @@ describe("shared route classification and source clock", () => {
     expect(routeIntent("/ar", "https://local.test/en")?.hard).toBe(false);
     expect(routeIntent("/en", "https://local.test/en/contact")?.plainHomePush).toBe(true);
     expect(routeIntent("/en?work=wujhat", "https://local.test/en/contact")?.plainHomePush).toBe(false);
-    for (const target of ["/en/projects", "/en/vision#next", "/en/contact?different=1", "https://elsewhere.test/en/vision", "mailto:contact@bouthouri.co"]) expect(routeIntent(target, "https://local.test/en/contact")).toBeNull();
+    for (const target of ["/en/archive", "/en/vision#next", "/en/contact?different=1", "https://elsewhere.test/en/vision", "mailto:contact@bouthouri.co"]) expect(routeIntent(target, "https://local.test/en/contact")).toBeNull();
     expect(routeIntent("/en/vision", "https://local.test/en/contact", "_blank")).toBeNull();
     expect(routeIntent("/en/vision", "https://local.test/en/contact", "", true)).toBeNull();
   });

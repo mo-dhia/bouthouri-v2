@@ -70,7 +70,7 @@ function harness({ denied = false, type = "navigate", initialHold = false, defer
     [main, inner, heading, shell].forEach(element => { element.ownerDocument = doc; });
     main.dataset.routePath = path; shell.dataset.shell = "true"; main.previousElementSibling = shell;
     main.selections.set("h1", heading);
-    main.selections.set(path.endsWith("vision") ? "[data-vision-root]" : path.endsWith("services") ? "#services-content" : "[data-contact-content]", inner);
+    main.selections.set(path.endsWith("vision") ? "[data-vision-root]" : path.endsWith("services") ? "#services-content" : path.endsWith("projects") ? "[data-projects-root]" : "[data-contact-content]", inner);
     const result = { main, inner, heading, shell, path }; owners.push(result); return result;
   };
   const first = owner("/en/vision");
@@ -135,6 +135,17 @@ test("plain HTTP LAN editorial arrival and soft navigation do not require random
   expect(h.hard).toEqual([]); h.stop();
 });
 
+test("Projects joins managed menu navigation with its own connected grid owner", async () => {
+  const h = harness(); h.menu(); h.intent('/en/projects');
+  expect(h.prefetches).toContain('/en/projects');
+  expect(h.click('/en/projects').defaultPrevented).toBe(true); await h.advance(320);
+  const grid = h.owner('/en/projects'), starts: boolean[] = [];
+  h.install(grid); h.ready(grid, skip => { starts.push(skip); }); await h.advance(1000);
+  expect(starts).toEqual([false]); expect(h.surface.dataset.phase).toBe('idle');
+  expect(h.win.location.pathname).toBe('/en/projects'); expect(h.win.scrollY).toBe(0);
+  expect(h.hard).toEqual([]); expect(h.frames.size + h.timers.size).toBe(0); h.stop();
+});
+
 test("mounted body capture waits for full cover, releases old menu before routing and ignores connected old page readiness", async () => {
   const h = harness(); h.menu(); h.win.scrollY = 700;
   expect(h.surface.dataset.active).not.toBe("true");
@@ -188,7 +199,7 @@ test("editorial Back restores its own pixels once, skips entry/focus and never w
 test("a failed/late enhancement fails open at the ceiling and cannot replay; native activations remain unclaimed", async () => {
   const h = harness();
   expect(h.click("/en/contact", { ctrlKey: true }).defaultPrevented).toBe(false);
-  expect(h.click("/en/projects").defaultPrevented).toBe(false);
+  expect(h.click("/en/archive").defaultPrevented).toBe(false);
   expect(h.click("/en/contact#form").defaultPrevented).toBe(false);
   h.click("/en/contact"); await h.advance(320);
   const contact = h.owner("/en/contact"); h.install(contact); await flush();
@@ -261,7 +272,7 @@ test("managed visible practice waits for first GPU presentation or fallback and 
 test("plain-anchor pointer/focus intent prefetch is bounded and never warms hard or unsupported destinations", () => {
   const h = harness(); h.intent("/en/contact"); h.intent("/en/contact", "focusin");
   expect(h.prefetches).toEqual(["/en/contact"]);
-  h.intent("/ar/contact"); h.intent("/en/projects"); h.intent("/en/contact#form"); expect(h.prefetches).toHaveLength(1);
+  h.intent("/ar/contact"); h.intent("/en/archive"); h.intent("/en/contact#form"); expect(h.prefetches).toHaveLength(1);
   for (let index = 0; index < 50; index++) h.intent(`/en/services?visit=${index}`);
   h.intent("/en/services?visit=49", "focusin"); expect(h.prefetches).toHaveLength(51);
 });
@@ -269,9 +280,9 @@ test("plain-anchor pointer/focus intent prefetch is bounded and never warms hard
 test("R6 unclaimed ordinary Next activation supersedes managed cover or destination wait without claiming the link", async () => {
   for (const elapsed of [100, 320]) {
     const h = harness(); h.click("/en/services"); await h.advance(elapsed);
-    const projects = h.click("/en/projects");
+    const projects = h.click("/en/archive");
     expect(projects.defaultPrevented).toBe(false);
-    h.win.location = Object.assign(new URL("/en/projects", h.win.location.href), { assign: (target: string) => { h.hard.push(target); } });
+    h.win.location = Object.assign(new URL("/en/archive", h.win.location.href), { assign: (target: string) => { h.hard.push(target); } });
     h.win.history.state = { __NA: true, retained: "next" };
     h.first.main.isConnected = h.first.inner.isConnected = false;
     h.controller.update(); await h.advance(8200);
@@ -284,7 +295,7 @@ test("R6 selected route or entry changes cancel before cover commit and before t
   for (const mode of ["cover-route", "cover-entry", "wait-route", "wait-route-no-update", "wait-entry"]) {
     const h = harness(); h.click("/en/services"); await h.advance(mode.startsWith("cover") ? 100 : 320);
     if (mode === "wait-entry") { Object.assign(h.win.history.state, { [ROUTE_HISTORY_STATE_KEY]: { version: 1, id: "first-destination" } }); h.controller.update(); await h.advance(20); }
-    if (mode !== "cover-entry" && mode !== "wait-entry") h.win.location = Object.assign(new URL("/en/projects", h.win.location.href), { assign: (target: string) => { h.hard.push(target); } });
+    if (mode !== "cover-entry" && mode !== "wait-entry") h.win.location = Object.assign(new URL("/en/archive", h.win.location.href), { assign: (target: string) => { h.hard.push(target); } });
     h.win.history.state = Object.assign({ __NA: true, retained: "next" }, { [ROUTE_HISTORY_STATE_KEY]: { version: 1, id: "superseding-entry" } });
     if (mode === "wait-route") h.controller.update();
     await h.advance(8200);
@@ -501,7 +512,7 @@ test("R8 suspended history is discarded when a different entry, hash or route su
     const origin = h.outgoingState(); h.win.scrollY = 125;
     Object.assign(h.doc.documentElement, { scrollHeight: 125 + h.win.innerHeight }); Object.assign(h.doc.body, { scrollHeight: 125 + h.win.innerHeight });
     h.traverse("/en/vision", origin); await h.advance(40); h.win.dispatchEvent(new Event("pagehide"));
-    const target = change === "route" ? "/en/projects" : change === "hash" ? "/en/vision#reading" : "/en/vision";
+    const target = change === "route" ? "/en/archive" : change === "hash" ? "/en/vision#reading" : "/en/vision";
     Object.assign(h.win, { location: Object.assign(new URL(target, h.win.location.href), { assign: (next: string) => { h.hard.push(next); } }) });
     if (change === "entry") h.win.history.state = Object.assign({ __NA: true, retained: "next" }, { [ROUTE_HISTORY_STATE_KEY]: { version: 1, id: "superseding-bfcache-entry" } });
     h.win.dispatchEvent(Object.assign(new Event("pageshow"), { persisted: true })); await h.advance(40);

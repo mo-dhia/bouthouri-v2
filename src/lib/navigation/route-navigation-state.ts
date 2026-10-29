@@ -6,9 +6,9 @@ export const ROUTE_HANDOFF_KEY = "bouthouri-route-handoff-v1";
 export const ROUTE_COVERED_EVENT = "bouthouri-route-covered";
 export const ROUTE_ABORT_EVENT = "bouthouri-route-abort";
 export const ROUTE_TIMING = { cover: 300, reveal: 380, directMinimum: 160, assetTimeout: 4500, navigationTimeout: 8000 } as const;
-export type RoutePath = { path: string; locale: "en" | "ar"; page: "home" | "vision" | "services" | "contact" };
+export type RoutePath = { path: string; locale: "en" | "ar"; page: "home" | "vision" | "services" | "contact" | "projects" };
 export function routePath(path: string): RoutePath | null {
-  const match = path.match(/^\/(en|ar)(?:\/(vision|services|contact))?\/?$/);
+  const match = path.match(/^\/(en|ar)(?:\/(vision|services|contact|projects))?\/?$/);
   return match ? { path: path.replace(/\/$/, ""), locale: match[1] as RoutePath["locale"], page: (match[2] || "home") as RoutePath["page"] } : null;
 }
 export function routeIntent(href: string, current: string, target = "", download = false) {

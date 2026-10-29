@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Live Cursors",
+    "category": "Interaction",
+    "isNew": true,
+    "href": "https://carterogunsola.com/lab/live-cursors",
+    "poster": "/assets/projects/lab/live-cursors.jpg",
+    "reel": "/assets/projects/lab/live-cursors.mp4"
+  },
+  {
+    "name": "Dial",
+    "category": "Interaction",
+    "isNew": true,
+    "href": "https://carterogunsola.com/lab/dial",
+    "poster": "/assets/projects/lab/dial.jpg",
+    "reel": "/assets/projects/lab/dial.mp4"
+  },
+  {
+    "name": "Polka Dots",
+    "category": "Canvas",
+    "isNew": false,
+    "href": "https://carterogunsola.com/lab/polka-dots",
+    "poster": "/assets/projects/lab/polka-dots.jpg",
+    "reel": "/assets/projects/lab/polka-dots.mp4"
+  },
+  {
+    "name": "Heart",
+    "category": "Canvas",
+    "isNew": true,
+    "href": "https://carterogunsola.com/lab/heart",
+    "poster": "/assets/projects/lab/heart.jpg",
+    "reel": "/assets/projects/lab/heart.mp4"
+  },
+  {
+    "name": "ThreeJs Scene",
+    "category": "3D",
+    "isNew": false,
+    "href": "https://carterogunsola.com/lab/threejs-test",
+    "poster": "/assets/projects/lab/threejs-test.jpg",
+    "reel": "/assets/projects/lab/threejs-test.mp4"
+  },
+  {
+    "name": "Dynamic Scrollbar",
+    "category": "UI",
+    "isNew": false,
+    "href": "https://carterogunsola.com/lab/dynamic-scrollbar",
+    "poster": "/assets/projects/lab/dynamic-scrollbar.jpg",
+    "reel": "/assets/projects/lab/dynamic-scrollbar.mp4"
+  },
+  {
+    "name": "Rotating Gallery",
+    "category": "Gallery",
+    "isNew": false,
+    "href": "https://carterogunsola.com/lab/rotating-gallery",
+    "poster": "/assets/projects/lab/rotating-gallery.jpg",
+    "reel": "/assets/projects/lab/rotating-gallery.mp4"
+  },
+  {
+    "name": "Paste-Up",
+    "category": "Transition",
+    "isNew": true,
+    "href": "https://carterogunsola.com/lab/paste-up",
+    "poster": "/assets/projects/lab/paste-up.jpg",
+    "reel": "/assets/projects/lab/paste-up.mp4"
+  },
+  {
+    "name": "Vocal Orb",
+    "category": "3D",
+    "isNew": true,
+    "href": "https://carterogunsola.com/lab/vocal-orb",
+    "poster": "/assets/projects/lab/vocal-orb.jpg",
+    "reel": "/assets/projects/lab/vocal-orb.mp4"
+  }
+]
