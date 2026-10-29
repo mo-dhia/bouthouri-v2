@@ -93,15 +93,21 @@ physical at the adapter boundary.
   handoff and bubbling.
 - Three adjacent contact losses were found in adversarial review. Gecko's APZ
   turns a long press on a card link into `contextmenu` and then `pointercancel`,
-  so the viewport prevents that menu only while a touch/pen contact is held;
-  mouse context menus are untouched. The route surface claims link clicks in
-  the body's capture phase, before the root, so a catching tap on a gliding
-  grid navigated. Suppression now runs in the window's capture phase and stops
-  the click there. It applies only to pointer clicks (`detail > 0`): a touch
-  drag ends without a click, and its leftover flag must not swallow a later
-  keyboard Enter. A breakpoint or scale change during a held drag re-anchors
-  the contact at its current point under the new mapping instead of dropping it
-  while capture and `data-grid-dragging` remain.
+  so the viewport prevents only the held touch/pen contact's own menu; mouse
+  menus, including a hybrid device's mouse during a held touch, are untouched.
+  The route surface claims link clicks in the body's capture phase, before the
+  root, so a catching tap on a gliding grid navigated. Suppression now runs in
+  the window's capture phase and stops the click there. It applies only to
+  pointer clicks: a touch drag ends without a click, and its leftover flag must
+  not swallow a later keyboard Enter. Keyboard clicks have an empty
+  `pointerType`; Gecko still reports `detail` 1 for them, so the click count is
+  only the fallback for MouseEvent-only engines. A breakpoint change during a
+  held drag re-anchors the contact at its current point under the new layout
+  instead of dropping it while capture and `data-grid-dragging` remain. Other
+  remeasures (height-only, same-profile scale) re-anchor without discarding the
+  drag's release velocity. A trusted Gecko async-APZ control (1.2s hold, then
+  120px) moved the grid 0px before and 120px after; a catching tap during a
+  glide navigated before and does not after; settled taps still navigate.
 - Fine pointers get the source damped repulsion. Focus brings the selected
   original card into the nearest wrapped position; Enter follows its real link.
 - A 220ms hover intention starts a muted inline reel. Coarse pointers choose the

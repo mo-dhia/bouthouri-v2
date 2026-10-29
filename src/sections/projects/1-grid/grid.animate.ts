@@ -42,7 +42,8 @@ export function mountProjectsGrid(root: HTMLElement) {
     const old = layout; design = viewportDesign(win.innerWidth); scale = win.innerWidth / design.width;
     layout = gridLayout(design.width, design.height); bounds = viewport.getBoundingClientRect();
     // A held contact keeps following from its current point under the new mapping.
-    if (contact || layout.stepX !== old.stepX || layout.stepY !== old.stepY) motion.resize(layout, old, contact ? localPoint(contact) : undefined);
+    if (layout.stepX !== old.stepX || layout.stepY !== old.stepY) motion.resize(layout, old, contact ? localPoint(contact) : undefined);
+    else if (contact) motion.anchor(localPoint(contact));
     captionGap = parseFloat(win.getComputedStyle(items[0].card).rowGap) / scale || 8;
     captionBand = items[0].caption.offsetHeight / scale + captionGap;
     root.style.setProperty('--grid-card-width', length(layout.cardWidth)); root.style.setProperty('--grid-card-height', length(layout.cardHeight));
@@ -128,13 +129,20 @@ export function mountProjectsGrid(root: HTMLElement) {
   viewport.addEventListener('pointerleave', () => { motion.hover(null); hovered = null; if (fine.matches) preview.clear(); wake(); }, { signal: abort.signal });
   viewport.addEventListener('dragstart', event => event.preventDefault(), { signal: abort.signal });
   // A held touch's long-press menu cancels the contact (Gecko sends
-  // pointercancel), so a pause before dragging would end the gesture.
-  viewport.addEventListener('contextmenu', event => { if (contact && contact.pointerType !== 'mouse') event.preventDefault(); }, { signal: abort.signal });
+  // pointercancel), so a pause before dragging would end the gesture. Another
+  // input's menu, such as a hybrid device's mouse, is left alone.
+  viewport.addEventListener('contextmenu', event => {
+    const source = (event as Partial<PointerEvent>).pointerType ?? contact?.pointerType;
+    if (contact && contact.pointerType !== 'mouse' && source === contact.pointerType) event.preventDefault();
+  }, { signal: abort.signal });
   // The route surface claims link clicks in the body's capture phase; a dragged
   // or catching release must be suppressed before it, whichever card it hits.
-  // A touch drag generates no click, so keyboard activation (detail 0) is exempt.
+  // A touch drag generates no click, so keyboard activation is exempt: it has
+  // no pointer type (Gecko still reports detail 1); MouseEvent clicks fall back
+  // to their click count.
   win.addEventListener('click', event => {
-    if (event.detail > 0 && (event.target === root || viewport.contains(event.target as Node)) && motion.consumeClick()) { event.preventDefault(); event.stopImmediatePropagation(); }
+    const pointerType = (event as Partial<PointerEvent>).pointerType, pointer = pointerType === undefined ? event.detail > 0 : pointerType !== '';
+    if (pointer && (event.target === root || viewport.contains(event.target as Node)) && motion.consumeClick()) { event.preventDefault(); event.stopImmediatePropagation(); }
   }, { capture: true, signal: abort.signal });
   items.forEach((item, index) => {
     item.element.addEventListener('pointerenter', () => { hovered = item.element; if (fine.matches) preview.choose(item.element); }, { signal: abort.signal });

@@ -5,6 +5,8 @@ export function createGridMotion(layout: GridLayout, start: number) {
   const target = gridTarget(layout, start), pan = { ...target }, pointer = { x: 0, y: 0 }, pointerTarget = { x: 0, y: 0 }, velocity = { x: 0, y: 0 };
   let pressure = 0, pressureTarget = 0, down: { x: number; y: number; pan: Point; time: number; previous: Point; dragged: boolean; direct: boolean } | null = null;
   let suppressClick = false;
+  /** Re-bases a held contact at its current point after its mapping changed. */
+  const anchor = (point: Point) => { if (down) Object.assign(down, { ...point, pan: { ...target }, previous: { ...point } }); };
   return {
     target, pan, pointer, pointerTarget, velocity,
     get pressure() { return pressure; }, get dragging() { return down !== null; }, get dragged() { return !!down?.dragged; },
@@ -35,11 +37,11 @@ export function createGridMotion(layout: GridLayout, start: number) {
       down = null;
     },
     consumeClick() { const suppressed = suppressClick; suppressClick = false; return suppressed; },
-    /** A held contact is re-anchored at its current point in the new layout. */
+    anchor,
     resize(next: GridLayout, previous: GridLayout, contact?: Point) {
       for (const point of [target, pan]) { point.x *= next.stepX / previous.stepX; point.y *= next.stepY / previous.stepY; }
       velocity.x = velocity.y = 0;
-      if (down && contact) Object.assign(down, { ...contact, pan: { ...target }, previous: { ...contact } }); else down = null;
+      if (contact) anchor(contact); else down = null;
     },
     step(delta: number, reduced: boolean) {
       const frames = Math.min(delta, 50) / 16.667;
