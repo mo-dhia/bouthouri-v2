@@ -66,6 +66,6 @@ export default function Experiment({ locale, slug }: { locale: Locale; slug: str
         <Link href={`/${locale}/projects/${next.slug}`} aria-label={`${arabic ? 'التجربة التالية' : 'Next experiment'}: ${next.name}`}>→</Link>
       </nav>
     </div>
-    <p className={styles.instructions}>{item.instructions[locale]}</p>
+    <p className={styles.instructions} data-experiment-instructions>{item.instructions[locale]}</p>
   </section>;
 }

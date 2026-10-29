@@ -1,10 +1,22 @@
-# live-cursors
+# Cursor Study — local simulation
 
-Typed peer presentation using original cursor shapes, color/hash, smoothing and direction, with an owned same-origin BroadcastChannel. Only actual peer messages create pointers; no simulated visitors. Host/peer leave, bounded message validation, heartbeat expiry and channel/timer/frame cleanup are explicit. Cross-device transport is not configured.
+The user explicitly rejected live cursor sharing and a backend. This controller
+is a decorative, local-only demonstration of cursor movement. It never creates
+visitor/session identities, opens a channel, contacts a server, reads another
+tab or stores cursor positions. The reference `live-cursors` URL is retained as
+a compatibility slug; both the card and page title now say Cursor Study.
 
-Source: https://carterogunsola.com/lab/live-cursors (public example/runtime inspected 2026-10-29).
+Three pointers are labeled Demo / محاكاة. Authored paths use varied pauses and
+curved moves; the source cursor shapes, direction and damped following are
+retained. Local pointer/touch input briefly guides the demonstration, then it
+returns to those paths. A persistent simulation label reads the server-rendered
+instructions. Reduced motion has no ambient frame owner and updates only after
+local input or settings changes.
 
-The parent experiment contract owns loading, first presentation, profile remounts,
-visibility, common resources and failure fallback. Styling stays scoped to the
-child reference camera; all DOM lengths scale by the inherited design unit.
-Media attribution is retained in `public/assets/projects/experiments/README.md`.
+The parent environment pauses the one scene callback for hidden/menu/offscreen
+state. Destroy removes the callback, aborts all local listeners and removes only
+this detail page’s nodes. No site-wide cursor overlay is created. The shared
+reference camera still converts physical input once and emits width-based CSS.
+
+Source pointer artwork: https://carterogunsola.com/lab/live-cursors.
+Authored simulation paths intentionally replace its realtime transport.

@@ -84,6 +84,10 @@ for (const locale of ["en", "ar"]) for (const item of experiments) {
   assert.match(markup, /<h1[^>]*id="experiment-heading"/);
   assert.ok(markup.includes(`data-experiment="${item.slug}"`), path);
   assert.ok(markup.includes(item.name), `${path}: SSR experiment title`);
+  if (item.slug === "live-cursors") {
+    assert.ok(markup.includes(locale === "en" ? "Local cursor simulation" : "محاكاة محلية للمؤشرات"), `${path}: explicit local simulation`);
+    assert.doesNotMatch(markup, /Open this experiment in another tab|peers ease into place/, `${path}: no cursor-sharing claim`);
+  }
   assert.ok(markup.includes(`href="/${locale === "en" ? "ar" : "en"}/projects/${item.slug}"`), `${path}: locale retains the exact study`);
   assert.ok(markup.includes(`src="${item.poster}"`), `${path}: useful failure poster`);
   assert.match(markup, /data-config-controls/); assert.match(markup, /<details/);

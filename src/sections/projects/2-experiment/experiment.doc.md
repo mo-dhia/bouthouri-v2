@@ -69,11 +69,14 @@ Speech/voice/mood downloads remain explicit opt-ins and run on-device. Initial
 rendering starts no worker or model download. HTTPS and browser support are
 required. Real microphone/audio surroundings were not captured during review.
 
-Live Cursors uses an owned BroadcastChannel with actual peer tabs, bounded
-messages, direction, source pointer shapes/smoothing and leave/expiry cleanup.
-It does not fabricate remote visitors or connect to the reference’s service.
-Cross-device presence remains unavailable until an owned realtime endpoint is
-configured; the server Notes/hint accurately say another tab.
+Cursor Study is explicitly a local simulation, replacing the earlier tab-sharing
+implementation at the user’s request. Three labeled demo pointers follow authored
+paths with pauses and curved travel, and can be guided by this stage’s pointer
+or touch. Reduced motion retains static pointers with immediate local input.
+There is no cursor network, presence, sharing channel, heartbeat, visitor ID or
+backend. Its one scene callback is scoped to the detail page and is removed on
+cleanup; the cursor shapes are not installed as a site-wide overlay. The old
+`live-cursors` slug and reference media remain for URL/attribution compatibility.
 
 ## Validation
 

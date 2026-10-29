@@ -102,5 +102,6 @@ Projects contains nine attributed Carter Ogunsola Lab reference experiments at
 server Notes/Tune/navigation and deferred scene owners. See the
 [implementation/review](docs/projects-experiments-review.md) and
 [section contract](src/sections/projects/2-experiment/experiment.doc.md).
-Live Cursors currently connects same-origin tabs; cross-device presence needs
-an owned realtime service. Orb microphone and on-device models are opt-in.
+Cursor Study is a local-only simulation: its labeled demo pointers never
+connect visitors, tabs or devices. No cursor backend or sharing transport is
+used. Orb microphone and on-device models are opt-in.

@@ -1,7 +1,9 @@
 # Projects detail integration review
 
+Current cursor policy: the user requested a local simulation and explicitly rejected cursor sharing or a backend. Earlier two-tab controls below are historical; that transport has been removed.
+
 This change extends the accepted Projects grid into all nine local reference
-studies: Live Cursors, Dial, Polka Dots, Heart, ThreeJs Scene, Dynamic Scrollbar,
+studies: Cursor Study, Dial, Polka Dots, Heart, ThreeJs Scene, Dynamic Scrollbar,
 Rotating Gallery, Paste Up and Vocal Orb. Both EN and AR routes retain Bouthouri’s
 shell and persistent background. Original study attribution remains visible.
 
@@ -88,3 +90,29 @@ a fully idle scene without its clock jumping behind the scheduled start. Peer
 join replies retain a last known cursor even when the replying tab is hidden;
 regular hidden-tab broadcasts remain paused. These refinements do not change
 renderer geometry, timings/constants or the documented transport limitation.
+
+
+## Local-only cursor correction
+
+The user rejected realtime cursor presence, including same-browser sharing.
+The Cursor Study now contains only three clearly labeled simulated pointers,
+with authored pauses/travel and local pointer/touch response. All transport,
+heartbeat and visitor-identity code has been removed. No backend is required
+or planned for this study. Reduced motion is static; the child never creates
+a global cursor layer. Server copy in both locales identifies the simulation.
+The old slug and original preview artwork remain compatible.
+
+Mounted tests forbid cursor network/channel/timer access, exercise local input,
+reduced motion, Arabic labeling and cleanup. Pure checks cover bounded paths,
+continuity, holds and the return from local guidance. The original release’s
+cross-tab behavior and its earlier evidence are not current product behavior.
+
+
+Local-simulation validation: `bun run check` passes **448 tests / 19,188
+assertions**, lint/types and the architecture audit. Production build and the
+28-page production SSR audit pass, including the explicit EN/AR simulation
+copy and absence of the old sharing instructions. Browser controls show three
+labeled demos, local movement, Arabic copy, and zero cursor layers after Next
+to Dial; Back restores one layer with three demos. Mobile-width inspection
+was at actual 484×915 (browser minimum width), not an asserted 412px reference.
+No backend, channel or visitor presence is exercised by those controls.

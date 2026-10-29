@@ -1,13 +1,13 @@
 [
   {
     "slug": "live-cursors",
-    "name": "Live Cursors",
+    "name": "Cursor Study",
     "category": "Interaction",
     "poster": "/assets/projects/lab/live-cursors.jpg",
     "original": "https://carterogunsola.com/lab/live-cursors",
     "instructions": {
-      "en": "Open this experiment in another tab to see the other pointer. Move around the stage; peers ease into place.",
-      "ar": "افتح التجربة في تبويب آخر لرؤية المؤشر الآخر. تحرّك داخل المساحة لمتابعة حركة المؤشرات."
+      "en": "Local cursor simulation. Move or tap inside the stage to guide the pointers. No visitors or devices are connected.",
+      "ar": "محاكاة محلية للمؤشرات. حرّك المؤشر أو المس داخل المساحة لتوجيهها. لا يوجد اتصال بزوار أو أجهزة أخرى."
     }
   },
   {
