@@ -13,7 +13,7 @@ function harness({ coarse = false, heldFonts = false } = {}) {
   class Node extends EventTarget {
     dataset: Record<string, string> = {}; style = style(); parent: Node | null = null; children: Node[] = []; attributes = new Map<string, string>();
     ownerDocument!: Document; isConnected = true; tabIndex = 0; capture = new Set<number>();
-    card?: Node; image?: Node; media?: Node;
+    card?: Node; image?: Node; media?: Node; caption?: Node; offsetHeight = 22;
     constructor() { super(); this.ownerDocument = doc; }
     getAttribute(key: string) { return this.attributes.get(key) ?? null; }
     setAttribute(key: string, value: string) { this.attributes.set(key, value); }
@@ -24,6 +24,7 @@ function harness({ coarse = false, heldFonts = false } = {}) {
     querySelector(selector: string): Node | null {
       if (selector === '[data-grid-card]') return this.card ?? null;
       if (selector === '[data-grid-media]') return this.media ?? null;
+      if (selector === '[data-grid-caption]') return this.caption ?? null;
       if (selector === 'img') return this.image ?? null;
       return null;
     }
@@ -45,6 +46,7 @@ function harness({ coarse = false, heldFonts = false } = {}) {
   const videos: Video[] = [];
   const win = Object.assign(new EventTarget(), {
     innerWidth: 1920, innerHeight: 1080, navigator: {}, performance: { now: () => now },
+    getComputedStyle: () => ({ rowGap: '8px' }),
     matchMedia: (query: string) => query.includes('reduced') ? media : fine,
     setTimeout(run: () => void, delay: number) { const id = ++serial; timers.set(id, { time: now + delay, run }); return id; },
     clearTimeout(id: number) { timers.delete(id); },
@@ -58,7 +60,7 @@ function harness({ coarse = false, heldFonts = false } = {}) {
   const doc = documentFixture as unknown as Document;
   function item(reel: string) {
     const node = new Node(); node.dataset.reel = reel; node.card = new Node(); node.media = new Node(); node.image = new Node();
-    node.append(node.card); node.card.append(node.media); node.media.append(node.image); return node;
+    node.caption = new Node(); node.append(node.card); node.card.append(node.media); node.media.append(node.image); node.card.append(node.caption); return node;
   }
   const root = new Node(), viewport = new Node(), plane = new Node(); root.append(viewport); viewport.append(plane);
   root.querySelector = selector => selector === '[data-grid-viewport]' ? viewport : selector === '[data-grid-plane]' ? plane : null;
@@ -86,12 +88,14 @@ const pointer = (x: number, y: number) => ({ pointerId: 1, pointerType: 'mouse',
 
 test('actual controller has one presentation request, sleeps at rest and releases visual clones', async () => {
   const h = harness(); await h.advance(4000); expect(h.plane.children).toHaveLength(36); expect(h.frames.size).toBe(0); expect(h.maxFrames).toBe(1);
+  expect(h.original.every(node => node.caption?.parent === node)).toBe(true);
   expect(h.videos).toHaveLength(0); expect(h.original.every(node => node.tabIndex === 0)).toBe(true);
   expect(h.plane.children.slice(9).every(node => node.tabIndex === -1 && node.attributes.get('aria-hidden') === 'true')).toBe(true);
   const zoom = h.fire(h.viewport, 'wheel', { deltaMode: 0, deltaX: 0, deltaY: 120, ctrlKey: true }); expect(zoom.defaultPrevented).toBe(false);
   const wheel = h.fire(h.viewport, 'wheel', { deltaMode: 0, deltaX: 120, deltaY: 360, ctrlKey: false }); expect(wheel.defaultPrevented).toBe(true);
   await h.advance(4000); expect(h.frames.size).toBe(0); expect(h.maxFrames).toBe(1);
   h.stop(); expect(h.plane.children).toHaveLength(9); expect(h.frames.size + h.timers.size + h.subscribers.size).toBe(0); expect(h.root.dataset.gridEnhanced).toBeUndefined();
+  expect(h.original.every(node => node.caption?.parent === node.card && !node.caption?.style.transform)).toBe(true);
   h.fire(h.viewport, 'wheel', { deltaX: 500, deltaY: 500 }); expect(h.frames.size).toBe(0);
 });
 

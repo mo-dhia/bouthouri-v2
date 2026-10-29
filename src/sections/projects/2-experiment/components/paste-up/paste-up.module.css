@@ -1,0 +1,64 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .camera :global(.pu) { position: absolute; inset: 0; user-select: none }
+  .camera :global(.pu__tabs) { position: absolute; inset-inline-start: 50%; translate: -50% 0; inset-block-start: var(--s-12); display: flex; gap: calc(18 * var(--experiment-unit)); z-index: 3 }
+  .camera :global(.pu__tab) { appearance: none; background: none; border: 0; padding: calc(2.0000064 * var(--experiment-unit)) 0 calc(6 * var(--experiment-unit)); font-family: var(--font-mono); font-size: var(--fs-mono-meta); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; color: var(--ink-muted); transition: color 0.25s var(--ease-in-cubic) }
+  .camera :global(.pu__tab.is-on) { color: var(--ink); transition: color 0.55s var(--ease-out-expo) }
+  .camera :global(.pu__tabline) { position: absolute; inset-block-end: 0; inset-inline-start: 0; height: calc(1.00000128 * var(--experiment-unit)); width: calc(20.000064 * var(--experiment-unit)); background: var(--ink); transition: transform 0.55s var(--ease-out-expo), width 0.55s var(--ease-out-expo) }
+  .camera :global(.pu__field) { position: absolute; inset: calc(52.000128 * var(--experiment-unit)) var(--s-16) calc(44.000064 * var(--experiment-unit)) }
+  .camera :global(.pu__board) { position: absolute; inset: 0; display: none }
+  .camera :global(.pu__board.is-on) { display: grid }
+  .camera :global(.pu__slot) { position: relative; min-height: 0; min-width: 0; cursor: pointer; border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent) }
+  .camera :global(.pu__slot:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(4.0000128 * var(--experiment-unit)) }
+  .camera :global(.pu__slot img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none }
+  .camera :global(.pu__tag) { position: absolute; inset-inline-start: 0; inset-block-start: calc(100% + calc(4.0000128 * var(--experiment-unit))); font-family: var(--font-mono); font-size: calc(9 * var(--experiment-unit)); letter-spacing: 0.16em; color: var(--ink-muted); text-transform: uppercase; white-space: nowrap; pointer-events: none }
+  .camera :global(.pu__index.is-on) { grid-template: repeat(2, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr)); gap: calc(24 * var(--experiment-unit)) calc(14.0000064 * var(--experiment-unit)); padding-block-end: calc(16.0000128 * var(--experiment-unit)) }
+  .camera :global(.pu__spread.is-on) { grid-template-columns: minmax(0, 1fr) max(calc(90 * var(--experiment-unit)), min(16%, calc(150 * var(--experiment-unit)))); gap: calc(14.0000064 * var(--experiment-unit)); padding-block-end: calc(16.0000128 * var(--experiment-unit)) }
+  .camera :global(.pu__rail) { display: grid; grid-template-rows: repeat(var(--pu-rail), minmax(0, 1fr)); gap: calc(20.000064 * var(--experiment-unit)) 0; min-height: 0 }
+  .camera :global(.pu__strip.is-on) { grid-template-columns: repeat(var(--pu-n), minmax(0, 1fr)); gap: calc(14.0000064 * var(--experiment-unit)); align-content: center }
+  .camera :global(.pu__strip .pu__slot) { aspect-ratio: 3 / 4; align-self: center }
+  .camera :global(.pu__canvas) { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none }
+  .camera :global(.pu__hud) { position: absolute; inset-inline: var(--s-16); inset-block-end: var(--s-12); display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: var(--fs-mono-meta); letter-spacing: 0.06em; color: var(--ink-muted); text-transform: uppercase; pointer-events: none; z-index: 3 }
+}
+@media (600px < width <= 1024px) {
+  .camera :global(.pu) { position: absolute; inset: 0; user-select: none }
+  .camera :global(.pu__tabs) { position: absolute; inset-inline-start: 50%; translate: -50% 0; inset-block-start: var(--s-12); display: flex; gap: calc(18 * var(--experiment-unit)); z-index: 3 }
+  .camera :global(.pu__tab) { appearance: none; background: none; border: 0; padding: calc(2.00000256 * var(--experiment-unit)) 0 calc(6 * var(--experiment-unit)); font-family: var(--font-mono); font-size: var(--fs-mono-meta); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; color: var(--ink-muted); transition: color 0.25s var(--ease-in-cubic) }
+  .camera :global(.pu__tab.is-on) { color: var(--ink); transition: color 0.55s var(--ease-out-expo) }
+  .camera :global(.pu__tabline) { position: absolute; inset-block-end: 0; inset-inline-start: 0; height: calc(1.00000512 * var(--experiment-unit)); width: calc(20.0000256 * var(--experiment-unit)); background: var(--ink); transition: transform 0.55s var(--ease-out-expo), width 0.55s var(--ease-out-expo) }
+  .camera :global(.pu__field) { position: absolute; inset: calc(52.0000512 * var(--experiment-unit)) var(--s-16) calc(44.0000256 * var(--experiment-unit)) }
+  .camera :global(.pu__board) { position: absolute; inset: 0; display: none }
+  .camera :global(.pu__board.is-on) { display: grid }
+  .camera :global(.pu__slot) { position: relative; min-height: 0; min-width: 0; cursor: pointer; border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent) }
+  .camera :global(.pu__slot:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(4.00000512 * var(--experiment-unit)) }
+  .camera :global(.pu__slot img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none }
+  .camera :global(.pu__tag) { position: absolute; inset-inline-start: 0; inset-block-start: calc(100% + calc(4.00000512 * var(--experiment-unit))); font-family: var(--font-mono); font-size: calc(9.0000384 * var(--experiment-unit)); letter-spacing: 0.16em; color: var(--ink-muted); text-transform: uppercase; white-space: nowrap; pointer-events: none }
+  .camera :global(.pu__index.is-on) { grid-template: repeat(2, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr)); gap: calc(24 * var(--experiment-unit)) calc(14.0000256 * var(--experiment-unit)); padding-block-end: calc(16.0000512 * var(--experiment-unit)) }
+  .camera :global(.pu__spread.is-on) { grid-template-columns: minmax(0, 1fr) max(calc(90.000384 * var(--experiment-unit)), min(16%, calc(150.000384 * var(--experiment-unit)))); gap: calc(14.0000256 * var(--experiment-unit)); padding-block-end: calc(16.0000512 * var(--experiment-unit)) }
+  .camera :global(.pu__rail) { display: grid; grid-template-rows: repeat(var(--pu-rail), minmax(0, 1fr)); gap: calc(20.0000256 * var(--experiment-unit)) 0; min-height: 0 }
+  .camera :global(.pu__strip.is-on) { grid-template-columns: repeat(var(--pu-n), minmax(0, 1fr)); gap: calc(14.0000256 * var(--experiment-unit)); align-content: center }
+  .camera :global(.pu__strip .pu__slot) { aspect-ratio: 3 / 4; align-self: center }
+  .camera :global(.pu__canvas) { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none }
+  .camera :global(.pu__hud) { position: absolute; inset-inline: var(--s-16); inset-block-end: var(--s-12); display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: var(--fs-mono-meta); letter-spacing: 0.06em; color: var(--ink-muted); text-transform: uppercase; pointer-events: none; z-index: 3 }
+}
+@media (width <= 600px) {
+  .camera :global(.pu) { position: absolute; inset: 0; user-select: none }
+  .camera :global(.pu__tabs) { position: absolute; inset-inline-start: 50%; translate: -50% 0; inset-block-start: var(--s-12); display: flex; gap: calc(18.0000328 * var(--experiment-unit)); z-index: 3 }
+  .camera :global(.pu__tab) { appearance: none; background: none; border: 0; padding: calc(2.00000044 * var(--experiment-unit)) 0 calc(6.0000384 * var(--experiment-unit)); font-family: var(--font-mono); font-size: var(--fs-mono-meta); letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; color: var(--ink-muted); transition: color 0.25s var(--ease-in-cubic) }
+  .camera :global(.pu__tab.is-on) { color: var(--ink); transition: color 0.55s var(--ease-out-expo) }
+  .camera :global(.pu__tabline) { position: absolute; inset-block-end: 0; inset-inline-start: 0; height: calc(1.00000228 * var(--experiment-unit)); width: calc(20.0000044 * var(--experiment-unit)); background: var(--ink); transition: transform 0.55s var(--ease-out-expo), width 0.55s var(--ease-out-expo) }
+  .camera :global(.pu__field) { position: absolute; inset: calc(52.000168 * var(--experiment-unit)) var(--s-16) calc(44.000364 * var(--experiment-unit)) }
+  .camera :global(.pu__board) { position: absolute; inset: 0; display: none }
+  .camera :global(.pu__board.is-on) { display: grid }
+  .camera :global(.pu__slot) { position: relative; min-height: 0; min-width: 0; cursor: pointer; border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent) }
+  .camera :global(.pu__slot:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(4.00000088 * var(--experiment-unit)) }
+  .camera :global(.pu__slot img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none }
+  .camera :global(.pu__tag) { position: absolute; inset-inline-start: 0; inset-block-start: calc(100% + calc(4.00000088 * var(--experiment-unit))); font-family: var(--font-mono); font-size: calc(9.0000164 * var(--experiment-unit)); letter-spacing: 0.16em; color: var(--ink-muted); text-transform: uppercase; white-space: nowrap; pointer-events: none }
+  .camera :global(.pu__index.is-on) { grid-template: repeat(2, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr)); gap: calc(24.00003 * var(--experiment-unit)) calc(14.0000072 * var(--experiment-unit)); padding-block-end: calc(16.00002 * var(--experiment-unit)) }
+  .camera :global(.pu__spread.is-on) { grid-template-columns: minmax(0, 1fr) max(calc(90.000164 * var(--experiment-unit)), min(16%, calc(150.000136 * var(--experiment-unit)))); gap: calc(14.0000072 * var(--experiment-unit)); padding-block-end: calc(16.00002 * var(--experiment-unit)) }
+  .camera :global(.pu__rail) { display: grid; grid-template-rows: repeat(var(--pu-rail), minmax(0, 1fr)); gap: calc(20.0000044 * var(--experiment-unit)) 0; min-height: 0 }
+  .camera :global(.pu__strip.is-on) { grid-template-columns: repeat(var(--pu-n), minmax(0, 1fr)); gap: calc(14.0000072 * var(--experiment-unit)); align-content: center }
+  .camera :global(.pu__strip .pu__slot) { aspect-ratio: 3 / 4; align-self: center }
+  .camera :global(.pu__canvas) { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none }
+  .camera :global(.pu__hud) { position: absolute; inset-inline: var(--s-16); inset-block-end: var(--s-12); display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: var(--fs-mono-meta); letter-spacing: 0.06em; color: var(--ink-muted); text-transform: uppercase; pointer-events: none; z-index: 3 }
+}

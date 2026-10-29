@@ -93,3 +93,14 @@ assistant/               Local working guides; intentionally untracked
 Read [load priorities](docs/load-architecture.md), [SSR/CSR boundaries](docs/ssr-csr.md),
 [file ownership](docs/code-splitter.md), [motion](docs/animations.md),
 [Storio](docs/store.md), and [asset rules](docs/assets.md).
+
+
+## Projects studies
+
+Projects contains nine attributed Carter Ogunsola Lab reference experiments at
+`/[locale]/projects/[slug]`, with local dark styling, fixed width-scaled cameras,
+server Notes/Tune/navigation and deferred scene owners. See the
+[implementation/review](docs/projects-experiments-review.md) and
+[section contract](src/sections/projects/2-experiment/experiment.doc.md).
+Live Cursors currently connects same-origin tabs; cross-device presence needs
+an owned realtime service. Orb microphone and on-device models are opt-in.

@@ -106,3 +106,11 @@ screenshots, videos and hashes are retained locally under
 `.artifacts/projects-grid-20261029/`. No original shell or animation runtime is
 shipped. The retained nine media pairs have portable provenance and checksums
 in `public/assets/projects/lab/`.
+
+## Local detail integration (2026-10-29)
+
+All nine semantic links now remain within `/[locale]/projects/[slug]`. Captions
+are flattened beneath projected media rather than inheriting the homography;
+their nodes and original styles/parents are restored on cleanup. Embedded gray
+poster/reel pixels use a non-destructive tonal filter, excluding Vocal Orb.
+See the sibling `2-experiment/experiment.doc.md` for renderer ownership.

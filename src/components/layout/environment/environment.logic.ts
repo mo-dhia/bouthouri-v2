@@ -1,4 +1,5 @@
 import type { EnvironmentAttachment, EnvironmentBinding, PersistentStoryEnvironmentController } from "@/sections/landing/2-story/story-environment.animate";
+import { routePath } from '@/lib/navigation/route-navigation-state';
 
 type Runtime = Pick<typeof import("@/sections/landing/2-story/story-environment.animate"), "createPersistentStoryEnvironment">;
 type Registration = { binding: EnvironmentBinding; path: string; reduced: boolean; attachment?: EnvironmentAttachment };
@@ -13,7 +14,7 @@ export function createEnvironmentOwner(loadRuntime: () => Promise<Runtime> = loa
   let generation = 0, loading = false, failed = false, runtime: Runtime | undefined;
   let cancelIdle: (() => void) | undefined, media: MediaQueryList | undefined;
   let mountToken: object | undefined, releaseMedia: (() => void) | undefined;
-  const eligible = (value: string) => new RegExp(`^/${locale}(?:/(?:vision|services|contact|projects))?$`).test(normalize(value));
+  const eligible = (value: string) => routePath(normalize(value))?.locale === locale;
   const mode = () => current?.reduced || media?.matches || false;
   const detach = () => { current?.attachment?.release(); if (current) current.attachment = undefined; };
   const stop = () => {

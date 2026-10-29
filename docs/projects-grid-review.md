@@ -1,5 +1,7 @@
 # Projects grid implementation review
 
+Historical grid-only snapshot. The later local-detail routes and caption/background corrections are documented in [the experiment integration review](projects-experiments-review.md). The external-link statements below describe the original frozen build.
+
 The Projects route now implements the grid view of
 [Carter Ogunsola's Lab](https://carterogunsola.com/lab), with the existing
 Bouthouri navigation, retained background, local fonts, warm ink and borders.

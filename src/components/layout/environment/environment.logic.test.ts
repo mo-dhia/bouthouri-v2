@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test";
+import { routePath } from "@/lib/navigation/route-navigation-state";
 import { readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
@@ -39,7 +40,7 @@ function coordinatorHarness() {
   const source = readFileSync(new URL("./environment.logic.ts", import.meta.url), "utf8");
   const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
   const evaluated = { exports: {} as { createEnvironmentOwner: typeof createEnvironmentOwner } };
-  runInContext(`(function(module,exports){${compiled}\n})`, context)(evaluated, evaluated.exports);
+  runInContext(`(function(module,exports,require){${compiled}\n})`, context)(evaluated, evaluated.exports, () => ({ routePath }));
   const owner = evaluated.exports.createEnvironmentOwner(() => new Promise<Runtime>((resolve, reject) => { requests.push({ resolve, reject }); }));
   return {
     owner, host, requests, runtime, idle, timers, modes, initialModes, bound,

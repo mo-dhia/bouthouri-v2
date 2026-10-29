@@ -1,7 +1,7 @@
 import { viewportDesign, pixelsToVw } from '@/lib/viewport-design';
 import { routeEntries, pageEntryPath } from '@/lib/navigation/route-entry';
 import { uiStore } from '@/store/uiStore';
-import { GRID_COUNT, GRID_START, gridCard, gridLayout, gridTarget, projectiveCss, wrap } from './grid-geometry';
+import { GRID_COUNT, GRID_START, gridCard, gridCaption, gridLayout, gridTarget, projectiveCss, wrap } from './grid-geometry';
 import { createGridMotion } from './grid-motion';
 import { createGridPreview } from './components/grid-preview/grid-preview.logic';
 
@@ -22,8 +22,10 @@ export function mountProjectsGrid(root: HTMLElement) {
     clone.dataset.gridClone = 'true'; clone.tabIndex = -1; clone.setAttribute('aria-hidden', 'true');
     plane.append(clone); clones.push(clone);
   }
-  const items = [...originals, ...clones].map(element => ({ element, card: element.querySelector<HTMLElement>('[data-grid-card]')!, image: element.querySelector<HTMLImageElement>('img')!, media: element.querySelector<HTMLElement>('[data-grid-media]')! }));
-  const savedChildren = items.slice(0, originals.length).flatMap(item => [item.card, item.image].map(element => ({ element, style: element.getAttribute('style') })));
+  const items = [...originals, ...clones].map(element => ({ element, card: element.querySelector<HTMLElement>('[data-grid-card]')!, image: element.querySelector<HTMLImageElement>('img')!, media: element.querySelector<HTMLElement>('[data-grid-media]')!, caption: element.querySelector<HTMLElement>('[data-grid-caption]')! }));
+  const savedChildren = items.slice(0, originals.length).flatMap(item => [item.card, item.image, item.caption].map(element => ({ element, style: element.getAttribute('style') })));
+  items.forEach(item => item.element.append(item.caption));
+  let captionBand = 30, captionGap = 8;
   let entryAge = Infinity, pointerId: number | null = null, bounds = viewport.getBoundingClientRect();
   let hovered: HTMLAnchorElement | null = null, resizeTimer = 0, lastInput = 0;
   const blocked = () => disposed || doc.hidden || uiStore.getState().menuOpen;
@@ -41,8 +43,11 @@ export function mountProjectsGrid(root: HTMLElement) {
     layout = gridLayout(design.width, design.height);
     if (layout.stepX !== old.stepX || layout.stepY !== old.stepY) motion.resize(layout, old);
     bounds = viewport.getBoundingClientRect();
+    captionGap = parseFloat(win.getComputedStyle(items[0].card).rowGap) / scale || 8;
+    captionBand = items[0].caption.offsetHeight / scale + captionGap;
     root.style.setProperty('--grid-card-width', length(layout.cardWidth)); root.style.setProperty('--grid-card-height', length(layout.cardHeight));
     root.style.setProperty('--grid-anchor-inset', length(layout.anchorInset));
+    root.style.setProperty('--grid-caption-band', length(captionBand));
     root.dataset.gridEnhanced = 'true'; root.dataset.gridReady = 'true'; measuring = false; dirty = true;
   }
   function paint() {
@@ -56,6 +61,9 @@ export function mountProjectsGrid(root: HTMLElement) {
       item.element.style.transform = `translate3d(${length(card.position.x - Math.round(layout.anchorInset))},${length(card.position.y)},0)`;
       item.card.style.opacity = String(card.opacity);
       item.card.style.transform = `${projectiveCss(card.matrix, scale, length)} translate3d(${length(card.inset.x)},${length(card.inset.y)},0) scale(${card.scale})`;
+      const label = gridCaption(card, layout.cardWidth, layout.cardHeight - captionBand, captionGap);
+      item.caption.style.transform = `translate3d(${length(label.x)},${length(label.y)},0)`;
+      item.caption.style.inlineSize = length(label.width); item.caption.style.opacity = String(card.opacity);
       item.image.style.transform = reduced ? '' : `translate3d(${length(card.parallax.x)},${length(card.parallax.y)},0) scale(1.12)`;
       if (preview.current === item.element && preview.element) preview.element.style.transform = item.image.style.transform;
     }
@@ -147,6 +155,7 @@ export function mountProjectsGrid(root: HTMLElement) {
     if (pointerId !== null && root.hasPointerCapture(pointerId)) root.releasePointerCapture(pointerId);
     preview.dispose();
     clones.forEach(clone => clone.remove());
+    items.slice(0, originals.length).forEach(item => item.card.append(item.caption));
     for (const item of [...saved, ...savedChildren]) { if (item.style === null) item.element.removeAttribute('style'); else item.element.setAttribute('style', item.style); }
     if (originalRootStyle === null) root.removeAttribute('style'); else root.setAttribute('style', originalRootStyle);
     delete root.dataset.gridEnhanced; delete root.dataset.gridReady; delete root.dataset.gridDragging;

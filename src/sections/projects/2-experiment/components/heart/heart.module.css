@@ -1,0 +1,16 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .camera :global(.heart) { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none }
+  .camera :global(.heart.is-drag) { cursor: grabbing }
+  .camera :global(.heart canvas) { position: absolute; inset: 0; display: block; width: 100%; height: 100% }
+}
+@media (600px < width <= 1024px) {
+  .camera :global(.heart) { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none }
+  .camera :global(.heart.is-drag) { cursor: grabbing }
+  .camera :global(.heart canvas) { position: absolute; inset: 0; display: block; width: 100%; height: 100% }
+}
+@media (width <= 600px) {
+  .camera :global(.heart) { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none }
+  .camera :global(.heart.is-drag) { cursor: grabbing }
+  .camera :global(.heart canvas) { position: absolute; inset: 0; display: block; width: 100%; height: 100% }
+}

@@ -1,0 +1,92 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .camera :global(.rg) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --rg-card-w: calc(192 * var(--experiment-unit)); --rg-ratio: 1.08; touch-action: none; -webkit-user-select: none; user-select: none; outline: none }
+  .camera :global(.rg__stage) { position: absolute; inset: 0; cursor: grab; isolation: isolate }
+  .camera :global(.rg.is-dragging .rg__stage) { cursor: grabbing }
+  .camera :global(.rg[data-view='grid'] .rg__stage) { cursor: default }
+  .camera :global(.rg__carousel) { position: absolute; left: 50%; top: 49%; transform: translate(-50%, -50%) }
+  .camera :global(.rg__item) { position: absolute; left: 0; top: 0; will-change: transform }
+  .camera :global(.rg__flip) { display: block; width: var(--rg-card-w); height: calc(var(--rg-card-w)*var(--rg-ratio)); border-radius: var(--r-xs); overflow: hidden; background: var(--card-solid); text-decoration: none }
+  .camera :global(.rg__img) { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1); -webkit-user-drag: none; user-select: none; pointer-events: none }
+  .camera :global(.rg__grid) { position: absolute; inset: 0; display: grid; gap: calc(17.6000064 * var(--experiment-unit)); padding: calc(56.000064 * var(--experiment-unit)); align-content: center; grid-template-columns: repeat(5, 1fr); pointer-events: none; opacity: 0 }
+  .camera :global(.rg[data-view='grid'] .rg__grid) { pointer-events: auto; opacity: 1 }
+  .camera :global(.rg__slot) { position: relative; aspect-ratio: 1 / var(--rg-ratio) }
+  .camera :global(.rg__grid .rg__flip) { width: 100%; height: 100% }
+  .camera :global(.rg__hud) { position: absolute; inset-inline: 0; bottom: 0; z-index: 5; pointer-events: none; display: flex; align-items: flex-end; justify-content: space-between; padding: calc(32.000064 * var(--experiment-unit)); gap: calc(16.0000128 * var(--experiment-unit)) }
+  .camera :global(.rg__meta) { display: flex; align-items: baseline; gap: calc(11.2000128 * var(--experiment-unit)); color: var(--ink) }
+  .camera :global(.rg__odo) { display: inline-flex; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: calc(41.600064 * var(--experiment-unit)); line-height: 1; letter-spacing: -.02em }
+  .camera :global(.rg__odo-col) { display: block; height: 1em; overflow: hidden }
+  .camera :global(.rg__odo-strip) { display: block; will-change: transform }
+  .camera :global(.rg__odo-num) { display: block; height: 1em; line-height: 1; text-align: center }
+  .camera :global(.rg__name) { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em; font-size: var(--fs-mono-meta, calc(12 * var(--experiment-unit))); color: var(--ink-muted); overflow: hidden; height: 1.1em }
+  .camera :global(.rg__name-strip) { display: block; will-change: transform }
+  .camera :global(.rg__name-item) { display: block; height: 1.1em; line-height: 1.1; white-space: nowrap }
+  .camera :global(.rg__views) { display: inline-flex; gap: calc(4.0000128 * var(--experiment-unit)); pointer-events: auto; padding: calc(3.2000064 * var(--experiment-unit)); border-radius: var(--r-sm); background: var(--fill) }
+  .camera :global(.rg__view-btn) { display: grid; place-items: center; width: calc(32.000064 * var(--experiment-unit)); height: calc(32.000064 * var(--experiment-unit)); border: 0; padding: 0; border-radius: calc(var(--r-sm) - calc(2.4 * var(--experiment-unit))); background: transparent; color: var(--ink-muted); cursor: pointer; transition: background-color .25s var(--ease-out-quad), color .25s var(--ease-out-quad), scale .15s var(--ease-out-quad) }
+  .camera :global(.rg__view-btn svg) { width: calc(16.0000128 * var(--experiment-unit)); height: calc(16.0000128 * var(--experiment-unit)); fill: currentColor }
+  .camera :global(.rg__view-btn:hover) { color: var(--ink) }
+  .camera :global(.rg__view-btn:active) { scale: .96 }
+  .camera :global(.rg__view-btn[data-active='true']) { background: var(--surface); color: var(--ink); box-shadow: 0 calc(1.00000128 * var(--experiment-unit)) calc(2.0000064 * var(--experiment-unit)) rgba(0, 0, 0, .12) }
+  .camera :global(.rg__view-btn:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(2.0000064 * var(--experiment-unit)) }
+}
+@media (600px < width <= 1024px) {
+  .camera :global(.rg) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --rg-card-w: calc(192 * var(--experiment-unit)); --rg-ratio: 1.08; touch-action: none; -webkit-user-select: none; user-select: none; outline: none }
+  .camera :global(.rg__stage) { position: absolute; inset: 0; cursor: grab; isolation: isolate }
+  .camera :global(.rg.is-dragging .rg__stage) { cursor: grabbing }
+  .camera :global(.rg[data-view='grid'] .rg__stage) { cursor: default }
+  .camera :global(.rg__carousel) { position: absolute; left: 50%; top: 49%; transform: translate(-50%, -50%) }
+  .camera :global(.rg__item) { position: absolute; left: 0; top: 0; will-change: transform }
+  .camera :global(.rg__flip) { display: block; width: var(--rg-card-w); height: calc(var(--rg-card-w)*var(--rg-ratio)); border-radius: var(--r-xs); overflow: hidden; background: var(--card-solid); text-decoration: none }
+  .camera :global(.rg__img) { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1); -webkit-user-drag: none; user-select: none; pointer-events: none }
+  .camera :global(.rg__grid) { position: absolute; inset: 0; display: grid; gap: calc(10.752 * var(--experiment-unit)); padding: calc(30.72 * var(--experiment-unit)); align-content: center; grid-template-columns: repeat(5, 1fr); pointer-events: none; opacity: 0 }
+  .camera :global(.rg[data-view='grid'] .rg__grid) { pointer-events: auto; opacity: 1 }
+  .camera :global(.rg__slot) { position: relative; aspect-ratio: 1 / var(--rg-ratio) }
+  .camera :global(.rg__grid .rg__flip) { width: 100%; height: 100% }
+  .camera :global(.rg__hud) { position: absolute; inset-inline: 0; bottom: 0; z-index: 5; pointer-events: none; display: flex; align-items: flex-end; justify-content: space-between; padding: calc(19.2 * var(--experiment-unit)); gap: calc(16.0000512 * var(--experiment-unit)) }
+  .camera :global(.rg__meta) { display: flex; align-items: baseline; gap: calc(11.2000512 * var(--experiment-unit)); color: var(--ink) }
+  .camera :global(.rg__odo) { display: inline-flex; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: calc(25.6000512 * var(--experiment-unit)); line-height: 1; letter-spacing: -.02em }
+  .camera :global(.rg__odo-col) { display: block; height: 1em; overflow: hidden }
+  .camera :global(.rg__odo-strip) { display: block; will-change: transform }
+  .camera :global(.rg__odo-num) { display: block; height: 1em; line-height: 1; text-align: center }
+  .camera :global(.rg__name) { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em; font-size: var(--fs-mono-meta, calc(12 * var(--experiment-unit))); color: var(--ink-muted); overflow: hidden; height: 1.1em }
+  .camera :global(.rg__name-strip) { display: block; will-change: transform }
+  .camera :global(.rg__name-item) { display: block; height: 1.1em; line-height: 1.1; white-space: nowrap }
+  .camera :global(.rg__views) { display: inline-flex; gap: calc(4.00000512 * var(--experiment-unit)); pointer-events: auto; padding: calc(3.20000256 * var(--experiment-unit)); border-radius: var(--r-sm); background: var(--fill) }
+  .camera :global(.rg__view-btn) { display: grid; place-items: center; width: calc(32.0000256 * var(--experiment-unit)); height: calc(32.0000256 * var(--experiment-unit)); border: 0; padding: 0; border-radius: calc(var(--r-sm) - calc(2.4 * var(--experiment-unit))); background: transparent; color: var(--ink-muted); cursor: pointer; transition: background-color .25s var(--ease-out-quad), color .25s var(--ease-out-quad), scale .15s var(--ease-out-quad) }
+  .camera :global(.rg__view-btn svg) { width: calc(16.0000512 * var(--experiment-unit)); height: calc(16.0000512 * var(--experiment-unit)); fill: currentColor }
+  .camera :global(.rg__view-btn:hover) { color: var(--ink) }
+  .camera :global(.rg__view-btn:active) { scale: .96 }
+  .camera :global(.rg__view-btn[data-active='true']) { background: var(--surface); color: var(--ink); box-shadow: 0 calc(1.00000512 * var(--experiment-unit)) calc(2.00000256 * var(--experiment-unit)) rgba(0, 0, 0, .12) }
+  .camera :global(.rg__view-btn:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(2.00000256 * var(--experiment-unit)) }
+}
+@media (width <= 600px) {
+  .camera :global(.rg) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --rg-card-w: calc(192.00024 * var(--experiment-unit)); --rg-ratio: 1.08; touch-action: none; -webkit-user-select: none; user-select: none; outline: none }
+  .camera :global(.rg__stage) { position: absolute; inset: 0; cursor: grab; isolation: isolate }
+  .camera :global(.rg.is-dragging .rg__stage) { cursor: grabbing }
+  .camera :global(.rg[data-view='grid'] .rg__stage) { cursor: default }
+  .camera :global(.rg__carousel) { position: absolute; left: 50%; top: 49%; transform: translate(-50%, -50%) }
+  .camera :global(.rg__item) { position: absolute; left: 0; top: 0; will-change: transform }
+  .camera :global(.rg__flip) { display: block; width: var(--rg-card-w); height: calc(var(--rg-card-w)*var(--rg-ratio)); border-radius: var(--r-xs); overflow: hidden; background: var(--card-solid); text-decoration: none }
+  .camera :global(.rg__img) { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1); -webkit-user-drag: none; user-select: none; pointer-events: none }
+  .camera :global(.rg__grid) { position: absolute; inset: 0; display: grid; gap: calc(8.00001 * var(--experiment-unit)); padding: calc(16.48 * var(--experiment-unit)); align-content: center; grid-template-columns: repeat(5, 1fr); pointer-events: none; opacity: 0 }
+  .camera :global(.rg[data-view='grid'] .rg__grid) { pointer-events: auto; opacity: 1 }
+  .camera :global(.rg__slot) { position: relative; aspect-ratio: 1 / var(--rg-ratio) }
+  .camera :global(.rg__grid .rg__flip) { width: 100%; height: 100% }
+  .camera :global(.rg__hud) { position: absolute; inset-inline: 0; bottom: 0; z-index: 5; pointer-events: none; display: flex; align-items: flex-end; justify-content: space-between; padding: calc(16.00002 * var(--experiment-unit)); gap: calc(16.00002 * var(--experiment-unit)) }
+  .camera :global(.rg__meta) { display: flex; align-items: baseline; gap: calc(11.200014 * var(--experiment-unit)); color: var(--ink) }
+  .camera :global(.rg__odo) { display: inline-flex; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: calc(25.600032 * var(--experiment-unit)); line-height: 1; letter-spacing: -.02em }
+  .camera :global(.rg__odo-col) { display: block; height: 1em; overflow: hidden }
+  .camera :global(.rg__odo-strip) { display: block; will-change: transform }
+  .camera :global(.rg__odo-num) { display: block; height: 1em; line-height: 1; text-align: center }
+  .camera :global(.rg__name) { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .08em; font-size: var(--fs-mono-meta, calc(12.0000356 * var(--experiment-unit))); color: var(--ink-muted); overflow: hidden; height: 1.1em }
+  .camera :global(.rg__name-strip) { display: block; will-change: transform }
+  .camera :global(.rg__name-item) { display: block; height: 1.1em; line-height: 1.1; white-space: nowrap }
+  .camera :global(.rg__views) { display: inline-flex; gap: calc(4.00000088 * var(--experiment-unit)); pointer-events: auto; padding: calc(3.200004 * var(--experiment-unit)); border-radius: var(--r-sm); background: var(--fill) }
+  .camera :global(.rg__view-btn) { display: grid; place-items: center; width: calc(32.00004 * var(--experiment-unit)); height: calc(32.00004 * var(--experiment-unit)); border: 0; padding: 0; border-radius: calc(var(--r-sm) - calc(2.400003 * var(--experiment-unit))); background: transparent; color: var(--ink-muted); cursor: pointer; transition: background-color .25s var(--ease-out-quad), color .25s var(--ease-out-quad), scale .15s var(--ease-out-quad) }
+  .camera :global(.rg__view-btn svg) { width: calc(16.00002 * var(--experiment-unit)); height: calc(16.00002 * var(--experiment-unit)); fill: currentColor }
+  .camera :global(.rg__view-btn:hover) { color: var(--ink) }
+  .camera :global(.rg__view-btn:active) { scale: .96 }
+  .camera :global(.rg__view-btn[data-active='true']) { background: var(--surface); color: var(--ink); box-shadow: 0 calc(1.00000228 * var(--experiment-unit)) calc(2.00000044 * var(--experiment-unit)) rgba(0, 0, 0, .12) }
+  .camera :global(.rg__view-btn:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(2.00000044 * var(--experiment-unit)) }
+  .camera :global(.rg__grid) { grid-template-columns: repeat(2, 1fr) }
+}

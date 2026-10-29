@@ -1,0 +1,68 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .camera :global(.tj) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --three-accent: var(--ink); cursor: grab; touch-action: none }
+  .camera :global(.tj:active) { cursor: grabbing }
+  .camera :global(.tj canvas) { position: absolute; inset: 0; display: block; width: 100%; height: 100% }
+  .camera :global(.tj__loading) { position: absolute; left: 50%; top: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: var(--s-12, calc(12 * var(--experiment-unit))); font-family: var(--font-mono); font-size: var(--fs-mono-meta, calc(12 * var(--experiment-unit))); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); transition: opacity 0.4s ease; pointer-events: none }
+  .camera :global(.tj__loading .spin) { --spin-size: calc(28.000128 * var(--experiment-unit)) }
+  .camera :global(.tj[data-ready] .tj__loading) { opacity: 0 }
+  .camera :global(.tj__bars) { position: absolute; inset-block-start: var(--s-16, calc(16.0000128 * var(--experiment-unit))); inset-inline-start: 50%; translate: -50% 0; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: var(--s-8, calc(8.0000064 * var(--experiment-unit))); max-inline-size: calc(100% - var(--s-32, calc(32.000064 * var(--experiment-unit)))) }
+  .camera :global(.tj__modes) { position: relative; isolation: isolate; display: inline-flex; align-items: center; padding: var(--s-2, calc(2.0000064 * var(--experiment-unit))); height: var(--s-40, calc(40.000128 * var(--experiment-unit))); max-inline-size: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md, calc(6 * var(--experiment-unit))); box-shadow: var(--shadow-control, 0 calc(1.00000128 * var(--experiment-unit)) calc(3 * var(--experiment-unit)) rgba(30, 30, 30, 0.06)) }
+  .camera :global(.tj__pill) { position: absolute; inset-block: var(--s-2, calc(2.0000064 * var(--experiment-unit))); inset-inline-start: var(--s-2, calc(2.0000064 * var(--experiment-unit))); width: 0; border-radius: var(--r-sm, calc(4.0000128 * var(--experiment-unit))); background: var(--fill); box-shadow: var(--shadow-seg, 0 calc(1.00000128 * var(--experiment-unit)) calc(2.0000064 * var(--experiment-unit)) rgba(30, 30, 30, 0.05)); transition: transform 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)), width 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) }
+  .camera :global(.tj__seg) { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; min-width: calc(70.400064 * var(--experiment-unit)); height: 100%; padding-inline: var(--s-12, calc(12 * var(--experiment-unit))); border: 0; background: transparent; font-family: var(--font-mono); font-size: var(--fs-mono-meta, calc(12 * var(--experiment-unit))); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); cursor: pointer; transition: color 0.3s var(--ease-out-quad, cubic-bezier(0.5, 1, 0.89, 1)), scale 0.15s ease }
+  .camera :global(.tj__seg[aria-pressed='true']) { color: var(--ink) }
+  .camera :global(.tj__seg:hover) { color: var(--ink) }
+  .camera :global(.tj__seg:active) { scale: 0.94 }
+  .camera :global(.tj__seg:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(-2.0000064 * var(--experiment-unit)); border-radius: var(--r-sm, calc(4.0000128 * var(--experiment-unit))) }
+  @media (prefers-reduced-motion: reduce) {
+    .camera :global(.tj__pill) { transition: none }
+  }
+  @media (width <= 600px) {
+    .camera :global(.tj__bars) { inset-block-start: calc(12.0166804 * var(--experiment-unit)) }
+  }
+}
+@media (600px < width <= 1024px) {
+  .camera :global(.tj) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --three-accent: var(--ink); cursor: grab; touch-action: none }
+  .camera :global(.tj:active) { cursor: grabbing }
+  .camera :global(.tj canvas) { position: absolute; inset: 0; display: block; width: 100%; height: 100% }
+  .camera :global(.tj__loading) { position: absolute; left: 50%; top: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: var(--s-12, calc(12 * var(--experiment-unit))); font-family: var(--font-mono); font-size: var(--fs-mono-meta, calc(12 * var(--experiment-unit))); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); transition: opacity 0.4s ease; pointer-events: none }
+  .camera :global(.tj__loading .spin) { --spin-size: calc(28.0000512 * var(--experiment-unit)) }
+  .camera :global(.tj[data-ready] .tj__loading) { opacity: 0 }
+  .camera :global(.tj__bars) { position: absolute; inset-block-start: var(--s-16, calc(16.0000512 * var(--experiment-unit))); inset-inline-start: 50%; translate: -50% 0; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: var(--s-8, calc(8.0000256 * var(--experiment-unit))); max-inline-size: calc(100% - var(--s-32, calc(32.0000256 * var(--experiment-unit)))) }
+  .camera :global(.tj__modes) { position: relative; isolation: isolate; display: inline-flex; align-items: center; padding: var(--s-2, calc(2.00000256 * var(--experiment-unit))); height: var(--s-40, calc(40.0000512 * var(--experiment-unit))); max-inline-size: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md, calc(6 * var(--experiment-unit))); box-shadow: var(--shadow-control, 0 calc(1.00000512 * var(--experiment-unit)) calc(3 * var(--experiment-unit)) rgba(30, 30, 30, 0.06)) }
+  .camera :global(.tj__pill) { position: absolute; inset-block: var(--s-2, calc(2.00000256 * var(--experiment-unit))); inset-inline-start: var(--s-2, calc(2.00000256 * var(--experiment-unit))); width: 0; border-radius: var(--r-sm, calc(4.00000512 * var(--experiment-unit))); background: var(--fill); box-shadow: var(--shadow-seg, 0 calc(1.00000512 * var(--experiment-unit)) calc(2.00000256 * var(--experiment-unit)) rgba(30, 30, 30, 0.05)); transition: transform 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)), width 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) }
+  .camera :global(.tj__seg) { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; min-width: calc(70.4000256 * var(--experiment-unit)); height: 100%; padding-inline: var(--s-12, calc(12 * var(--experiment-unit))); border: 0; background: transparent; font-family: var(--font-mono); font-size: var(--fs-mono-meta, calc(12 * var(--experiment-unit))); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); cursor: pointer; transition: color 0.3s var(--ease-out-quad, cubic-bezier(0.5, 1, 0.89, 1)), scale 0.15s ease }
+  .camera :global(.tj__seg[aria-pressed='true']) { color: var(--ink) }
+  .camera :global(.tj__seg:hover) { color: var(--ink) }
+  .camera :global(.tj__seg:active) { scale: 0.94 }
+  .camera :global(.tj__seg:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(-2.00000256 * var(--experiment-unit)); border-radius: var(--r-sm, calc(4.00000512 * var(--experiment-unit))) }
+  @media (prefers-reduced-motion: reduce) {
+    .camera :global(.tj__pill) { transition: none }
+  }
+  @media (width <= 600px) {
+    .camera :global(.tj__bars) { inset-block-start: calc(30.0416804 * var(--experiment-unit)) }
+  }
+}
+@media (width <= 600px) {
+  .camera :global(.tj) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --three-accent: var(--ink); cursor: grab; touch-action: none }
+  .camera :global(.tj:active) { cursor: grabbing }
+  .camera :global(.tj canvas) { position: absolute; inset: 0; display: block; width: 100%; height: 100% }
+  .camera :global(.tj__loading) { position: absolute; left: 50%; top: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: var(--s-12, calc(12.0000356 * var(--experiment-unit))); font-family: var(--font-mono); font-size: var(--fs-mono-meta, calc(12.0000356 * var(--experiment-unit))); text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); transition: opacity 0.4s ease; pointer-events: none }
+  .camera :global(.tj__loading .spin) { --spin-size: calc(28.0000144 * var(--experiment-unit)) }
+  .camera :global(.tj[data-ready] .tj__loading) { opacity: 0 }
+  .camera :global(.tj__bars) { position: absolute; inset-block-start: var(--s-16, calc(16.00002 * var(--experiment-unit))); inset-inline-start: 50%; translate: -50% 0; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: var(--s-8, calc(8.00001 * var(--experiment-unit))); max-inline-size: calc(100% - var(--s-32, calc(32.00004 * var(--experiment-unit)))) }
+  .camera :global(.tj__modes) { position: relative; isolation: isolate; display: inline-flex; align-items: center; padding: var(--s-2, calc(2.00000044 * var(--experiment-unit))); height: var(--s-40, calc(40.0000088 * var(--experiment-unit))); max-inline-size: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md, calc(6.0000384 * var(--experiment-unit))); box-shadow: var(--shadow-control, 0 calc(1.00000228 * var(--experiment-unit)) calc(3.00000272 * var(--experiment-unit)) rgba(30, 30, 30, 0.06)) }
+  .camera :global(.tj__pill) { position: absolute; inset-block: var(--s-2, calc(2.00000044 * var(--experiment-unit))); inset-inline-start: var(--s-2, calc(2.00000044 * var(--experiment-unit))); width: 0; border-radius: var(--r-sm, calc(4.00000088 * var(--experiment-unit))); background: var(--fill); box-shadow: var(--shadow-seg, 0 calc(1.00000228 * var(--experiment-unit)) calc(2.00000044 * var(--experiment-unit)) rgba(30, 30, 30, 0.05)); transition: transform 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)), width 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) }
+  .camera :global(.tj__seg) { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; min-width: calc(70.400088 * var(--experiment-unit)); height: 100%; padding-inline: var(--s-12, calc(12.0000356 * var(--experiment-unit))); border: 0; background: transparent; font-family: var(--font-mono); font-size: var(--fs-mono-meta, calc(12.0000356 * var(--experiment-unit))); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); cursor: pointer; transition: color 0.3s var(--ease-out-quad, cubic-bezier(0.5, 1, 0.89, 1)), scale 0.15s ease }
+  .camera :global(.tj__seg[aria-pressed='true']) { color: var(--ink) }
+  .camera :global(.tj__seg:hover) { color: var(--ink) }
+  .camera :global(.tj__seg:active) { scale: 0.94 }
+  .camera :global(.tj__seg:focus-visible) { outline: 2px solid var(--ink); outline-offset: calc(-2.00000044 * var(--experiment-unit)); border-radius: var(--r-sm, calc(4.00000088 * var(--experiment-unit))) }
+  .camera :global(.tj__seg) { min-width: 0; padding-inline: var(--s-8, calc(8.00001 * var(--experiment-unit))) }
+  @media (prefers-reduced-motion: reduce) {
+    .camera :global(.tj__pill) { transition: none }
+  }
+  @media (width <= 600px) {
+    .camera :global(.tj__bars) { inset-block-start: calc(56.000276 * var(--experiment-unit)) }
+  }
+}

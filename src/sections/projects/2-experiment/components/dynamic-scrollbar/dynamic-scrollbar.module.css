@@ -1,0 +1,139 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .camera :global(.sb) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --sb-paper: #111110; --sb-rest: #d5d5d5; --sb-ink: #dbd8d0; --sb-accent: #bca77f; --sb-muted: #727272; --sb-track: #282828 }
+  .camera :global(.sb__scroll) { position: absolute; inset: 0; overflow: hidden; touch-action: none }
+  .camera :global(.sb__track) { will-change: transform }
+  .camera :global(.sb__section) { height: var(--sb-vh, 100%); display: grid; place-items: center; padding: calc(32.000064 * var(--experiment-unit)) calc(64.000128 * var(--experiment-unit)); box-sizing: border-box }
+  .camera :global(.sb__caption) { max-width: 22ch; text-align: center; color: var(--ink-muted); font-size: calc(25.600128 * var(--experiment-unit)); line-height: 1.25; letter-spacing: var(--track); text-wrap: balance }
+  .camera :global(.sb__bar) { position: absolute; top: calc(12 * var(--experiment-unit)); right: calc(12 * var(--experiment-unit)); bottom: calc(12 * var(--experiment-unit)); width: calc(264 * var(--experiment-unit)); pointer-events: none; z-index: 5 }
+  .camera :global(.sb__thumb) { position: absolute; top: 0; right: 0; width: calc(5.0000064 * var(--experiment-unit)); height: calc(64.000128 * var(--experiment-unit)); background: var(--sb-rest); color: var(--sb-paper); border-radius: calc(30 * var(--experiment-unit)); pointer-events: auto; cursor: pointer; will-change: transform }
+  .camera :global(.sb__thumb::before) { content: ''; position: absolute; inset: calc(-16.0000128 * var(--experiment-unit)) }
+  .camera :global(.sb__inner) { position: absolute; inset: 0; overflow: hidden; border-radius: inherit }
+  .camera :global(.sb__min) { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: calc(10.0000128 * var(--experiment-unit)); box-sizing: border-box; opacity: 0; filter: blur(30px); pointer-events: none }
+  .camera :global(.sb__min-top) { display: flex; flex-direction: column; align-items: center; gap: calc(12 * var(--experiment-unit)) }
+  .camera :global(.sb__clock) { width: calc(28.000128 * var(--experiment-unit)); height: calc(28.000128 * var(--experiment-unit)); display: grid; place-items: center; border-radius: 50%; background: var(--sb-paper); color: var(--sb-accent) }
+  .camera :global(.sb__clock-face) { width: calc(22.000128 * var(--experiment-unit)); height: calc(22.000128 * var(--experiment-unit)) }
+  .camera :global(.sb__note) { width: calc(20.000064 * var(--experiment-unit)); height: calc(20.000064 * var(--experiment-unit)); display: grid; place-items: center; color: var(--sb-accent); cursor: pointer; pointer-events: none; opacity: 0; will-change: transform, filter, opacity }
+  .camera :global(.sb__note svg) { width: calc(16.0000128 * var(--experiment-unit)); height: calc(16.0000128 * var(--experiment-unit)) }
+  .camera :global(.sb__time) { display: flex; flex-direction: column; align-items: center; gap: calc(2.0000064 * var(--experiment-unit)); font-family: var(--font-mono); font-size: calc(10.8 * var(--experiment-unit)); letter-spacing: calc(-0.43000128 * var(--experiment-unit)); line-height: 1.1; color: var(--sb-paper) }
+  .camera :global(.sb__time .ampm) { opacity: .75 }
+  .camera :global(.sb__music) { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: calc(24 * var(--experiment-unit)) calc(20.000064 * var(--experiment-unit)); box-sizing: border-box; opacity: 0; filter: blur(30px); pointer-events: none; gap: calc(32.000064 * var(--experiment-unit)) }
+  .camera :global(.sb__cover) { position: relative; width: calc(160.000128 * var(--experiment-unit)); height: calc(160.000128 * var(--experiment-unit)); align-self: center; border-radius: calc(20.000064 * var(--experiment-unit)); overflow: hidden; flex: none }
+  .camera :global(.sb__cover img) { width: 100%; height: 100%; object-fit: cover; display: block }
+  .camera :global(.sb__player) { display: flex; flex-direction: column; gap: calc(16.0000128 * var(--experiment-unit)) }
+  .camera :global(.sb__head) { display: flex; justify-content: space-between; align-items: flex-start; gap: calc(8.0000064 * var(--experiment-unit)) }
+  .camera :global(.sb__meta) { display: flex; flex-direction: column; gap: 0; min-width: 0 }
+  .camera :global(.sb__title) { font-size: calc(16.0000128 * var(--experiment-unit)); font-weight: 500; letter-spacing: calc(-0.64000128 * var(--experiment-unit)); color: var(--sb-paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .camera :global(.sb__artist) { font-size: calc(16.0000128 * var(--experiment-unit)); font-weight: 500; letter-spacing: calc(-0.64000128 * var(--experiment-unit)); color: var(--sb-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .camera :global(.sb__wave) { width: calc(32.000064 * var(--experiment-unit)); flex: none; color: var(--sb-accent) }
+  .camera :global(.sb__wave svg) { width: 100%; height: auto }
+  .camera :global(.sb__timeline) { position: relative; height: calc(3 * var(--experiment-unit)); border-radius: calc(1920 * var(--experiment-unit)); overflow: hidden; cursor: pointer; background: var(--sb-track) }
+  .camera :global(.sb__progress) { position: absolute; inset: 0; background: var(--sb-rest); transform-origin: 0 50% }
+  .camera :global(.sb__controls) { display: flex; align-items: center; justify-content: center; gap: calc(16.0000128 * var(--experiment-unit)); color: var(--sb-paper) }
+  .camera :global(.sb__ctrl) { cursor: pointer; color: var(--sb-paper); transition: opacity .2s var(--ease-out-quad), scale .15s var(--ease-out-quad) }
+  .camera :global(.sb__ctrl:hover) { opacity: .7 }
+  .camera :global(.sb__ctrl:active) { scale: .9 }
+  .camera :global(.sb__ctrl svg) { width: 100%; height: 100%; display: block }
+  .camera :global(.sb__ctrl--sm) { width: calc(28.000128 * var(--experiment-unit)); height: calc(28.000128 * var(--experiment-unit)) }
+  .camera :global(.sb__toggle) { position: relative; width: calc(32.000064 * var(--experiment-unit)); height: calc(32.000064 * var(--experiment-unit)) }
+  .camera :global(.sb__toggle > *) { position: absolute; inset: 0; width: calc(32.000064 * var(--experiment-unit)); height: calc(32.000064 * var(--experiment-unit)) }
+  .camera :global(.sb__pause) { opacity: 0; pointer-events: none }
+  .camera :global(.sb__credits) { display: flex; flex-direction: column; gap: calc(2.0000064 * var(--experiment-unit)) }
+  .camera :global(.sb__credit) { text-align: center; font-size: calc(12 * var(--experiment-unit)); letter-spacing: calc(-0.48 * var(--experiment-unit)); line-height: 1.3; color: var(--sb-paper) }
+  .camera :global(.sb__credit a) { color: inherit; text-decoration: underline; text-underline-offset: calc(2.0000064 * var(--experiment-unit)) }
+  @media (prefers-reduced-motion: reduce) {
+    .camera :global(.sb__scroll) { scroll-behavior: auto }
+  }
+}
+@media (600px < width <= 1024px) {
+  .camera :global(.sb) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --sb-paper: #111110; --sb-rest: #d5d5d5; --sb-ink: #dbd8d0; --sb-accent: #bca77f; --sb-muted: #727272; --sb-track: #282828 }
+  .camera :global(.sb__scroll) { position: absolute; inset: 0; overflow: hidden; touch-action: none }
+  .camera :global(.sb__track) { will-change: transform }
+  .camera :global(.sb__section) { height: var(--sb-vh, 100%); display: grid; place-items: center; padding: calc(32.0000256 * var(--experiment-unit)) calc(64.0000512 * var(--experiment-unit)); box-sizing: border-box }
+  .camera :global(.sb__caption) { max-width: 22ch; text-align: center; color: var(--ink-muted); font-size: calc(17.6000256 * var(--experiment-unit)); line-height: 1.25; letter-spacing: var(--track); text-wrap: balance }
+  .camera :global(.sb__bar) { position: absolute; top: calc(12 * var(--experiment-unit)); right: calc(12 * var(--experiment-unit)); bottom: calc(12 * var(--experiment-unit)); width: calc(264 * var(--experiment-unit)); pointer-events: none; z-index: 5 }
+  .camera :global(.sb__thumb) { position: absolute; top: 0; right: 0; width: calc(5.00000256 * var(--experiment-unit)); height: calc(64.0000512 * var(--experiment-unit)); background: var(--sb-rest); color: var(--sb-paper); border-radius: calc(30 * var(--experiment-unit)); pointer-events: auto; cursor: pointer; will-change: transform }
+  .camera :global(.sb__thumb::before) { content: ''; position: absolute; inset: calc(-16.0000512 * var(--experiment-unit)) }
+  .camera :global(.sb__inner) { position: absolute; inset: 0; overflow: hidden; border-radius: inherit }
+  .camera :global(.sb__min) { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: calc(10.0000512 * var(--experiment-unit)); box-sizing: border-box; opacity: 0; filter: blur(30px); pointer-events: none }
+  .camera :global(.sb__min-top) { display: flex; flex-direction: column; align-items: center; gap: calc(12 * var(--experiment-unit)) }
+  .camera :global(.sb__clock) { width: calc(28.0000512 * var(--experiment-unit)); height: calc(28.0000512 * var(--experiment-unit)); display: grid; place-items: center; border-radius: 50%; background: var(--sb-paper); color: var(--sb-accent) }
+  .camera :global(.sb__clock-face) { width: calc(22.0000512 * var(--experiment-unit)); height: calc(22.0000512 * var(--experiment-unit)) }
+  .camera :global(.sb__note) { width: calc(20.0000256 * var(--experiment-unit)); height: calc(20.0000256 * var(--experiment-unit)); display: grid; place-items: center; color: var(--sb-accent); cursor: pointer; pointer-events: none; opacity: 0; will-change: transform, filter, opacity }
+  .camera :global(.sb__note svg) { width: calc(16.0000512 * var(--experiment-unit)); height: calc(16.0000512 * var(--experiment-unit)) }
+  .camera :global(.sb__time) { display: flex; flex-direction: column; align-items: center; gap: calc(2.00000256 * var(--experiment-unit)); font-family: var(--font-mono); font-size: calc(10.8 * var(--experiment-unit)); letter-spacing: calc(-0.430000128 * var(--experiment-unit)); line-height: 1.1; color: var(--sb-paper) }
+  .camera :global(.sb__time .ampm) { opacity: .75 }
+  .camera :global(.sb__music) { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: calc(24 * var(--experiment-unit)) calc(20.0000256 * var(--experiment-unit)); box-sizing: border-box; opacity: 0; filter: blur(30px); pointer-events: none; gap: calc(32.0000256 * var(--experiment-unit)) }
+  .camera :global(.sb__cover) { position: relative; width: calc(160.000512 * var(--experiment-unit)); height: calc(160.000512 * var(--experiment-unit)); align-self: center; border-radius: calc(20.0000256 * var(--experiment-unit)); overflow: hidden; flex: none }
+  .camera :global(.sb__cover img) { width: 100%; height: 100%; object-fit: cover; display: block }
+  .camera :global(.sb__player) { display: flex; flex-direction: column; gap: calc(16.0000512 * var(--experiment-unit)) }
+  .camera :global(.sb__head) { display: flex; justify-content: space-between; align-items: flex-start; gap: calc(8.0000256 * var(--experiment-unit)) }
+  .camera :global(.sb__meta) { display: flex; flex-direction: column; gap: 0; min-width: 0 }
+  .camera :global(.sb__title) { font-size: calc(16.0000512 * var(--experiment-unit)); font-weight: 500; letter-spacing: calc(-0.640000512 * var(--experiment-unit)); color: var(--sb-paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .camera :global(.sb__artist) { font-size: calc(16.0000512 * var(--experiment-unit)); font-weight: 500; letter-spacing: calc(-0.640000512 * var(--experiment-unit)); color: var(--sb-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .camera :global(.sb__wave) { width: calc(32.0000256 * var(--experiment-unit)); flex: none; color: var(--sb-accent) }
+  .camera :global(.sb__wave svg) { width: 100%; height: auto }
+  .camera :global(.sb__timeline) { position: relative; height: calc(3 * var(--experiment-unit)); border-radius: calc(768 * var(--experiment-unit)); overflow: hidden; cursor: pointer; background: var(--sb-track) }
+  .camera :global(.sb__progress) { position: absolute; inset: 0; background: var(--sb-rest); transform-origin: 0 50% }
+  .camera :global(.sb__controls) { display: flex; align-items: center; justify-content: center; gap: calc(16.0000512 * var(--experiment-unit)); color: var(--sb-paper) }
+  .camera :global(.sb__ctrl) { cursor: pointer; color: var(--sb-paper); transition: opacity .2s var(--ease-out-quad), scale .15s var(--ease-out-quad) }
+  .camera :global(.sb__ctrl:hover) { opacity: .7 }
+  .camera :global(.sb__ctrl:active) { scale: .9 }
+  .camera :global(.sb__ctrl svg) { width: 100%; height: 100%; display: block }
+  .camera :global(.sb__ctrl--sm) { width: calc(28.0000512 * var(--experiment-unit)); height: calc(28.0000512 * var(--experiment-unit)) }
+  .camera :global(.sb__toggle) { position: relative; width: calc(32.0000256 * var(--experiment-unit)); height: calc(32.0000256 * var(--experiment-unit)) }
+  .camera :global(.sb__toggle > *) { position: absolute; inset: 0; width: calc(32.0000256 * var(--experiment-unit)); height: calc(32.0000256 * var(--experiment-unit)) }
+  .camera :global(.sb__pause) { opacity: 0; pointer-events: none }
+  .camera :global(.sb__credits) { display: flex; flex-direction: column; gap: calc(2.00000256 * var(--experiment-unit)) }
+  .camera :global(.sb__credit) { text-align: center; font-size: calc(12 * var(--experiment-unit)); letter-spacing: calc(-0.48 * var(--experiment-unit)); line-height: 1.3; color: var(--sb-paper) }
+  .camera :global(.sb__credit a) { color: inherit; text-decoration: underline; text-underline-offset: calc(2.00000256 * var(--experiment-unit)) }
+  @media (prefers-reduced-motion: reduce) {
+    .camera :global(.sb__scroll) { scroll-behavior: auto }
+  }
+}
+@media (width <= 600px) {
+  .camera :global(.sb) { position: absolute; inset: 0; overflow: hidden; font-family: var(--font-sans); --sb-paper: #111110; --sb-rest: #d5d5d5; --sb-ink: #dbd8d0; --sb-accent: #bca77f; --sb-muted: #727272; --sb-track: #282828 }
+  .camera :global(.sb__scroll) { position: absolute; inset: 0; overflow: hidden; touch-action: none }
+  .camera :global(.sb__track) { will-change: transform }
+  .camera :global(.sb__section) { height: var(--sb-vh, 100%); display: grid; place-items: center; padding: calc(32.00004 * var(--experiment-unit)) calc(64.00008 * var(--experiment-unit)); box-sizing: border-box }
+  .camera :global(.sb__caption) { max-width: 22ch; text-align: center; color: var(--ink-muted); font-size: calc(17.600022 * var(--experiment-unit)); line-height: 1.25; letter-spacing: var(--track); text-wrap: balance }
+  .camera :global(.sb__bar) { position: absolute; top: calc(12.0000356 * var(--experiment-unit)); right: calc(12.0000356 * var(--experiment-unit)); bottom: calc(12.0000356 * var(--experiment-unit)); width: calc(264.000124 * var(--experiment-unit)); pointer-events: none; z-index: 5 }
+  .camera :global(.sb__thumb) { position: absolute; top: 0; right: 0; width: calc(5.000032 * var(--experiment-unit)); height: calc(64.00008 * var(--experiment-unit)); background: var(--sb-rest); color: var(--sb-paper); border-radius: calc(30.0000272 * var(--experiment-unit)); pointer-events: auto; cursor: pointer; will-change: transform }
+  .camera :global(.sb__thumb::before) { content: ''; position: absolute; inset: calc(-16.00002 * var(--experiment-unit)) }
+  .camera :global(.sb__inner) { position: absolute; inset: 0; overflow: hidden; border-radius: inherit }
+  .camera :global(.sb__min) { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: calc(10.0000228 * var(--experiment-unit)); box-sizing: border-box; opacity: 0; filter: blur(30px); pointer-events: none }
+  .camera :global(.sb__min-top) { display: flex; flex-direction: column; align-items: center; gap: calc(12.0000356 * var(--experiment-unit)) }
+  .camera :global(.sb__clock) { width: calc(28.0000144 * var(--experiment-unit)); height: calc(28.0000144 * var(--experiment-unit)); display: grid; place-items: center; border-radius: 50%; background: var(--sb-paper); color: var(--sb-accent) }
+  .camera :global(.sb__clock-face) { width: calc(22.0000172 * var(--experiment-unit)); height: calc(22.0000172 * var(--experiment-unit)) }
+  .camera :global(.sb__note) { width: calc(20.0000044 * var(--experiment-unit)); height: calc(20.0000044 * var(--experiment-unit)); display: grid; place-items: center; color: var(--sb-accent); cursor: pointer; pointer-events: none; opacity: 0; will-change: transform, filter, opacity }
+  .camera :global(.sb__note svg) { width: calc(16.00002 * var(--experiment-unit)); height: calc(16.00002 * var(--experiment-unit)) }
+  .camera :global(.sb__time) { display: flex; flex-direction: column; align-items: center; gap: calc(2.00000044 * var(--experiment-unit)); font-family: var(--font-mono); font-size: calc(10.8000032 * var(--experiment-unit)); letter-spacing: calc(-0.43000028 * var(--experiment-unit)); line-height: 1.1; color: var(--sb-paper) }
+  .camera :global(.sb__time .ampm) { opacity: .75 }
+  .camera :global(.sb__music) { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: calc(24.00003 * var(--experiment-unit)) calc(20.0000044 * var(--experiment-unit)); box-sizing: border-box; opacity: 0; filter: blur(30px); pointer-events: none; gap: calc(32.00004 * var(--experiment-unit)) }
+  .camera :global(.sb__cover) { position: relative; width: calc(160.0002 * var(--experiment-unit)); height: calc(160.0002 * var(--experiment-unit)); align-self: center; border-radius: calc(20.0000044 * var(--experiment-unit)); overflow: hidden; flex: none }
+  .camera :global(.sb__cover img) { width: 100%; height: 100%; object-fit: cover; display: block }
+  .camera :global(.sb__player) { display: flex; flex-direction: column; gap: calc(16.00002 * var(--experiment-unit)) }
+  .camera :global(.sb__head) { display: flex; justify-content: space-between; align-items: flex-start; gap: calc(8.00001 * var(--experiment-unit)) }
+  .camera :global(.sb__meta) { display: flex; flex-direction: column; gap: 0; min-width: 0 }
+  .camera :global(.sb__title) { font-size: calc(16.00002 * var(--experiment-unit)); font-weight: 500; letter-spacing: calc(-0.6400008 * var(--experiment-unit)); color: var(--sb-paper); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .camera :global(.sb__artist) { font-size: calc(16.00002 * var(--experiment-unit)); font-weight: 500; letter-spacing: calc(-0.6400008 * var(--experiment-unit)); color: var(--sb-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+  .camera :global(.sb__wave) { width: calc(32.00004 * var(--experiment-unit)); flex: none; color: var(--sb-accent) }
+  .camera :global(.sb__wave svg) { width: 100%; height: auto }
+  .camera :global(.sb__timeline) { position: relative; height: calc(3.00000272 * var(--experiment-unit)); border-radius: calc(412 * var(--experiment-unit)); overflow: hidden; cursor: pointer; background: var(--sb-track) }
+  .camera :global(.sb__progress) { position: absolute; inset: 0; background: var(--sb-rest); transform-origin: 0 50% }
+  .camera :global(.sb__controls) { display: flex; align-items: center; justify-content: center; gap: calc(16.00002 * var(--experiment-unit)); color: var(--sb-paper) }
+  .camera :global(.sb__ctrl) { cursor: pointer; color: var(--sb-paper); transition: opacity .2s var(--ease-out-quad), scale .15s var(--ease-out-quad) }
+  .camera :global(.sb__ctrl:hover) { opacity: .7 }
+  .camera :global(.sb__ctrl:active) { scale: .9 }
+  .camera :global(.sb__ctrl svg) { width: 100%; height: 100%; display: block }
+  .camera :global(.sb__ctrl--sm) { width: calc(28.0000144 * var(--experiment-unit)); height: calc(28.0000144 * var(--experiment-unit)) }
+  .camera :global(.sb__toggle) { position: relative; width: calc(32.00004 * var(--experiment-unit)); height: calc(32.00004 * var(--experiment-unit)) }
+  .camera :global(.sb__toggle > *) { position: absolute; inset: 0; width: calc(32.00004 * var(--experiment-unit)); height: calc(32.00004 * var(--experiment-unit)) }
+  .camera :global(.sb__pause) { opacity: 0; pointer-events: none }
+  .camera :global(.sb__credits) { display: flex; flex-direction: column; gap: calc(2.00000044 * var(--experiment-unit)) }
+  .camera :global(.sb__credit) { text-align: center; font-size: calc(12.0000356 * var(--experiment-unit)); letter-spacing: calc(-0.4800006 * var(--experiment-unit)); line-height: 1.3; color: var(--sb-paper) }
+  .camera :global(.sb__credit a) { color: inherit; text-decoration: underline; text-underline-offset: calc(2.00000044 * var(--experiment-unit)) }
+  @media (prefers-reduced-motion: reduce) {
+    .camera :global(.sb__scroll) { scroll-behavior: auto }
+  }
+}

@@ -1,0 +1,520 @@
+{
+  "live-cursors": [
+    {
+      "key": "smoothing",
+      "label": "Smoothing",
+      "type": "range",
+      "min": 4,
+      "max": 40,
+      "step": 1,
+      "default": 18
+    },
+    {
+      "key": "size",
+      "label": "Size",
+      "type": "range",
+      "min": 0.6,
+      "max": 1.8,
+      "step": 0.1,
+      "default": 1
+    }
+  ],
+  "dial": [
+    {
+      "key": "dampDrag",
+      "label": "Weight",
+      "type": "range",
+      "min": 6,
+      "max": 40,
+      "step": 1,
+      "default": 15
+    },
+    {
+      "key": "dampIdle",
+      "label": "Settle",
+      "type": "range",
+      "min": 10,
+      "max": 40,
+      "step": 1,
+      "default": 25
+    },
+    {
+      "key": "stepPx",
+      "label": "Sensitivity",
+      "type": "range",
+      "min": 40,
+      "max": 100,
+      "step": 2,
+      "default": 62
+    },
+    {
+      "key": "detent",
+      "label": "Detent",
+      "type": "segment",
+      "default": "elastic",
+      "options": [
+        {
+          "id": "soft",
+          "label": "Soft"
+        },
+        {
+          "id": "snappy",
+          "label": "Snappy"
+        },
+        {
+          "id": "elastic",
+          "label": "Elastic"
+        }
+      ]
+    },
+    {
+      "key": "accent",
+      "label": "Accent",
+      "type": "swatch",
+      "default": "ink",
+      "options": [
+        {
+          "id": "ink",
+          "value": "var(--ink)"
+        },
+        {
+          "id": "poppy",
+          "value": "#c54126"
+        },
+        {
+          "id": "blue",
+          "value": "#105099"
+        },
+        {
+          "id": "oak",
+          "value": "#9e9e4d"
+        }
+      ]
+    }
+  ],
+  "polka-dots": [
+    {
+      "key": "repelR",
+      "label": "Repel",
+      "type": "range",
+      "min": 40,
+      "max": 200,
+      "step": 4,
+      "default": 116,
+      "shortcut": {
+        "key": "r"
+      }
+    },
+    {
+      "key": "push",
+      "label": "Push",
+      "type": "range",
+      "min": 0,
+      "max": 3,
+      "step": 0.1,
+      "default": 0.9
+    },
+    {
+      "key": "bloom",
+      "label": "Bloom",
+      "type": "range",
+      "min": 0,
+      "max": 4,
+      "step": 0.1,
+      "default": 2.1,
+      "shortcut": {
+        "key": "b",
+        "mode": "coarse"
+      }
+    },
+    {
+      "key": "pull",
+      "label": "Spring",
+      "type": "spring",
+      "default": {
+        "stiffness": 0.055,
+        "damping": 0.18,
+        "mass": 1
+      }
+    }
+  ],
+  "heart": [
+    {
+      "key": "spin",
+      "label": "spin",
+      "type": "range",
+      "default": 0.05,
+      "min": 0.02,
+      "max": 0.12,
+      "step": 0.005
+    },
+    {
+      "key": "coast",
+      "label": "coast",
+      "type": "range",
+      "default": 2,
+      "min": 0.5,
+      "max": 5,
+      "step": 0.1
+    },
+    {
+      "key": "focal",
+      "label": "focal",
+      "type": "range",
+      "default": 1500,
+      "min": 500,
+      "max": 3000,
+      "step": 100
+    }
+  ],
+  "threejs-test": [
+    {
+      "key": "accent",
+      "label": "Accent",
+      "type": "swatch",
+      "default": "ink",
+      "options": [
+        {
+          "id": "ink",
+          "value": "var(--ink)"
+        },
+        {
+          "id": "poppy",
+          "value": "#c54126"
+        },
+        {
+          "id": "blue",
+          "value": "#105099"
+        },
+        {
+          "id": "oak",
+          "value": "#9e9e4d"
+        }
+      ]
+    },
+    {
+      "key": "finish",
+      "label": "Finish",
+      "type": "segment",
+      "default": "studio",
+      "options": [
+        {
+          "id": "studio",
+          "label": "Studio"
+        },
+        {
+          "id": "chrome",
+          "label": "Chrome"
+        },
+        {
+          "id": "wax",
+          "label": "Wax"
+        },
+        {
+          "id": "ink",
+          "label": "Ink"
+        }
+      ]
+    },
+    {
+      "key": "polish",
+      "label": "Polish",
+      "type": "range",
+      "min": -1,
+      "max": 1,
+      "step": 0.05,
+      "default": 0
+    },
+    {
+      "key": "spin",
+      "label": "Spin",
+      "type": "range",
+      "min": 0,
+      "max": 3,
+      "step": 0.1,
+      "default": 0.9
+    },
+    {
+      "key": "pointSize",
+      "label": "Points",
+      "type": "range",
+      "min": 0.005,
+      "max": 0.05,
+      "step": 0.005,
+      "default": 0.02
+    },
+    {
+      "key": "lobes",
+      "label": "Lobes",
+      "type": "range",
+      "min": -4,
+      "max": 10,
+      "step": 1,
+      "default": 0
+    },
+    {
+      "key": "sharp",
+      "label": "Sharp",
+      "type": "range",
+      "min": 0.3,
+      "max": 2.4,
+      "step": 0.05,
+      "default": 1
+    }
+  ],
+  "dynamic-scrollbar": [
+    {
+      "key": "morphIn",
+      "label": "Bloom",
+      "type": "range",
+      "min": 0.2,
+      "max": 1.2,
+      "step": 0.05,
+      "default": 0.65
+    },
+    {
+      "key": "morphOut",
+      "label": "Collapse",
+      "type": "range",
+      "min": 0.2,
+      "max": 1.2,
+      "step": 0.05,
+      "default": 0.6
+    },
+    {
+      "key": "restDelay",
+      "label": "Rest",
+      "type": "range",
+      "min": 50,
+      "max": 500,
+      "step": 10,
+      "default": 150
+    },
+    {
+      "key": "accent",
+      "label": "Accent",
+      "type": "swatch",
+      "default": "coral",
+      "options": [
+        {
+          "id": "coral",
+          "value": "#ff4d00"
+        },
+        {
+          "id": "blue",
+          "value": "#3f6a99"
+        },
+        {
+          "id": "sage",
+          "value": "#55703c"
+        },
+        {
+          "id": "mono",
+          "value": "#ffffff"
+        }
+      ]
+    }
+  ],
+  "rotating-gallery": [
+    {
+      "key": "drift",
+      "label": "Drift",
+      "type": "range",
+      "min": 0,
+      "max": 12,
+      "step": 0.5,
+      "default": 4
+    },
+    {
+      "key": "weight",
+      "label": "Weight",
+      "type": "range",
+      "min": 4,
+      "max": 20,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "key": "perspective",
+      "label": "Depth",
+      "type": "range",
+      "min": 1500,
+      "max": 6000,
+      "step": 100,
+      "default": 4000
+    },
+    {
+      "key": "morph",
+      "label": "Morph",
+      "type": "segment",
+      "default": "spring",
+      "options": [
+        {
+          "id": "glide",
+          "label": "Glide"
+        },
+        {
+          "id": "snap",
+          "label": "Snap"
+        },
+        {
+          "id": "spring",
+          "label": "Spring"
+        }
+      ]
+    },
+    {
+      "key": "imgEase",
+      "label": "Image",
+      "type": "easing",
+      "default": [
+        0.16,
+        1,
+        0.3,
+        1
+      ]
+    }
+  ],
+  "paste-up": [
+    {
+      "key": "damp",
+      "label": "damp",
+      "type": "range",
+      "default": 0.085,
+      "min": 0.02,
+      "max": 0.3,
+      "step": 0.005
+    },
+    {
+      "key": "bend",
+      "label": "bend",
+      "type": "range",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.05
+    },
+    {
+      "key": "fetch",
+      "label": "fetch",
+      "type": "range",
+      "default": 0,
+      "min": 0,
+      "max": 800,
+      "step": 25
+    },
+    {
+      "key": "memory",
+      "label": "memory",
+      "type": "segment",
+      "default": "off",
+      "min": 0,
+      "max": 1,
+      "step": 0.01,
+      "options": [
+        {
+          "id": "off",
+          "label": "Off"
+        },
+        {
+          "id": "on",
+          "label": "On"
+        }
+      ]
+    }
+  ],
+  "vocal-orb": [
+    {
+      "key": "heart",
+      "label": "Heart",
+      "type": "segment",
+      "default": "silver",
+      "options": [
+        {
+          "id": "glass",
+          "label": "Glass"
+        },
+        {
+          "id": "silver",
+          "label": "Silver"
+        },
+        {
+          "id": "void",
+          "label": "Void"
+        }
+      ]
+    },
+    {
+      "key": "rest",
+      "label": "Rest",
+      "type": "range",
+      "min": 0,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.8
+    },
+    {
+      "key": "view",
+      "label": "View",
+      "type": "range",
+      "min": 1,
+      "max": 40,
+      "step": 0.5,
+      "default": 8
+    },
+    {
+      "key": "flare",
+      "label": "Flare",
+      "type": "range",
+      "min": 0,
+      "max": 2,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "bloom",
+      "label": "Bloom",
+      "type": "range",
+      "min": 0,
+      "max": 2,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "speed",
+      "label": "Speed",
+      "type": "range",
+      "min": 0,
+      "max": 3,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "energy",
+      "label": "Energy",
+      "type": "range",
+      "min": 0,
+      "max": 2,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "spread",
+      "label": "Spread",
+      "type": "range",
+      "min": 0,
+      "max": 3,
+      "step": 0.05,
+      "default": 1
+    },
+    {
+      "key": "size",
+      "label": "Size",
+      "type": "range",
+      "min": 0.08,
+      "max": 0.4,
+      "step": 0.01,
+      "default": 0.3
+    }
+  ]
+}

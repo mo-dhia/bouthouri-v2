@@ -72,3 +72,14 @@ export function projectiveCss(matrix: Homography, scale: number, length: (value:
   const { a, b, c, d, p, q, x, y } = matrix;
   return `translate3d(${length(x)},${length(y)},0) matrix3d(${a - x * p},${b - y * p},0,${p / scale},${c - x * q},${d - y * q},0,${q / scale},0,0,1,0,0,0,0,1)`;
 }
+
+/** Keep captions in the flat document plane while the preview bends. */
+export function gridCaption(card: ReturnType<typeof gridCard>, width: number, mediaHeight: number, gap: number) {
+  const point = (x: number) => {
+    const px = card.inset.x + x * card.scale, py = card.inset.y + mediaHeight * card.scale;
+    const m = card.matrix, divisor = m.p * px + m.q * py + 1;
+    return { x: (m.a * px + m.c * py + m.x) / divisor, y: (m.b * px + m.d * py + m.y) / divisor };
+  };
+  const left = point(0), right = point(width);
+  return { x: left.x, y: Math.max(left.y, right.y) + gap, width: Math.max(1, right.x - left.x) };
+}

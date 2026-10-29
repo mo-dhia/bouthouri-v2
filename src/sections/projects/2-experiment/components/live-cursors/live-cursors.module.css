@@ -1,0 +1,25 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .camera :global(.lc) { position: absolute; inset: 0; overflow: hidden }
+  .camera :global(.lc__hint) { position: absolute; inset: 0; display: grid; place-items: center; padding: calc(32.000064 * var(--experiment-unit)); text-align: center; color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--fs-mono-sm, calc(12.8000064 * var(--experiment-unit))); letter-spacing: 0.02em; transition: opacity .4s var(--ease-out-quad); pointer-events: none }
+  .camera :global(.lc__peer) { position: absolute; top: 0; left: 0; will-change: transform; pointer-events: none; transform-origin: top left }
+  .camera :global(.lc__ptr) { display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18)) }
+  .camera :global(.lc__ptr svg) { display: block; width: calc(22.000128 * var(--experiment-unit)); height: calc(22.000128 * var(--experiment-unit)) }
+  .camera :global(.lc__name) { position: absolute; top: calc(18 * var(--experiment-unit)); left: calc(16.0000128 * var(--experiment-unit)); white-space: nowrap; padding: calc(2.0000064 * var(--experiment-unit)) calc(6 * var(--experiment-unit)); border-radius: var(--r-sm, calc(4.0000128 * var(--experiment-unit))); font-family: var(--font-mono); font-size: calc(9.9200064 * var(--experiment-unit)); letter-spacing: 0.02em; color: #fff; transform: translateZ(0) }
+}
+@media (600px < width <= 1024px) {
+  .camera :global(.lc) { position: absolute; inset: 0; overflow: hidden }
+  .camera :global(.lc__hint) { position: absolute; inset: 0; display: grid; place-items: center; padding: calc(32.0000256 * var(--experiment-unit)); text-align: center; color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--fs-mono-sm, calc(12.8000256 * var(--experiment-unit))); letter-spacing: 0.02em; transition: opacity .4s var(--ease-out-quad); pointer-events: none }
+  .camera :global(.lc__peer) { position: absolute; top: 0; left: 0; will-change: transform; pointer-events: none; transform-origin: top left }
+  .camera :global(.lc__ptr) { display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18)) }
+  .camera :global(.lc__ptr svg) { display: block; width: calc(22.0000512 * var(--experiment-unit)); height: calc(22.0000512 * var(--experiment-unit)) }
+  .camera :global(.lc__name) { position: absolute; top: calc(18 * var(--experiment-unit)); left: calc(16.0000512 * var(--experiment-unit)); white-space: nowrap; padding: calc(2.00000256 * var(--experiment-unit)) calc(6 * var(--experiment-unit)); border-radius: var(--r-sm, calc(4.00000512 * var(--experiment-unit))); font-family: var(--font-mono); font-size: calc(9.9200256 * var(--experiment-unit)); letter-spacing: 0.02em; color: #fff; transform: translateZ(0) }
+}
+@media (width <= 600px) {
+  .camera :global(.lc) { position: absolute; inset: 0; overflow: hidden }
+  .camera :global(.lc__hint) { position: absolute; inset: 0; display: grid; place-items: center; padding: calc(32.00004 * var(--experiment-unit)); text-align: center; color: var(--ink-muted); font-family: var(--font-mono); font-size: var(--fs-mono-sm, calc(12.800016 * var(--experiment-unit))); letter-spacing: 0.02em; transition: opacity .4s var(--ease-out-quad); pointer-events: none }
+  .camera :global(.lc__peer) { position: absolute; top: 0; left: 0; will-change: transform; pointer-events: none; transform-origin: top left }
+  .camera :global(.lc__ptr) { display: block; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18)) }
+  .camera :global(.lc__ptr svg) { display: block; width: calc(22.0000172 * var(--experiment-unit)); height: calc(22.0000172 * var(--experiment-unit)) }
+  .camera :global(.lc__name) { position: absolute; top: calc(18.0000328 * var(--experiment-unit)); left: calc(16.00002 * var(--experiment-unit)); white-space: nowrap; padding: calc(2.00000044 * var(--experiment-unit)) calc(6.0000384 * var(--experiment-unit)); border-radius: var(--r-sm, calc(4.00000088 * var(--experiment-unit))); font-family: var(--font-mono); font-size: calc(9.9200124 * var(--experiment-unit)); letter-spacing: 0.02em; color: #fff; transform: translateZ(0) }
+}

@@ -1,0 +1,101 @@
+[
+  {
+    "slug": "live-cursors",
+    "name": "Live Cursors",
+    "category": "Interaction",
+    "poster": "/assets/projects/lab/live-cursors.jpg",
+    "original": "https://carterogunsola.com/lab/live-cursors",
+    "instructions": {
+      "en": "Open this experiment in another tab to see the other pointer. Move around the stage; peers ease into place.",
+      "ar": "افتح التجربة في تبويب آخر لرؤية المؤشر الآخر. تحرّك داخل المساحة لمتابعة حركة المؤشرات."
+    }
+  },
+  {
+    "slug": "dial",
+    "name": "Dial",
+    "category": "Interaction",
+    "poster": "/assets/projects/lab/dial.jpg",
+    "original": "https://carterogunsola.com/lab/dial",
+    "instructions": {
+      "en": "Drag vertically, scroll, or use the arrow keys to tune the dial. Select an item to settle on it.",
+      "ar": "اسحب عموديًا، أو مرّر، أو استخدم مفاتيح الأسهم لتدوير القرص. اختر عنصرًا للتوقّف عنده."
+    }
+  },
+  {
+    "slug": "polka-dots",
+    "name": "Polka Dots",
+    "category": "Canvas",
+    "poster": "/assets/projects/lab/polka-dots.jpg",
+    "original": "https://carterogunsola.com/lab/polka-dots",
+    "instructions": {
+      "en": "Move through the dots to push and scatter them. Click or tap to send a ripple through the field.",
+      "ar": "حرّك المؤشر بين النقاط لدفعها. انقر أو المس لإرسال موجة عبر المساحة."
+    }
+  },
+  {
+    "slug": "heart",
+    "name": "Heart",
+    "category": "Canvas",
+    "poster": "/assets/projects/lab/heart.jpg",
+    "original": "https://carterogunsola.com/lab/heart",
+    "instructions": {
+      "en": "Drag the point cloud to turn it, then let go and watch its layers catch up.",
+      "ar": "اسحب سحابة النقاط لتدويرها، ثم أفلتها وشاهد طبقاتها تتابع الحركة."
+    }
+  },
+  {
+    "slug": "threejs-test",
+    "name": "ThreeJs Scene",
+    "category": "3D",
+    "poster": "/assets/projects/lab/threejs-test.jpg",
+    "original": "https://carterogunsola.com/lab/threejs-test",
+    "instructions": {
+      "en": "Orbit with a drag and zoom with the wheel or a pinch. Switch the subject, render mode and material.",
+      "ar": "اسحب للدوران ومرّر أو اقرص للتقريب. غيّر المجسّم وأسلوب عرضه ومادّته."
+    }
+  },
+  {
+    "slug": "dynamic-scrollbar",
+    "name": "Dynamic Scrollbar",
+    "category": "UI",
+    "poster": "/assets/projects/lab/dynamic-scrollbar.jpg",
+    "original": "https://carterogunsola.com/lab/dynamic-scrollbar",
+    "instructions": {
+      "en": "Scroll or drag the miniature page. Hover the bar to unfold the clock; move into the music section for playback controls.",
+      "ar": "مرّر الصفحة المصغّرة أو اسحبها. مرّر المؤشر فوق الشريط لفتح الساعة، وانتقل إلى قسم الموسيقى لإظهار المشغّل."
+    }
+  },
+  {
+    "slug": "rotating-gallery",
+    "name": "Rotating Gallery",
+    "category": "Gallery",
+    "poster": "/assets/projects/lab/rotating-gallery.jpg",
+    "original": "https://carterogunsola.com/lab/rotating-gallery",
+    "instructions": {
+      "en": "Drag or scroll the image carousel. Switch between the ring and grid; the same photographs travel between both views.",
+      "ar": "اسحب معرض الصور أو مرّره. بدّل بين الحلقة والشبكة؛ تنتقل الصور نفسها بين العرضين."
+    }
+  },
+  {
+    "slug": "paste-up",
+    "name": "Paste-Up",
+    "category": "Transition",
+    "poster": "/assets/projects/lab/paste-up.jpg",
+    "original": "https://carterogunsola.com/lab/paste-up",
+    "instructions": {
+      "en": "Choose Index, Spread or Strip to arrange the same prints on a different board. Click a print to bring it into focus.",
+      "ar": "اختر الفهرس أو العرض أو الشريط لإعادة ترتيب الصور نفسها. انقر على صورة لإبرازها."
+    }
+  },
+  {
+    "slug": "vocal-orb",
+    "name": "Vocal Orb",
+    "category": "3D",
+    "poster": "/assets/projects/lab/vocal-orb.jpg",
+    "original": "https://carterogunsola.com/lab/vocal-orb",
+    "instructions": {
+      "en": "Move the pointer to tilt the black hole. The microphone reacts to your voice; the speaker opens live effects and read-back options. Microphone access and optional model downloads require your action.",
+      "ar": "حرّك المؤشر لإمالة الثقب الأسود. يتفاعل الميكروفون مع صوتك، ويفتح زرّ السماعة المؤثّرات وخيارات القراءة. لا يبدأ الميكروفون أو تنزيل النماذج الاختيارية إلا باختيارك."
+    }
+  }
+]

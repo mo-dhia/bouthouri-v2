@@ -1,0 +1,160 @@
+/* Fixed design canvases: desktop 1920×1080, tablet 768×1024, mobile 412×915. All design lengths scale with width. */
+@media (width > 1024px) {
+  .root { position: relative; inline-size: 100%; block-size: var(--design-height); color: #dbd8d0; direction: ltr }
+  .stage { position: absolute; inset-block-start: 5.3125vw; inset-inline: 1.5625vw; inset-block-end: 1.5625vw; overflow: hidden; border: 1px solid #d6d1c122; border-radius: 0.833334vw; background: #09090999; isolation: isolate }
+  .camera { position: absolute; inset-block-start: 0; inset-inline-start: 0; transform: scale(var(--experiment-scale, 1)); transform-origin: 0 0; direction: ltr; --experiment-unit: calc(100vw / var(--experiment-reference-width, 1920) / var(--experiment-scale, 1)); --font-sans: var(--font-latin), sans-serif; --font-mono: var(--font-latin), sans-serif; --ink: #dbd8d0; --ink-muted: #aaa69b; --paper: #090909; --surface: #111110; --card-solid: #111110; --line: #d6d1c122; --fill: #292821; --track: -.02em; --r-xs: calc(4 * var(--experiment-unit)); --r-sm: calc(6 * var(--experiment-unit)); --r-md: calc(8 * var(--experiment-unit)); --r-xl: calc(16 * var(--experiment-unit)); --fs-mono-xs: calc(10 * var(--experiment-unit)); --fs-mono-sm: calc(12 * var(--experiment-unit)); --fs-mono-meta: calc(11 * var(--experiment-unit)); --fs-mono: calc(12 * var(--experiment-unit)); --ease-out-expo: cubic-bezier(.16, 1, .3, 1); --ease-out-quad: cubic-bezier(.25, .46, .45, .94); --ease-in-cubic: cubic-bezier(.55, .055, .675, .19); --ease-in-out-quad: cubic-bezier(.455, .03, .515, .955); --spot: #bca77f; --s-1: calc(1 * var(--experiment-unit)); --s-2: calc(2 * var(--experiment-unit)); --s-4: calc(4 * var(--experiment-unit)); --s-6: calc(6 * var(--experiment-unit)); --s-8: calc(8 * var(--experiment-unit)); --s-10: calc(10 * var(--experiment-unit)); --s-12: calc(12 * var(--experiment-unit)); --s-14: calc(14 * var(--experiment-unit)); --s-16: calc(16 * var(--experiment-unit)); --s-18: calc(18 * var(--experiment-unit)); --s-20: calc(20 * var(--experiment-unit)); --s-24: calc(24 * var(--experiment-unit)); --s-28: calc(28 * var(--experiment-unit)); --s-32: calc(32 * var(--experiment-unit)); --s-36: calc(36 * var(--experiment-unit)); --s-40: calc(40 * var(--experiment-unit)); --s-48: calc(48 * var(--experiment-unit)); --s-56: calc(56 * var(--experiment-unit)); --s-64: calc(64 * var(--experiment-unit)) }
+  .fallback { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity .3s; pointer-events: none; z-index: 1 }
+  .fallback img { inline-size: 100%; block-size: 100%; object-fit: contain; opacity: .65 }
+  .fallback img[data-preview-ink] { filter: brightness(.873134328358) contrast(1.34) }
+  .fallback p { position: absolute; inset-inline: 1.25vw; inset-block-end: 4.16667vw; font-size: 0.677084vw; line-height: 1.6; text-align: center; color: #aaa69b }
+  .root[data-experiment-live] .fallback { opacity: 0; visibility: hidden }
+  .root[data-experiment-failed] .camera { visibility: hidden }
+  .heading { position: absolute; inset-block-start: 0.9375vw; inset-inline-start: 4.27084vw; z-index: 3; display: flex; align-items: center; gap: 0.833334vw; pointer-events: none }
+  .heading h1 { font-size: 0.625vw; line-height: 1.3; font-weight: 400; text-transform: uppercase; margin: 0 }
+  .heading span { font-size: 0.520834vw; color: #8d897e; text-transform: uppercase }
+  .notes, .settings { position: absolute; inset-block-start: 0.416667vw; z-index: 5; direction: ltr }
+  .notes { inset-inline-start: 0.416667vw }
+  .settings { inset-inline-end: 0.416667vw }
+  .notes summary, .settings summary { display: flex; align-items: center; justify-content: center; block-size: 1.875vw; padding-inline: 0.520834vw; font-size: 0.572917vw; text-transform: uppercase; color: #dbd8d0; background: #111110d9; border: 1px solid #d6d1c122; border-radius: 0.3125vw; cursor: pointer; list-style: none }
+  .notes summary::-webkit-details-marker, .settings summary::-webkit-details-marker { display: none }
+  .panel { position: fixed; inset-block-start: 7.8125vw; inset-inline-start: 2.39584vw; inline-size: 18.75vw; max-inline-size: calc(100% - 4.79167vw); max-block-size: calc(100% - 9.89584vw); overflow: auto; overscroll-behavior: contain; padding: 1.25vw; background: #0f0f0ff5; border: 1px solid #d6d1c133; border-radius: 0.416667vw; box-shadow: 0 0.625vw 2.08334vw #0008; font-size: 0.729167vw; line-height: 1.8; color: #c2beb1 }
+  .settings .panel { inset-inline-start: auto; inset-inline-end: 2.39584vw; inline-size: 16.6667vw }
+  .panel h2 { color: #dbd8d0; font-size: 0.9375vw; line-height: 1.2; font-weight: 400; margin: 0 0 1.25vw }
+  .panel p { margin: 0 0 1.04167vw }
+  .panel a { color: #dbd8d0; text-underline-offset: .25em }
+  .panel fieldset { border: 0; padding: 0; min-inline-size: 0; margin: 0; display: grid; gap: 1.04167vw }
+  .panel button { color: #dbd8d0; background: transparent; border: 1px solid #d6d1c133; padding: 0.416667vw 0.833334vw; border-radius: 0.208334vw; margin-block-start: 1.25vw; cursor: pointer; font-size: 0.625vw }
+  .control { display: grid; grid-template-columns: 1fr auto; gap: 0.416667vw; align-items: center; font-size: 0.625vw; line-height: 1.4 }
+  .control input { grid-column: 1 / -1; inline-size: 100%; accent-color: #bca77f }
+  .control output { grid-column: 2; grid-row: 1; font-variant-numeric: tabular-nums }
+  .control select { grid-column: 1 / -1; inline-size: 100%; color: #dbd8d0; background: #181817; border: 1px solid #d6d1c133; padding: 0.416667vw; border-radius: 0.208334vw; font-size: 0.625vw }
+  .panel .spring { gap: 0.625vw; padding-block-start: 0.416667vw }
+  .spring legend { font-size: 0.625vw; line-height: 1.4; margin-block-end: 0.416667vw }
+  .spring label { display: grid; grid-template-columns: 2.08334vw 1fr 2.08334vw; align-items: center; gap: 0.416667vw; font-size: 0.572917vw }
+  .spring input { inline-size: 100%; accent-color: #bca77f }
+  .navigation { position: absolute; inset-block-end: 0.833334vw; inset-inline-start: 50%; translate: -50% 0; z-index: 3; display: flex; align-items: center; gap: 0; padding: 0.104167vw; border: 1px solid #d6d1c122; border-radius: 0.416667vw; background: #101010e6 }
+  .navigation a { color: #dbd8d0; font-size: 0.625vw; line-height: 1; min-inline-size: 1.875vw; block-size: 1.66667vw; padding-inline: 0.625vw; display: grid; place-items: center; text-decoration: none; border-radius: 0.260417vw }
+  .navigation a:hover { background: #d6d1c114 }
+  .navigation a:focus-visible, .notes summary:focus-visible, .settings summary:focus-visible { outline: 2px solid #dbd8d0; outline-offset: 0.104167vw }
+  .instructions { position: absolute; inline-size: 0.0520834vw; block-size: 0.0520834vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+  .root[data-locale='ar'] .panel { direction: rtl; font-family: var(--font-arabic), sans-serif }
+  :global([data-editorial-page='projects']:has([data-experiment-root])) { position: fixed; inset: 0; inline-size: 100%; min-block-size: 0; overflow: auto; overscroll-behavior: contain }
+  :global(html:has([data-experiment-root])) { overflow: hidden }
+  @media (600px < width <= 1024px) {
+    .stage { inset-inline: 1.10157vw; inset-block-end: 1.10157vw }
+    .panel { inset-inline-start: 1.9349vw; max-inline-size: calc(100% - 3.8698vw) }
+    .settings .panel { inset-inline-end: 1.9349vw }
+  }
+  @media (width <= 600px) {
+    .stage { inset-block-start: 4.16667vw; inset-inline: 0.857639vw; inset-block-end: 0.857639vw }
+    .heading { display: none }
+    .panel { inset-block-start: 6.5625vw; inset-inline: 1.25vw; inline-size: auto; max-inline-size: none; max-block-size: calc(100% - 8.64584vw); padding: 1.04167vw }
+    .settings .panel { inset-inline: 1.25vw; inline-size: auto }
+  }
+}
+@media (600px < width <= 1024px) {
+  .root { position: relative; inline-size: 100%; block-size: var(--design-height); color: #dbd8d0; direction: ltr }
+  .stage { position: absolute; inset-block-start: 13.2813vw; inset-inline: 3.90625vw; inset-block-end: 3.90625vw; overflow: hidden; border: 1px solid #d6d1c122; border-radius: 2.08334vw; background: #09090999; isolation: isolate }
+  .camera { position: absolute; inset-block-start: 0; inset-inline-start: 0; transform: scale(var(--experiment-scale, 1)); transform-origin: 0 0; direction: ltr; --experiment-unit: calc(100vw / var(--experiment-reference-width, 1920) / var(--experiment-scale, 1)); --font-sans: var(--font-latin), sans-serif; --font-mono: var(--font-latin), sans-serif; --ink: #dbd8d0; --ink-muted: #aaa69b; --paper: #090909; --surface: #111110; --card-solid: #111110; --line: #d6d1c122; --fill: #292821; --track: -.02em; --r-xs: calc(4 * var(--experiment-unit)); --r-sm: calc(6 * var(--experiment-unit)); --r-md: calc(8 * var(--experiment-unit)); --r-xl: calc(16 * var(--experiment-unit)); --fs-mono-xs: calc(10 * var(--experiment-unit)); --fs-mono-sm: calc(12 * var(--experiment-unit)); --fs-mono-meta: calc(11 * var(--experiment-unit)); --fs-mono: calc(12 * var(--experiment-unit)); --ease-out-expo: cubic-bezier(.16, 1, .3, 1); --ease-out-quad: cubic-bezier(.25, .46, .45, .94); --ease-in-cubic: cubic-bezier(.55, .055, .675, .19); --ease-in-out-quad: cubic-bezier(.455, .03, .515, .955); --spot: #bca77f; --s-1: calc(1 * var(--experiment-unit)); --s-2: calc(2 * var(--experiment-unit)); --s-4: calc(4 * var(--experiment-unit)); --s-6: calc(6 * var(--experiment-unit)); --s-8: calc(8 * var(--experiment-unit)); --s-10: calc(10 * var(--experiment-unit)); --s-12: calc(12 * var(--experiment-unit)); --s-14: calc(14 * var(--experiment-unit)); --s-16: calc(16 * var(--experiment-unit)); --s-18: calc(18 * var(--experiment-unit)); --s-20: calc(20 * var(--experiment-unit)); --s-24: calc(24 * var(--experiment-unit)); --s-28: calc(28 * var(--experiment-unit)); --s-32: calc(32 * var(--experiment-unit)); --s-36: calc(36 * var(--experiment-unit)); --s-40: calc(40 * var(--experiment-unit)); --s-48: calc(48 * var(--experiment-unit)); --s-56: calc(56 * var(--experiment-unit)); --s-64: calc(64 * var(--experiment-unit)) }
+  .fallback { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity .3s; pointer-events: none; z-index: 1 }
+  .fallback img { inline-size: 100%; block-size: 100%; object-fit: contain; opacity: .65 }
+  .fallback img[data-preview-ink] { filter: brightness(.873134328358) contrast(1.34) }
+  .fallback p { position: absolute; inset-inline: 3.125vw; inset-block-end: 10.4167vw; font-size: 1.69271vw; line-height: 1.6; text-align: center; color: #aaa69b }
+  .root[data-experiment-live] .fallback { opacity: 0; visibility: hidden }
+  .root[data-experiment-failed] .camera { visibility: hidden }
+  .heading { position: absolute; inset-block-start: 2.34375vw; inset-inline-start: 10.6771vw; z-index: 3; display: flex; align-items: center; gap: 2.08334vw; pointer-events: none }
+  .heading h1 { font-size: 1.5625vw; line-height: 1.3; font-weight: 400; text-transform: uppercase; margin: 0 }
+  .heading span { font-size: 1.30209vw; color: #8d897e; text-transform: uppercase }
+  .notes, .settings { position: absolute; inset-block-start: 1.04167vw; z-index: 5; direction: ltr }
+  .notes { inset-inline-start: 1.04167vw }
+  .settings { inset-inline-end: 1.04167vw }
+  .notes summary, .settings summary { display: flex; align-items: center; justify-content: center; block-size: 4.6875vw; padding-inline: 1.30209vw; font-size: 1.4323vw; text-transform: uppercase; color: #dbd8d0; background: #111110d9; border: 1px solid #d6d1c122; border-radius: 0.78125vw; cursor: pointer; list-style: none }
+  .notes summary::-webkit-details-marker, .settings summary::-webkit-details-marker { display: none }
+  .panel { position: fixed; inset-block-start: 19.5313vw; inset-inline-start: 5.98959vw; inline-size: 46.875vw; max-inline-size: calc(100% - 11.9792vw); max-block-size: calc(100% - 24.7396vw); overflow: auto; overscroll-behavior: contain; padding: 3.125vw; background: #0f0f0ff5; border: 1px solid #d6d1c133; border-radius: 1.04167vw; box-shadow: 0 1.5625vw 5.20834vw #0008; font-size: 1.82292vw; line-height: 1.8; color: #c2beb1 }
+  .settings .panel { inset-inline-start: auto; inset-inline-end: 5.98959vw; inline-size: 41.6667vw }
+  .panel h2 { color: #dbd8d0; font-size: 2.34375vw; line-height: 1.2; font-weight: 400; margin: 0 0 3.125vw }
+  .panel p { margin: 0 0 2.60417vw }
+  .panel a { color: #dbd8d0; text-underline-offset: .25em }
+  .panel fieldset { border: 0; padding: 0; min-inline-size: 0; margin: 0; display: grid; gap: 2.60417vw }
+  .panel button { color: #dbd8d0; background: transparent; border: 1px solid #d6d1c133; padding: 1.04167vw 2.08334vw; border-radius: 0.520834vw; margin-block-start: 3.125vw; cursor: pointer; font-size: 1.5625vw }
+  .control { display: grid; grid-template-columns: 1fr auto; gap: 1.04167vw; align-items: center; font-size: 1.5625vw; line-height: 1.4 }
+  .control input { grid-column: 1 / -1; inline-size: 100%; accent-color: #bca77f }
+  .control output { grid-column: 2; grid-row: 1; font-variant-numeric: tabular-nums }
+  .control select { grid-column: 1 / -1; inline-size: 100%; color: #dbd8d0; background: #181817; border: 1px solid #d6d1c133; padding: 1.04167vw; border-radius: 0.520834vw; font-size: 1.5625vw }
+  .panel .spring { gap: 1.5625vw; padding-block-start: 1.04167vw }
+  .spring legend { font-size: 1.5625vw; line-height: 1.4; margin-block-end: 1.04167vw }
+  .spring label { display: grid; grid-template-columns: 5.20834vw 1fr 5.20834vw; align-items: center; gap: 1.04167vw; font-size: 1.4323vw }
+  .spring input { inline-size: 100%; accent-color: #bca77f }
+  .navigation { position: absolute; inset-block-end: 2.08334vw; inset-inline-start: 50%; translate: -50% 0; z-index: 3; display: flex; align-items: center; gap: 0; padding: 0.260417vw; border: 1px solid #d6d1c122; border-radius: 1.04167vw; background: #101010e6 }
+  .navigation a { color: #dbd8d0; font-size: 1.5625vw; line-height: 1; min-inline-size: 4.6875vw; block-size: 4.16667vw; padding-inline: 1.5625vw; display: grid; place-items: center; text-decoration: none; border-radius: 0.651042vw }
+  .navigation a:hover { background: #d6d1c114 }
+  .navigation a:focus-visible, .notes summary:focus-visible, .settings summary:focus-visible { outline: 2px solid #dbd8d0; outline-offset: 0.260417vw }
+  .instructions { position: absolute; inline-size: 0.130209vw; block-size: 0.130209vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+  .root[data-locale='ar'] .panel { direction: rtl; font-family: var(--font-arabic), sans-serif }
+  :global([data-editorial-page='projects']:has([data-experiment-root])) { position: fixed; inset: 0; inline-size: 100%; min-block-size: 0; overflow: auto; overscroll-behavior: contain }
+  :global(html:has([data-experiment-root])) { overflow: hidden }
+  @media (600px < width <= 1024px) {
+    .stage { inset-inline: 2.75391vw; inset-block-end: 2.75391vw }
+    .panel { inset-inline-start: 4.83724vw; max-inline-size: calc(100% - 9.67448vw) }
+    .settings .panel { inset-inline-end: 4.83724vw }
+  }
+  @media (width <= 600px) {
+    .stage { inset-block-start: 10.4167vw; inset-inline: 2.1441vw; inset-block-end: 2.1441vw }
+    .heading { display: none }
+    .panel { inset-block-start: 16.4063vw; inset-inline: 3.125vw; inline-size: auto; max-inline-size: none; max-block-size: calc(100% - 21.6146vw); padding: 2.60417vw }
+    .settings .panel { inset-inline: 3.125vw; inline-size: auto }
+  }
+}
+@media (width <= 600px) {
+  .root { position: relative; inline-size: 100%; block-size: var(--design-height); color: #dbd8d0; direction: ltr }
+  .stage { position: absolute; inset-block-start: 24.7573vw; inset-inline: 7.28156vw; inset-block-end: 7.28156vw; overflow: hidden; border: 1px solid #d6d1c122; border-radius: 3.8835vw; background: #09090999; isolation: isolate }
+  .camera { position: absolute; inset-block-start: 0; inset-inline-start: 0; transform: scale(var(--experiment-scale, 1)); transform-origin: 0 0; direction: ltr; --experiment-unit: calc(100vw / var(--experiment-reference-width, 1920) / var(--experiment-scale, 1)); --font-sans: var(--font-latin), sans-serif; --font-mono: var(--font-latin), sans-serif; --ink: #dbd8d0; --ink-muted: #aaa69b; --paper: #090909; --surface: #111110; --card-solid: #111110; --line: #d6d1c122; --fill: #292821; --track: -.02em; --r-xs: calc(4 * var(--experiment-unit)); --r-sm: calc(6 * var(--experiment-unit)); --r-md: calc(8 * var(--experiment-unit)); --r-xl: calc(16 * var(--experiment-unit)); --fs-mono-xs: calc(10 * var(--experiment-unit)); --fs-mono-sm: calc(12 * var(--experiment-unit)); --fs-mono-meta: calc(11 * var(--experiment-unit)); --fs-mono: calc(12 * var(--experiment-unit)); --ease-out-expo: cubic-bezier(.16, 1, .3, 1); --ease-out-quad: cubic-bezier(.25, .46, .45, .94); --ease-in-cubic: cubic-bezier(.55, .055, .675, .19); --ease-in-out-quad: cubic-bezier(.455, .03, .515, .955); --spot: #bca77f; --s-1: calc(1 * var(--experiment-unit)); --s-2: calc(2 * var(--experiment-unit)); --s-4: calc(4 * var(--experiment-unit)); --s-6: calc(6 * var(--experiment-unit)); --s-8: calc(8 * var(--experiment-unit)); --s-10: calc(10 * var(--experiment-unit)); --s-12: calc(12 * var(--experiment-unit)); --s-14: calc(14 * var(--experiment-unit)); --s-16: calc(16 * var(--experiment-unit)); --s-18: calc(18 * var(--experiment-unit)); --s-20: calc(20 * var(--experiment-unit)); --s-24: calc(24 * var(--experiment-unit)); --s-28: calc(28 * var(--experiment-unit)); --s-32: calc(32 * var(--experiment-unit)); --s-36: calc(36 * var(--experiment-unit)); --s-40: calc(40 * var(--experiment-unit)); --s-48: calc(48 * var(--experiment-unit)); --s-56: calc(56 * var(--experiment-unit)); --s-64: calc(64 * var(--experiment-unit)) }
+  .fallback { position: absolute; inset: 0; display: grid; place-items: center; transition: opacity .3s; pointer-events: none; z-index: 1 }
+  .fallback img { inline-size: 100%; block-size: 100%; object-fit: contain; opacity: .65 }
+  .fallback img[data-preview-ink] { filter: brightness(.873134328358) contrast(1.34) }
+  .fallback p { position: absolute; inset-inline: 5.82525vw; inset-block-end: 19.4175vw; font-size: 3.15534vw; line-height: 1.6; text-align: center; color: #aaa69b }
+  .root[data-experiment-live] .fallback { opacity: 0; visibility: hidden }
+  .root[data-experiment-failed] .camera { visibility: hidden }
+  .heading { position: absolute; inset-block-start: 4.36894vw; inset-inline-start: 19.903vw; z-index: 3; display: flex; align-items: center; gap: 3.8835vw; pointer-events: none }
+  .heading h1 { font-size: 2.91263vw; line-height: 1.3; font-weight: 400; text-transform: uppercase; margin: 0 }
+  .heading span { font-size: 2.42719vw; color: #8d897e; text-transform: uppercase }
+  .notes, .settings { position: absolute; inset-block-start: 1.94175vw; z-index: 5; direction: ltr }
+  .notes { inset-inline-start: 1.94175vw }
+  .settings { inset-inline-end: 1.94175vw }
+  .notes summary, .settings summary { display: flex; align-items: center; justify-content: center; block-size: 8.73787vw; padding-inline: 2.42719vw; font-size: 2.66991vw; text-transform: uppercase; color: #dbd8d0; background: #111110d9; border: 1px solid #d6d1c122; border-radius: 1.45632vw; cursor: pointer; list-style: none }
+  .notes summary::-webkit-details-marker, .settings summary::-webkit-details-marker { display: none }
+  .panel { position: fixed; inset-block-start: 36.4078vw; inset-inline-start: 11.1651vw; inline-size: 87.3787vw; max-inline-size: calc(100% - 22.3301vw); max-block-size: calc(100% - 46.1166vw); overflow: auto; overscroll-behavior: contain; padding: 5.82525vw; background: #0f0f0ff5; border: 1px solid #d6d1c133; border-radius: 1.94175vw; box-shadow: 0 2.91263vw 9.70874vw #0008; font-size: 3.39806vw; line-height: 1.8; color: #c2beb1 }
+  .settings .panel { inset-inline-start: auto; inset-inline-end: 11.1651vw; inline-size: 77.67vw }
+  .panel h2 { color: #dbd8d0; font-size: 4.36894vw; line-height: 1.2; font-weight: 400; margin: 0 0 5.82525vw }
+  .panel p { margin: 0 0 4.85437vw }
+  .panel a { color: #dbd8d0; text-underline-offset: .25em }
+  .panel fieldset { border: 0; padding: 0; min-inline-size: 0; margin: 0; display: grid; gap: 4.85437vw }
+  .panel button { color: #dbd8d0; background: transparent; border: 1px solid #d6d1c133; padding: 1.94175vw 3.8835vw; border-radius: 0.970874vw; margin-block-start: 5.82525vw; cursor: pointer; font-size: 2.91263vw }
+  .control { display: grid; grid-template-columns: 1fr auto; gap: 1.94175vw; align-items: center; font-size: 2.91263vw; line-height: 1.4 }
+  .control input { grid-column: 1 / -1; inline-size: 100%; accent-color: #bca77f }
+  .control output { grid-column: 2; grid-row: 1; font-variant-numeric: tabular-nums }
+  .control select { grid-column: 1 / -1; inline-size: 100%; color: #dbd8d0; background: #181817; border: 1px solid #d6d1c133; padding: 1.94175vw; border-radius: 0.970874vw; font-size: 2.91263vw }
+  .panel .spring { gap: 2.91263vw; padding-block-start: 1.94175vw }
+  .spring legend { font-size: 2.91263vw; line-height: 1.4; margin-block-end: 1.94175vw }
+  .spring label { display: grid; grid-template-columns: 9.70874vw 1fr 9.70874vw; align-items: center; gap: 1.94175vw; font-size: 2.66991vw }
+  .spring input { inline-size: 100%; accent-color: #bca77f }
+  .navigation { position: absolute; inset-block-end: 3.8835vw; inset-inline-start: 50%; translate: -50% 0; z-index: 3; display: flex; align-items: center; gap: 0; padding: 0.485437vw; border: 1px solid #d6d1c122; border-radius: 1.94175vw; background: #101010e6 }
+  .navigation a { color: #dbd8d0; font-size: 2.91263vw; line-height: 1; min-inline-size: 8.73787vw; block-size: 7.767vw; padding-inline: 2.91263vw; display: grid; place-items: center; text-decoration: none; border-radius: 1.2136vw }
+  .navigation a:hover { background: #d6d1c114 }
+  .navigation a:focus-visible, .notes summary:focus-visible, .settings summary:focus-visible { outline: 2px solid #dbd8d0; outline-offset: 0.485437vw }
+  .instructions { position: absolute; inline-size: 0.242719vw; block-size: 0.242719vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+  .root[data-locale='ar'] .panel { direction: rtl; font-family: var(--font-arabic), sans-serif }
+  :global([data-editorial-page='projects']:has([data-experiment-root])) { position: fixed; inset: 0; inline-size: 100%; min-block-size: 0; overflow: auto; overscroll-behavior: contain }
+  :global(html:has([data-experiment-root])) { overflow: hidden }
+  @media (600px < width <= 1024px) {
+    .stage { inset-inline: 5.1335vw; inset-block-end: 5.1335vw }
+    .panel { inset-inline-start: 9.017vw; max-inline-size: calc(100% - 18.034vw) }
+    .settings .panel { inset-inline-end: 9.017vw }
+  }
+  @media (width <= 600px) {
+    .stage { inset-block-start: 19.4175vw; inset-inline: 3.99677vw; inset-block-end: 3.99677vw }
+    .heading { display: none }
+    .panel { inset-block-start: 30.5826vw; inset-inline: 5.82525vw; inline-size: auto; max-inline-size: none; max-block-size: calc(100% - 40.2913vw); padding: 4.85437vw }
+    .settings .panel { inset-inline: 5.82525vw; inline-size: auto }
+  }
+}

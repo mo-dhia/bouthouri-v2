@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import experiments from "../src/sections/projects/2-experiment/experiments.json";
 import { brand } from "../src/config/brand";
 
 const base = new URL(process.argv[2] || "http://localhost:3000");
@@ -76,6 +77,26 @@ for (const locale of ["en", "ar"]) {
   }
 }
 
+for (const locale of ["en", "ar"]) for (const item of experiments) {
+  const path = `/${locale}/projects/${item.slug}`, response = await fetch(new URL(path, base));
+  assert.equal(response.status, 200, path);
+  const html = await response.text(), markup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  assert.match(markup, /<h1[^>]*id="experiment-heading"/);
+  assert.ok(markup.includes(`data-experiment="${item.slug}"`), path);
+  assert.ok(markup.includes(item.name), `${path}: SSR experiment title`);
+  assert.ok(markup.includes(`href="/${locale === "en" ? "ar" : "en"}/projects/${item.slug}"`), `${path}: locale retains the exact study`);
+  assert.ok(markup.includes(`src="${item.poster}"`), `${path}: useful failure poster`);
+  assert.match(markup, /data-config-controls/); assert.match(markup, /<details/);
+  assert.ok(markup.includes(`href="/${locale}/projects"`), `${path}: grid navigation`);
+  assert.match(html, new RegExp(`<link[^>]+rel="canonical"[^>]+href="[^"]*${path}"`));
+  assert.ok(html.includes(brand.name), `${path}: branded metadata`);
+  for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+)"/g)) {
+    const url = new URL(match[1].replaceAll("&amp;", "&"), base);
+    if (url.origin === base.origin && url.pathname.startsWith("/_next/static/")) assets.add(url.href);
+  }
+}
+for (const path of ["/en/projects/not-a-study", "/en/services/vocal-orb"]) assert.equal((await fetch(new URL(path, base))).status, 404, path);
+
 for (const path of ["/fr", "/en/not-a-page"]) {
   assert.equal((await fetch(new URL(path, base))).status, 404, path);
 }
@@ -85,4 +106,4 @@ for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/
 await Promise.all([...assets].map(async (url) => {
   assert.equal((await fetch(url)).status, 200, url);
 }));
-process.stdout.write(`SSR audit passed: HOME and four editorial pages in both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);
+process.stdout.write(`SSR audit passed: HOME, four editorial pages and nine experiment details in both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);

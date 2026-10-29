@@ -56,7 +56,7 @@ export function mountRouteSurface(surface: HTMLElement, push: (href: string) => 
     const parsed = routePath(new URL(path, win.location.href).pathname);
     if (!parsed) return null;
     const main = [...doc.querySelectorAll<HTMLElement>("main[data-route-path]")].find(element => element.isConnected && element.dataset.routePath === parsed.path);
-    const inner = main?.querySelector<HTMLElement>(parsed.page === "home" ? "[data-journey-root]" : parsed.page === "vision" ? "[data-vision-root]" : parsed.page === "services" ? "#services-content" : parsed.page === "projects" ? "[data-projects-root]" : "[data-contact-content]");
+    const inner = main?.querySelector<HTMLElement>(parsed.page === "home" ? "[data-journey-root]" : parsed.page === "vision" ? "[data-vision-root]" : parsed.page === "services" ? "#services-content" : parsed.page === "projects" ? "[data-projects-root], [data-experiment-root]" : "[data-contact-content]");
     return main && inner?.isConnected ? { main, inner, path: parsed.path, home: parsed.page === "home" } : null;
   };
   const valid = (transaction: Transaction) => !disposed && !suspended && active === transaction;
