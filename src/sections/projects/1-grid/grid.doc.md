@@ -5,16 +5,17 @@ The source header, list/wheel mode switcher, light/dark theme and global live
 presence are excluded. The existing Bouthouri navigation and retained background
 own the shell. The source's nine experiment posters/reels and ordinary external
 experiment links are currently retained with visible attribution. They are
-reference studies, not presented as Bouthouri-authored client work.
+reference studies, not presented as Bouthouri-authored client work. Seven
+Bouthouri-built websites are interleaved with them; see "Website cards" below.
 
 ## Ownership and rendering
 
-`grid.tsx` renders the complete nine-card content, local poster images, links,
+`grid.tsx` renders the complete sixteen-card content, local poster images, links,
 heading and instructions on the server. `grid-gate.tsx` renders nothing and
 imports the controller after mount. Without that optional chunk, the ordinary
 responsive card grid remains readable and navigable. The controller clones only
 the visual repetitions to make the 6×6 virtual surface. Clones are excluded from
-the accessibility tree and tab order; the original nine links remain keyboard
+the accessibility tree and tab order; the original sixteen links remain keyboard
 targets. No React state, GSAP, Lenis or Three dependency is used by the grid.
 
 `grid-geometry.ts` owns reference layout, wrapping, bowed perspective and
@@ -152,8 +153,27 @@ in `public/assets/projects/lab/`.
 
 ## Local detail integration (2026-10-29)
 
-All nine semantic links now remain within `/[locale]/projects/[slug]`. Captions
+All nine study links now remain within `/[locale]/projects/[slug]`. Captions
 are flattened beneath projected media rather than inheriting the homography;
 their nodes and original styles/parents are restored on cleanup. Embedded gray
 poster/reel pixels use a non-destructive tonal filter, excluding Vocal Orb.
 See the sibling `2-experiment/experiment.doc.md` for renderer ownership.
+
+## Website cards (2026-10-29)
+
+The user asked for the seven websites from the previous portfolio
+(`/Users/ghost/Documents/dev/Finished/bouthouri`, live at bouthouri.co) to join
+this grid. `content.json` marks every item `kind: "study"` or `"website"`.
+Websites alternate with studies so the opening view mixes both; Vocal Orb stays
+at index eight, the source's initial target. With sixteen originals in 36
+slots, the repetition seam falls inside the visible surface at some pans.
+
+Website cards link to the live site with `target="_blank"` and
+`rel="external noopener"`. The route surface ignores external links, so they
+open natively. Their accessible names say they open a new tab. The previous
+portfolio's saturated device mockups were not reused. Each card is a live
+capture composed onto this grid's ground instead: the domain above a rounded
+hairline frame, the site kind and an index below it, and a dashed scroll track
+whose thumb follows the recorded scroll. The tonal filter used by the gray lab
+media is skipped, because the website ground is already inked. Capture and
+encoding provenance is in `public/assets/projects/work/README.md`.

@@ -1,6 +1,16 @@
 [
   {
+    "name": "ViBrand",
+    "kind": "website",
+    "category": "Website",
+    "isNew": false,
+    "href": "https://vibrand.vercel.app/",
+    "poster": "/assets/projects/work/vibrand.jpg",
+    "reel": "/assets/projects/work/vibrand.mp4"
+  },
+  {
     "name": "Cursor Study",
+    "kind": "study",
     "category": "Interaction",
     "isNew": true,
     "href": "https://carterogunsola.com/lab/live-cursors",
@@ -8,7 +18,17 @@
     "reel": "/assets/projects/lab/live-cursors.mp4"
   },
   {
+    "name": "VStore",
+    "kind": "website",
+    "category": "Website",
+    "isNew": false,
+    "href": "https://v-stores.vercel.app/",
+    "poster": "/assets/projects/work/vstore.jpg",
+    "reel": "/assets/projects/work/vstore.mp4"
+  },
+  {
     "name": "Dial",
+    "kind": "study",
     "category": "Interaction",
     "isNew": true,
     "href": "https://carterogunsola.com/lab/dial",
@@ -16,7 +36,17 @@
     "reel": "/assets/projects/lab/dial.mp4"
   },
   {
+    "name": "Afrah",
+    "kind": "website",
+    "category": "Website",
+    "isNew": false,
+    "href": "https://afrah-events.vercel.app/",
+    "poster": "/assets/projects/work/afrah.jpg",
+    "reel": "/assets/projects/work/afrah.mp4"
+  },
+  {
     "name": "Polka Dots",
+    "kind": "study",
     "category": "Canvas",
     "isNew": false,
     "href": "https://carterogunsola.com/lab/polka-dots",
@@ -25,6 +55,7 @@
   },
   {
     "name": "Heart",
+    "kind": "study",
     "category": "Canvas",
     "isNew": true,
     "href": "https://carterogunsola.com/lab/heart",
@@ -32,7 +63,26 @@
     "reel": "/assets/projects/lab/heart.mp4"
   },
   {
+    "name": "XSUSTAIN",
+    "kind": "website",
+    "category": "Website",
+    "isNew": true,
+    "href": "https://xsustain.vercel.app/",
+    "poster": "/assets/projects/work/xsustain.jpg",
+    "reel": "/assets/projects/work/xsustain.mp4"
+  },
+  {
+    "name": "Vocal Orb",
+    "kind": "study",
+    "category": "3D",
+    "isNew": true,
+    "href": "https://carterogunsola.com/lab/vocal-orb",
+    "poster": "/assets/projects/lab/vocal-orb.jpg",
+    "reel": "/assets/projects/lab/vocal-orb.mp4"
+  },
+  {
     "name": "ThreeJs Scene",
+    "kind": "study",
     "category": "3D",
     "isNew": false,
     "href": "https://carterogunsola.com/lab/threejs-test",
@@ -40,7 +90,17 @@
     "reel": "/assets/projects/lab/threejs-test.mp4"
   },
   {
+    "name": "C. Cleaning Intelligence",
+    "kind": "website",
+    "category": "Website",
+    "isNew": true,
+    "href": "https://cci-demo.vercel.app/",
+    "poster": "/assets/projects/work/cci.jpg",
+    "reel": "/assets/projects/work/cci.mp4"
+  },
+  {
     "name": "Dynamic Scrollbar",
+    "kind": "study",
     "category": "UI",
     "isNew": false,
     "href": "https://carterogunsola.com/lab/dynamic-scrollbar",
@@ -48,7 +108,17 @@
     "reel": "/assets/projects/lab/dynamic-scrollbar.mp4"
   },
   {
+    "name": "Bored Kiwi",
+    "kind": "website",
+    "category": "Website",
+    "isNew": false,
+    "href": "https://bored-kiwi.vercel.app/",
+    "poster": "/assets/projects/work/bored-kiwi.jpg",
+    "reel": "/assets/projects/work/bored-kiwi.mp4"
+  },
+  {
     "name": "Rotating Gallery",
+    "kind": "study",
     "category": "Gallery",
     "isNew": false,
     "href": "https://carterogunsola.com/lab/rotating-gallery",
@@ -56,19 +126,21 @@
     "reel": "/assets/projects/lab/rotating-gallery.mp4"
   },
   {
+    "name": "Vawzen",
+    "kind": "website",
+    "category": "Website",
+    "isNew": false,
+    "href": "https://vawzen.org/",
+    "poster": "/assets/projects/work/vawzen.jpg",
+    "reel": "/assets/projects/work/vawzen.mp4"
+  },
+  {
     "name": "Paste-Up",
+    "kind": "study",
     "category": "Transition",
     "isNew": true,
     "href": "https://carterogunsola.com/lab/paste-up",
     "poster": "/assets/projects/lab/paste-up.jpg",
     "reel": "/assets/projects/lab/paste-up.mp4"
-  },
-  {
-    "name": "Vocal Orb",
-    "category": "3D",
-    "isNew": true,
-    "href": "https://carterogunsola.com/lab/vocal-orb",
-    "poster": "/assets/projects/lab/vocal-orb.jpg",
-    "reel": "/assets/projects/lab/vocal-orb.mp4"
   }
 ]
