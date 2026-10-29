@@ -4,13 +4,15 @@ Implemented 2026-10-28 from the public EN/AR Gazzar Vision HTML and focused sour
 
 ## Entry and shell
 
-`src/sections/vision/vision.tsx` exports the server component `VisionContent({ locale })` as default. It renders its own header and all five body sections, without a main, shared navigation or footer. Its root has `data-vision-root` and the locale direction. All copy, eleven narrative headings, metadata lists, decorative SVGs and both invitation links are in server HTML. Identity is MED D. BOUTHOURI / محمد ضياء بوثوري. Invitation links are `/{locale}/services` and `/{locale}/contact`.
+`src/sections/vision/vision.tsx` exports the server component `VisionContent({ locale })` as default. It composes the numbered opening, perspective and narrative server views, without a main, shared navigation or footer. The narrative view owns the other-side, thoughts, leadership and invitation sections under their existing shared controller. The root retains `data-vision-root` and the locale direction. All copy, eleven narrative headings, metadata lists, decorative SVGs and both invitation links are in server HTML. Identity is MED D. BOUTHOURI / محمد ضياء بوثوري. Invitation links are `/{locale}/services` and `/{locale}/contact`.
 
 The shared main uses `editorial-page practice-page thinking-page`. The enclosing shell exposes `data-editorial-page`; the fixed header has `.editorial-nav`. The controller measures that sibling navigation through the enclosing shell for the leadership safe area and follow-the-thought destination. The shared material pose is source time 448, environment .28 and surface quiet .65. The retained route-entry registry holds/releases the current physical owner after fonts and measurement. A visible opening also publishes a successful graphics draw or static depth fallback before the shared surface reveals it. Entry stays on Vision's existing RAF, starts once, and settles immediately for history/reduced or restored deep arrivals; late imports adopt the completed decision.
 
 ## Owned files
 
-- `vision.tsx`, `content.json`, `vision.module.css`: complete server content and fixed-profile geometry.
+- `vision.tsx`, `content.ts`, `content.json`, `vision.module.css`: server composition, typed locale data and shared fixed-profile stylesheet.
+- `1-opening/opening.tsx`, `2-perspective/perspective.tsx`, `3-narrative/narrative.tsx`: numbered server-only content owners; no extra DOM wrapper or hydration boundary.
+- `components/vision-markup.tsx`: shared server-only line, mask and action markup.
 - `vision-gate.tsx`, `vision-gate.logic.ts`: null client gate and dynamic controller import.
 - `vision.animate.ts`, `masked-reveal.ts`: one demand RAF and DOM-only line-mask enhancement.
 - `1-opening/practice-hero.ts`, `1-opening/practice-objects.ts`: source logo camera/pose and deferred Three renderer, reused by Services with root authorization.
