@@ -108,6 +108,8 @@ export function mountFooterMaterial(
     candidate = -1,
     candidateAge = 0;
   let drawn: Path2D[] = [];
+  // Whether each bowl's lead path also holds the rest of its letters.
+  let bowlsMerged = false;
   let drawnContours: MaterialContours = [],
     idleTargets: MaterialContours[] = [];
   let restGeometry:
@@ -135,7 +137,8 @@ export function mountFooterMaterial(
     returnDelta: MaterialContours | undefined;
   let silkX = 0,
     silkY = 0;
-  const partMap = footerPartMap;
+  const partMap = footerPartMap,
+    lead = partMap.map((part) => partMap.indexOf(part));
   const canInteract = () =>
     enabled &&
     !failed &&
@@ -213,13 +216,7 @@ export function mountFooterMaterial(
   };
   const drawThought = () => {
     if (!editorial || !paths || thoughtReveal <= 0) return;
-    const part = paths.parts[concept];
-    const origin = editorial.mobile
-      ? {
-          x: part.x + part.width * (concept === 0 ? 0.35 : 0.5),
-          y: part.y + 0.94 * part.height,
-        }
-      : { x: part.x + 0.13 * part.width, y: part.y + 0.5 * part.height };
+    const origin = paths.anchor(concept, editorial.mobile);
     const target = {
       x:
         editorial.x +
@@ -251,13 +248,7 @@ export function mountFooterMaterial(
   };
   const thoughtImpulse = () => {
     if (!paths || !editorial || phase !== "logo") return undefined;
-    const part = paths.parts[concept];
-    const origin = editorial.mobile
-      ? {
-          x: part.x + part.width * (concept === 0 ? 0.35 : 0.5),
-          y: part.y + 0.94 * part.height,
-        }
-      : { x: part.x + 0.13 * part.width, y: part.y + 0.5 * part.height };
+    const origin = paths.anchor(concept, editorial.mobile);
     const target = {
       x:
         editorial.x +
@@ -274,22 +265,24 @@ export function mountFooterMaterial(
       origin,
       x: (target.x - origin.x) / distance,
       y: (target.y - origin.y) / distance,
-      radius: Math.max(30, 0.75 * part.height),
+      // Every part ripples at the bowl's scale; the line is only a stroke tall.
+      radius: Math.max(30, 0.75 * paths.parts[1].height),
       amount:
         Math.sin(Math.PI * thoughtReveal) *
         (reduced() ? 2 : Math.min(14, 0.016 * width)),
     };
   };
+  const morphProgress = () =>
+    phase === "to-logo"
+      ? clamp(age / (reduced() ? 0.48 : 2.24))
+      : phase === "to-word"
+        ? clamp(age / (reduced() ? 0.42 : 2.04))
+        : phase === "word" || phase === "pull" || phase === "resolving"
+          ? 0
+          : 1;
   const updatePaths = () => {
     if (!paths) return;
-    const raw =
-      phase === "to-logo"
-        ? clamp(age / (reduced() ? 0.48 : 2.24))
-        : phase === "to-word"
-          ? clamp(age / (reduced() ? 0.42 : 2.04))
-          : phase === "word" || phase === "pull" || phase === "resolving"
-            ? 0
-            : 1;
+    const raw = morphProgress();
     const contours = paths.contours(raw, phase === "to-word");
     const impulse = thoughtImpulse();
     drawn = [];
@@ -429,13 +422,21 @@ export function mountFooterMaterial(
       ctx.rect(0, -shift, width, height);
       ctx.clip();
     }
-    // Paint the assembled ring as one path, avoiding seams between the seven
-    // sectors. These paths are rebuilt outside rest mode; the word cache and
-    // per-glyph contour correspondence remain untouched for the return morph.
-    const assembled = phase === "logo" || phase === "clearing";
-    if (assembled) for (let i = 2; i < drawn.length - 1; i++) drawn[1].addPath(drawn[i]);
+    // Paint each bowl as one path once its letters share a frame, avoiding
+    // seams between their sectors. These paths are rebuilt outside rest mode;
+    // the word cache and per-glyph contour correspondence remain untouched.
+    const assembled =
+      phase === "logo" ||
+      phase === "clearing" ||
+      ((phase === "to-logo" || phase === "to-word") &&
+        paths.joined(morphProgress(), phase === "to-word"));
+    bowlsMerged = assembled;
+    if (assembled)
+      drawn.forEach((path, index) => {
+        if (lead[index] !== index) drawn[lead[index]].addPath(path);
+      });
     drawn.forEach((path, index) => {
-      if (assembled && index > 1 && index < drawn.length - 1) return;
+      if (assembled && lead[index] !== index) return;
       ctx.fillStyle =
         phase === "logo" && partMap[index] === concept ? "#e1ded6" : "#dbd8d0";
       ctx.fill(path, "evenodd");
@@ -792,24 +793,28 @@ export function mountFooterMaterial(
     pointerY = y;
     if (index >= 0 && !filled) {
       let best = Infinity;
-      drawnContours[index]?.forEach((contour) =>
-        contour.forEach((a, i) => {
-          const b = contour[(i + 1) % contour.length],
-            dx = b.x - a.x,
-            dy = b.y - a.y,
-            t = clamp(
-              ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy || 1),
-            ),
-            px = a.x + t * dx,
-            py = a.y + t * dy,
-            d = (x - px) ** 2 + (y - py) ** 2;
-          if (d < best) {
-            best = d;
-            pointerX = px;
-            pointerY = py;
-          }
-        }),
-      );
+      const glyphs = bowlsMerged
+        ? partMap.flatMap((part, glyph) => (part === partMap[index] ? [glyph] : []))
+        : [index];
+      for (const glyph of glyphs)
+        drawnContours[glyph]?.forEach((contour) =>
+          contour.forEach((a, i) => {
+            const b = contour[(i + 1) % contour.length],
+              dx = b.x - a.x,
+              dy = b.y - a.y,
+              t = clamp(
+                ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy || 1),
+              ),
+              px = a.x + t * dx,
+              py = a.y + t * dy,
+              d = (x - px) ** 2 + (y - py) ** 2;
+            if (d < best) {
+              best = d;
+              pointerX = px;
+              pointerY = py;
+            }
+          }),
+        );
     }
     return index;
   };

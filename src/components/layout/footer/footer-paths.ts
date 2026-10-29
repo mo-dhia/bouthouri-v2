@@ -1,11 +1,19 @@
 import { brand } from "@/config/brand";
+import {
+  markBounds,
+  markLength,
+  markPoint,
+  markRow,
+} from "@/components/layout/header/identity-mark";
 import glyphData from "./footer-glyph-contours.json";
 import logoData from "./footer-logo-contours.json";
 
 type Point = { x: number; y: number };
-type Shape = { outer: number[][]; rotation?: number };
+type Shape = { outer: number[][]; mass?: number[][]; rotation?: number };
+// B becomes the quiet line; the remaining letters trace the wave, half each.
+const waveSplit = 1 + Math.ceil((brand.wordmark.length - 1) / 2);
 export const footerPartMap = [...brand.wordmark].map((_, index) =>
-  index === 0 ? 0 : index === brand.wordmark.length - 1 ? 2 : 1,
+  index === 0 ? 0 : index < waveSplit ? 1 : 2,
 );
 
 function sampleOutline(points: number[][], count: number): number[][] {
@@ -24,18 +32,78 @@ function sampleOutline(points: number[][], count: number): number[][] {
   });
 }
 
-function ringSector(index: number, count: number): number[][] {
-  const sectors = brand.wordmark.length - 2;
-  const start = -Math.PI / 2 + index / sectors * Math.PI * 2;
-  const end = start + Math.PI * 2 / sectors;
-  const outerCount = Math.ceil(count / 2), innerCount = count - outerCount;
-  const point = (angle: number, radiusX: number, radiusY = radiusX) => [0.5 + Math.cos(angle) * radiusX, 0.5 + Math.sin(angle) * radiusY];
-  return [
-    ...Array.from({ length: outerCount }, (_, i) => point(start + (end - start) * i / (outerCount - 1), 0.5)),
-    ...Array.from({ length: innerCount }, (_, i) => point(end - (end - start) * i / (innerCount - 1), 21.409252 / 73.600516, 21.357166 / 73.578316)),
-  ];
-}
 export type GlyphBox = { x: number; y: number; width: number; height: number };
+/** Mark-unit boxes of the line, arch and cup in the identity's row pose. */
+export const footerMarkParts: GlyphBox[] = markBounds.map(([x0, y0, x1, y1], piece) => {
+  const [x, y, degrees] = markRow[piece],
+    cos = Math.round(Math.cos(degrees * Math.PI / 180)),
+    sin = Math.round(Math.sin(degrees * Math.PI / 180)),
+    xs = [x0 * cos - y0 * sin, x1 * cos - y1 * sin],
+    ys = [x0 * sin + y0 * cos, x1 * sin + y1 * cos];
+  return {
+    x: x + Math.min(...xs), y: y + Math.min(...ys),
+    width: Math.abs(xs[1] - xs[0]), height: Math.abs(ys[1] - ys[0]),
+  };
+});
+const markGap = footerMarkParts[1].x - footerMarkParts[0].x - footerMarkParts[0].width;
+const markWidth = footerMarkParts[2].x + footerMarkParts[2].width - footerMarkParts[0].x - markGap;
+
+/**
+ * One letter's share of a bowl, normalized to that bowl's row box: the outer
+ * edge forward, then the inner edge back. Its mass collapses the inner edge
+ * onto the bowl's spine, so the letter first becomes a solid half capsule.
+ */
+function strokeSector(piece: number, index: number, sectors: number, count: number): Required<Omit<Shape, "rotation">> {
+  const length = markLength(piece),
+    from = length * index / sectors,
+    to = length * (index + 1) / sectors,
+    outerCount = Math.ceil(count / 2),
+    innerCount = count - outerCount,
+    box = footerMarkParts[piece],
+    [x, y, degrees] = markRow[piece],
+    cos = Math.round(Math.cos(degrees * Math.PI / 180)),
+    sin = Math.round(Math.sin(degrees * Math.PI / 180));
+  const at = (along: number, across: number) => {
+    const [u, v] = markPoint(piece, along, across);
+    return [(x + u * cos - v * sin - box.x) / box.width, (y + u * sin + v * cos - box.y) / box.height];
+  };
+  const outer = Array.from({ length: outerCount }, (_, i) => from + (to - from) * i / (outerCount - 1));
+  const inner = Array.from({ length: innerCount }, (_, i) => to - (to - from) * i / (innerCount - 1));
+  return {
+    outer: [...outer.map((along) => at(along, 7.6)), ...inner.map((along) => at(along, -7.6))],
+    mass: [...outer.map((along) => at(along, 7.6)), ...inner.map((along) => at(along, -21.4))],
+  };
+}
+/**
+ * The sector point each glyph point travels to: wound like the glyph and
+ * started where the two outlines lie closest, so no letter turns inside out
+ * on its way to the mark.
+ */
+function correspond(source: number[][], target: number[][]): number[] {
+  const count = source.length,
+    area = (points: number[][]) =>
+      points.reduce((sum, [x, y], i) => {
+        const [u, v] = points[(i + 1) % count];
+        return sum + x * v - u * y;
+      }, 0),
+    step = Math.sign(area(source)) === Math.sign(area(target)) ? 1 : count - 1,
+    at = (start: number, i: number) => (start + step * i) % count;
+  let best = 0,
+    cost = Infinity;
+  for (let start = 0; start < count; start++) {
+    let sum = 0;
+    for (let i = 0; i < count && sum < cost; i++) {
+      const [x, y] = source[i],
+        [u, v] = target[at(start, i)];
+      sum += (x - u) ** 2 + (y - v) ** 2;
+    }
+    if (sum < cost) {
+      cost = sum;
+      best = start;
+    }
+  }
+  return source.map((_, i) => at(best, i));
+}
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const ease = (value: number) => {
   const t = clamp(value);
@@ -55,6 +123,8 @@ const bridgeDiameter = 0.94 * 339 / referenceMask;
 export class FooterPaths {
   readonly source: Point[][][];
   readonly parts: GlyphBox[];
+  /** Per glyph, the sector point (outer edge, then inner edge) each outline point reaches. */
+  readonly orders: number[][];
   private readonly targets: GlyphBox[];
   private readonly bridges: GlyphBox[];
   private readonly centres: Point[][];
@@ -88,63 +158,63 @@ export class FooterPaths {
         ),
       ),
     );
-    this.shapes = this.source.map((contours, index) => ({ outer:
-      index === 0 ? sampleOutline(logoData[0].outer, contours[0].length) :
-      index === this.source.length - 1 ? sampleOutline(logoData[5].outer, contours[0].length) :
-      ringSector(index - 1, contours[0].length),
-    }));
+    const sectors = [0, 1, 2].map((part) => footerPartMap.filter((value) => value === part).length);
+    this.orders = [];
+    this.shapes = [...brand.wordmark].map((letter, index) => {
+      const part = footerPartMap[index],
+        outline = glyphData[letter as keyof typeof glyphData].contours[0];
+      if (!part) {
+        this.orders.push(outline.map((_, point) => point));
+        return { outer: sampleOutline(logoData[5].outer, outline.length) };
+      }
+      const shape = strokeSector(part, index - footerPartMap.indexOf(part), sectors[part], outline.length),
+        order = correspond(outline, shape.mass);
+      this.orders.push(order);
+      return {
+        outer: order.map((point) => shape.outer[point]),
+        mass: order.map((point) => shape.mass[point]),
+      };
+    });
     const mobile = width < 680,
       diameter = mobile
         ? Math.min(82, 0.18 * width)
         : 0.13 * width,
       scale = diameter / 73.600516;
-    const radiusX = 36.800258 * scale,
-      radiusY = 36.789158 * scale,
-      half = 36.78900314797175 * scale,
-      gap = 0.34 * diameter,
-      dash = 52.198462 * scale;
     const gutter = width * (mobile ? 0.06 : 0.055) + 2;
-    let left = width - gutter - (half + 2 * radiusX + dash + 2 * gap);
     const cy = mobile ? wordHeight - referenceLine * width - 0.86 * diameter : wordHeight - logoBottom * width;
-    this.parts = [
-      { width: half, height: 73.53424828230845 * scale },
-      { width: 2 * radiusX, height: 2 * radiusY },
-      { width: dash, height: 15.170137516 * scale },
-    ].map((size) => {
-      const part = { x: left, y: cy - size.height / 2, ...size };
-      left += size.width + gap;
-      return part;
-    });
-    const circle = this.parts[1];
-    this.targets = this.source.map((_, glyph) =>
-      glyph === 0 ? this.parts[0] : glyph === this.source.length - 1 ? this.parts[2] : circle,
-    );
+    // The row keeps the reference stroke scale and part gap; its axis is the
+    // reference logo center.
+    const layout = (unit: number, gap: number, left: number, axis: number) =>
+      footerMarkParts.map((part, index) => ({
+        x: left + (part.x - footerMarkParts[0].x) * unit + (index ? gap - markGap * unit : 0),
+        y: axis + (part.y - 70) * unit,
+        width: part.width * unit,
+        height: part.height * unit,
+      }));
+    const gap = 0.34 * diameter;
+    this.parts = layout(scale, gap, width - gutter - markWidth * scale - gap, cy);
+    this.targets = this.source.map((_, glyph) => this.parts[footerPartMap[glyph]]);
     const bridgeSize = bridgeDiameter * width,
-      middleY = wordHeight - bridgeBottom * width;
-    this.bridges = this.source.map((_, glyph) => glyph === 0 ? {
-      x: 0.18 * width - 0.25 * bridgeSize, y: middleY - 0.5 * bridgeSize,
-      width: 0.5 * bridgeSize, height: bridgeSize,
-    } : glyph === this.source.length - 1 ? {
-      x: 0.82 * width - 0.44 * bridgeSize, y: middleY - 0.125 * bridgeSize,
-      width: 0.88 * bridgeSize, height: 0.25 * bridgeSize,
-    } : {
-      x: 0.5 * width - 0.5 * bridgeSize, y: middleY - 0.5 * bridgeSize,
-      width: bridgeSize, height: bridgeSize,
-    });
+      unit = bridgeSize / 73.600516,
+      middleY = wordHeight - bridgeBottom * width,
+      bridges = layout(unit, 0.34 * bridgeSize, 0.5 * (width - markWidth * unit - 0.34 * bridgeSize), middleY);
+    this.bridges = this.source.map((_, glyph) => bridges[footerPartMap[glyph]]);
+  }
+  /** Where a part's thought line leaves its ink. */
+  anchor(part: number, mobile: boolean): Point {
+    const box = this.parts[part];
+    const [u, v] = mobile ? [[0.35, 0.94], [0.13, 0.94], [0.5, 0.94]][part] : [0.13, 0.5];
+    return { x: box.x + u * box.width, y: box.y + v * box.height };
+  }
+  /** Whether each part's letters share one frame, so their sectors abut. */
+  joined(progress: number, reverse = false) {
+    const t = clamp(progress);
+    return reverse ? t <= 0.44 : t >= 0.48;
   }
   private mass(glyph: number, point: number): Point {
-    const [x, y] = this.shapes[glyph].outer[point];
-    if (glyph === this.source.length - 1) return { x, y };
-    const cx = glyph === 0 ? 1 : 0.5,
-      cy = 0.5,
-      sx = glyph === 0 ? 1 : 0.5,
-      sy = 0.5,
-      dx = (x - cx) / sx,
-      dy = (y - cy) / sy,
-      r = Math.hypot(dx, dy),
-      inner = glyph === 0 ? 0.613 : 0.584;
-    const amount = r ? Math.max(0, (r - inner) / (1 - inner)) / r : 0;
-    return { x: cx + dx * sx * amount, y: cy + dy * sy * amount };
+    const shape = this.shapes[glyph];
+    const [x, y] = (shape.mass ?? shape.outer)[point];
+    return { x, y };
   }
   contours(progress: number, reverse = false): Point[][][] {
     const t = clamp(progress);

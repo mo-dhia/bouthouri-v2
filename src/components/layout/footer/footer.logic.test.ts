@@ -75,6 +75,7 @@ function harness(variant = "home") {
     throwOnFill: false,
     fills: [] as RecordedPath[], frameFills: [] as RecordedPath[], transforms: [] as number[][], clips: [] as number[][],
     hits: [] as { path: RecordedPath; x: number; y: number }[], hitPath: undefined as RecordedPath | undefined,
+    strokePath: undefined as RecordedPath | undefined, contacts: [] as { x: number; y: number; glyph: number }[],
     fonts: [] as string[], images: [] as number[][],
     thoughts: [] as { mobile: boolean; x: number; y: number; titleSize: number }[],
     canvases: [] as (Surface & { width: number; height: number })[],
@@ -97,7 +98,7 @@ function harness(variant = "home") {
     isPointInPath(path: RecordedPath, x: number, y: number) {
       paint.hits.push({ path, x, y }); return path === paint.hitPath;
     },
-    isPointInStroke() { return false; },
+    isPointInStroke(path: RecordedPath) { return path === paint.strokePath; },
     save() {}, restore() {}, beginPath() {}, clip() {}, moveTo() {}, lineTo() {}, stroke() {}, arc() {},
   };
   const document = Object.assign(new EventTarget(), {
@@ -198,7 +199,11 @@ function harness(variant = "home") {
         "@/lib/viewport-design": viewport,
         "./footer-geometry": { footerGlyphBoxes: () => Array.from({ length: GLYPHS }, (_, i) => ({ x: i * word.rect.width / GLYPHS, y: 0, width: word.rect.width / GLYPHS * 0.8, height: word.offsetHeight })) },
         "./footer-thoughts": { FooterThoughts: TrackedThoughts },
-        "./footer-material-field": materialField,
+        "./footer-material-field": { ...materialField, FooterRefractionWaves: class extends materialField.FooterRefractionWaves {
+          contact(...args: Parameters<materialField.FooterRefractionWaves["contact"]>) {
+            paint.contacts.push({ ...args[0], glyph: args[1] }); return super.contact(...args);
+          }
+        } },
         "../header/material-protection": { createMaterialProtectionPublisher: () => () => {} },
       }, uncached ? (source) => {
         // The control uses the actual deformation formulas, disabling only cache eligibility.
@@ -437,6 +442,35 @@ test("idle takeover, hover/waves and pull bypass rest geometry; hits, measure an
   }
   pair.dispose();
   pair.scenes.forEach((h) => { expect(h.rafs.size).toBe(0); expect(h.timers.size).toBe(0); });
+});
+
+test("a hover just outside an assembled bowl's tip lands on that bowl's nearest sector", () => {
+  const h = harness();
+  h.mask.rect.top = 200; h.word.rect.top = 240; h.motion.matches = true;
+  const material = h.material();
+  material.setActive(true); h.step();
+  h.mask.dispatchEvent(Object.assign(new Event("keydown", { cancelable: true }), { key: "Enter" }));
+  for (let i = 0; i < 70 && h.mask.dataset.mode !== "logo"; i++) h.step(50);
+  expect(h.mask.dataset.mode).toBe("logo");
+  // The cup paints as its lead letter's path holding all four sectors.
+  const cup = h.paint.frameFills[2], blocks: [number, number][][] = [];
+  cup.commands.forEach((command) => {
+    if (command[0] === "M") blocks.push([]);
+    if (command[0] !== "Z") blocks.at(-1)!.push([command[1], command[2]]);
+  });
+  const lead = blocks[0], tail = blocks.at(-1)!;
+  const far = tail.reduce((best, p) => {
+    const distance = Math.min(...lead.map((q) => Math.hypot(p[0] - q[0], p[1] - q[1])));
+    return distance > best.distance ? { p, distance } : best;
+  }, { p: tail[0], distance: 0 });
+  expect(far.distance).toBeGreaterThan(40);
+  const scale = viewport.designScale(h.globals.innerWidth), target = [far.p[0] + 3, far.p[1] + 3];
+  h.paint.strokePath = cup; h.paint.hitPath = undefined;
+  h.window.dispatchEvent(pointer("pointermove", target[0] * scale + h.mask.rect.left, target[1] * scale + h.word.rect.top, 5000));
+  const contact = h.paint.contacts.at(-1)!;
+  expect(footerPartMap[contact.glyph]).toBe(2);
+  expect(Math.hypot(contact.x - target[0], contact.y - target[1])).toBeLessThan(4.5);
+  material.dispose();
 });
 
 function designMaterial(width: number, height: number, dpr = 1, locale = "en") {
