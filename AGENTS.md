@@ -10,7 +10,7 @@
 - Use the patched Storio package in `patches/`; keep that patch reproducible through `bun install`.
 - Match Gazzar's measured design and motion rather than applying generic reveal animations from the reference projects.
 - Follow `assistant/styling.md` for the CSS formatting convention; prefer logical properties for Arabic. Inspect reference breakpoints before converting its measurements.
-- Design sizing follows `docs/viewport-design.md`: desktop1920×1080 (>1024px), tablet768×1024 (>600px through1024px), mobile412×915 (through600px). Match Gazzar at those references, then scale each composition uniformly by width, including SVG/Canvas/Three text and framing. Height/orientation must not recompose it; reserve physical viewport height for browser visibility, scrolling and buffer mechanics. This supersedes the former fluid-breakpoint styling exception.
+- Design sizing follows `docs/viewport-design.md`: desktop1920×1080 (>1024px), tablet768×1024 (>600px through1024px), mobile412×915 (through600px). Match Gazzar at those references, then scale each composition uniformly by width, including SVG/Canvas/Three text and framing. Width alone selects the profile and scale. Stages always fill the physical viewport height, like Gazzar; height enters only as proportions (live `svh`/`dvh`, aspect-ratio queries, `referenceStage`), never as a fixed design height. This supersedes the former fluid-breakpoint styling exception.
 - Never stage or commit `assistant/`. Retain those local guides on disk; maintained, portable architecture docs live under `docs/`.
 - Make small, coherent commits after validation. Use `component(type): description`, as explained in `assistant/commiter.md`.
 - If adding `console.log`, stringify the logged value first.

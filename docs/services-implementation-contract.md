@@ -107,8 +107,8 @@ parent-owned intent audio, but no audio resource is created by this page.
 Index reveal triggers retain source title/copy/rule windows and per-line
 power-four masks. Editorial copy drift remains the source 24/40/10 reference
 pixel heading/copy/meta translation, with .45 portrait factor. Authored
-composition/index reveal ranges use the fixed design height. Physical
-viewport height controls actual visibility only. All DOM design translations
+composition/index reveal ranges use the physical stage height
+(`innerHeight`), as on source. All DOM design translations
 are emitted through `pixelsToVw` after scaling their reference lengths once.
 
 DOM rectangles are physical. Glyph/baseline rectangles and pointer positions
@@ -122,7 +122,7 @@ together. SVG strokes scale through the viewBox rather than non-scaling-stroke.
 
 ## Reduced, failure and cleanup
 
-OS reduced motion retains the source 2.9-design-height pinned opening,
+OS reduced motion retains the source 2.9-stage-height pinned opening,
 readable masks, stationary editorial copy, quiet glyph destination and direct
 gate resolution. The no-JS/controller-failure path displays the intro, band,
 works/payoff and full index in readable document flow. A renderer failure

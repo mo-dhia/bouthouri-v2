@@ -148,7 +148,7 @@ it scrolls away. The previous fixed substitute stayed at75.850006 throughout.
 An offline adversary caught that translating inside the fixed header would
 still prevent native focus scrolling. The reading viewport therefore owns the
 actual control outside the fixed utilities, preserves its measured row geometry
-and profile design-height clip, and returns it to its original home on motion/cleanup. It stays
+and physical stage-height clip, and returns it to its original home on motion/cleanup. It stays
 focusable offscreen as on source. Source default focus from y1892 moved native
 scroll to793.85; R12 independently confirmed the same default-focus behavior
 at wide and narrow sizes in both locales.

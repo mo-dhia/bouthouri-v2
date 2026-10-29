@@ -1,12 +1,12 @@
 # Home visual layer
 
-Fixed design policy (2026-10-28): `viewportDesign` selects desktop1920×1080
+Viewport policy (2026-10-29): `viewportDesign` selects desktop1920×1080
 above1024px, tablet768×1024 above600px through1024px, and mobile412×915
-through600px. Object camera/frustum, sculpture routes, authored score selection,
-shadow quality and spatial type use that reference geometry. World-unit fonts
-remain numeric; a full-width canvas with `designHeight(width)` makes their
-projected text/geometry scale once with width. Same-profile or height-only
-resizes retain the spatial text graph. Physical bounds still size renderer
+through600px. That profile selects authored score and shadow quality. The
+canvas fills the physical viewport; camera/frustum, sculpture routes and
+spatial type composition follow its measured proportions, as on source.
+World-unit fonts remain numeric and project once through that canvas. A host
+size change rebuilds the spatial text graph. Physical bounds still size renderer
 buffers, pointer mapping/pulls, visibility and full-bounds environment recapture.
 Source materials, lights, easing, score and camera/optical history math are unchanged.
 

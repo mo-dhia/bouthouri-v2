@@ -37,15 +37,16 @@ On 2026-10-29 the user reverted the darker treatment. The portrait layer has
 no added brightness filter in any design profile, restoring the supplied image’s
 original exposure for the photograph, Canvas and reading mode.
 
-## Fixed design profiles (2026-10-28)
+## Design profiles (2026-10-28, physical height 2026-10-29)
 
 The current sizing policy uses one composition per width category: desktop
 1920×1080 above 1024px, tablet 768×1024 above 600px through 1024px, and mobile
-412×915 through 600px. Root owns CSS conversion: original source rules/clamps
-are evaluated at each reference, then design lengths scale by actual width /
-reference width. Height/orientation never selects another composition. The
-older viewport comparisons below document earlier source investigations, not
-acceptance evidence for this policy.
+412×915 through 600px. Root owns CSS conversion: original source rules are
+evaluated at each reference width, then width lengths scale by actual width /
+reference width. The hero fills the physical viewport (`100svh`); its
+height-bounded portrait, copy and signature rules follow the window as on
+source. The older viewport comparisons below document earlier source
+investigations, not acceptance evidence for this policy.
 
 Motion consumes the already-scaled `#identity.offsetHeight`; it does not scale
 that DOM measurement again. The reference width selects the source 700px motion
@@ -58,13 +59,11 @@ SVG viewBox coordinates, times, eases and the 100ms world clock remain unchanged
 
 Portrait framebuffer dimensions/DPR remain physical image measurements. Pointer
 positions, native scroll coordinates, entry's near-top guard and magnet endpoint
-rounding retain their operational units. Neither hero controller uses actual
-viewport height for design sizing. Image `sizes` describes the evaluated profile
+rounding retain their operational units. Image `sizes` describes the evaluated profile
 photo widths: desktop100vw, tablet173.3333333333vw, mobile230.9708737864vw.
 
 The mounted motion regression checks scale-one reference poses, uniform scaling
-within each profile (including 650px tablet), height-only resize invariance,
-marquee phase/speed in both directions, entry geometry and entry resize. Mounted
+within each profile (including 650px tablet), marquee phase/speed in both directions, entry geometry and entry resize. Mounted
 portrait/header regressions cover profile detail selection, physical framebuffer
 retention and measured navigation geometry. Scoped hero/header tests pass
 (68 tests /834 assertions) and ESLint is clean. The latest plain TypeScript run
@@ -332,8 +331,8 @@ parent’s `quietMode`; it is separate from entry audio and marquee pause. The
 effective reading state also includes `homeSceneFailed`, without changing either
 preference. At world>=.73 the entire inner scene uses `display:none` and is inert;
 entry descendants have explicit visibility and cannot override this containment.
-Reverse scrolling restores the scene; outer #identity reserves the width-scaled
-profile design height.
+Reverse scrolling restores the scene; outer #identity reserves the physical
+stage height.
 
 Cleanup removes custom registration, observers, listeners, pointer state,
 RAF, text-line clones, inline styles and renderer resources, and releases any

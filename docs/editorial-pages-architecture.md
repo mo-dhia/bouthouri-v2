@@ -27,9 +27,9 @@ including its hero insets and index padding. A missing custom property invalidat
 whole padding/inset declarations, so this is a layout dependency, not a cosmetic
 default. Profile fixtures cover the shared cascade.
 
-The common footer retains BOUTHOURI's approved taller/heavier outlines and the scroll-reversal correction. Standard pages use the source's distinct staged invitation/word/metadata reveal, driven by the custom native-scroll manager. HOME retains its existing shared journey ownership. The standard-footer controller independently owns a motion-only native scroll tail that supplies any physical viewport height above the fixed design height, keeping the footer endpoint reachable without recomposing it. Standard footer CSS remains visible and width-fitted before enhancement or when its chunk fails.
+The common footer retains BOUTHOURI's approved taller/heavier outlines and the scroll-reversal correction. Standard pages use the source's distinct staged invitation/word/metadata reveal, driven by the custom native-scroll manager. HOME retains its existing shared journey ownership. The footer stage uses the physical viewport height, so the endpoint is reachable without a native scroll tail. Standard footer CSS remains visible and width-fitted before enhancement or when its chunk fails.
 
-Changes to preceding content and the native tail update the standard footer's
+Changes to preceding content update the standard footer's
 cached document position without rebuilding glyph/material geometry. Only a
 changed mask or an explicit font measurement invalidates that geometry, retaining
 wave and idle history through height-only viewport updates.

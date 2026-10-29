@@ -12,12 +12,13 @@ scope. Shared typography metrics live in the global stylesheet. The source's
 GSAP-generated pin spacer is replaced by a native sticky stage and a measured
 wrapper height. The explicit design profiles are desktop 1920 × 1080 above
 1024px, tablet 768 × 1024 above 600px through 1024px, and mobile 412 × 915
-through 600px. Within a profile, composition and stage height scale uniformly
-with width. The measured DOM stage supplies the pin distance, with the scaled
-design height as fallback; there is no `100svh` measurement probe. Desktop and
+through 600px. Within a profile, composition scales uniformly with width; the
+sticky stage fills the physical viewport height and the reference camera keeps
+the window's proportions. The measured DOM stage supplies the pin distance,
+with `innerHeight` as fallback. Desktop and
 tablet retain the source 6.8/input-unit pace; mobile retains 5.8. Navigation
 reads the actual measured pin range and the same profile-selected hero input.
-Physical viewport height is used only to clamp native scroll extent during mode
+Physical viewport height also clamps native scroll extent during mode
 changes. The skip link immediately
 selects score 102. The end cue returns to the hero-world/opening seam.
 

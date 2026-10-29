@@ -32,7 +32,7 @@ Source facts:
 
 Local proposal:
 
-- Use fixed `inset:0`, **auto height**, no design-height or viewport-height unit for this physical cover. All page compositions retain width-only design sizing. At the agreed references, desktop and tablet take `.30/.38s`, mobile `.25/.30s`; select via `viewportDesign(...).key`, not a new700px composition breakpoint. Reduced timing takes precedence. Time is not scaled by width.
+- Use fixed `inset:0`, **auto height**, no design-height or viewport-height unit for this physical cover. Page compositions scale with width and fill the physical viewport height. At the agreed references, desktop and tablet take `.30/.38s`, mobile `.25/.30s`; select via `viewportDesign(...).key`, not a new700px composition breakpoint. Reduced timing takes precedence. Time is not scaled by width.
 - Default server markup/CSS is transparent, hidden and noninteractive. Do not ship source's initial opaque HTML cover or wait12s to expose SSR copy. A failed gate/import must leave the page readable immediately.
 - Preserve source easing mathematically; do not silently substitute a generic CSS ease. The publisher owns no RAF. Surface opacity needs only a finite animation path; it must not add a second page presentation RAF or a permanent readiness ticker. A native opacity implementation must state any sampled-ease approximation during later review.
 

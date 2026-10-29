@@ -58,7 +58,7 @@ Native scroll input comes through the existing `scrollManager` with
 `useRAF: false`; there is no additional native scroll listener or second frame
 scheduler. Geometry reads are cached on mount, resize, fonts and content resize.
 
-- Opening: top/top through bottom/25% of the fixed design stage; 300ms numeric
+- Opening: top/top through bottom/25% of the physical stage; 300ms numeric
   Expo.out scrub. The last heading **outer** line shifts +4% EN / −4% AR, while
   the axis grows from scaleX .18 to 1. Inner heading spans remain available for
   the independent entry transform.
@@ -80,8 +80,8 @@ scheduler. Geometry reads are cached on mount, resize, fonts and content resize.
   documents cancel the presentation frame and restore current geometry on
   visibility. Stationary endpoints have no Contact RAF.
 
-Source scroll percentages use the width-scaled design height, so changing only
-physical browser height does not change composition or its timeline geometry.
+Source scroll percentages use the physical stage height (`innerHeight`), as on
+source.
 DOM rectangles are already actual pixels. Textarea/success measurements cross
 once into `vw`; design160/440 textarea bounds use the shared viewport helper.
 

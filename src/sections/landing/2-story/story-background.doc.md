@@ -1,27 +1,22 @@
 # Fixed HOME background lifecycle
 
-Fixed design policy (2026-10-28) supersedes the live aspect/700px allocation
-selection described as source history below. `viewportDesign(innerWidth)` selects
-1920×1080 /768×1024 /412×915 at >1024 /600<width<=1024 /width<=600.
-The field's aspect/mobile keys now come from that reference; width/height/DPR
-changes inside a profile retain its targets and grid. Renderer size is actual
-width by `designHeight(width)`, matching root's full-width, top-anchored
-`.environment` /`.global-environment` host and100% canvas. Root CSS must set that
-height and bottom:auto in all three profiles, including reading. Pointer NDC
-uses the physical canvas rectangle. Scroll positions remain native; their field
-excitation is normalized by that design canvas's height, never physical
-innerHeight. Pointer tap slop, visibility and DPR remain physical measurements.
-The optional pointer bounds argument defaults to full width and shared
-`designHeight(innerWidth)` for other imperative callers.
+Viewport policy (2026-10-29) supersedes the live 700px allocation selection
+described as source history below. `viewportDesign(innerWidth)` selects the
+desktop/tablet/mobile profile at >1024 /600<width<=1024 /width<=600, and the
+mobile grid follows that profile. The renderer covers the physical viewport,
+`innerWidth × innerHeight`, matching root's fixed full-viewport `.environment`
+/`.global-environment` host and 100% canvas, so the field aspect follows the
+window as on source. Pointer NDC uses the physical canvas rectangle. Scroll
+positions remain native; their field excitation is normalized by the physical
+canvas height. Pointer tap slop, visibility and DPR remain physical
+measurements. The optional pointer bounds argument defaults to the full
+physical viewport for other imperative callers.
 Shader constants, simulation grids, material/time history and the existing RAF
-handoff are unchanged. CPU tests verify proportional drawing/input, height
-independence, profile allocation/retention and teardown; visual parity is untested.
+handoff are unchanged. CPU tests verify drawing/input, profile allocation and
+teardown; visual parity is untested.
 
-R2 correction: mounted regressions use equal native scroll deltas at the same
-width with physical height halved, and proportionally scaled width/delta pairs
-in all three profiles. Both pointer scrollVelocity and the submitted field
-uScroll agree. Default bounds and zero-height guards remain finite; disposal
-removes the scroll listener. Existing decay, clamps and field clocks are unchanged.
+Default bounds and zero-height guards remain finite; disposal removes the
+scroll listener. Existing decay, clamps and field clocks are unchanged.
 
 `createStoryEnvironment(stage, { reduced })` returns
 `{ setReducedMode(enabled), dispose() }`. The gate retains that handle for one

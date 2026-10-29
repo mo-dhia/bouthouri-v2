@@ -1,5 +1,9 @@
 # Fixed viewport integration validation
 
+> Superseded on 2026-10-29: stages now fill the physical viewport height (see
+> [the design contract](viewport-design.md)). The fixed design-height, short-menu
+> and tall-viewport tail rows below are historical.
+
 2026-10-28. The sizing migration replaces the fluid baseline at `a55a6a0` with
 the user-confirmed canvases in [the design contract](viewport-design.md).
 Source content, Storio ownership, custom scroll clocks and deferred graphics

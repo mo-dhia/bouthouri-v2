@@ -58,7 +58,8 @@ breakpoints, or default animation bands blindly. Content belongs in server
 dictionaries/data or server JSX. [Viewport design](viewport-design.md) owns the
 1920×1080 desktop, 768×1024 tablet and 412×915 mobile compositions and their
 uniform width scaling. Evaluate source breakpoints at the selected reference;
-physical height does not recompose the design. Keep native buffer, visibility
+stages fill the physical viewport height, and height rules become aspect-ratio
+rules. Keep native buffer, visibility
 and scroll mechanics physical. Preserve deliberately LTR controls in Arabic;
 use logical properties where they preserve geometry.
 

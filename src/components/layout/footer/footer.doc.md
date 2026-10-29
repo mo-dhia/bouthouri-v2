@@ -12,16 +12,18 @@ only controls bitmap resolution; it does not resize logical layout. DOM font,
 tracking, origin and measured footer variables are emitted in vw, and the glyph
 reader uses computed physical left rather than parsing an inline vw value.
 Fractional word bounds preserve proportional canvas placement. Footer clearance
-uses reference height/padding and accepts `--footer-word-rest` as vw, % or px.
+uses the physical stage height and reference padding, and accepts
+`--footer-word-rest` as vw, % or px.
 
-Root CSS owns the DOM mask, word and footer's reference-height composition. The
+Root CSS owns the DOM mask, word and footer composition over the physical
+stage height. The
 native footer canvas is a separate body overlay (data-footer-material=native-paths),
 not the legacy `.footer-material-layer`; its full physical viewport CSS box and
 buffer remain paired so clipped viewport drawing is not stretched. Native scroll,
 touch slop, client-coordinate protection/audio and visibility stay physical.
 CPU regressions cover factor one at each reference, proportional EN/AR text,
-morph/wave geometry and hit mapping, no tablet680/700 switch, actual-height
-independence, DPR and cleanup. Scoped tests and lint/plain TypeScript pass.
+morph/wave geometry and hit mapping, no tablet680/700 switch, DPR and
+cleanup. Scoped tests and lint/plain TypeScript pass.
 These do not certify visual parity; root owns serialized build/SSR and live review.
 
 R2 buffer correction: the material's existing window resize listener now handles
