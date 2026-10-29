@@ -63,7 +63,7 @@ artifacts are not shipped; portable ownership/provenance records are committed.
 ## Validated release snapshot
 
 `bun run check` passes lint, installed Next type generation/TypeScript,
-architecture audit and **440 tests / 19,119 assertions**. `bun run build`
+architecture audit and **442 tests / 19,131 assertions**. `bun run build`
 prerenders all eighteen experiment routes. Production `test:ssr` passes HOME,
 four editorial routes and nine studies in both locales: **28 localized pages**,
 canonical/locale links, useful server content, expected 404s and 24 static assets.
@@ -79,3 +79,12 @@ inputs and a 4fps, sixteen-frame whole-control overview was inspected.
 The JavaScript-kernel lint override now rejects unbound globals explicitly,
 preventing the original gallery plugin omission from silently passing lint.
 No source styles/clock/assets or forced source renderer draws were used.
+
+
+A final cached-runtime math comparison corrected center-grid intro staggering:
+the source normalizes each distance to the full largest-grid-side span rather
+than using distance directly. Regression fixtures also cover a peer/tween waking
+a fully idle scene without its clock jumping behind the scheduled start. Peer
+join replies retain a last known cursor even when the replying tab is hidden;
+regular hidden-tab broadcasts remain paused. These refinements do not change
+renderer geometry, timings/constants or the documented transport limitation.

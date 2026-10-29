@@ -25,8 +25,18 @@ export function experimentEase(name: Vars['ease'] = 'power2.out') {
   return out;
 }
 
+/** Source distribute() normalizes distance before applying each × largest grid side. */
+export function experimentGridStagger(count: number, grid: number[], each: number) {
+  const columns = grid[1], centerX = Math.min(columns, count) / 2 - .5, centerY = count / columns / 2 - .5;
+  const distances = Array.from({ length: count }, (_, index) => Math.hypot(index % columns - centerX, Math.floor(index / columns) - centerY));
+  const minimum = Math.min(...distances), range = Math.max(...distances) - minimum;
+  const span = Math.max(columns, count / columns) * each;
+  return distances.map(distance => range ? (distance - minimum) / range * span : 0);
+}
+
 export function cubicEase(points: number[]) {
   return (p: number) => {
+    if (p === 0 || p === 1) return p;
     let lo = 0, hi = 1, t = p;
     const at = (v: number, a: number, b: number) => 3 * (1 - v) ** 2 * v * a + 3 * (1 - v) * v * v * b + v ** 3;
     for (let i = 0; i < 18; i++) { t = (lo + hi) / 2; if (at(t, points[0], points[2]) < p) lo = t; else hi = t; }
@@ -80,10 +90,10 @@ export function createExperimentMotion(clock: Clock, win: Window, css: (value: s
     if (vars.overwrite) cancel(target);
     const handle: Handle = { kill() { owned.forEach(t => tracks.delete(t)); if (!tracks.size) clock.remove(frame); }, targets: () => targets };
     const ease = experimentEase(vars.ease), stagger = typeof vars.stagger === 'number' ? vars.stagger : vars.stagger?.each ?? 0;
+    const grid = typeof vars.stagger === 'object' ? vars.stagger.grid : undefined;
+    const offsets = grid ? experimentGridStagger(targets.length, grid, stagger) : targets.map((_, index) => index * stagger);
     targets.forEach((t, index) => {
-      const grid = typeof vars.stagger === 'object' ? vars.stagger.grid : undefined;
-      const distance = grid ? Math.hypot(index % grid[1] - (grid[1] - 1) / 2, Math.floor(index / grid[1]) - (grid[0] - 1) / 2) : index;
-      const start = clock.now() + ((vars.delay ?? 0) + distance * stagger) * 1000, duration = (vars.duration ?? .5) * 1000;
+      const start = clock.now() + ((vars.delay ?? 0) + offsets[index]) * 1000, duration = (vars.duration ?? .5) * 1000;
       if (element(t) && vars.transformOrigin) write(t, 'transformOrigin', vars.transformOrigin);
       const props = Object.entries(vars).filter(([key]) => !controls.has(key) && key !== 'transformOrigin').map(([key, destination]) => {
         if (key === 'attr') return { key, destination, from: element(t) ? Object.fromEntries(Object.keys(destination as object).map(name => [name, Number(t.getAttribute(name))])) : {} };

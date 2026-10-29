@@ -6,7 +6,13 @@ export function createExperimentClock(win: Window, onError: (error: unknown) => 
   let frame = 0, serial = 0, stopped = false, paused = false, previous = 0;
   let elapsed = win.performance.now(), lastWall = elapsed;
   const ticks = new Set<Tick>(), requests = new Map<number, FrameRequestCallback>();
-  const wake = () => { if (!frame && !stopped && !paused && (ticks.size || requests.size)) frame = win.requestAnimationFrame(present); };
+  const wake = () => {
+    if (frame || stopped || paused || !(ticks.size || requests.size)) return;
+    // Adopt the same idle time exposed by now() before a new owner schedules.
+    // Otherwise a first peer/tween after >500ms would jump back to a 33ms tick.
+    if (!previous) { const wall = win.performance.now(); elapsed += Math.max(0, wall - lastWall); lastWall = wall; }
+    frame = win.requestAnimationFrame(present);
+  };
   function present() {
     frame = 0;
     if (stopped || paused) return;
@@ -17,6 +23,7 @@ export function createExperimentClock(win: Window, onError: (error: unknown) => 
       ticks.forEach(tick => tick(elapsed / 1000, delta > 500 ? 33 : delta));
       callbacks.forEach(callback => callback(elapsed));
     } catch (error) { stopped = true; ticks.clear(); requests.clear(); onError(error); return; }
+    if (!ticks.size && !requests.size) previous = 0;
     wake();
   }
   return {

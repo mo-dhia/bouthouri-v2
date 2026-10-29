@@ -27,7 +27,7 @@ export const experiment = {
       if (!raw || typeof raw !== 'object') return;
       const message = raw as Record<string, unknown>;
       if (message.id === id || typeof message.id !== 'string' || message.id.length > 128) return;
-      if (message.type === 'hello') { if (self) send(); return; }
+      if (message.type === 'hello') { if (self) send(true); return; }
       if (message.type === 'leave') { remove(message.id); return; }
       if (message.type !== 'cursor' || typeof message.x !== 'number' || !Number.isFinite(message.x) || typeof message.y !== 'number' || !Number.isFinite(message.y)) return;
       const x = clamp(message.x), y = clamp(message.y);
@@ -46,7 +46,7 @@ export const experiment = {
       if (env.reduced) { peer.x = x; peer.y = y; }
       env.clock.add(frame);
     };
-    const send = () => { if (self && !disposed && !root.ownerDocument.hidden) { channel.postMessage({ type: 'cursor', id, ...self }); sentAt = env.now(); } };
+    const send = (replyToJoin = false) => { if (self && !disposed && (replyToJoin || !root.ownerDocument.hidden)) { channel.postMessage({ type: 'cursor', id, ...self }); sentAt = env.now(); } };
     function frame(_seconds: number, delta: number) {
       const alpha = env.reduced ? 1 : 1 - Math.exp(-smoothing * Math.min(delta, 50) / 1000);
       peers.forEach((peer, key) => {
