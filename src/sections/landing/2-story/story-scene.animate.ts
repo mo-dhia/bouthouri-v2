@@ -164,7 +164,7 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
       renderer.setPixelRatio(dpr); renderer.setSize(width, height, false); rendererSize = size;
     }
     camera.aspect = aspect; camera.updateProjectionMatrix();
-    pointer.measure(); sculptures?.resize(aspect); typography?.resize(width, height);
+    pointer.measure(); sculptures?.resize(aspect); typography?.resize(width, height, innerWidth);
     canvas.dataset.dpr = String(renderer.getPixelRatio());
     requestRender();
   }
@@ -296,12 +296,12 @@ export function createStoryScene(stage: HTMLElement, options: StorySceneOptions 
       environments.setSculpture(true);
       ownSculptures = createSculptures(model, scene, environments.sculpture!.texture, aspect, document.documentElement.lang === "ar");
       ownSculptures.root.visible = false; ownSculptures.setEnvironment(null);
-      ownType = await createSpatialType(stage, scene, ownSculptures.root, camera, width, height, requestRender, motionAbort.signal);
+      ownType = await createSpatialType(stage, scene, ownSculptures.root, camera, width, height, requestRender, motionAbort.signal, innerWidth);
       if (!currentMotion(generation)) return;
       motionModel = model; releaseLighting = release;
       sculptures = ownSculptures; typography = ownType;
       sculptures.resize(aspect);
-      typography.resize(width, height); typography.update(frame.time);
+      typography.resize(width, height, innerWidth); typography.update(frame.time);
       pointer.setObjects([glasses!.hitPlane, ...sculptures.objects]);
       // Adoption transfers all ownership; stale async work cleans up below.
       ownSculptures = undefined; ownType = undefined;

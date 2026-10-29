@@ -76,6 +76,11 @@ required before creating audio resources.
 Every owner releases its keys, listeners, observers, timers, subscriptions,
 RAF work, owned GPU resources and inline mutations. Async adoption checks
 cancellation/generation so an old mount cannot publish readiness into a new one.
+Pending scene-boot cancellation removes its queued request immediately. If that
+queue no longer needs a quiet-window waiter, it releases only its own waiter and
+stops the shared sampler when empty, including while hidden. A newly queued scene
+gets its own wait; independent quiet callers and an already-granted slot retain
+their existing ordering and release/watchdog ownership.
 The HOME scene-failure latch survives mode toggles and resets at HOME unmount.
 The background has a separate locale lifetime: route cleanup releases its
 attachment and parks the connected surface, while locale disposal releases its

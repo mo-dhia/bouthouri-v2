@@ -20,7 +20,7 @@ function evaluate(file: string, globals: Record<string, unknown>, dependencies: 
   return evaluated.exports;
 }
 
-async function typography(width: number, actualHeight: number, rtl = false) {
+async function typography(width: number, actualHeight: number, rtl = false, designViewportWidth?: number) {
   const stage = Object.assign(new EventTarget(), {
     dataset: {} as Record<string, string>,
     querySelectorAll: () => Array.from({ length: 3 }, () => ({ textContent: "Meaning", nextElementSibling: { textContent: "Body" } })),
@@ -28,7 +28,7 @@ async function typography(width: number, actualHeight: number, rtl = false) {
       childNodes: [{ nodeName: "#text", textContent: "Ideas" }, { nodeName: "BR" }, { nodeName: "#text", textContent: "Work." }],
     },
   });
-  const reference = viewport.viewportDesign(width), aspect = reference.width / reference.height;
+  const reference = viewport.viewportDesign(designViewportWidth ?? width), aspect = reference.width / reference.height;
   const camera = new three.PerspectiveCamera(34, aspect, 0.005, 60);
   camera.position.z = 10 * Math.max(1, 0.88 / aspect); camera.lookAt(0, 0, 0);
   const scene = new three.Scene(), root = new three.Group(); scene.add(root);
@@ -50,7 +50,9 @@ async function typography(width: number, actualHeight: number, rtl = false) {
   }) as { createSpatialType: typeof createSpatialType };
   const origins: WorkOrigin[] = [];
   stage.addEventListener("story-origin", (event) => origins.push((event as CustomEvent<WorkOrigin>).detail));
-  const controller = await loaded.createSpatialType(stage as unknown as HTMLElement, scene, root, camera, width, actualHeight);
+  const controller = designViewportWidth === undefined
+    ? await loaded.createSpatialType(stage as unknown as HTMLElement, scene, root, camera, width, actualHeight)
+    : await loaded.createSpatialType(stage as unknown as HTMLElement, scene, root, camera, width, actualHeight, undefined, undefined, designViewportWidth);
   controller.update(270);
   const projected = () => planes.map(({ mesh, fontSize }) => {
     const a = new three.Vector3(0, 0, 0).applyMatrix4(mesh.matrixWorld).project(camera);
@@ -98,6 +100,71 @@ test("tablet type stays fixed across 700px and same-width height changes; resize
   const projected = cases[2].projected();
   expect(cases[3].projected()).toEqual(projected);
   cases.forEach((h) => h.controller.dispose());
+});
+
+for (const [viewportWidth, hostWidth] of [[1025, 1010], [601, 586]]) for (const rtl of [false, true]) {
+  test(`${rtl ? "AR" : "EN"} type selects the ${viewportWidth}px CSS profile with a ${hostWidth}px host`, async () => {
+    const design = viewport.viewportDesign(viewportWidth), reference = await typography(design.width, design.height, rtl);
+    const measured = await typography(hostWidth, viewport.designHeight(viewportWidth), rtl, viewportWidth);
+    try {
+      expect(measured.camera.aspect).toBe(reference.camera.aspect);
+      expect(measured.planes.map((plane) => plane.fontSize)).toEqual(reference.planes.map((plane) => plane.fontSize));
+      expect(measured.planes.map(({ mesh }) => mesh.matrixWorld.elements)).toEqual(reference.planes.map(({ mesh }) => mesh.matrixWorld.elements));
+      const origin = measured.origins.at(-1)!, expected = reference.origins.at(-1)!;
+      expect(origin.x).toBeCloseTo(expected.x, 12); expect(origin.y).toBeCloseTo(expected.y, 12);
+      expect(origin.direction).toBe(rtl ? "rtl" : "ltr");
+      expect(origin.radius).toBeCloseTo(expected.radius * hostWidth / design.width, 12);
+    } finally { measured.controller.dispose(); reference.controller.dispose(); }
+    expect(measured.planes.every((plane) => plane.disposed)).toBe(true);
+    expect(measured.root.children).toHaveLength(0); expect(measured.scene.children).toEqual([measured.root]);
+  });
+
+  test(`${rtl ? "AR" : "EN"} ${viewportWidth}px type retains its graph when host resize crosses a profile boundary`, async () => {
+    const fixture = await typography(hostWidth, viewport.designHeight(viewportWidth), rtl, viewportWidth);
+    try {
+      const planes = fixture.planes.slice(), before = fixture.origins.at(-1)!;
+      for (const width of [viewportWidth + 10, hostWidth - 10, hostWidth]) {
+        fixture.controller.resize(width, 300, viewportWidth); await Promise.resolve(); fixture.controller.update(270);
+        expect(fixture.planes).toHaveLength(planes.length);
+        expect(fixture.planes.every((plane, index) => plane === planes[index])).toBe(true); expect(planes.some((plane) => plane.disposed)).toBe(false);
+        const origin = fixture.origins.at(-1)!;
+        expect(origin.x).toBeCloseTo(before.x, 12); expect(origin.y).toBeCloseTo(before.y, 12);
+        expect(origin.radius).toBeCloseTo(before.radius * width / hostWidth, 12);
+      }
+    } finally { fixture.controller.dispose(); }
+    expect(fixture.planes.every((plane) => plane.disposed)).toBe(true);
+    expect(fixture.root.children).toHaveLength(0); expect(fixture.scene.children).toEqual([fixture.root]);
+  });
+}
+
+for (const rtl of [false, true]) test(`${rtl ? "AR" : "EN"} real CSS profile changes rebuild type and clean up the prior graph`, async () => {
+  const fixture = await typography(1010, viewport.designHeight(1025), rtl, 1025);
+  let previousDesign = viewport.viewportDesign(1025);
+  try {
+    for (const [viewportWidth, hostWidth] of [[1024, 1010], [601, 586], [600, 586], [1920, 1905]]) {
+      const design = viewport.viewportDesign(viewportWidth), oldPlanes = fixture.planes.filter((plane) => !plane.disposed);
+      fixture.camera.aspect = design.width / design.height;
+      fixture.camera.position.z = 10 * Math.max(1, 0.88 / fixture.camera.aspect); fixture.camera.lookAt(0, 0, 0); fixture.camera.updateProjectionMatrix();
+      fixture.controller.resize(hostWidth, viewport.designHeight(viewportWidth), viewportWidth);
+      // Real font planes settle asynchronously, even with this inert adapter.
+      for (let step = 0; step < 6; step++) await Promise.resolve();
+      fixture.controller.update(270);
+      const activePlanes = fixture.planes.filter((plane) => !plane.disposed), reference = await typography(design.width, design.height, rtl);
+      try {
+        if (design === previousDesign) expect(activePlanes.every((plane, index) => plane === oldPlanes[index])).toBe(true);
+        else { expect(oldPlanes.every((plane) => plane.disposed)).toBe(true); expect(activePlanes).toHaveLength(oldPlanes.length); }
+        expect(activePlanes.map((plane) => plane.fontSize)).toEqual(reference.planes.map((plane) => plane.fontSize));
+        expect(activePlanes.map(({ mesh }) => mesh.matrixWorld.elements)).toEqual(reference.planes.map(({ mesh }) => mesh.matrixWorld.elements));
+        const origin = fixture.origins.at(-1)!, expected = reference.origins.at(-1)!;
+        expect(origin.x).toBeCloseTo(expected.x, 12); expect(origin.y).toBeCloseTo(expected.y, 12);
+        expect(origin.radius).toBeCloseTo(expected.radius * hostWidth / design.width, 12);
+      } finally { reference.controller.dispose(); }
+      previousDesign = design;
+    }
+  } finally { fixture.controller.dispose(); }
+  expect(fixture.planes.every((plane) => plane.disposed)).toBe(true);
+  expect(fixture.root.children).toHaveLength(0); expect(fixture.scene.children).toEqual([fixture.root]);
+  expect(fixture.stage.dataset.storyTextRenderer).toBeUndefined();
 });
 
 test("object pointer pull uses the physical canvas basis and releases capture/listeners on disposal", () => {

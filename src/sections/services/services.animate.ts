@@ -112,7 +112,7 @@ export function mountServices(root: HTMLElement, reduced: boolean) {
     if (!alive) return;
     ready = true; measure(); root.dataset.practiceReady = "true"; arrival.ready(reduced); wake();
     // Only the object renderer crosses this later boundary; body copy never does.
-    void import("../vision/1-opening/practice-objects").then((module) => module.createPracticeObjects(canvas, "services", abort.signal)).then((objects) => {
+    void import("../vision/1-opening/practice-objects").then((module) => alive ? module.createPracticeObjects(canvas, "services", abort.signal) : null).then((objects) => {
       if (!alive) { objects?.dispose(); return; }
       renderer = objects; if (!objects) { failRenderer(); return; }
       resizeRenderer(); lastObjectTime = -1; wake();

@@ -69,3 +69,19 @@ test("canceled held boot cannot publish stale ready/presented work", async () =>
     expect(fixture.stats().subscribers).toBe(0); expect(fixture.stats().observersDisconnected).toBe(true);
   } finally { fixture.restore(); }
 });
+
+test("unmount during a held object import never enters the renderer factory", async () => {
+  for (const reduced of [false, true]) {
+    const fixture = await mountFixture({ reduced, managed: true, holdObjectImport: true });
+    try {
+      fixture.frame(); await fixture.flush();
+      expect(fixture.stats().importRequests).toBe(1); expect(fixture.stats().bootRequests).toBe(0);
+      fixture.stop(); const before = fixture.route.stats();
+      await fixture.resolveImport();
+      expect(fixture.stats().bootRequests).toBe(0); expect(fixture.stats().disposals).toBe(0);
+      expect(fixture.route.stats()).toEqual(before); expect(fixture.stats().draws).toBe(0);
+      expect(fixture.stats().queued).toBe(0); expect(fixture.stats().managerRemoved).toBe(true);
+      expect(fixture.stats().subscribers).toBe(0); expect(fixture.stats().observersDisconnected).toBe(true);
+    } finally { fixture.restore(); }
+  }
+});

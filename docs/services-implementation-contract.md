@@ -410,3 +410,18 @@ coverage do not establish causality or resolution of R5's repeated visible
 reduced finding, browser/GPU presentation, visual parity or presented FPS.
 No browser/native/OS input, server, package action, stage, commit or delegation
 was used. Runtime/tests/contracts are frozen for root's combined validation.
+
+## Final-review deferred boot cancellation
+
+Services checks its mount lifetime after the optional renderer chunk resolves,
+before calling the factory. The shared factory also returns immediately for an
+already-aborted signal, before requesting the GLTF. Its existing post-load check
+and stale-adoption disposal remain. A model request already shared by live
+consumers is neither aborted nor removed from the cache.
+
+The mounted fixture now holds the import itself in both normal and reduced
+mode, rather than only delaying an already-started factory. The direct factory
+regression checks pre-aborted and post-request cancellation. Together with the
+HOME typography regressions, the four-file suite had 12 expected failures before
+the fixes and passed 27 tests / 846 assertions afterward. These establish avoided
+late work and lifetime correctness; no FPS gain is inferred.

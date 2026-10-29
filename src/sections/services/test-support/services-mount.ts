@@ -40,7 +40,7 @@ class FixtureCustomEvent extends Event {
   constructor(type: string, options: { detail: unknown }) { super(type); this.detail = options.detail; }
 }
 
-type FailureOptions = { importFailure?: boolean; createFailure?: boolean; nullRenderer?: boolean; drawFailureAt?: number; resizeFailureAt?: number; disposalFailure?: boolean; reduced?: boolean; managed?: boolean; holdObjectBoot?: boolean; initialScrollY?: number; heroTop?: number; physicalHeight?: number };
+type FailureOptions = { importFailure?: boolean; createFailure?: boolean; nullRenderer?: boolean; drawFailureAt?: number; resizeFailureAt?: number; disposalFailure?: boolean; reduced?: boolean; managed?: boolean; holdObjectImport?: boolean; holdObjectBoot?: boolean; initialScrollY?: number; heroTop?: number; physicalHeight?: number };
 const flush = async () => { for (let step = 0; step < 12; step++) await Promise.resolve(); };
 
 /** Real mountServices + real opening measure/tick/physics/hand; inert text/GPU adapters. */
@@ -82,7 +82,7 @@ export async function mountServicesFixture(failures: FailureOptions = {}) {
     observe() {}
     disconnect() { this.disconnected = true; }
   }
-  let scrollCallback: (() => void) | null = null, managerRemoved = false, draws = 0, resizes = 0, disposals = 0, indexTicks = 0, bootRequests = 0, bootSignal: AbortSignal | undefined;
+  let scrollCallback: (() => void) | null = null, managerRemoved = false, draws = 0, resizes = 0, disposals = 0, indexTicks = 0, importRequests = 0, bootRequests = 0, bootSignal: AbortSignal | undefined;
   let resolveObjects!: (renderer: PracticeObjects | null) => void, rejectObjects!: (reason: Error) => void;
   const boot = new Promise<PracticeObjects | null>((resolve, reject) => { resolveObjects = resolve; rejectObjects = reject; });
   const storeListeners = new Set<() => void>(), state = { menuOpen: false };
@@ -92,6 +92,11 @@ export async function mountServicesFixture(failures: FailureOptions = {}) {
     render() { draws++; if (draws === failures.drawFailureAt) throw new Error("The editorial WebGL context was lost."); canvas.dataset.heroRendered = "true"; },
     dispose() { disposals++; if (failures.disposalFailure) throw new Error("GPU teardown failed."); },
   };
+  const objectModule = { createPracticeObjects: (_canvas: unknown, _kind: unknown, signal: AbortSignal) => { bootRequests++; bootSignal = signal; return failures.createFailure ? Promise.reject(new Error("Renderer creation failed.")) : failures.holdObjectBoot ? boot : Promise.resolve(failures.nullRenderer ? null : objects); } };
+  let resolveObjectImport!: (module: typeof objectModule) => void;
+  // The isolated evaluator lowers import() to a promise of require(). Preserve
+  // that promise through __importStar so the module itself can arrive late.
+  const objectImport = Object.assign(new Promise<typeof objectModule>((resolve) => { resolveObjectImport = resolve; }), { __esModule: true });
   const restoreGlobals = installGlobals({ window, document, ResizeObserver: FixtureResizeObserver, CustomEvent: FixtureCustomEvent, requestAnimationFrame: requestFrame, cancelAnimationFrame: cancelFrame, getComputedStyle: (element: FixtureElement) => ({ fontSize: element === band ? "80px" : "150px" }) });
   let dispose: (() => void) | undefined;
   try {
@@ -102,9 +107,8 @@ export async function mountServicesFixture(failures: FailureOptions = {}) {
       "./masked-reveal": { createMaskedReveal: (element: FixtureElement) => ({ set: (progress: number) => reveals.set(element, progress), measure() {}, dispose() {} }) },
       "../masked-reveal": { createMaskedReveal: (element: FixtureElement) => ({ set: (progress: number) => reveals.set(element, progress), measure() {}, dispose() {} }) },
       "./3-index/service-index.animate": { createServiceIndex: () => ({ measure() {}, tick() { indexTicks++; }, dispose() {} }) },
-      "../vision/1-opening/practice-objects": { createPracticeObjects: (_canvas: unknown, _kind: unknown, signal: AbortSignal) => { bootRequests++; bootSignal = signal; return failures.createFailure ? Promise.reject(new Error("Renderer creation failed.")) : failures.holdObjectBoot ? boot : Promise.resolve(failures.nullRenderer ? null : objects); } },
     };
-    if (failures.importFailure) Object.defineProperty(substitutes, "../vision/1-opening/practice-objects", { get() { throw new Error("Enhancement chunk unavailable."); } });
+    Object.defineProperty(substitutes, "../vision/1-opening/practice-objects", { get() { importRequests++; if (failures.importFailure) throw new Error("Enhancement chunk unavailable."); return failures.holdObjectImport ? objectImport : objectModule; } });
     const runtime = loadIsolatedModule<{ mountServices: (root: HTMLElement, reduced: boolean) => () => void }>("src/sections/services/services.animate.ts", substitutes);
     dispose = runtime.mountServices(root as unknown as HTMLElement, failures.reduced ?? false);
     await flush();
@@ -112,9 +116,10 @@ export async function mountServicesFixture(failures: FailureOptions = {}) {
   let stopped = false;
   return {
     root, hero, opening, handle, announcement, canvas, fonts, route, flush,
-    stats: () => ({ queued: pending.size, maxPending, scheduledInsideFrame, measurements, draws, resizes, disposals, indexTicks, bootRequests, bootAborted: bootSignal?.aborted ?? false, managerRemoved, subscribers: storeListeners.size, observersDisconnected: observers.every((observer) => observer.disconnected), lastHeroAction: reveals.get(hero.querySelectorAll("[data-masked-reveal]").at(-1)!) }),
+    stats: () => ({ queued: pending.size, maxPending, scheduledInsideFrame, measurements, draws, resizes, disposals, indexTicks, importRequests, bootRequests, bootAborted: bootSignal?.aborted ?? false, managerRemoved, subscribers: storeListeners.size, observersDisconnected: observers.every((observer) => observer.disconnected), lastHeroAction: reveals.get(hero.querySelectorAll("[data-masked-reveal]").at(-1)!) }),
     frame() { const callbacks = [...pending.values()]; pending.clear(); time += 1000 / 60; running = true; try { callbacks.forEach((callback) => callback(time)); } finally { running = false; } },
     async resolveBoot(result: "renderer" | "null" = "renderer") { resolveObjects(result === "null" ? null : objects); await flush(); },
+    async resolveImport() { resolveObjectImport(objectModule); await flush(); },
     async rejectBoot() { rejectObjects(new Error("Renderer boot rejected.")); await flush(); },
     resize() { window.dispatchEvent(new Event("resize")); },
     fontRefresh() { fonts.dispatchEvent(new Event("loadingdone")); },

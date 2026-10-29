@@ -13,6 +13,7 @@ export type PracticeObjects = {
 
 /** Deferred editorial renderer. The page owns time, scheduling and visibility. */
 export async function createPracticeObjects(canvas: HTMLCanvasElement, kind: PracticeKind, signal: AbortSignal): Promise<PracticeObjects | null> {
+  if (signal.aborted) return null;
   const model = (await loadGLTF('/assets/models/logo-finished-components.glb')).scene;
   if (signal.aborted) return null;
   model.updateMatrixWorld(true);

@@ -43,6 +43,11 @@ type BootWindowWaiter = {
   urgentSampleCount: number;
 };
 
+type BootWindowWait = {
+  promise: Promise<void>;
+  cancel: () => void;
+};
+
 const bootWindowWaiters: BootWindowWaiter[] = [];
 let quietSamplerTimerId: number | null = null;
 let lastSampledScrollY: number | null = null;
@@ -107,13 +112,17 @@ function sampleBootWindow(): void {
  * scrolling has stopped, or `isUrgent` has stayed true long enough that
  * waiting is worse than a brief hitch.
  */
-function waitForBootWindow(isUrgent: () => boolean): Promise<void> {
+function waitForBootWindow(isUrgent: () => boolean): BootWindowWait {
   if (typeof window === "undefined") {
-    return Promise.resolve();
+    return { promise: Promise.resolve(), cancel: () => {} };
   }
 
-  return new Promise((resolve) => {
-    bootWindowWaiters.push({ resolve, isUrgent, urgentSampleCount: 0 });
+  const waiter: BootWindowWaiter = {
+    resolve: () => {}, isUrgent, urgentSampleCount: 0,
+  };
+  const promise = new Promise<void>((resolve) => {
+    waiter.resolve = resolve;
+    bootWindowWaiters.push(waiter);
 
     if (quietSamplerTimerId === null) {
       quietSamplerTimerId = window.setInterval(
@@ -122,10 +131,29 @@ function waitForBootWindow(isUrgent: () => boolean): Promise<void> {
       );
     }
   });
+
+  return {
+    promise,
+    cancel: () => {
+      const index = bootWindowWaiters.indexOf(waiter);
+
+      if (index === -1) {
+        return;
+      }
+
+      bootWindowWaiters.splice(index, 1);
+
+      if (bootWindowWaiters.length === 0) {
+        stopQuietSampler();
+      }
+
+      waiter.resolve();
+    },
+  };
 }
 
 export function waitForScrollQuiet(): Promise<void> {
-  return waitForBootWindow(() => false);
+  return waitForBootWindow(() => false).promise;
 }
 
 type BootSlotRequest = {
@@ -136,6 +164,7 @@ type BootSlotRequest = {
 
 const bootSlotQueue: BootSlotRequest[] = [];
 let isBootSlotBusy = false;
+let pendingBootWindow: BootWindowWait | null = null;
 
 function pruneCancelledRequests(): void {
   for (let index = bootSlotQueue.length - 1; index >= 0; index -= 1) {
@@ -176,11 +205,21 @@ async function processBootSlotQueue(): Promise<void> {
 
   isBootSlotBusy = true;
   // Urgent = something the user is looking at is still waiting to boot.
-  await waitForBootWindow(() =>
+  const bootWindow = waitForBootWindow(() =>
     bootSlotQueue.some(
       (request) => !request.isCancelled() && request.measureDistance() === 0,
     ),
   );
+  pendingBootWindow = bootWindow;
+  await bootWindow.promise;
+
+  // Cancellation releases a waiting slot synchronously. A new enqueue may
+  // already own another quiet wait before this cancelled continuation runs.
+  if (pendingBootWindow !== bootWindow) {
+    return;
+  }
+
+  pendingBootWindow = null;
 
   // Pick AFTER the wait: the user may have scrolled somewhere else while we
   // waited, and whatever is on screen now must boot first.
@@ -207,11 +246,36 @@ async function processBootSlotQueue(): Promise<void> {
 function requestSceneBootSlot(
   isCancelled: () => boolean,
   measureDistance: () => number,
-): Promise<() => void> {
-  return new Promise((grant) => {
-    bootSlotQueue.push({ grant, isCancelled, measureDistance });
+): { promise: Promise<() => void>; cancel: () => void } {
+  const request: BootSlotRequest = {
+    grant: () => {}, isCancelled, measureDistance,
+  };
+  const promise = new Promise<() => void>((grant) => {
+    request.grant = grant;
+    bootSlotQueue.push(request);
     void processBootSlotQueue();
   });
+
+  return {
+    promise,
+    cancel: () => {
+      const index = bootSlotQueue.indexOf(request);
+
+      // A granted request retains its existing release/watchdog ownership.
+      if (index === -1) {
+        return;
+      }
+
+      bootSlotQueue.splice(index, 1);
+
+      if (bootSlotQueue.length === 0 && pendingBootWindow !== null) {
+        const bootWindow = pendingBootWindow;
+        pendingBootWindow = null;
+        isBootSlotBusy = false;
+        bootWindow.cancel();
+      }
+    },
+  };
 }
 
 /**
@@ -249,7 +313,9 @@ export function useSceneBootSlot(
       );
     };
 
-    void requestSceneBootSlot(() => isCancelled, measureDistance).then(
+    const request = requestSceneBootSlot(() => isCancelled, measureDistance);
+
+    void request.promise.then(
       (release) => {
         if (isCancelled) {
           release();
@@ -266,6 +332,7 @@ export function useSceneBootSlot(
 
     return () => {
       isCancelled = true;
+      request.cancel();
     };
   }, [wantsBoot, hasBootSlot, targetRef]);
 

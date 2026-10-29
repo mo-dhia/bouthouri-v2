@@ -18,7 +18,7 @@ function headingLines(heading: Element | null) {
   return lines.map((line) => line.trim()).filter(Boolean);
 }
 
-export async function createSpatialType(stage: HTMLElement, scene: Scene, sculptureRoot: Group, camera: PerspectiveCamera, width: number, _height: number, invalidate?: () => void, signal?: AbortSignal) {
+export async function createSpatialType(stage: HTMLElement, scene: Scene, sculptureRoot: Group, camera: PerspectiveCamera, width: number, _height: number, invalidate?: () => void, signal?: AbortSignal, designViewportWidth = width) {
   const rtl = document.documentElement.lang === "ar";
   const headings = [...stage.querySelectorAll<HTMLElement>(".spatial-description h2")].slice(0, 3);
   const meaningCopy = headings.map((heading) => [heading.textContent ?? "", heading.nextElementSibling?.textContent ?? ""]);
@@ -35,7 +35,8 @@ export async function createSpatialType(stage: HTMLElement, scene: Scene, sculpt
   let planes: TextPlane[] = [];
   let meanings: { group: Group; title: TextPlane; copy: TextPlane; baseY: number; font: number; start: number; clear: number }[] = [];
   let ideas: TextPlane[] = [], intro: TextPlane | null = null;
-  let viewportWidth = width, design = viewportDesign(width), portrait = false, ideaX = 0, ideaSize = 0, ideaY = [0.9, -0.24];
+  // CSS viewport selects the composition; measured host width sizes projection.
+  let hostWidth = width, design = viewportDesign(designViewportWidth), portrait = false, ideaX = 0, ideaSize = 0, ideaY = [0.9, -0.24];
   const point = new Vector3(), edge = new Vector3();
   let previousOrigin: WorkOrigin | null = null;
   let generation = 0, disposed = false, layoutReady = false;
@@ -108,10 +109,10 @@ export async function createSpatialType(stage: HTMLElement, scene: Scene, sculpt
   stage.dataset.storyTextRenderer = "troika-sdf";
   let latestTime = Number(stage.dataset.storyTime ?? 0);
   const controller = {
-    resize(width: number, _height: number) {
+    resize(width: number, _height: number, designViewportWidth = width) {
       void _height; // Physical viewport height does not select or size the design.
-      viewportWidth = width;
-      const nextDesign = viewportDesign(width);
+      hostWidth = width;
+      const nextDesign = viewportDesign(designViewportWidth);
       if (nextDesign === design) return;
       design = nextDesign;
       void create().then((ready) => { if (!disposed && ready) { controller.update(latestTime); invalidate?.(); } }).catch((error: unknown) => {
@@ -149,7 +150,7 @@ export async function createSpatialType(stage: HTMLElement, scene: Scene, sculpt
         const plane = ideas[1], dot = plane.dot;
         if (!dot) return;
         scene.updateMatrixWorld(true); camera.updateMatrixWorld();
-        const origin: WorkOrigin = { ...projectTerminalGlyph(dot, plane.mesh.matrixWorld, camera, ideasRoot.position.x, viewportWidth, [point, edge]),
+        const origin: WorkOrigin = { ...projectTerminalGlyph(dot, plane.mesh.matrixWorld, camera, ideasRoot.position.x, hostWidth, [point, edge]),
           ready: true, direction: rtl ? "rtl" : "ltr" };
         if (!previousOrigin || Math.abs(previousOrigin.x - origin.x) + Math.abs(previousOrigin.y - origin.y) + Math.abs(previousOrigin.radius - origin.radius) > 1e-5) {
           stage.dispatchEvent(new CustomEvent<WorkOrigin>("story-origin", { detail: origin })); previousOrigin = origin;

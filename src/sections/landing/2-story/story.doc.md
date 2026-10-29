@@ -135,3 +135,18 @@ The null gate view now delegates failure lifetime and retained controller hooks
 to `story-scene-gate.logic.ts`. Type-only controller imports do not load Three.
 The existing near-viewport boot slot, idle material import, latest-mode refs,
 failure latch and cleanup ownership remain the same.
+
+### Viewport profile versus measured text host
+
+The scene passes the actual CSS viewport width to spatial typography at creation
+and both resize/adoption sites. Camera and text therefore select the same fixed
+profile even when a classic scrollbar narrows the canvas host across 1024px or
+600px. Typography retains the measured host width for terminal-glyph projection
+and its physical work-origin radius. No extra scale is applied to that geometry.
+Same-profile resizes retain the text graph; a real viewport category change
+rebuilds it. Source font/world constants and authored clocks are unchanged.
+
+The optional explicit viewport parameter defaults to the supplied host width for
+standalone callers. Actual HOME integration supplies `innerWidth`. EN/AR tests
+cover differing viewport/host widths, same-profile retention, category rebuild,
+disposal and physical-radius scaling in addition to the reference frustum tests.

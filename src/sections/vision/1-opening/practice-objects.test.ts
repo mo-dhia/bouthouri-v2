@@ -42,6 +42,32 @@ async function rendererFixture(viewportWidth: number, kind: "about" | "services"
 }
 
 describe("shared practice-object viewport profile", () => {
+  test("an already-aborted factory skips shared asset loading and renderer allocation", async () => {
+    let assetLoads = 0, rendererAllocations = 0;
+    const runtime = loadIsolatedModule<{ createPracticeObjects: typeof import("./practice-objects").createPracticeObjects }>("src/sections/vision/1-opening/practice-objects.ts", {
+      three: { ...Three, WebGLRenderer: class { constructor() { rendererAllocations++; } } },
+      "@/lib/scene/asset-cache": { loadGLTF: () => { assetLoads++; return Promise.resolve({ scene: new Three.Scene() }); } },
+    });
+    const abort = new AbortController(); abort.abort();
+    for (const kind of ["about", "services"] as const) expect(await runtime.createPracticeObjects({} as HTMLCanvasElement, kind, abort.signal)).toBeNull();
+    expect(assetLoads).toBe(0); expect(rendererAllocations).toBe(0);
+  });
+
+  test("aborting a pending shared asset wait skips adoption and renderer allocation", async () => {
+    let assetLoads = 0, rendererAllocations = 0, modelUpdates = 0;
+    let resolveAsset!: (asset: { scene: { updateMatrixWorld(): void } }) => void;
+    const sharedAsset = new Promise<{ scene: { updateMatrixWorld(): void } }>((resolve) => { resolveAsset = resolve; });
+    const runtime = loadIsolatedModule<{ createPracticeObjects: typeof import("./practice-objects").createPracticeObjects }>("src/sections/vision/1-opening/practice-objects.ts", {
+      three: { ...Three, WebGLRenderer: class { constructor() { rendererAllocations++; } } },
+      "@/lib/scene/asset-cache": { loadGLTF: () => { assetLoads++; return sharedAsset; } },
+    });
+    const abort = new AbortController(), pending = runtime.createPracticeObjects({} as HTMLCanvasElement, "services", abort.signal);
+    expect(assetLoads).toBe(1); abort.abort();
+    const asset = { scene: { updateMatrixWorld() { modelUpdates++; } } }; resolveAsset(asset);
+    expect(await pending).toBeNull(); expect(await sharedAsset).toBe(asset);
+    expect(modelUpdates).toBe(0); expect(rendererAllocations).toBe(0);
+  });
+
   test("both variants/locales choose CSS viewport profiles when scrollbars narrow their hosts", async () => {
     for (const [viewportWidth, hostWidth] of [[1025, 1010], [601, 586], [1024, 1009], [600, 585]]) {
       const design = viewportDesign(viewportWidth), physicalStage = design.height * viewportWidth / design.width;
