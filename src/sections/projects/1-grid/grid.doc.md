@@ -79,6 +79,18 @@ physical at the adapter boundary.
   input in English. This verifies input mapping, not physical-device latency or
   presented FPS. Full validation:453 tests /19,230 assertions, build and local
   production SSR audit pass; no CSS or content/loading boundary changed.
+- Browsers implicitly capture a touch to the contacted card. Moving capture to
+  the root after the drag threshold makes that card's `lostpointercapture`
+  bubble to the root, so the root listener accepts only its own loss for the
+  active pointer. Treating the bubbled event as cancellation stopped every
+  touch drag after its first ~10px until the finger lifted (reported on
+  Firefox Android). Synthetic `PointerEvent`s have no implicit capture, which is
+  why the earlier control missed it. Real touch input now covers it: Chromium
+  CDP `Input.dispatchTouchEvent` and Gecko 158 WebDriver BiDi touch actions
+  moved the settled grid 10px for a 200px held drag before and 200px after
+  (Gecko EN/AR, Chromium EN), with the drag held until `pointerup`; in Gecko a
+  tap still opens its card and a drag does not. The harness models capture
+  handoff and bubbling.
 - Fine pointers get the source damped repulsion. Focus brings the selected
   original card into the nearest wrapped position; Enter follows its real link.
 - A 220ms hover intention starts a muted inline reel. Coarse pointers choose the

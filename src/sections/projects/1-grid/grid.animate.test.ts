@@ -6,7 +6,7 @@ const cleanups: (() => void)[] = [];
 afterEach(() => { while (cleanups.length) cleanups.pop()!(); });
 function harness({ coarse = false, heldFonts = false, width = 1920, height = 1080 } = {}) {
   let now = 0, serial = 0, maxFrames = 0, resolveFonts!: () => void;
-  const frames = new Map<number, FrameRequestCallback>(), timers = new Map<number, { time: number; run: () => void }>();
+  const frames = new Map<number, FrameRequestCallback>(), timers = new Map<number, { time: number; run: () => void }>(), holders = new Map<number, Node>();
   const subscribers = new Set<() => void>(), state = { menuOpen: false, quietMode: false };
   const media = Object.assign(new EventTarget(), { matches: false }), fine = { matches: !coarse };
   const style = () => ({ transform: '', opacity: '', setProperty(key: string, value: string) { (this as unknown as Record<string, string>)[key] = value; } });
@@ -32,8 +32,17 @@ function harness({ coarse = false, heldFonts = false, width = 1920, height = 108
     closest() { return { dataset: { routePath: '/en/projects' } }; }
     getBoundingClientRect() { return { left: 0, top: 0, width, height }; }
     hasPointerCapture(id: number) { return this.capture.has(id); }
-    setPointerCapture(id: number) { this.capture.add(id); }
-    releasePointerCapture(id: number) { this.capture.delete(id); this.dispatchEvent(new Event('lostpointercapture')); }
+    // One capture owner per pointer; a handoff notifies the previous owner, and
+    // capture events bubble with their original target like the DOM's.
+    setPointerCapture(id: number) {
+      const previous = holders.get(id); holders.set(id, this); this.capture.add(id);
+      if (previous && previous !== this && previous.capture.delete(id)) previous.bubble('lostpointercapture', id);
+    }
+    releasePointerCapture(id: number) { if (this.capture.delete(id)) { holders.delete(id); this.bubble('lostpointercapture', id); } }
+    bubble(type: string, pointerId: number, target: Node = this) {
+      const event = new Event(type); Object.defineProperties(event, { target: { value: target }, pointerId: { value: pointerId } });
+      this.dispatchEvent(event); this.parent?.bubble(type, pointerId, target);
+    }
     cloneNode() { return item(this.dataset.reel); }
   }
   class Video extends Node {
@@ -128,6 +137,24 @@ for (const width of [375, 412, 600, 768]) test(`touch follows physical finger di
   h.fire(h.viewport, 'pointerdown', point(140)); h.fire(h.win, 'pointerup', point(140));
   expect(h.fire(h.root, 'click').defaultPrevented).toBe(false);
   h.stop(); expect(h.frames.size + h.timers.size + h.subscribers.size).toBe(0);
+});
+
+test('implicit touch capture handing off to the root keeps the drag alive', async () => {
+  const h = harness({ coarse: true, width: 412, height: 915 }); await h.advance(4000);
+  const card = h.original[8].card!, x = () => parseFloat(h.original[8].style.transform.match(/translate3d\(([^,]+)/)![1]) * 412 / 100;
+  const contact = (clientX: number) => ({ ...pointer(clientX, 300), pointerType: 'touch', target: card });
+  // The browser captures a touch to its target before pointerdown listeners run.
+  const before = x(); card.setPointerCapture(1); h.fire(h.viewport, 'pointerdown', contact(80));
+  for (let i = 1; i <= 6; i++) { h.fire(h.viewport, 'pointermove', contact(80 + i * 20)); await h.advance(16.667); }
+  expect(card.capture.size).toBe(0); expect(h.root.capture.has(1)).toBe(true); expect(h.root.dataset.gridDragging).toBe('true');
+  expect(x() - before).toBeCloseTo(120, 7);
+  h.fire(h.win, 'pointerup', contact(200)); expect(h.root.capture.size).toBe(0); expect(h.fire(h.root, 'click').defaultPrevented).toBe(true);
+  await h.advance(8000);
+  // Losing the root's own capture without a pointerup still ends the contact.
+  card.setPointerCapture(1); h.fire(h.viewport, 'pointerdown', contact(200)); h.fire(h.viewport, 'pointermove', contact(240)); await h.advance(16.667);
+  const lost = x(); h.root.releasePointerCapture(1); expect(h.root.dataset.gridDragging).toBeUndefined();
+  h.fire(h.viewport, 'pointermove', contact(300)); await h.advance(16.667); expect(x()).toBeCloseTo(lost, 7);
+  expect(h.fire(h.root, 'click').defaultPrevented).toBe(false); h.stop();
 });
 
 test('touch and pen stay direct on hybrid devices; additional contacts cannot steal or cancel the drag', async () => {

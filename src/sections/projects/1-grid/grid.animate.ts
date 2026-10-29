@@ -120,7 +120,10 @@ export function mountProjectsGrid(root: HTMLElement) {
   win.addEventListener('pointermove', event => { if (motion.dragging && !viewport.contains(event.target as Node)) onMove(event); }, { passive: true, signal: abort.signal });
   win.addEventListener('pointerup', event => { if (event.pointerId === pointerId) release(false); }, { signal: abort.signal });
   win.addEventListener('pointercancel', event => { if (event.pointerId === pointerId) release(true); }, { signal: abort.signal });
-  root.addEventListener('lostpointercapture', () => { if (motion.dragging) release(true); }, { signal: abort.signal });
+  // Touch is implicitly captured by the contacted card; moving capture to the
+  // root makes that card's lostpointercapture bubble here. Only the root's own
+  // loss for the active contact ends the drag.
+  root.addEventListener('lostpointercapture', event => { if (event.target === root && event.pointerId === pointerId) release(true); }, { signal: abort.signal });
   win.addEventListener('blur', () => release(true), { signal: abort.signal });
   viewport.addEventListener('pointerleave', () => { motion.hover(null); hovered = null; if (fine.matches) preview.clear(); wake(); }, { signal: abort.signal });
   viewport.addEventListener('dragstart', event => event.preventDefault(), { signal: abort.signal });
