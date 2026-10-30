@@ -1,16 +1,11 @@
 import { brand } from "@/config/brand";
-import {
-  markBounds,
-  markLength,
-  markPoint,
-  markRow,
-} from "@/components/layout/header/identity-mark";
+import { markStatic, type Piece } from "@/components/layout/header/identity-mark";
 import glyphData from "./footer-glyph-contours.json";
 import logoData from "./footer-logo-contours.json";
 
 type Point = { x: number; y: number };
 type Shape = { outer: number[][]; mass?: number[][]; rotation?: number };
-// B becomes the quiet line; the remaining letters trace the wave, half each.
+// B becomes the kit's bar; the remaining letters run round the ring, half each.
 const waveSplit = 1 + Math.ceil((brand.wordmark.length - 1) / 2);
 export const footerPartMap = [...brand.wordmark].map((_, index) =>
   index === 0 ? 0 : index < waveSplit ? 1 : 2,
@@ -32,46 +27,78 @@ function sampleOutline(points: number[][], count: number): number[][] {
   });
 }
 
+// Kit geometry (m = 40): half rings of centreline radius 80 with a 0.9 lip
+// at each end, and a 40 × 200 bar. The footer settles on the static b.
+const ringMiddle = 80,
+  ringHalf = 20,
+  ringLip = 0.9,
+  ringBend = Math.PI * ringMiddle,
+  ringLength = 2 * ringLip + ringBend;
+const markPose = markStatic.B();
+const markPoses: Piece[] = [markPose.bar, markPose.h1, markPose.h2];
+const markLocalBounds = [
+  [-20, -100, 20, 100],
+  [-100, -100, 100, ringLip],
+  [-100, -100, 100, ringLip],
+] as const;
+/** The b's extent in kit units: its bar top to its bowl bottom. */
+const markHeight = 300;
+
 export type GlyphBox = { x: number; y: number; width: number; height: number };
-/** Mark-unit boxes of the line, arch and cup in the identity's row pose. */
-export const footerMarkParts: GlyphBox[] = markBounds.map(([x0, y0, x1, y1], piece) => {
-  const [x, y, degrees] = markRow[piece],
-    cos = Math.round(Math.cos(degrees * Math.PI / 180)),
-    sin = Math.round(Math.sin(degrees * Math.PI / 180)),
+const turn = (piece: Piece) => ({
+  cos: Math.round(Math.cos(piece.a * Math.PI / 180)),
+  sin: Math.round(Math.sin(piece.a * Math.PI / 180)),
+});
+/** Kit-unit boxes of the bar, upper bowl and lower bowl in the static b. */
+export const footerMarkParts: GlyphBox[] = markLocalBounds.map(([x0, y0, x1, y1], piece) => {
+  const pose = markPoses[piece],
+    { cos, sin } = turn(pose),
     xs = [x0 * cos - y0 * sin, x1 * cos - y1 * sin],
     ys = [x0 * sin + y0 * cos, x1 * sin + y1 * cos];
   return {
-    x: x + Math.min(...xs), y: y + Math.min(...ys),
+    x: pose.x + Math.min(...xs), y: pose.y + Math.min(...ys),
     width: Math.abs(xs[1] - xs[0]), height: Math.abs(ys[1] - ys[0]),
   };
 });
-const markGap = footerMarkParts[1].x - footerMarkParts[0].x - footerMarkParts[0].width;
-const markWidth = footerMarkParts[2].x + footerMarkParts[2].width - footerMarkParts[0].x - markGap;
+const markLeft = Math.min(...footerMarkParts.map((part) => part.x));
+const markWidth = Math.max(...footerMarkParts.map((part) => part.x + part.width)) - markLeft;
 
 /**
- * One letter's share of a bowl, normalized to that bowl's row box: the outer
+ * Local point `along` a half ring's centreline from its first lip, and
+ * `across` it (positive toward the outer edge). Posed, the upper bowl runs
+ * from the bar over the top and the lower bowl back underneath, so the eight
+ * letters follow one continuous ring.
+ */
+function ringPoint(along: number, across: number): [number, number] {
+  const reach = ringMiddle + across;
+  if (along <= ringLip) return [-reach, ringLip - along];
+  if (along >= ringLip + ringBend) return [reach, along - ringLip - ringBend];
+  const angle = Math.PI + (along - ringLip) / ringMiddle;
+  return [reach * Math.cos(angle), reach * Math.sin(angle)];
+}
+
+/**
+ * One letter's share of a bowl, normalized to that bowl's box: the outer
  * edge forward, then the inner edge back. Its mass collapses the inner edge
- * onto the bowl's spine, so the letter first becomes a solid half capsule.
+ * onto the ring's centre, so the letter first becomes a solid wedge.
  */
 function strokeSector(piece: number, index: number, sectors: number, count: number): Required<Omit<Shape, "rotation">> {
-  const length = markLength(piece),
-    from = length * index / sectors,
-    to = length * (index + 1) / sectors,
+  const from = ringLength * index / sectors,
+    to = ringLength * (index + 1) / sectors,
     outerCount = Math.ceil(count / 2),
     innerCount = count - outerCount,
     box = footerMarkParts[piece],
-    [x, y, degrees] = markRow[piece],
-    cos = Math.round(Math.cos(degrees * Math.PI / 180)),
-    sin = Math.round(Math.sin(degrees * Math.PI / 180));
+    pose = markPoses[piece],
+    { cos, sin } = turn(pose);
   const at = (along: number, across: number) => {
-    const [u, v] = markPoint(piece, along, across);
-    return [(x + u * cos - v * sin - box.x) / box.width, (y + u * sin + v * cos - box.y) / box.height];
+    const [u, v] = ringPoint(along, across);
+    return [(pose.x + u * cos - v * sin - box.x) / box.width, (pose.y + u * sin + v * cos - box.y) / box.height];
   };
   const outer = Array.from({ length: outerCount }, (_, i) => from + (to - from) * i / (outerCount - 1));
   const inner = Array.from({ length: innerCount }, (_, i) => to - (to - from) * i / (innerCount - 1));
   return {
-    outer: [...outer.map((along) => at(along, 7.6)), ...inner.map((along) => at(along, -7.6))],
-    mass: [...outer.map((along) => at(along, 7.6)), ...inner.map((along) => at(along, -21.4))],
+    outer: [...outer.map((along) => at(along, ringHalf)), ...inner.map((along) => at(along, -ringHalf))],
+    mass: [...outer.map((along) => at(along, ringHalf)), ...inner.map((along) => at(along, -ringMiddle))],
   };
 }
 /**
@@ -179,25 +206,23 @@ export class FooterPaths {
       diameter = mobile
         ? Math.min(82, 0.18 * width)
         : 0.13 * width,
-      scale = diameter / 73.600516;
+      scale = diameter / markHeight;
     const gutter = width * (mobile ? 0.06 : 0.055) + 2;
     const cy = mobile ? wordHeight - referenceLine * width - 0.86 * diameter : wordHeight - logoBottom * width;
-    // The row keeps the reference stroke scale and part gap; its axis is the
-    // reference logo center.
-    const layout = (unit: number, gap: number, left: number, axis: number) =>
-      footerMarkParts.map((part, index) => ({
-        x: left + (part.x - footerMarkParts[0].x) * unit + (index ? gap - markGap * unit : 0),
-        y: axis + (part.y - 70) * unit,
+    // The b stands as tall as the reference logo's ring, centred on its axis.
+    const layout = (unit: number, left: number, axis: number) =>
+      footerMarkParts.map((part) => ({
+        x: left + (part.x - markLeft) * unit,
+        y: axis + part.y * unit,
         width: part.width * unit,
         height: part.height * unit,
       }));
-    const gap = 0.34 * diameter;
-    this.parts = layout(scale, gap, width - gutter - markWidth * scale - gap, cy);
+    this.parts = layout(scale, width - gutter - markWidth * scale, cy);
     this.targets = this.source.map((_, glyph) => this.parts[footerPartMap[glyph]]);
     const bridgeSize = bridgeDiameter * width,
-      unit = bridgeSize / 73.600516,
+      unit = bridgeSize / markHeight,
       middleY = wordHeight - bridgeBottom * width,
-      bridges = layout(unit, 0.34 * bridgeSize, 0.5 * (width - markWidth * unit - 0.34 * bridgeSize), middleY);
+      bridges = layout(unit, 0.5 * (width - markWidth * unit), middleY);
     this.bridges = this.source.map((_, glyph) => bridges[footerPartMap[glyph]]);
   }
   /** Where a part's thought line leaves its ink. */

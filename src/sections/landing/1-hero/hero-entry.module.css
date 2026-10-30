@@ -1,83 +1,98 @@
 /* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
+/* Brand-book loader stage: the three-script kit loop, the script row of plate 4.0 with the load progress on its rule, then the entry choices. */
 @media (width > 1024px) {
-  .loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
+  .loading { --stage: 25vw; --stage-top: 42%; z-index: 5; pointer-events: none; color: #d9d5cb; direction: ltr; position: absolute; inset: 0 }
   .loading[hidden] { display: none }
-  .anchor, .mark { aspect-ratio: 2; inline-size: 29.1667vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%) }
-  .anchor { visibility: hidden }
-  .mark { will-change: transform; overflow: visible }
-  .choices { visibility: hidden; inline-size: 22.3959vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 7.29167vw + 1.04167vw); left: 50%; transform: translateX(-50%) }
-  .choiceMask { margin: -0.208334vw; padding: 0.208334vw; display: block; overflow: hidden }
-  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 4.6875vw; min-block-size: 2.5vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 0.520834vw 0.625vw; font-size: 0.677084vw; transition: color .22s; display: block; transform: translateY(115%) }
+  .stage { inline-size: var(--stage); block-size: auto; aspect-ratio: 1; position: absolute; inset-block-start: var(--stage-top); left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
+  .stage svg { inline-size: 100%; block-size: 100%; display: block; overflow: visible }
+  .below { inline-size: var(--stage); display: flex; flex-direction: column; gap: 1.458333vw; position: absolute; inset-block-start: calc(var(--stage-top) + var(--stage) / 2 + 0.833333vw); left: 50%; transform: translateX(-50%) }
+  .scripts { border-block-start: 1px solid #2b2a26; grid-template-columns: repeat(3, minmax(0, 1fr)); display: grid; position: relative }
+  .scripts > div { color: #77746c; white-space: nowrap; letter-spacing: .045em; text-transform: uppercase; align-items: center; gap: 0.520833vw; padding: 0.625vw 0.729167vw; font-size: 0.677083vw; line-height: 1; transition: color .3s, background-color .3s; display: flex; overflow: hidden }
+  .scripts > div + div { border-inline-start: 1px solid #2b2a26 }
+  .scripts > div[data-active] { color: #0b0b0a; background: #d9d5cb }
+  .scripts svg { inline-size: 0.9375vw; block-size: 0.9375vw; flex: none; display: block }
+  .track { border-block-start: 1px solid #d9d5cb; opacity: .7; inline-size: 100%; block-size: 0; position: absolute; inset-block-start: 0; left: 0; translate: 0 -100%; transform: scaleX(0); transform-origin: 0 50% }
+  .choices { visibility: hidden; inline-size: 100%; direction: var(--reading-direction); justify-content: space-between; display: flex }
+  .choiceMask { margin: -0.208333vw; padding: 0.208333vw; display: block; overflow: hidden }
+  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 4.6875vw; min-block-size: 2.5vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 0.520833vw 0.625vw; font-size: 0.677083vw; transition: color .22s; display: block; transform: translateY(115%) }
   .choices button:hover, .choices button:focus-visible { color: #fffdf4 }
   .choices button:focus-visible { outline-offset: -0.15625vw; outline: 1px solid #77756c }
   .choices[inert] button { pointer-events: none }
-  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 2.29167vw; font: inherit; white-space: nowrap; padding: 0.625vw 0.833334vw; font-size: 0.625vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
-  .srOnly { position: absolute; inline-size: 0.0520834vw; block-size: 0.0520834vw; padding: 0; margin: -0.0520834vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 2.291667vw; font: inherit; white-space: nowrap; padding: 0.625vw 0.833333vw; font-size: 0.625vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
+  .srOnly { position: absolute; inline-size: 0.052083vw; block-size: 0.052083vw; padding: 0; margin: -0.052083vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  :global(html[lang='ar']) .scripts > div { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 0.9375vw }
   :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 0.9375vw }
   :global(html[lang='ar']) .continue { font-size: 0.729167vw }
   @media (min-aspect-ratio:1920/600) and (min-aspect-ratio: 6/5) {
-    .anchor, .mark { inline-size: min(54vw, 58svh); inset-block-start: 42% }
-    .choices { inline-size: 18.75vw; inset-block-start: 72% }
+    .loading { --stage: min(25vw, 40svh); --stage-top: 38% }
     .continue { inset-block-end: 3% }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mark { will-change: auto }
-    .choices button { transition: none }
+    .stage { will-change: auto }
+    .scripts > div, .choices button { transition: none }
   }
 }
 @media (600px < width <= 1024px) {
-  .loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
+  .loading { --stage: 52.0834vw; --stage-top: 42%; z-index: 5; pointer-events: none; color: #d9d5cb; direction: ltr; position: absolute; inset: 0 }
   .loading[hidden] { display: none }
-  .anchor, .mark { aspect-ratio: 2; inline-size: 42vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%) }
-  .anchor { visibility: hidden }
-  .mark { will-change: transform; overflow: visible }
-  .choices { visibility: hidden; inline-size: 37.7605vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 10.5vw + 2.60417vw); left: 50%; transform: translateX(-50%) }
-  .choiceMask { margin: -0.520834vw; padding: 0.520834vw; display: block; overflow: hidden }
-  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 11.7188vw; min-block-size: 6.25vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 1.30209vw 1.5625vw; font-size: 1.69271vw; transition: color .22s; display: block; transform: translateY(115%) }
+  .stage { inline-size: var(--stage); block-size: auto; aspect-ratio: 1; position: absolute; inset-block-start: var(--stage-top); left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
+  .stage svg { inline-size: 100%; block-size: 100%; display: block; overflow: visible }
+  .below { inline-size: var(--stage); display: flex; flex-direction: column; gap: 3.645833vw; position: absolute; inset-block-start: calc(var(--stage-top) + var(--stage) / 2 + 2.083333vw); left: 50%; transform: translateX(-50%) }
+  .scripts { border-block-start: 1px solid #2b2a26; grid-template-columns: repeat(3, minmax(0, 1fr)); display: grid; position: relative }
+  .scripts > div { color: #77746c; white-space: nowrap; letter-spacing: .045em; text-transform: uppercase; align-items: center; gap: 1.302083vw; padding: 1.5625vw 1.822917vw; font-size: 1.692708vw; line-height: 1; transition: color .3s, background-color .3s; display: flex; overflow: hidden }
+  .scripts > div + div { border-inline-start: 1px solid #2b2a26 }
+  .scripts > div[data-active] { color: #0b0b0a; background: #d9d5cb }
+  .scripts svg { inline-size: 2.34375vw; block-size: 2.34375vw; flex: none; display: block }
+  .track { border-block-start: 1px solid #d9d5cb; opacity: .7; inline-size: 100%; block-size: 0; position: absolute; inset-block-start: 0; left: 0; translate: 0 -100%; transform: scaleX(0); transform-origin: 0 50% }
+  .choices { visibility: hidden; inline-size: 100%; direction: var(--reading-direction); justify-content: space-between; display: flex }
+  .choiceMask { margin: -0.520833vw; padding: 0.520833vw; display: block; overflow: hidden }
+  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 11.71875vw; min-block-size: 6.25vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 1.302083vw 1.5625vw; font-size: 1.692708vw; transition: color .22s; display: block; transform: translateY(115%) }
   .choices button:hover, .choices button:focus-visible { color: #fffdf4 }
   .choices button:focus-visible { outline-offset: -0.390625vw; outline: 1px solid #77756c }
   .choices[inert] button { pointer-events: none }
-  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 5.72917vw; font: inherit; white-space: nowrap; padding: 1.5625vw 2.08334vw; font-size: 1.5625vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
-  .srOnly { position: absolute; inline-size: 0.130209vw; block-size: 0.130209vw; padding: 0; margin: -0.130209vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 5.729167vw; font: inherit; white-space: nowrap; padding: 1.5625vw 2.083333vw; font-size: 1.5625vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
+  .srOnly { position: absolute; inline-size: 0.130208vw; block-size: 0.130208vw; padding: 0; margin: -0.130208vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  :global(html[lang='ar']) .scripts > div { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 2.34375vw }
   :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 2.34375vw }
-  :global(html[lang='ar']) .continue { font-size: 1.82292vw }
+  :global(html[lang='ar']) .continue { font-size: 1.822917vw }
   @media (min-aspect-ratio:768/600) and (min-aspect-ratio: 6/5) {
-    .anchor, .mark { inline-size: min(54vw, 58svh); inset-block-start: 42% }
-    .choices { inline-size: 46.875vw; inset-block-start: 72% }
+    .loading { --stage: min(52.0834vw, 40svh); --stage-top: 38% }
     .continue { inset-block-end: 3% }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mark { will-change: auto }
-    .choices button { transition: none }
+    .stage { will-change: auto }
+    .scripts > div, .choices button { transition: none }
   }
 }
 @media (width <= 600px) {
-  .loading { z-index: 5; pointer-events: none; color: #d6d3c9; direction: ltr; position: absolute; inset: 0 }
+  .loading { --stage: 80vw; --stage-top: 40%; z-index: 5; pointer-events: none; color: #d9d5cb; direction: ltr; position: absolute; inset: 0 }
   .loading[hidden] { display: none }
-  .anchor, .mark { aspect-ratio: 2; inline-size: 77.67vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%) }
-  .anchor { visibility: hidden }
-  .mark { will-change: transform; overflow: visible }
-  .choices { visibility: hidden; inline-size: 70.3884vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 19.4175vw + 4.85437vw); left: 50%; transform: translateX(-50%) }
+  .stage { inline-size: var(--stage); block-size: auto; aspect-ratio: 1; position: absolute; inset-block-start: var(--stage-top); left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
+  .stage svg { inline-size: 100%; block-size: 100%; display: block; overflow: visible }
+  .below { inline-size: var(--stage); display: flex; flex-direction: column; gap: 5.825243vw; position: absolute; inset-block-start: calc(var(--stage-top) + var(--stage) / 2 + 3.883495vw); left: 50%; transform: translateX(-50%) }
+  .scripts { border-block-start: 1px solid #2b2a26; grid-template-columns: repeat(3, minmax(0, 1fr)); display: grid; position: relative }
+  .scripts > div { color: #77746c; white-space: nowrap; letter-spacing: .045em; text-transform: uppercase; align-items: center; gap: 1.699029vw; padding: 2.427184vw 2.427184vw; font-size: 2.669903vw; line-height: 1; transition: color .3s, background-color .3s; display: flex; overflow: hidden }
+  .scripts > div + div { border-inline-start: 1px solid #2b2a26 }
+  .scripts > div[data-active] { color: #0b0b0a; background: #d9d5cb }
+  .scripts svg { inline-size: 3.883495vw; block-size: 3.883495vw; flex: none; display: block }
+  .track { border-block-start: 1px solid #d9d5cb; opacity: .7; inline-size: 100%; block-size: 0; position: absolute; inset-block-start: 0; left: 0; translate: 0 -100%; transform: scaleX(0); transform-origin: 0 50% }
+  .choices { visibility: hidden; inline-size: 100%; direction: var(--reading-direction); justify-content: space-between; display: flex }
   .choiceMask { margin: -0.970874vw; padding: 0.970874vw; display: block; overflow: hidden }
-  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 21.8447vw; min-block-size: 11.6505vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 2.42719vw 2.91263vw; font-size: 3.15534vw; transition: color .22s; display: block; transform: translateY(115%) }
+  .choices button { pointer-events: auto; color: #b5b2a8; min-inline-size: 21.84466vw; min-block-size: 11.650485vw; font: inherit; letter-spacing: .045em; cursor: pointer; background: transparent; border: 0; padding: 2.427184vw 2.912621vw; font-size: 3.15534vw; transition: color .22s; display: block; transform: translateY(115%) }
   .choices button:hover, .choices button:focus-visible { color: #fffdf4 }
-  .choices button:focus-visible { outline-offset: -0.728156vw; outline: 1px solid #77756c }
+  .choices button:focus-visible { outline-offset: -0.728155vw; outline: 1px solid #77756c }
   .choices[inert] button { pointer-events: none }
-  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 10.6797vw; font: inherit; white-space: nowrap; padding: 2.91263vw 3.8835vw; font-size: 2.91263vw; position: absolute; inset-block-end: 12%; left: 50%; transform: translateX(-50%) }
-  .srOnly { position: absolute; inline-size: 0.242719vw; block-size: 0.242719vw; padding: 0; margin: -0.242719vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
-  :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 4.36894vw }
-  :global(html[lang='ar']) .continue { font-size: 3.39806vw }
-  .anchor, .mark { inline-size: 86vw; inset-block-start: 42% }
-  .choices { inline-size: 76vw; inset-block-start: calc(42% + 21.5vw + 4.85437vw) }
-  .choices button { font-size: 3.15534vw }
-  .continue { inset-block-end: 10% }
+  .continue { pointer-events: auto; color: #aaa79e; min-block-size: 10.679612vw; font: inherit; white-space: nowrap; padding: 2.912621vw 3.883495vw; font-size: 2.912621vw; position: absolute; inset-block-end: 10%; left: 50%; transform: translateX(-50%) }
+  .srOnly { position: absolute; inline-size: 0.242718vw; block-size: 0.242718vw; padding: 0; margin: -0.242718vw; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0 }
+  :global(html[lang='ar']) .scripts > div { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 3.15534vw }
+  :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 4.368932vw }
+  :global(html[lang='ar']) .continue { font-size: 3.398058vw }
   @media (min-aspect-ratio:412/600) and (min-aspect-ratio: 6/5) {
-    .anchor, .mark { inline-size: min(54vw, 58svh); inset-block-start: 42% }
-    .choices { inline-size: 60vw; inset-block-start: 72% }
+    .loading { --stage: min(80vw, 40svh); --stage-top: 38% }
     .continue { inset-block-end: 3% }
   }
   @media (prefers-reduced-motion: reduce) {
-    .mark { will-change: auto }
-    .choices button { transition: none }
+    .stage { will-change: auto }
+    .scripts > div, .choices button { transition: none }
   }
 }

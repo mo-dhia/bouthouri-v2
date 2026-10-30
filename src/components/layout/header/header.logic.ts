@@ -10,7 +10,7 @@ import menuStyles from "./menu.module.css";
 import styles from "./header.module.css";
 import { shellEmail } from "./shell-copy";
 import { createMenuTimeline } from "./menu-timeline";
-import { markAssembled, markRow } from "./identity-mark";
+import { mountLiveWordmark } from "./identity-live";
 import { ROUTE_ABORT_EVENT, ROUTE_COVERED_EVENT } from "@/lib/navigation/route-navigation-state";
 import {
   heroWorldEvent,
@@ -681,53 +681,7 @@ export function mountHeader(root: HTMLElement): () => void {
       playMaterialSound("hover");
   };
   document.addEventListener("pointerover", onHover, { passive: true });
-  root.querySelectorAll<HTMLElement>("[data-home-link]").forEach((link) => {
-    const pieces = Array.from(
-      link.querySelectorAll<SVGElement>("[data-hero-logo-piece]"),
-    );
-    let motion: Animation[] = [];
-    const morph = (active: boolean) => {
-      const current = pieces.map((piece) => getComputedStyle(piece).transform);
-      motion.forEach((animation) => animation.cancel());
-      motion = pieces.map((piece, i) => {
-        const from = current[i];
-        const to = active ? markAssembled[i] : markRow[i];
-        // SVG px here are local viewBox coordinates, scaled by the CSS frame.
-        const transform = (v: readonly number[]) =>
-          `translate(${v[0]}px,${v[1]}px) rotate(${v[2]}deg)`;
-        const animation = piece.animate(
-          [{ transform: from }, { transform: transform(to) }],
-          {
-            duration: reduced() ? 160 : 480 + i * 35,
-            easing: ease,
-            fill: "both",
-          },
-        );
-        return animation;
-      });
-    };
-    const enter = () => morph(true);
-    const leave = () => morph(false);
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        morph(false);
-        link.blur();
-      }
-    };
-    link.addEventListener("pointerenter", enter);
-    link.addEventListener("pointerleave", leave);
-    link.addEventListener("focus", enter);
-    link.addEventListener("blur", leave);
-    link.addEventListener("keydown", escape);
-    disposers.push(() => {
-      motion.forEach((animation) => animation.cancel());
-      link.removeEventListener("pointerenter", enter);
-      link.removeEventListener("pointerleave", leave);
-      link.removeEventListener("focus", enter);
-      link.removeEventListener("blur", leave);
-      link.removeEventListener("keydown", escape);
-    });
-  });
+  disposers.push(mountLiveWordmark(root));
   const first = dialog.querySelector<HTMLElement>("[data-menu-item]");
   if (first) selectMenu(first);
   return () => {

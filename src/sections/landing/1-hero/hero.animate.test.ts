@@ -11,6 +11,7 @@ class Surface extends EventTarget {
   values: Record<string, string> = {};
   attributes = new Map<string, string>();
   children: Surface[] = [];
+  parent?: Surface;
   queries = new Map<string, Surface | Surface[]>();
   hidden = false;
   inert = false;
@@ -34,9 +35,10 @@ class Surface extends EventTarget {
   querySelectorAll(key: string) { return this.queries.get(key) ?? []; }
   getBoundingClientRect() { const rect = this.rect(); return { ...rect, x: rect.left, y: rect.top }; }
   getTotalLength() { return 100; }
-  append(child: Surface) { this.children.push(child); }
+  append(child: Surface) { child.parent = this; this.children.push(child); }
+  remove() { if (this.parent) this.parent.children = this.parent.children.filter((child) => child !== this); }
   replaceChildren() { this.children = []; }
-  closest() { return null; }
+  closest(_key: string): Surface | null { return null; }
   matches() { return false; }
   focus() {}
 }
@@ -49,8 +51,8 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   const elements = Object.fromEntries([
     "identity-hero", "hero-world", "hero-portrait", "portrait-entrance", "hero-marquee", "hero-marquee-track", "hero-cycle",
     "hero-identity", "hero-copy-entrance", "hero-copy-exit", "hero-name-line", "copy-source", "copy-lines", "hero-support",
-    "hero-bottom", "hero-cue-entrance", "marquee-pause", "identity-loading", "identity-anchor", "identity-mark", "identity-choices",
-    "identity-progress", "identity-status", "identity-continue",
+    "hero-bottom", "hero-cue-entrance", "marquee-pause", "identity-loading", "identity-stage", "identity-below", "identity-track",
+    "identity-choices", "identity-progress", "identity-status", "identity-continue",
   ].map((key) => [key, new Surface()]));
   for (const [key, element] of Object.entries(elements)) root.queries.set(`[data-${key}]`, element);
   const signature = new Surface(), image = new Surface(), pausePath = new Surface();
@@ -59,22 +61,37 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   elements["marquee-pause"].queries.set("path", pausePath);
   const strokes = Array.from({ length: 6 }, () => new Surface());
   root.queries.set("[data-signature-stroke]", strokes);
-  for (const key of ["identity-piece", "identity-clip", "identity-material", "identity-latent"])
-    root.queries.set(`[data-${key}]`, Array.from({ length: 3 }, () => new Surface()));
+  const stage = elements["identity-stage"], ripples = new Surface();
+  const pieces = identityMark.markPieces.map((piece) => {
+    const surface = new Surface();
+    stage.queries.set(`[data-identity-piece="${piece}"]`, surface);
+    return surface;
+  });
+  stage.queries.set("[data-identity-ripples]", ripples);
+  const scripts = ["A", "B", "C"].map((state, index) => {
+    const cell = new Surface();
+    cell.dataset.identityScript = state;
+    if (!index) cell.dataset.active = "true";
+    return cell;
+  });
+  root.queries.set("[data-identity-script]", scripts);
   root.queries.set("[data-identity-choice]", [new Surface(), new Surface()]);
-  const utilities = new Surface(), navLogo = new Surface();
+  const utilities = new Surface(), navLogo = new Surface(), navMark = new Surface();
   const navItems = Array.from({ length: 3 }, () => new Surface());
   const navWindows = Array.from({ length: 3 }, () => new Surface());
   utilities.queries.set("[data-hero-nav-entrance]", new Surface());
   utilities.queries.set("[data-hero-nav-item]", navItems);
   utilities.queries.set("[data-hero-nav-window]", navWindows);
   utilities.queries.set('[data-nav-context="hero"] [data-home-link] svg', navLogo);
+  navLogo.queries.set("[data-logo-mark]", navMark);
+  navLogo.closest = (key) => key === "[data-hero-nav-item]" ? navItems[1] : null;
   // The hero is a 100svh stage: its measured height is the physical viewport height.
   Object.defineProperty(root, "offsetHeight", { get: () => physicalHeight });
   root.rect = () => ({ top: -y, left: 0, width, height: physicalHeight });
   elements["hero-cycle"].rect = () => ({ left: 0, top: 0, width: 3000 * scale(), height: 200 * scale() });
-  elements["identity-anchor"].rect = () => ({ left: 100 * scale(), top: 200 * scale(), width: 280 * scale(), height: 140 * scale() });
-  navLogo.rect = () => ({ left: 600 * scale(), top: 40 * scale() + Number.parseFloat(navItems[1].dataset.entryY ?? "0") * width / 100, width: 80 * scale(), height: 40 * scale() });
+  // A 660-unit stage drawn 330 design pixels wide; the nav wordmark at 0.1 px per unit.
+  stage.rect = () => ({ left: 100 * scale(), top: 200 * scale(), width: 330 * scale(), height: 330 * scale() });
+  navLogo.rect = () => ({ left: 600 * scale(), top: 40 * scale() + Number.parseFloat(navItems[1].dataset.entryY ?? "0") * width / 100, width: 176.8 * scale(), height: 32 * scale() });
   elements["copy-source"].firstChild = { nodeType: 3 };
   elements["copy-source"].textContent = "First second third";
   const window = new EventTarget(), frames = new Map<number, FrameRequestCallback>();
@@ -84,6 +101,7 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
     fonts: { ready: new Promise<void>(() => {}) },
     querySelector: (key: string) => key === "[data-hero-utilities]" ? utilities : null,
     createElement: () => new Surface(),
+    createElementNS: () => new Surface(),
     createRange() {
       let start = 0;
       return { setStart(_node: unknown, value: number) { start = value; }, setEnd() {}, getBoundingClientRect: () => ({ top: (start === 0 ? 0 : start === 6 ? 1.75 : 18) * scale() }) };
@@ -115,6 +133,9 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   const world = evaluate("./hero-world.ts", {}) as { readHeroWorldPose: (root: Surface) => HeroWorldPose };
   const state = { entryPhase: entry ? "idle" : "complete", menuOpen: false, setEntryPhase(value: string) { this.entryPhase = value; } };
   const listeners = new Set<() => void>();
+  const sounds: string[] = [], announced: string[] = [];
+  for (const type of ["identity-mark-landed", "identity-entry-complete"])
+    window.addEventListener(type, (event) => announced.push(`${type} ${(event as CustomEvent<{ mark: string }>).detail.mark}`));
   let magnetBounds!: () => { start: number; end: number };
   const { mountHeroMotion } = evaluate("./hero.animate.ts", {
     "@/lib/viewport-design": viewport,
@@ -124,7 +145,11 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
       removeInstance() { removed = true; },
     } },
     "@/store/uiStore": { uiStore: { getState: () => state, subscribe(listener: () => void) { listeners.add(listener); return () => listeners.delete(listener); } } },
-    "@/lib/audio/material-audio": { setAudioEnabled() {} },
+    "@/lib/audio/material-audio": {
+      setAudioEnabled() {},
+      playMarkTock(frequency: number) { sounds.push(`tock ${frequency}`); },
+      playMarkSwish(duration: number) { sounds.push(`swish ${duration}`); },
+    },
     "@/lib/navigation/home-navigation": { prepareHomeFreshEntry: () => false, getHomeRestoreIntent: () => undefined, HOME_NAVIGATION_RESTORE_EVENT: "home-navigation-restore" },
     "@/components/layout/header/identity-mark": identityMark,
     "./hero-world": world,
@@ -134,10 +159,12 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   }) as { mountHeroMotion: (root: Surface) => () => void };
   const dispose = mountHeroMotion(root);
   return {
-    root, elements, signature, navItems, navWindows, dispose,
+    root, elements, signature, navItems, navWindows, navMark, pieces, ripples, scripts, sounds, announced, state, dispose,
     pose: () => world.readHeroWorldPose(root), bounds: () => magnetBounds(),
     scroll(progress: number) { y = progress * magnetBounds().end; callback(); },
     step(ms: number) { now += ms; const pending = [...frames.values()]; frames.clear(); expect(pending.length).toBeLessThanOrEqual(1); pending.forEach((frame) => frame(now)); },
+    /** Frames of at most 50 ms, the controller's delta cap. */
+    run(seconds: number) { for (let left = seconds * 1000; left > 1e-6; left -= 50) this.step(Math.min(50, left)); },
     resize(nextWidth: number, nextHeight: number) { width = nextWidth; physicalHeight = nextHeight; window.dispatchEvent(new Event("resize")); },
     get clean() { return removed && magnetDisposed && !frames.size && !listeners.size; },
   };
@@ -192,7 +219,12 @@ test("marquee speed and resize phase follow design width for both writing direct
   }
 });
 
-test("entry nav offsets, clipping and measured logo frame scale without an extra DOM scale", () => {
+const flightOf = (transform: unknown, width: number) => {
+  const match = String(transform).match(/translate\(-50%,-50%\) translate3d\(([^v]+)vw,([^v]+)vw,0\) scale\(([^)]+)\)/)!;
+  return { x: Number(match[1]) * width / 100, y: Number(match[2]) * width / 100, scale: Number(match[3]) };
+};
+
+test("entry nav offsets, clipping and the measured flight onto the nav b scale without an extra DOM scale", () => {
   for (const [referenceWidth, widths] of [[1920, [1440]], [768, [650]], [412, [320]]] as const) {
     for (const width of [referenceWidth, ...widths]) {
       const h = harness(width, 300, true), scale = width / referenceWidth;
@@ -200,8 +232,19 @@ test("entry nav offsets, clipping and measured logo frame scale without an extra
       expect(Number.parseFloat(h.navItems[0].dataset.entryY) * width / 100).toBeCloseTo(24 * scale, 10);
       expect(Number(String(h.navItems[0].style.transform).match(/translateY\(([^v]+)vw\)/)![1]) * width / 100).toBeCloseTo(24 * scale, 10);
       expect(Number(String(h.navWindows[0].style.clipPath).match(/inset\(100% ([^v]+)vw 0%\)/)![1]) * width / 100).toBeCloseTo(-12 * scale, 10);
-      expect(Number.parseFloat(h.elements["identity-mark"].style.width as string) * width / 100).toBeCloseTo(280 * scale, 10);
-      expect(Number.parseFloat(h.elements["identity-mark"].style.top as string) * width / 100).toBeCloseTo(200 * scale, 10);
+      expect(h.navMark.style.visibility).toBe("hidden");
+      h.run(1.1);
+      // Settled on ⴱ: the stage centre lands on the wordmark's mark origin,
+      // (600 + 110 × 0.1, 40 + 210 × 0.1), from the stage centre (265, 365).
+      const flight = flightOf(h.elements["identity-stage"].style.transform, width);
+      expect(flight.x).toBeCloseTo(346 * scale, 9);
+      expect(flight.y).toBeCloseTo(-304 * scale, 9);
+      expect(flight.scale).toBeCloseTo(0.2, 12);
+      expect(h.elements["identity-stage"].style.visibility).toBe("hidden");
+      expect(h.navMark.style.visibility).toBe("");
+      expect(h.announced).toEqual(["identity-mark-landed A"]);
+      h.run(1.5);
+      expect(h.announced).toEqual(["identity-mark-landed A", "identity-entry-complete A"]);
       h.dispose(); expect(h.clean).toBe(true);
     }
   }
@@ -212,13 +255,53 @@ test("resizing during entry removes the current CSS nav offset from the measured
   h.elements["identity-continue"].dispatchEvent(new Event("click")); h.step(16);
   h.resize(650, 300);
   h.step(0);
-  const scale = 650 / 768;
-  const transform = String(h.elements["identity-mark"].style.transform);
-  const coordinates = transform.match(/translate3d\(([^v]+)vw,([^v]+)vw,0\)/)!;
-  const flightX = Number(coordinates[1]) * 650 / 100;
-  const flightY = Number(coordinates[2]) * 650 / 100;
-  expect(flightX).toBeGreaterThan(0);
-  expect(flightY / flightX).toBeCloseTo((40 - 200) / (600 - 100), 10);
-  expect(Number.parseFloat(h.elements["identity-mark"].style.width as string) * 650 / 100).toBeCloseTo(280 * scale, 10);
+  const flight = flightOf(h.elements["identity-stage"].style.transform, 650);
+  expect(flight.x).toBeGreaterThan(0);
+  expect(flight.y / flight.x).toBeCloseTo(-304 / 346, 10);
+  h.dispose(); expect(h.clean).toBe(true);
+});
+
+test("the loader loops the three scripts with the brand book's sounds and ripples, then settles forward", () => {
+  const h = harness(1920, 1080, true);
+  const active = () => h.scripts.filter((cell) => cell.dataset.active).map((cell) => cell.dataset.identityScript);
+  h.step(16);
+  expect(active()).toEqual(["A"]);
+  expect(h.pieces[2].attributes.get("transform")).toBe(identityMark.markTransform(identityMark.markStatic.A().bar));
+  h.run(1.3);
+  expect(h.sounds).toEqual(["swish 1.75"]);
+  h.run(1.8);
+  // ⴱ → b locks with a tock on D4, lights the Latin cell and ripples twice around the bowl.
+  expect(h.sounds).toEqual(["swish 1.75", "tock 293.66"]);
+  expect(active()).toEqual(["B"]);
+  h.run(0.2);
+  expect(h.ripples.children.map((ring) => ring.attributes.get("cy"))).toEqual(["50", "50"]);
+  expect(h.pieces[2].attributes.get("transform")).toBe(identityMark.markTransform(identityMark.markStatic.B().bar));
+  h.run(1.2);
+  expect(h.ripples.children).toHaveLength(0);
+  expect(h.sounds.at(-1)).toBe("swish 1.6");
+  // Entering mid b → ب keeps moving forward, skips the ب rest and lands on ⴱ.
+  h.elements["identity-continue"].dispatchEvent(new Event("click"));
+  h.run(1.1);
+  expect(h.announced).toEqual([]);
+  expect(h.state.entryPhase).toBe("assembling");
+  h.run(2.8);
+  expect(h.sounds.slice(-2)).toEqual(["swish 1.75", "tock 196"]);
+  expect(active()).toEqual(["A"]);
+  expect(h.ripples.children).toHaveLength(0);
+  expect(h.announced).toEqual(["identity-mark-landed A", "identity-entry-complete A"]);
+  h.dispose(); expect(h.clean).toBe(true);
+});
+
+test("entering during ⴱ → b settles on the static b and lands it on the wordmark's b", () => {
+  const h = harness(1920, 1080, true);
+  h.run(1.5);
+  h.elements["identity-continue"].dispatchEvent(new Event("click"));
+  h.run(1.6);
+  expect(h.announced).toEqual(["identity-mark-landed B"]);
+  // The static b sits 50 units below the wordmark's: lift by 50 × 0.1 px.
+  const flight = flightOf(h.elements["identity-stage"].style.transform, 1920);
+  expect(flight.y).toBeCloseTo(-309, 9);
+  h.run(1);
+  expect(h.announced.at(-1)).toBe("identity-entry-complete B");
   h.dispose(); expect(h.clean).toBe(true);
 });

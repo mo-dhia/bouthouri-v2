@@ -1,23 +1,42 @@
-import { markPaths, markRow, markTransform } from "./identity-mark";
+import {
+  markPaths,
+  markPieces,
+  markTransform,
+  wordmarkMarkOffset,
+  wordmarkPaths,
+  wordmarkRest,
+  wordmarkViewBox,
+} from "./identity-mark";
 
-/** Three-piece mark, kept inline so entry and hover can move its pieces. */
+/**
+ * Kit wordmark from the brand book. Its b is the live mark: three pieces the
+ * header loop and the entry move, resting on b when nothing drives them.
+ */
 export default function IdentityLogo({ className }: { className?: string }) {
+  const rest = wordmarkRest();
   return (
     <svg
       className={className}
-      viewBox="0 0 280 140"
+      viewBox={wordmarkViewBox}
       fill="currentColor"
       aria-hidden="true"
+      data-logo-wordmark="true"
     >
-      {markPaths.map((d, index) => (
-        <g
-          key={index}
-          data-hero-logo-piece={index + 1}
-          transform={markTransform(markRow[index])}
-        >
-          <path d={d} fillRule="evenodd" />
-        </g>
-      ))}
+      <g data-logo-letters="true">
+        {wordmarkPaths.map((d, index) => (
+          <path key={index} d={d} />
+        ))}
+      </g>
+      <g data-logo-mark="true" transform={`translate(${wordmarkMarkOffset} 0)`}>
+        {markPaths.map((d, index) => (
+          <path
+            key={index}
+            d={d}
+            data-logo-piece={markPieces[index]}
+            transform={markTransform(rest[markPieces[index]])}
+          />
+        ))}
+      </g>
     </svg>
   );
 }

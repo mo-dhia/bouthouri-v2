@@ -4,7 +4,6 @@ import { createContext, runInContext } from "node:vm";
 import ts from "typescript";
 import * as heroWorld from "@/sections/landing/1-hero/hero-world";
 import * as viewport from "@/lib/viewport-design";
-import * as identityMark from "./identity-mark";
 import { ROUTE_ABORT_EVENT, ROUTE_COVERED_EVENT } from "@/lib/navigation/route-navigation-state";
 
 // Exercise the mounted controller with counted DOM operations. Layout values
@@ -140,7 +139,7 @@ function harness({ reading = false, late = false, locale = "en", width = 1920, p
     "./menu.module.css": { default: {} },
     "./header.module.css": { default: { readingNavigation: "reading-viewport", readingFrame: "reading-frame" } },
     "./shell-copy": { shellEmail: "contact@bouthouri.co" },
-    "./identity-mark": identityMark,
+    "./identity-live": { mountLiveWordmark: () => () => {} },
     "./menu-timeline": { createMenuTimeline: (_root: unknown, callbacks: { reverseComplete: () => void }) => {
       finishMenuReverse = callbacks.reverseComplete;
       return { dispose() {}, play() {}, pause() {}, reverse() {}, time: () => 1, duration: 1 };

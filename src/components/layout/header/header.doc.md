@@ -40,8 +40,12 @@ restored persistent controls have the correct inertness. Control selectors shoul
 use data-nav-layer: the utilities ancestor’s data-nav-context is its current pose
 and can also equal persistent.
 
-The three mark pieces assemble on logo hover/focus (480ms +35ms/piece),
-reverse from their current transforms, and reset on Escape/blur/leave. Nav labels
+The logo is the brand book's kit wordmark; its b is the live mark
+(`identity-live.ts`). One clock loops ⴱ → b → ⴱ (rests 1.1/3.4s, moves
+1.75/1.65s) on RAF during moves and a timer during rests, paused while hidden
+or off screen. Hover/focus skips the current rest. It holds on b during the
+entry and for reduced motion or quiet reading, and resumes from whichever state
+the entry lands on (`identity-mark-landed`). Nav labels
 have an inline baseline marker and the source's measured ink-centering correction.
 Conversation links retain the rollover; background marquee cue is editorial.
 
@@ -228,10 +232,9 @@ reopen. No new RAF or geometry reads are added to ordinary journey frames.
 The inline mark is named`IdentityLogo`; all menu/header timing remains
 unchanged.
 
-2026-10-29 mark: `identity-mark.ts` owns the BOUTHOURI mark for the nav, hover,
-loader, footer and favicon. It keeps Gazzar's three flat pieces in the 280×140
-frame: a 15.2 stem and two equal half capsules (radius 29, run 16). At rest they
-read as a quiet line and a sound wave whose bowls share a leg. Assembled, each
-piece turns a quarter and they lock into a B. Hover keeps its matrix-start
-WAAPI path; quarter turns decompose without a long-way spin. Shell/foot gates use neutral`data-portfolio-*` mount markers.
+2026-10-30 mark: `identity-mark.ts` ports the brand book's kit
+(`brand-book/bouthouri-mark.html`): two half rings and one bar (m = 40), the
+static ⴱ, b and ب, the moves between them, and the kit wordmark whose b is the
+live mark. It serves the nav, loader, footer and favicon. Pieces only move and
+rotate. Shell/foot gates use neutral`data-portfolio-*` mount markers.
 English display name is`Med D. Bouthouri`; Arabic is`محمد ضياء بوثوري`.

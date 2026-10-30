@@ -261,18 +261,23 @@ Measured local/reference parity in active Vaelix tabs, DPR 1:
 
 A single owned RAF handles the entry, profile-scaled 133 reference-pixel/second marquee, world
 scrub and portrait invalidation. Animation progress never enters React/Storio.
-The BOUTHOURI mark loads in its row pose: the quiet line fills as a bar over
-the first third, then one stroke traces the sound wave through both bowls
-(`markTrace` clips along each stroke). Ready assembles every piece by a quarter
-turn into the B with the original .1..82s window; choices appear at ready
-+1.02..1.26s. QUIET mutes audio only.
+The loader is the brand book's "Three scripts" plate
+(`brand-book/bouthouri-mark.html`): the kit's two half rings and bar loop
+ⴱ → b → ب → ⴱ (rests 1.3/1.4/1.6s, moves 1.75/1.6/1.75s). Each lock lights its
+script cell, rings two ripples 140ms apart (r100→250 over 1.15s) and, with
+sound on, a tock on its note (A 196, B 293.66, C 246.94Hz); each move starts a
+filtered-noise swish. The load progress runs along the script row's top rule.
+Choices appear at ready +.1..34s. QUIET mutes audio only.
 
-On selection, the mark travels to the hero nav logo over 1.1s. Portrait resolve
+On selection, the stage flies to the nav wordmark's b over 1.1s, fading bone
+to the nav grey, while the loop continues forward to the nearest of ⴱ or b.
+It lands only when both the flight and that rest are reached, then hands the
+pose to the header's live loop (`identity-mark-landed`). Portrait resolve
 starts .06s / lasts 1.2s; nav masks start .15s with .06s stagger / .55s duration;
 copy starts .28s with .1s line stagger / .6s line duration; cue starts .84s /
 .44s duration. Signature begins 1.04s, with the original stroke lengths/paces
-and 1.3s total writing time. Scroll unlocks at .48s; sequence ends at 2.5s.
-The 8s continue control and Escape provide a loading bypass.
+and 1.3s total writing time. Scroll unlocks at .48s; the sequence ends at 2.5s
+or on landing, whichever is later. The 8s continue control and Escape provide a loading bypass.
 
 `hero-portrait.ts` is a separate dynamic import and is the only hero Three
 import. It uses the active semantic portrait unchanged at rest, a nearest-filtered

@@ -46,12 +46,18 @@ test("all nine fitted letters preserve counters, finite morphs and exact word/id
   }
 });
 
-test("eight letters trace adjoining sectors of one continuous wave", () => {
+test("eight letters trace adjoining sectors of the kit b's one continuous ring", () => {
   const paths = new FooterPaths(boxes(1920), 1843.2), frame = paths.contours(1);
-  const [line, arch, cup] = paths.parts, unit = line.width / footerMarkParts[0].width;
-  expect(arch.width).toBeCloseTo(58 * unit, 9);
-  expect(cup.x - arch.x).toBeCloseTo(42.8 * unit, 9);
-  expect(arch.x - line.x - line.width).toBeCloseTo(0.34 * 73.600516 * unit, 9);
+  const [bar, upper, lower] = paths.parts, unit = bar.width / footerMarkParts[0].width;
+  // Static b (m = 40): a 40 × 200 bar standing on the left of one ring of
+  // outer radius 100, its foot level with the ring's centre.
+  expect(bar.width).toBeCloseTo(40 * unit, 9);
+  expect(bar.height).toBeCloseTo(200 * unit, 9);
+  expect(upper.width).toBeCloseTo(200 * unit, 9);
+  expect(upper.x).toBeCloseTo(bar.x, 9);
+  expect(lower.x).toBeCloseTo(bar.x, 9);
+  expect(bar.y + bar.height).toBeCloseTo(upper.y + 100 * unit, 9);
+  expect(lower.y + lower.height - bar.y).toBeCloseTo(300 * unit, 9);
   const cuts = [1, 2].map((part) => {
     const glyphs = footerPartMap.flatMap((value, glyph) => value === part ? [glyph] : []);
     let previous: { x: number; y: number } | undefined, travelled = 0;
@@ -64,16 +70,18 @@ test("eight letters trace adjoining sectors of one continuous wave", () => {
     const first = sector(paths, frame, glyphs[0]), last = sector(paths, frame, glyphs.at(-1)!);
     return { travelled, start: [first[0], first.at(-1)!], end: [last[Math.ceil(last.length / 2) - 1], last[Math.ceil(last.length / 2)]] };
   });
-  // The outer edge runs both straights and the outer half circle.
-  const outerEdge = (2 * (0.6 + 16) + Math.PI * 29) * unit;
+  // The outer edge runs both lips and the outer half circle.
+  const outerEdge = (2 * 0.9 + Math.PI * 100) * unit;
   for (const { travelled } of cuts) {
     expect(travelled).toBeGreaterThan(0.999 * outerEdge);
     expect(travelled).toBeLessThan(1.0001 * outerEdge);
   }
-  // The arch's closing leg is the cup's opening leg: outer meets inner.
-  expect(cuts[0].end[0].x).toBeCloseTo(cuts[1].start[1].x, 9);
-  expect(cuts[0].end[1].x).toBeCloseTo(cuts[1].start[0].x, 9);
-  expect(cuts[0].end[0].y - cuts[1].start[1].y).toBeCloseTo(1.2 * unit, 9);
+  // The upper bowl closes where the lower bowl opens, outer on outer, their
+  // lips overlapping across the ring's equator.
+  expect(cuts[0].end[0].x).toBeCloseTo(cuts[1].start[0].x, 9);
+  expect(cuts[0].end[1].x).toBeCloseTo(cuts[1].start[1].x, 9);
+  expect(cuts[0].end[0].y - cuts[1].start[0].y).toBeCloseTo(1.8 * unit, 9);
+  expect(cuts[1].end[0].x).toBeCloseTo(cuts[0].start[0].x, 9);
 });
 
 test("joined morph frames keep each bowl's sectors abutting", () => {
@@ -98,10 +106,11 @@ test("letters keep their winding on the way to the mark instead of turning insid
   const area = (points: { x: number; y: number }[]) =>
     points.reduce((sum, p, i) => sum + p.x * points[(i + 1) % points.length].y - points[(i + 1) % points.length].x * p.y, 0) / 2;
   const source = paths.source.map(contours => area(contours[0]));
+  const mark = paths.contours(1).map((contours, glyph) => area(contours[0]) / source[glyph]);
   for (const reverse of [false, true]) for (let step = 0; step <= 100; step++) {
     const frame = paths.contours(step / 100, reverse);
-    // Same orientation throughout, never collapsing through zero area.
-    frame.forEach((contours, glyph) => expect(area(contours[0]) / source[glyph]).toBeGreaterThan(0.05));
+    // Same orientation throughout, never thinner than half its mark sector.
+    frame.forEach((contours, glyph) => expect(area(contours[0]) / source[glyph]).toBeGreaterThan(0.5 * Math.min(1, mark[glyph])));
   }
 });
 
@@ -119,13 +128,13 @@ test("the last letter participates in waves and remains independent of unrelated
 test("a longer fitted word keeps the reference logo size and bottom anchor", () => {
   const width = 1843.2, fittedHeight = 310;
   const paths = new FooterPaths(boxes(1920), width, fittedHeight);
-  // The quiet line keeps the reference ring's stroke scale and center.
-  const line = paths.parts[0];
-  expect(line.width).toBeCloseTo(100.8 / 73.600516 * 239.616, 10);
-  expect(line.y + line.height / 2).toBeCloseTo(50.96, 10);
+  // The b stands as tall as the reference ring, on the same center.
+  const [bar, , lower] = paths.parts, top = bar.y, bottom = lower.y + lower.height;
+  expect(bottom - top).toBeCloseTo(239.616, 10);
+  expect((top + bottom) / 2).toBeCloseTo(50.96, 10);
   // New word top683.6 instead of old542.2: the viewport logo center stays734.56.
-  expect(683.6 + line.y + line.height / 2).toBeCloseTo(734.56, 10);
+  expect(683.6 + (top + bottom) / 2).toBeCloseTo(734.56, 10);
   const shorter = new FooterPaths(boxes(1920), width, fittedHeight - 40);
-  expect(shorter.parts[0].width).toBe(line.width);
-  expect(shorter.parts[0].y + 40).toBeCloseTo(line.y, 10);
+  expect(shorter.parts[0].width).toBe(bar.width);
+  expect(shorter.parts[0].y + 40).toBeCloseTo(bar.y, 10);
 });

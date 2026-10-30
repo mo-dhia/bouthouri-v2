@@ -205,22 +205,24 @@ contours from the existing local Questrial WOFF through pinned Troika's Typr
 parser. No new runtime font or package is required. The nine displayed letters
 share seven distinct glyph outlines; counters stay separate, including B's two
 counters. Source contour correspondence survives forward/reverse, pull and
-refraction. B becomes the mark's quiet line. OUTH trace adjoining sectors of
-the arch and OURI those of the cup, following the stroke so the sound wave
-reads continuously. The sectors first form a solid half capsule, their inner
-edges on the bowl's spine, then open its counter. Each sector is wound like
-its letter and starts where the two outlines lie closest, so no letter turns
-inside out on the way. Each bowl's sectors paint together using the existing
-Path2D, avoiding antialias seams. Hit testing continues to map the assembled
-motif to the same three concept parts; a hit near a merged bowl projects onto
-the nearest of its sectors.
+refraction. The morph settles on the brand book's static kit b
+(`identity-mark.ts`, m = 40). B becomes its bar. OUTH trace adjoining sectors of
+the upper half ring and OURI those of the lower, outer edge on outer edge, so the
+eight letters run once round one continuous ring. The sectors first form solid
+wedges, their inner edges on the ring's centre, then open its counter. Each
+sector is wound like its letter and starts where the two outlines lie closest,
+so no letter turns inside out on the way. Each bowl's sectors paint together
+using the existing Path2D, avoiding antialias seams. Hit testing continues to
+map the assembled motif to the same three concept parts; a hit near a merged
+bowl projects onto the nearest of its sectors.
 
-The mark keeps the original logo's stroke scale (diameter/73.6), part gap
-(.34 diameter), bottom anchor and centered intermediate bridge, independent of
-the new fitted word's size. At1920×1080 the source mask is1843.2px,
-line451.4px, first ink y43.2/height339; the mark's axis stays at the logo
-center734.56px when the new fitted line is310px tall. Width scaling preserves
-that relationship. Mobile retains its original above-word positioning.
+The b stands as tall as the original logo's ring (diameter .13 width; 300 kit
+units), centred on the same axis, with the bottom anchor and centered
+intermediate bridge independent of the new fitted word's size. At1920×1080 the
+source mask is1843.2px, line451.4px, first ink y43.2/height339; the b's centre
+stays at the logo center734.56px when the new fitted line is310px tall. Width
+scaling preserves that relationship. Mobile retains its original above-word
+positioning.
 
 Font family, relative tracking, mask margins, ink fitting, easing, resolving
 phase, reveal and return durations remain owned by their existing controllers.
