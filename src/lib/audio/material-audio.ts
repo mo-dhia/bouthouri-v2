@@ -206,6 +206,74 @@ export function playMaterialSound(kind: "hover" | "click" = "hover"): void {
   gain.gain.setTargetAtTime(0, at + 0.012, duration / 3);
 }
 
+function markAudio() {
+  return context &&
+    uiStore.getState().soundEnabled &&
+    !document.hidden &&
+    context.state === "running"
+    ? context
+    : undefined;
+}
+
+/** Brand-book lock: a sine dropping an octave onto the state's note, plus a click. */
+export function playMarkTock(frequency: number): void {
+  const audio = markAudio();
+  if (!audio) return;
+  const at = audio.currentTime;
+  const oscillator = audio.createOscillator();
+  const gain = audio.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(frequency * 2, at);
+  oscillator.frequency.exponentialRampToValueAtTime(frequency, at + 0.05);
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(0.22, at + 0.006);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.55);
+  oscillator.connect(gain).connect(audio.destination);
+  oscillator.start(at);
+  oscillator.stop(at + 0.6);
+  const length = Math.floor(audio.sampleRate * 0.03);
+  const buffer = audio.createBuffer(1, length, audio.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let index = 0; index < length; index++)
+    data[index] = (Math.random() * 2 - 1) * Math.pow(1 - index / length, 5);
+  const click = audio.createBufferSource();
+  const filter = audio.createBiquadFilter();
+  const clickGain = audio.createGain();
+  click.buffer = buffer;
+  filter.type = "bandpass";
+  filter.frequency.value = 2600;
+  filter.Q.value = 2;
+  clickGain.gain.value = 0.5;
+  click.connect(filter).connect(clickGain).connect(audio.destination);
+  click.start(at);
+}
+
+/** Brand-book move: band-passed air sweeping up and back over the move. */
+export function playMarkSwish(duration: number): void {
+  const audio = markAudio();
+  if (!audio || duration <= 0) return;
+  const at = audio.currentTime;
+  const length = Math.floor(audio.sampleRate * duration);
+  const buffer = audio.createBuffer(1, length, audio.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let index = 0; index < length; index++) data[index] = Math.random() * 2 - 1;
+  const source = audio.createBufferSource();
+  const filter = audio.createBiquadFilter();
+  const gain = audio.createGain();
+  source.buffer = buffer;
+  filter.type = "bandpass";
+  filter.Q.value = 1.4;
+  filter.frequency.setValueAtTime(260, at);
+  filter.frequency.exponentialRampToValueAtTime(1900, at + duration * 0.45);
+  filter.frequency.exponentialRampToValueAtTime(420, at + duration);
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(0.045, at + duration * 0.4);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+  source.connect(filter).connect(gain).connect(audio.destination);
+  source.start(at);
+  source.stop(at + duration);
+}
+
 /** The portrait's low pulse shares the source's long-lived 72 Hz oscillator. */
 export function playMaterialImpulse(intensity = 1): void {
   if (
