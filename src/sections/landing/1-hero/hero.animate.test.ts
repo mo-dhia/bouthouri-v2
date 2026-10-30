@@ -61,14 +61,15 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   const strokes = Array.from({ length: 6 }, () => new Surface());
   root.queries.set("[data-signature-stroke]", strokes);
   const stage = elements["identity-stage"];
-  // Each kit piece: its positioned group, the clip that fills it, the clipped material and the latent ghost.
+  // The ⴱ ghost, then each kit piece: its posed group, the clip that fills it and the clipped material.
+  const latent = new Surface();
+  stage.queries.set("[data-identity-latent]", latent);
   const pieces = identityMark.markPieces.map((name) => {
-    const piece = new Surface(), clip = new Surface(), material = new Surface(), latent = new Surface();
+    const piece = new Surface(), clip = new Surface(), material = new Surface();
     stage.queries.set(`[data-identity-piece="${name}"]`, piece);
     stage.queries.set(`[data-identity-clip="${name}"]`, clip);
     stage.queries.set(`[data-identity-material="${name}"]`, material);
-    piece.queries.set("[data-identity-latent]", latent);
-    return { name, piece, clip, material, latent };
+    return { name, piece, clip, material };
   });
   const choices = ["quiet", "sound"].map((choice) => {
     const button = new Surface();
@@ -89,8 +90,8 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   Object.defineProperty(root, "offsetHeight", { get: () => physicalHeight });
   root.rect = () => ({ top: -y, left: 0, width, height: physicalHeight });
   elements["hero-cycle"].rect = () => ({ left: 0, top: 0, width: 3000 * scale(), height: 200 * scale() });
-  // The 640 × 320-unit stage drawn 320 design pixels wide; the nav wordmark at 0.1 px per unit.
-  stage.rect = () => ({ left: 100 * scale(), top: 200 * scale(), width: 320 * scale(), height: 160 * scale() });
+  // The 320-unit square stage drawn 160 design pixels wide; the nav wordmark at 0.1 px per unit.
+  stage.rect = () => ({ left: 100 * scale(), top: 200 * scale(), width: 160 * scale(), height: 160 * scale() });
   navLogo.rect = () => ({ left: 600 * scale(), top: 40 * scale() + Number.parseFloat(navItems[1].dataset.entryY ?? "0") * width / 100, width: 176.8 * scale(), height: 32 * scale() });
   elements["copy-source"].firstChild = { nodeType: 3 };
   elements["copy-source"].textContent = "First second third";
@@ -136,9 +137,12 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   const world = evaluate("./hero-world.ts", {}) as { readHeroWorldPose: (root: Surface) => HeroWorldPose };
   const state = { entryPhase: entry ? "idle" : "complete", menuOpen: false, setEntryPhase(value: string) { this.entryPhase = value; } };
   const listeners = new Set<() => void>();
-  const sounds: string[] = [], announced: string[] = [];
+  const sounds: string[] = [], announced: string[] = [], landings: unknown[] = [];
   for (const type of ["identity-mark-landed", "identity-entry-complete"])
-    window.addEventListener(type, () => announced.push(type));
+    window.addEventListener(type, (event) => {
+      announced.push(type);
+      if (type === "identity-mark-landed") landings.push((event as CustomEvent).detail);
+    });
   let magnetBounds!: () => { start: number; end: number };
   const { mountHeroMotion } = evaluate("./hero.animate.ts", {
     "@/lib/viewport-design": viewport,
@@ -161,7 +165,7 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   }) as { mountHeroMotion: (root: Surface) => () => void };
   const dispose = mountHeroMotion(root);
   return {
-    root, elements, signature, navItems, navWindows, navMark, pieces, choices, sounds, announced, state, dispose,
+    root, elements, signature, navItems, navWindows, navMark, latent, pieces, choices, sounds, announced, landings, state, dispose,
     /** Resolves fonts and the portrait, then lets their readiness land. */
     async load() { load(); await new Promise((resolve) => setTimeout(resolve, 0)); },
     pose: () => world.readHeroWorldPose(root), bounds: () => magnetBounds(),
@@ -230,10 +234,12 @@ const flightOf = (transform: unknown, width: number) => {
 
 /** The rest pose of a fully filled piece: no drift, no squash. */
 const settledMaterial = (name: (typeof identityMark.markPieces)[number]) => {
-  const box = identityMark.loaderPieceBox[name], centre = box.y + box.h / 2;
+  const band = identityMark.loaderBand[name], centre = band.y + band.h / 2;
   return `translate(0 ${centre.toFixed(2)}) scale(1.0000 1.0000) translate(0 ${(-centre).toFixed(2)})`;
 };
-const assembledB = identityMark.markStatic.B();
+const tifinagh = identityMark.markStatic.A();
+const posed = (pieces: { name: (typeof identityMark.markPieces)[number]; piece: Surface }[], pose: identityMark.Pose) =>
+  pieces.every(({ name, piece }) => piece.attributes.get("transform") === identityMark.markTransform(pose[name]));
 
 test("entry nav offsets, clipping and the measured flight onto the nav b scale without an extra DOM scale", () => {
   for (const [referenceWidth, widths] of [[1920, [1440]], [768, [650]], [412, [320]]] as const) {
@@ -245,21 +251,26 @@ test("entry nav offsets, clipping and the measured flight onto the nav b scale w
       expect(Number(String(h.navWindows[0].style.clipPath).match(/inset\(100% ([^v]+)vw 0%\)/)![1]) * width / 100).toBeCloseTo(-12 * scale, 10);
       expect(h.navMark.style.visibility).toBe("hidden");
       h.run(1.1);
-      // The static b's centre lands on the wordmark's b: x = 600 + (100 + 10) × 0.1,
-      // y = 40 + (210 − 50) × 0.1, lifted 50 units, from the stage centre (260, 280).
+      // The mark's origin lands on the wordmark's b: x = 600 + (100 + 10) × 0.1,
+      // y = 40 + 210 × 0.1, from the stage centre (180, 280).
       const flight = flightOf(h.elements["identity-stage"].style.transform, width);
-      expect(flight.x).toBeCloseTo(351 * scale, 9);
-      expect(flight.y).toBeCloseTo(-224 * scale, 9);
+      expect(flight.x).toBeCloseTo(431 * scale, 9);
+      expect(flight.y).toBeCloseTo(-219 * scale, 9);
       expect(flight.scale).toBeCloseTo(0.2, 12);
-      // Bypassed at 20 %: the row still filled and assembled on the way.
-      for (const { name, piece, clip, latent } of h.pieces) {
-        expect(piece.attributes.get("transform")).toBe(identityMark.markTransform(assembledB[name]));
-        expect(clip.attributes.get("height")).toBe(identityMark.loaderPieceBox[name].h.toFixed(2));
-        expect(latent.attributes.get("opacity")).toBe("0.0000");
+      // Bypassed at 20 %: ⴱ still filled on the way and holds, its clips open.
+      expect(posed(h.pieces, tifinagh)).toBe(true);
+      for (const { clip } of h.pieces) {
+        expect(clip.attributes.get("y")).toBe("-480.00");
+        expect(clip.attributes.get("height")).toBe("960.00");
       }
+      expect(h.latent.attributes.get("opacity")).toBe("0.0000");
       expect(h.elements["identity-stage"].style.visibility).toBe("hidden");
       expect(h.navMark.style.visibility).toBe("");
       expect(h.announced).toEqual(["identity-mark-landed"]);
+      const landing = h.landings[0] as { step: string; elapsed: number };
+      expect(landing.step).toBe("A");
+      expect(landing.elapsed).toBeGreaterThan(1050);
+      expect(landing.elapsed).toBeLessThan(1200);
       expect(h.sounds).toEqual(["tock 293.66"]);
       h.run(1.5);
       expect(h.announced).toEqual(["identity-mark-landed", "identity-entry-complete"]);
@@ -275,67 +286,76 @@ test("resizing during entry removes the current CSS nav offset from the measured
   h.step(0);
   const flight = flightOf(h.elements["identity-stage"].style.transform, 650);
   expect(flight.x).toBeGreaterThan(0);
-  expect(flight.y / flight.x).toBeCloseTo(-224 / 351, 10);
+  expect(flight.y / flight.x).toBeCloseTo(-219 / 431, 10);
   h.dispose(); expect(h.clean).toBe(true);
 });
 
-test("the kit row fills bottom-up with the load, slides into b, then offers the choices", async () => {
+test("ⴱ fills bottom-up with the load, then reads ⴱ → b → ب with the choices and lands mid-loop", async () => {
   const h = harness(1920, 1080, true);
   const part = (name: string) => h.pieces.find((piece) => piece.name === name)!;
   h.step(16);
   h.run(1);
-  // 20 % loaded: the stem, first in the row, fills from its foot; both halves stay latent ghosts.
+  // 20 % loaded: the bottom half, first, fills from its foot; the bar and top half wait as the ghost.
   expect(h.elements["identity-progress"].attributes.get("aria-valuenow")).toBe("20");
-  const stem = part("bar"), f = 0.2 * 3, filled = f * f * f * (f * (6 * f - 15) + 10);
-  expect(Number(stem.clip.attributes.get("height"))).toBeCloseTo(200 * filled, 2);
-  expect(Number(stem.clip.attributes.get("y"))).toBeCloseTo(100 - 200 * filled, 2);
-  expect(Number(stem.latent.attributes.get("opacity"))).toBeCloseTo(0.055 * (1 - filled), 4);
-  for (const name of ["h1", "h2"]) {
-    expect(part(name).clip.attributes.get("height")).toBe("0.00");
-    expect(part(name).latent.attributes.get("opacity")).toBe("0.0550");
-  }
-  for (const { name, piece } of h.pieces)
-    expect(piece.attributes.get("transform")).toBe(identityMark.markTransform(identityMark.loaderRow[name]));
+  const bottom = part("h2"), f = 0.2 * 3, filled = f * f * f * (f * (6 * f - 15) + 10);
+  expect(Number(bottom.clip.attributes.get("height"))).toBeCloseTo(100.9 * filled, 2);
+  expect(Number(bottom.clip.attributes.get("y"))).toBeCloseTo(100 - 100.9 * filled, 2);
+  for (const name of ["bar", "h1"]) expect(part(name).clip.attributes.get("height")).toBe("0.00");
+  expect(h.latent.attributes.get("opacity")).toBe("0.0550");
+  expect(posed(h.pieces, tifinagh)).toBe(true);
   expect(h.state.entryPhase).toBe("loading");
 
   await h.load();
   for (let i = 0; i < 100 && h.state.entryPhase === "loading"; i++) h.step(50);
   expect(h.state.entryPhase).toBe("ready");
-  // The turned bottom half fills from its own top, the foot on screen.
-  expect(part("h2").clip.attributes.get("y")).toBe("-100.00");
-  expect(part("h2").clip.attributes.get("height")).toBe("100.90");
-  h.run(0.9);
-  expect(h.elements["identity-loading"].dataset.entryStage).toBe("assembled");
-  for (const { name, piece, material } of h.pieces) {
-    expect(piece.attributes.get("transform")).toBe(identityMark.markTransform(assembledB[name]));
-    expect(material.attributes.get("transform")).toBe(settledMaterial(name));
-  }
+  // Loaded: every clip opens and the full ⴱ holds a beat.
+  for (const { clip } of h.pieces) expect(clip.attributes.get("height")).toBe("960.00");
+  h.run(0.35);
+  expect(posed(h.pieces, tifinagh)).toBe(true);
+  expect(h.elements["identity-loading"].dataset.entryStage).toBe("loaded");
   expect(h.elements["identity-choices"].style.visibility).toBe("hidden");
-  h.run(0.4);
+  // ⴱ → b, with the choices rising as it turns.
+  h.run(0.7);
+  expect(posed(h.pieces, tifinagh)).toBe(false);
+  expect(h.latent.attributes.get("opacity")).toBe("0.0000");
+  h.run(0.2);
   expect(h.elements["identity-loading"].dataset.entryStage).toBe("choice");
   expect(h.elements["identity-choices"].style.visibility).toBe("visible");
   expect(h.elements["identity-choices"].inert).toBe(false);
+  h.run(1.3);
+  expect(posed(h.pieces, identityMark.markLoopPose("B", 1))).toBe(true);
 
-  // Hovering a choice tilts the pieces; leaving settles them again.
+  // Hovering a choice tilts the pieces; leaving settles them again, by now on ب.
   h.choices[1].dispatchEvent(new Event("pointerenter"));
   h.run(0.3);
   expect(part("h1").material.attributes.get("transform")).not.toBe(settledMaterial("h1"));
   h.choices[1].dispatchEvent(new Event("pointerleave"));
   h.run(3);
   expect(part("h1").material.attributes.get("transform")).toBe(settledMaterial("h1"));
+  expect(posed(h.pieces, identityMark.markStatic.C())).toBe(true);
+  // ب → ⴱ, and round again.
+  h.run(3.3);
+  expect(posed(h.pieces, tifinagh)).toBe(true);
+  h.run(1.6);
 
+  // Chosen mid ⴱ → b: the mark reads on in flight and lands as the wordmark's b.
   h.choices[1].dispatchEvent(new Event("click"));
   h.run(1.15);
   expect(h.announced).toEqual(["identity-mark-landed"]);
+  expect(posed(h.pieces, identityMark.wordmarkRest())).toBe(true);
+  const landing = h.landings[0] as { step: string; elapsed: number };
+  expect(landing.step).toBe("B");
+  expect(landing.elapsed).toBeGreaterThan(150);
+  expect(landing.elapsed).toBeLessThan(450);
   expect(h.sounds).toEqual(["tock 293.66"]);
   h.run(1.5);
   expect(h.announced).toEqual(["identity-mark-landed", "identity-entry-complete"]);
   h.dispose(); expect(h.clean).toBe(true);
-  // Cleanup returns the server-rendered row of empty ghosts.
-  for (const { name, piece, clip, latent, material } of h.pieces) {
-    expect(piece.attributes.get("transform")).toBe(identityMark.markTransform(identityMark.loaderRow[name]));
+  // Cleanup returns the server-rendered, empty ⴱ.
+  expect(h.latent.attributes.get("opacity")).toBe(".055");
+  expect(posed(h.pieces, tifinagh)).toBe(true);
+  for (const { clip, material } of h.pieces) {
     expect(clip.attributes.get("height")).toBe("0");
-    expect(latent.attributes.get("opacity")).toBe(".055");
     expect(material.attributes.has("transform")).toBe(false);
   }
 });

@@ -1,36 +1,39 @@
 import { uiStore } from "@/store/uiStore";
 import {
-  markAtoB,
-  markBtoC,
-  markCtoA,
   markLandedEvent,
+  markLoopDurations,
+  markLoopPose,
   markPieces,
-  markStatic,
   setMarkPose,
   wordmarkRest,
+  type MarkLoopStep,
   type Pose,
 } from "./identity-mark";
 
 export type LiveStep = {
-  id: "C" | "CA" | "A" | "AB" | "B" | "BC";
+  id: MarkLoopStep;
   dur: number;
   pose?: () => Pose;
   move?: (t: number) => Pose;
 };
 
 const B0 = wordmarkRest();
+const step = (id: MarkLoopStep, dur = markLoopDurations[id]): LiveStep =>
+  id.length > 1
+    ? { id, dur, move: (t) => markLoopPose(id, t, 0) }
+    : { id, dur, pose: id === "B" ? () => B0 : () => markLoopPose(id, 1, 0) };
 /**
  * The live wordmark reads the three scripts in order, ب → ⴱ → b, pauses on
- * b and goes round again. The b keeps its bowl on the x-height (drop 0); ⴱ
- * and ب sit centred on it, as in the brand book's plates.
+ * b and goes round again: the loader's loop with the nav's own holds. The b
+ * keeps its bowl on the x-height (drop 0); ⴱ and ب sit centred on it.
  */
 export const liveSteps: readonly LiveStep[] = [
-  { id: "C", dur: 1100, pose: markStatic.C },
-  { id: "CA", dur: 1750, move: (t) => markCtoA(t) },
-  { id: "A", dur: 1100, pose: markStatic.A },
-  { id: "AB", dur: 1750, move: (t) => markAtoB(t, { drop: 0 }) },
-  { id: "B", dur: 3400, pose: () => B0 },
-  { id: "BC", dur: 1600, move: (t) => markBtoC(t, { drop: 0 }) },
+  step("C", 1100),
+  step("CA"),
+  step("A", 1100),
+  step("AB"),
+  step("B", 3400),
+  step("BC"),
 ];
 const restB = 4;
 
@@ -39,7 +42,7 @@ const heldPhases = new Set(["loading", "ready", "assembling"]);
 /**
  * One clock drives every wordmark b under `root`. Moves run on animation
  * frames; rests wait on a timer. It holds on b during the entry and for reduced
- * motion, and starts its pause when the entry lands the b.
+ * motion, and carries on from wherever the entry's mark lands.
  */
 export function mountLiveWordmark(root: HTMLElement): () => void {
   const marks = Array.from(root.querySelectorAll<SVGGElement>("[data-logo-mark]"))
@@ -129,10 +132,22 @@ export function mountLiveWordmark(root: HTMLElement): () => void {
     start = performance.now() - liveSteps[i].dur;
     restart();
   };
-  // The entry lands its b here: the pause starts now, then ب.
-  const onLanded = () => {
+  // The entry's mark lands here mid-loop: continue the same step, holding
+  // for the nav's own (longer) rests.
+  const onLanded = (event: Event) => {
+    const detail = (event as CustomEvent<{ step?: MarkLoopStep; elapsed?: number }>).detail;
+    const index = liveSteps.findIndex((live) => live.id === detail?.step);
     landed = true;
-    rest(restB);
+    if (index < 0) rest(restB);
+    else {
+      const live = liveSteps[index],
+        into = Math.min(Math.max(0, detail?.elapsed ?? 0), live.dur);
+      i = index;
+      start = performance.now() - into;
+      pausedAt = 0;
+      drawn = i;
+      write(live.move ? live.move(into / live.dur) : live.pose!());
+    }
     sync();
     restart();
   };

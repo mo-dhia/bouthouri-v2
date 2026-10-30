@@ -1,9 +1,9 @@
 /* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
-/* Gazzar's loader with the kit: the stage keeps Gazzar's mark ink height (its 84-unit pieces = the 200-unit stem of a 640 × 320 row), then the entry choices below it. */
+/* Gazzar's loader on ⴱ: the 320 × 320 stage keeps Gazzar's mark ink height (its 84-unit pieces = the 200-unit ⴱ), then the entry choices below it. */
 @media (width > 1024px) {
   .loading { z-index: 5; pointer-events: none; color: #d9d5cb; direction: ltr; position: absolute; inset: 0 }
   .loading[hidden] { display: none }
-  .stage { aspect-ratio: 2; inline-size: 28vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
+  .stage { aspect-ratio: 1; inline-size: 14vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
   .stage svg { inline-size: 100%; block-size: 100%; display: block; overflow: visible }
   .choices { visibility: hidden; inline-size: 22.3959vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 7vw + 1.04167vw); left: 50%; transform: translateX(-50%) }
   .choiceMask { margin: -0.208334vw; padding: 0.208334vw; display: block; overflow: hidden }
@@ -16,7 +16,7 @@
   :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 0.9375vw }
   :global(html[lang='ar']) .continue { font-size: 0.729167vw }
   @media (min-aspect-ratio:1920/600) and (min-aspect-ratio: 6/5) {
-    .stage { inline-size: min(51.84vw, 55.68svh); inset-block-start: 42% }
+    .stage { inline-size: min(25.92vw, 27.84svh); inset-block-start: 42% }
     .choices { inline-size: 18.75vw; inset-block-start: 72% }
     .continue { inset-block-end: 3% }
   }
@@ -28,7 +28,7 @@
 @media (600px < width <= 1024px) {
   .loading { z-index: 5; pointer-events: none; color: #d9d5cb; direction: ltr; position: absolute; inset: 0 }
   .loading[hidden] { display: none }
-  .stage { aspect-ratio: 2; inline-size: 40.32vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
+  .stage { aspect-ratio: 1; inline-size: 20.16vw; block-size: auto; position: absolute; inset-block-start: 43%; left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
   .stage svg { inline-size: 100%; block-size: 100%; display: block; overflow: visible }
   .choices { visibility: hidden; inline-size: 37.7605vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(43% + 10.08vw + 2.60417vw); left: 50%; transform: translateX(-50%) }
   .choiceMask { margin: -0.520834vw; padding: 0.520834vw; display: block; overflow: hidden }
@@ -41,7 +41,7 @@
   :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 2.34375vw }
   :global(html[lang='ar']) .continue { font-size: 1.82292vw }
   @media (min-aspect-ratio:768/600) and (min-aspect-ratio: 6/5) {
-    .stage { inline-size: min(51.84vw, 55.68svh); inset-block-start: 42% }
+    .stage { inline-size: min(25.92vw, 27.84svh); inset-block-start: 42% }
     .choices { inline-size: 46.875vw; inset-block-start: 72% }
     .continue { inset-block-end: 3% }
   }
@@ -53,7 +53,7 @@
 @media (width <= 600px) {
   .loading { z-index: 5; pointer-events: none; color: #d9d5cb; direction: ltr; position: absolute; inset: 0 }
   .loading[hidden] { display: none }
-  .stage { aspect-ratio: 2; inline-size: 82.56vw; block-size: auto; position: absolute; inset-block-start: 42%; left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
+  .stage { aspect-ratio: 1; inline-size: 41.28vw; block-size: auto; position: absolute; inset-block-start: 42%; left: 50%; transform: translate(-50%, -50%); transform-origin: 50% 50%; will-change: transform }
   .stage svg { inline-size: 100%; block-size: 100%; display: block; overflow: visible }
   .choices { visibility: hidden; inline-size: 76vw; direction: var(--reading-direction); justify-content: space-between; display: flex; position: absolute; inset-block-start: calc(42% + 20.64vw + 4.85437vw); left: 50%; transform: translateX(-50%) }
   .choiceMask { margin: -0.970874vw; padding: 0.970874vw; display: block; overflow: hidden }
@@ -66,7 +66,7 @@
   :global(html[lang='ar']) .choices button { font-family: 'Cairo', Arial, sans-serif; letter-spacing: 0; font-size: 4.36894vw }
   :global(html[lang='ar']) .continue { font-size: 3.39806vw }
   @media (min-aspect-ratio:412/600) and (min-aspect-ratio: 6/5) {
-    .stage { inline-size: min(51.84vw, 55.68svh); inset-block-start: 42% }
+    .stage { inline-size: min(25.92vw, 27.84svh); inset-block-start: 42% }
     .choices { inline-size: 60vw; inset-block-start: 72% }
     .continue { inset-block-end: 3% }
   }

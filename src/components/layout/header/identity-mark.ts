@@ -169,6 +169,36 @@ export const markCtoA: Move = (t, o = {}) => {
   };
 };
 
+/** The three-script loop, ⴱ → b → ب → ⴱ, as the brand book's plate 4.0 reads it. */
+export type MarkLoopStep = "A" | "AB" | "B" | "BC" | "C" | "CA";
+export const markLoopSteps: readonly MarkLoopStep[] = ["A", "AB", "B", "BC", "C", "CA"];
+/** Plate 4.0 timings in ms: holds ⴱ 1.3s, b 1.4s, ب 1.6s. */
+export const markLoopDurations: Record<MarkLoopStep, number> = {
+  A: 1300,
+  AB: 1750,
+  B: 1400,
+  BC: 1600,
+  C: 1600,
+  CA: 1750,
+};
+/** Pose `t` of the way through `step`; `drop` is the b's bowl height (50 standalone, 0 in the wordmark). */
+export function markLoopPose(step: MarkLoopStep, t: number, drop = 50): Pose {
+  switch (step) {
+    case "A":
+      return markStatic.A();
+    case "AB":
+      return markAtoB(t, { drop });
+    case "B":
+      return markAtoB(1, { drop });
+    case "BC":
+      return markBtoC(t, { drop });
+    case "C":
+      return markStatic.C();
+    case "CA":
+      return markCtoA(t);
+  }
+}
+
 export const markTransform = (p: Piece) =>
   `translate(${p.x.toFixed(2)} ${p.y.toFixed(2)}) rotate(${p.a.toFixed(2)})${p.sy !== 1 ? ` scale(1 ${p.sy.toFixed(3)})` : ""}`;
 
@@ -231,29 +261,24 @@ export const wordmarkWidth = word.width + 20;
 export const wordmarkMarkOffset = 100;
 export const wordmarkRest = (): Pose => markAtoB(1, { drop: 0 });
 
-/** The entry's b has landed on the nav b, which takes over from there. */
+/**
+ * The entry's mark has landed on the nav b, mid-loop; the nav carries on from
+ * there. Detail `{ step: MarkLoopStep, elapsed: ms into that step }`.
+ */
 export const markLandedEvent = "identity-mark-landed";
 
-/* Loader: the kit laid out in a row, stem then the two halves as they sit in
-   b, one module apart. Each fills from the bottom as a third of the load,
-   then they slide together into b. `box` is the piece's own bounds and
-   `flip` marks a piece turned over, so its fill starts from its top. */
-export const loaderRow: Pose = {
-  h1: { x: -80, y: 50, a: 0, sy: 1 },
-  h2: { x: 160, y: -50, a: 180, sy: 1 },
-  bar: { x: -240, y: 0, a: 0, sy: 1 },
+/* Loader: ⴱ is the progress. Each piece fills from the bottom of the screen
+   over its third of the load, bottom half, bar, then top half; `band` is the
+   piece's vertical extent in ⴱ. The loaded ⴱ then reads the three scripts.
+   Fill clips span `loaderReach` sideways so the moves never meet an edge. */
+export const loaderOrder = ["h2", "bar", "h1"] as const;
+export const loaderBand: Record<(typeof markPieces)[number], { y: number; h: number }> = {
+  h1: { y: -100, h: 100.9 },
+  h2: { y: -0.9, h: 100.9 },
+  bar: { y: -20, h: 40 },
 };
-/** Fill order, left to right: stem, top half, bottom half. */
-export const loaderOrder = ["bar", "h1", "h2"] as const;
-export const loaderPieceBox: Record<
-  (typeof markPieces)[number],
-  { y: number; h: number; w: number; flip: boolean }
-> = {
-  h1: { y: -100, h: 100.9, w: 200, flip: false },
-  h2: { y: -100, h: 100.9, w: 200, flip: true },
-  bar: { y: -100, h: 200, w: 40, flip: false },
-};
-export const loaderViewBox = "-320 -160 640 320";
+export const loaderReach = 480;
+export const loaderViewBox = "-160 -160 320 320";
 
 /** Brand-book favicon: the b in ink on a bone tile. */
 export const iconViewBox = "-190 -190 380 380";

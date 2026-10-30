@@ -263,22 +263,23 @@ A single owned RAF handles the entry, profile-scaled 133 reference-pixel/second 
 scrub and portrait invalidation. Animation progress never enters React/Storio.
 The loader is Gazzar's, drawn with the brand book's kit
 (`brand-book/bouthouri-mark.html`): the logo is the loading sequence. The
-stem and the two half rings stand in a row (`loaderRow`, "|∩∪", one module
-apart) as latent ghosts at .055 opacity. Each fills from its foot over its
-third of the load (stem, top half, bottom half), drifting and squashed while
-latent, exactly as Gazzar's pieces; the turned half fills from its own top.
-At ready the row slides together into b (.1→.82s) by translation only and the
-QUIET/SOUND choices rise at 1.02→1.26s. Hovering SOUND tilts the pieces
-(target 1, QUIET −.35). The stage keeps Gazzar's ink height: its 640 × 320
-row puts the 200-unit stem where Gazzar's 84-unit pieces were. QUIET mutes
-audio only.
+Tifinagh ⴱ stands as a latent ghost at .055 opacity and is the progress: its
+bottom half, bar and top half each fill from their foot over a third of the
+load, drifting and squashed while latent, exactly as Gazzar's pieces. Loaded,
+ⴱ holds .5s, the ghost fades, and the mark reads the brand book's three
+scripts (plate 4.0) on a loop: ⴱ → b → ب → ⴱ (rests 1.3/1.4/1.6s, moves
+1.75/1.6/1.75s, standalone drop 50). The QUIET/SOUND choices rise at
+1.02→1.26s. Hovering SOUND tilts the pieces (target 1, QUIET −.35). The 320 ×
+320 stage keeps Gazzar's ink height: the 200-unit ⴱ stands where Gazzar's
+84-unit pieces were. QUIET mutes audio only.
 
-On selection, the b flies to the nav wordmark's b over 1.1s, fading bone to
-the nav grey, and lands 50 units higher, where the wordmark's b sits. A
-bypassed row finishes its fill (.4s) and assembly (.6s) on the way. Landing
-hides the stage, plays the b's tock (D4, sound on only) and hands over to the
-header's live loop (`identity-mark-landed`), which pauses on b and then reads
-ب → ⴱ → b. Portrait resolve
+On selection the mark keeps reading while it flies to the nav wordmark's b
+over 1.1s, fading bone to the nav grey; its drop settles 50 → 0 on the way, so
+it lands in the wordmark's geometry. A bypassed ⴱ finishes its fill (.4s) in
+flight. Landing hides the stage, plays the b's tock (D4, sound on only) and
+hands the header's live loop the step and time it landed on
+(`identity-mark-landed`, detail `{ step, elapsed }`), so the nav carries on
+mid-read. Portrait resolve
 starts .06s / lasts 1.2s; nav masks start .15s with .06s stagger / .55s duration;
 copy starts .28s with .1s line stagger / .6s line duration; cue starts .84s /
 .44s duration. Signature begins 1.04s, with the original stroke lengths/paces

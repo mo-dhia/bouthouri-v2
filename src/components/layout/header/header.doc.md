@@ -46,8 +46,9 @@ pauses on b and repeats (rests ب 1.1s, ⴱ 1.1s, b 3.4s; moves 1.75/1.75/1.6s)
 on RAF during moves and a timer during rests, paused while hidden or off
 screen. ⴱ and ب sit centred on the x-height; b keeps its bowl there. Hover/focus
 skips the current rest. It holds on b during the entry and for reduced motion
-or quiet reading, and starts the b pause when the entry's b lands
-(`identity-mark-landed`). Nav labels
+or quiet reading, and carries on from the step and time where the entry's mark
+lands (`identity-mark-landed`, detail `{ step, elapsed }`; b's pause without
+one). Nav labels
 have an inline baseline marker and the source's measured ink-centering correction.
 Conversation links retain the rollover; background marquee cue is editorial.
 

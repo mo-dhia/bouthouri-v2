@@ -23,16 +23,20 @@ import type { PortraitController } from "./hero-portrait";
 import { createHeroScrollMagnet } from "./hero-scroll-magnet";
 import { portraitFallbackMask } from "./hero-portrait-mask";
 import {
+  loaderBand,
   loaderOrder,
-  loaderPieceBox,
-  loaderRow,
+  loaderReach,
   loaderViewBox,
   markLandedEvent,
+  markLoopDurations,
+  markLoopPose,
+  markLoopSteps,
   markPieces,
   markStatic,
   markTransform,
   wordmarkMarkOffset,
   wordmarkViewBox,
+  type Pose,
 } from "@/components/layout/header/identity-mark";
 const easeInOut = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -41,12 +45,14 @@ const [wordmarkX, wordmarkY, wordmarkW, wordmarkH] = wordmarkViewBox
   .split(" ")
   .map(Number);
 const stageUnits = Number(loaderViewBox.split(" ")[2]);
-/** The row assembles into the static b, which sits 50 units under the wordmark's. */
-const assembled = markStatic.B();
-const markLift = -50;
-/** Gazzar's drift amplitudes, scaled from its 84-unit pieces to the 200-unit stem. */
+/** The loaded ⴱ, and the b's bowl height while it reads standalone. */
+const tifinagh = markStatic.A();
+const standaloneDrop = 50;
+/** Seconds the full ⴱ holds before the first move. */
+const loadedBeat = 0.5;
+/** Gazzar's drift amplitudes, scaled from its 84-unit pieces to the 200-unit ⴱ. */
 const driftUnits = 200 / 84;
-/** The b's note, D4, as it locks onto the nav. */
+/** The mark's note, D4, as it locks onto the nav. */
 const landingNote = 293.66;
 
 /** Single RAF owner for entry, marquee, scroll departure, and the local portrait. */
@@ -92,9 +98,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const materials = markPieces.map(
     (name) => stage.querySelector<SVGGElement>(`[data-identity-material="${name}"]`)!,
   );
-  const latents = pieces.map(
-    (piece) => piece.querySelector<SVGPathElement>("[data-identity-latent]")!,
-  );
+  const latent = stage.querySelector<SVGGElement>("[data-identity-latent]")!;
   const choices = root.querySelector<HTMLElement>("[data-identity-choices]")!;
   const buttons = Array.from(
     root.querySelectorAll<HTMLButtonElement>("[data-identity-choice]"),
@@ -181,9 +185,11 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   let previousWorld = -1;
   let previousPortraitMask: string | null | undefined;
   let lineElements: HTMLElement[] = [];
-  // Where the row stood when entry began; the flight completes both.
-  let fromAssembly = 0,
-    fromFill = 0,
+  // The loaded mark's loop clock: a step of `markLoopSteps`, seconds into it.
+  let loopIndex = 0,
+    loopTime = 0;
+  // How full ⴱ was when entry began; a bypassed load finishes in flight.
+  let fromFill = 0,
     landed = false;
   let flight: { x: number; y: number; scale: number } | undefined;
   let oldOverflow = "",
@@ -317,47 +323,52 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         to.top -
         shift +
         (to.height - wordmarkH * scale) / 2 +
-        (markLift - wordmarkY) * scale -
+        -wordmarkY * scale -
         (from.top + from.height / 2),
       scale: (scale * stageUnits) / (from.width || 1),
     };
   };
   /**
-   * Gazzar's loader on the kit: each piece fills from the bottom over its
-   * third of the load, drifting while latent, then the row slides into b.
+   * Gazzar's loader on ⴱ: each piece fills from the bottom over its third of
+   * the load, drifting while latent; the full mark then takes `pose`.
    */
-  const fillRow = (assembly: number, fill: number) => {
-    const a = clamp(assembly);
+  const drawMark = (pose: Pose, fill: number, ghost: number) => {
+    latent.setAttribute("opacity", (0.055 * ghost).toFixed(4));
     markPieces.forEach((name, i) => {
-      const from = loaderRow[name],
-        to = assembled[name],
-        box = loaderPieceBox[name],
+      const band = loaderBand[name],
         order = loaderOrder.indexOf(name),
         f = smoother(order / 3, (order + 1) / 3, fill),
-        latent = 1 - f,
-        centre = box.y + box.h / 2;
-      pieces[i].setAttribute(
-        "transform",
-        markTransform({
-          x: from.x + (to.x - from.x) * a,
-          y: from.y + (to.y - from.y) * a,
-          a: from.a + (to.a - from.a) * a,
-          sy: 1,
-        }),
-      );
-      // A turned piece fills from its own top, the bottom on screen.
-      clips[i].setAttribute("y", (box.flip ? box.y : box.y + box.h * latent).toFixed(2));
-      clips[i].setAttribute("height", (box.h * f).toFixed(2));
-      latents[i].setAttribute("opacity", (0.055 * latent).toFixed(4));
+        rest = 1 - f,
+        centre = band.y + band.h / 2;
+      pieces[i].setAttribute("transform", markTransform(pose[name]));
+      // Full pieces open their clip so the moves can range freely.
+      clips[i].setAttribute("y", (f === 1 ? -loaderReach : band.y + band.h * rest).toFixed(2));
+      clips[i].setAttribute("height", (f === 1 ? 2 * loaderReach : band.h * f).toFixed(2));
       const drift =
-        (latent * Math.sin(0.75 * elapsed + 1.7 * order) * 1.2 +
+        (rest * Math.sin(0.75 * elapsed + 1.7 * order) * 1.2 +
           choicesTilt * Math.sin(1.3 * elapsed + order) * 0.55) *
         driftUnits;
       materials[i].setAttribute(
         "transform",
-        `translate(0 ${(centre + drift).toFixed(2)}) scale(${(1 - 0.045 * latent).toFixed(4)} ${(0.7 + 0.3 * f).toFixed(4)}) translate(0 ${(-centre).toFixed(2)})`,
+        `translate(0 ${(centre + drift).toFixed(2)}) scale(${(1 - 0.045 * rest).toFixed(4)} ${(0.7 + 0.3 * f).toFixed(4)}) translate(0 ${(-centre).toFixed(2)})`,
       );
     });
+  };
+  /** Advances the brand book's ⴱ → b → ب loop and returns its pose. */
+  const readLoop = (delta: number, drop: number) => {
+    loopTime += delta;
+    let guard = 0;
+    while (loopTime * 1000 >= markLoopDurations[markLoopSteps[loopIndex]] && guard++ < 12) {
+      loopTime -= markLoopDurations[markLoopSteps[loopIndex]] / 1000;
+      loopIndex = (loopIndex + 1) % markLoopSteps.length;
+    }
+    const step = markLoopSteps[loopIndex];
+    return markLoopPose(step, Math.min(1, (loopTime * 1000) / markLoopDurations[step]), drop);
+  };
+  // The loaded ⴱ holds a beat, then reads on.
+  const startLoop = (beat: number) => {
+    loopIndex = 0;
+    loopTime = markLoopDurations.A / 1000 - beat;
   };
   const finish = () => {
     entered = true;
@@ -391,7 +402,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     void setAudioEnabled(sound);
     choices.inert = true;
     bypass.hidden = true;
-    fromAssembly = phase === "ready" ? smoother(0.1, 0.82, readyTime) : 0;
+    if (phase === "loading") startLoop(markLoopDurations.A / 1000);
     fromFill = visualProgress / 100;
     assemblyTime = 0;
     setPhase("assembling");
@@ -512,27 +523,26 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         "aria-valuenow",
         String(Math.floor(visualProgress)),
       );
-      fillRow(0, visualProgress / 100);
+      drawMark(tifinagh, visualProgress / 100, 1);
       if (visualProgress === 100) {
         setPhase("ready");
         status.textContent = status.dataset.readyLabel ?? "";
         bypass.hidden = true;
         readyTime = 0;
+        startLoop(loadedBeat);
       } else if (elapsed > 8) bypass.hidden = false;
     }
     if (phase === "ready") {
       readyTime += delta;
-      const assembly = smoother(0.1, 0.82, readyTime),
-        choice = smoother(1.02, 1.26, readyTime);
-      fillRow(assembly, 1);
+      const choice = smoother(1.02, 1.26, readyTime);
+      drawMark(readLoop(delta, standaloneDrop), 1, 1 - smoother(0, loadedBeat, readyTime));
       choices.style.visibility = readyTime >= 1.02 ? "visible" : "hidden";
       choices.inert = choice < 1;
       buttons.forEach(
         (button) =>
           (button.style.transform = `translateY(${115 * (1 - choice)}%)`),
       );
-      loading.dataset.entryStage =
-        choice === 1 ? "choice" : assembly === 1 ? "assembled" : "converging";
+      loading.dataset.entryStage = choice === 1 ? "choice" : "loaded";
     }
     if (phase === "assembling") {
       assemblyTime += delta;
@@ -541,12 +551,12 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       if (flight)
         stage.style.transform = `translate(-50%,-50%) translate3d(${pixelsToVw(flight.x * travel, viewportWidth)},${pixelsToVw(flight.y * travel, viewportWidth)},0) scale(${1 + (flight.scale - 1) * travel})`;
       stage.style.color = `color-mix(in srgb,#d9d5cb ${(1 - smoother(0.62, 1.1, t)) * 100}%,#777772)`;
-      // A bypassed row finishes filling and assembles on the way.
-      if (!landed)
-        fillRow(
-          fromAssembly + (1 - fromAssembly) * smoother(0, 0.6, t),
-          fromFill + (1 - fromFill) * smoother(0, 0.4, t),
-        );
+      // The mark reads on in flight, its b settling onto the x-height; a
+      // bypassed ⴱ finishes filling on the way.
+      if (!landed) {
+        const fill = fromFill + (1 - fromFill) * smoother(0, 0.4, t);
+        drawMark(readLoop(delta, standaloneDrop * (1 - travel)), fill, 1 - fill);
+      }
       buttons.forEach(
         (button) =>
           (button.style.transform = `translateY(${-115 * smoother(0, 0.24, t)}%)`),
@@ -599,7 +609,11 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         choices.style.visibility = "hidden";
         loading.inert = true;
         playMarkTock(landingNote);
-        window.dispatchEvent(new Event(markLandedEvent));
+        window.dispatchEvent(
+          new CustomEvent(markLandedEvent, {
+            detail: { step: markLoopSteps[loopIndex], elapsed: loopTime * 1000 },
+          }),
+        );
       }
       if (t >= 2.5 && landed) finish();
     }
@@ -628,12 +642,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         magnetMoving
       )
         wake();
-    } else if (
-      phase !== "ready" ||
-      readyTime < 1.3 ||
-      Math.abs(choicesTilt - tiltTarget) > 0.0001
-    )
-      wake();
+    } else wake(); // The loader reads its loop until a choice is made.
     if (!frame) worldClock.sleep();
   };
   function wake() {
@@ -895,12 +904,12 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     loading.hidden = true;
     choices.inert = true;
     linesRoot.replaceChildren();
-    // Back to the server-rendered row: unfilled ghosts.
+    // Back to the server-rendered ⴱ: an unfilled ghost.
+    latent.setAttribute("opacity", ".055");
     markPieces.forEach((name, i) => {
-      pieces[i].setAttribute("transform", markTransform(loaderRow[name]));
+      pieces[i].setAttribute("transform", markTransform(tifinagh[name]));
       clips[i].setAttribute("y", "0");
       clips[i].setAttribute("height", "0");
-      latents[i].setAttribute("opacity", ".055");
       materials[i].removeAttribute("transform");
     });
     loading.dataset.entryStage = "loading";

@@ -5,11 +5,11 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
 import { getShellCopy } from "@/components/layout/header/shell-copy";
 import {
-  loaderPieceBox,
-  loaderRow,
+  loaderReach,
   loaderViewBox,
   markPaths,
   markPieces,
+  markStatic,
   markTransform,
 } from "@/components/layout/header/identity-mark";
 import KineticLink from "@/components/layout/header/kinetic-link";
@@ -17,6 +17,7 @@ import HeroAnimateGate from "./hero-animate-gate";
 import styles from "./hero.module.css";
 import entry from "./hero-entry.module.css";
 
+const tifinagh = markStatic.A();
 const signature = [
   [
     "M29 270 C26 269 29 267 33 265 C71 250 157 239 223 242 C313 241 354 246 449 274",
@@ -68,33 +69,35 @@ export default function Hero({
             <svg viewBox={loaderViewBox} fill="currentColor">
               <defs>
                 {markPieces.map((name) => (
-                  <clipPath key={name} id={`identity-piece-${name}`}>
+                  <clipPath key={name} id={`identity-fill-${name}`}>
                     <rect
                       data-identity-clip={name}
-                      x={-loaderPieceBox[name].w / 2 - 4}
+                      x={-loaderReach}
                       y="0"
-                      width={loaderPieceBox[name].w + 8}
+                      width={loaderReach * 2}
                       height="0"
                     />
                   </clipPath>
                 ))}
               </defs>
-              {markPieces.map((name, i) => (
-                <g
-                  key={name}
-                  data-identity-piece={name}
-                  transform={markTransform(loaderRow[name])}
-                >
+              <g opacity=".055" data-identity-latent="true">
+                {markPieces.map((name, i) => (
                   <path
+                    key={name}
                     d={markPaths[i]}
-                    opacity=".055"
-                    data-identity-latent="true"
+                    transform={markTransform(tifinagh[name])}
                   />
-                  <g
-                    data-identity-material={name}
-                    clipPath={`url(#identity-piece-${name})`}
-                  >
-                    <path d={markPaths[i]} />
+                ))}
+              </g>
+              {markPieces.map((name, i) => (
+                <g key={name} clipPath={`url(#identity-fill-${name})`}>
+                  <g data-identity-material={name}>
+                    <g
+                      data-identity-piece={name}
+                      transform={markTransform(tifinagh[name])}
+                    >
+                      <path d={markPaths[i]} />
+                    </g>
                   </g>
                 </g>
               ))}
