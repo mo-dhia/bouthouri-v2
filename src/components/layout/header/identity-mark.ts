@@ -243,18 +243,24 @@ const gaps: Record<string, number> = { bo: 34, ou: 38, ut: 30, th: 30, ho: 40, u
 function layoutWordmark(word: string) {
   let x = 0;
   const paths: string[] = [];
+  const letters: { letter: string; x: number; w: number; paths: string[] }[] = [];
   [...word].forEach((letter, i) => {
     if (i) x += gaps[word[i - 1] + letter] ?? 40;
     // The b is the live mark, drawn by its own three pieces.
     if (i) paths.push(...glyphs[letter].d(x));
+    letters.push({ letter, x, w: glyphs[letter].w, paths: glyphs[letter].d(0) });
     x += glyphs[letter].w;
   });
-  return { paths, width: x };
+  return { paths, letters, width: x };
 }
 const word = layoutWordmark("bouthouri");
 
 /** Letters after the b, as separate paths in wordmark units. */
 export const wordmarkPaths = word.paths;
+/** Every letter at its own origin, with its left edge `x` and advance `w` in the word. */
+export const wordmarkLetters = word.letters;
+/** Ink span of the word, b's stem to the i. */
+export const wordmarkSpan = word.width;
 export const wordmarkViewBox = `-10 -210 ${word.width + 20} 320`;
 export const wordmarkWidth = word.width + 20;
 /** The live b sits at x = 100 with the bowl on the x-height band (drop 0). */

@@ -45,7 +45,6 @@
   }
   .root :global(.global-footer .footer-label) { font-size: max(0.520834vw, calc(0.416667vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(0.520834vw, calc(0.46875vw * var(--type-scale, 1))) }
-  .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.0520834vw; height: 0.0520834vw; position: absolute; overflow: hidden }
   .root { position: relative; isolation: isolate; min-height: 100svh; font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
@@ -54,7 +53,7 @@
     .root > main:global(.practice-page) { --ed-gutter: 7vw }
   }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
-  .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
+  .root :global(.standard-footer .footer-word-text) { transform: none }
   .navigation { --nav-hit-height: 2.29167vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 1.04167vw; min-height: 4.89584vw; padding: 1.14584vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
   .identity, .actions, .controls { pointer-events: auto; align-items: center; display: flex }
   .identity { gap: 1.04167vw }
@@ -119,7 +118,6 @@
   .root :global(.global-footer .footer-colophon) { padding-bottom: env(safe-area-inset-bottom) }
   .root :global(.global-footer .footer-label) { font-size: max(1.30209vw, calc(1.04167vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(1.30209vw, calc(1.17188vw * var(--type-scale, 1))) }
-  .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.130209vw; height: 0.130209vw; position: absolute; overflow: hidden }
   .root { position: relative; isolation: isolate; min-height: 100svh; font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
@@ -128,7 +126,7 @@
     .root > main:global(.practice-page) { --ed-gutter: 7vw }
   }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
-  .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
+  .root :global(.standard-footer .footer-word-text) { transform: none }
   .navigation { --nav-hit-height: 5.72917vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 2.60417vw; min-height: 12.2396vw; padding: 2.86459vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
   .identity, .actions, .controls { pointer-events: auto; align-items: center; display: flex }
   .identity { gap: 2.60417vw }
@@ -221,15 +219,13 @@
   .root :global(.global-footer .footer-colophon) { padding-bottom: env(safe-area-inset-bottom) }
   .root :global(.global-footer .footer-label) { font-size: max(2.42719vw, calc(1.94175vw * var(--type-scale, 1))) }
   .root :global(.global-footer .footer-colophon small) { font-size: max(2.42719vw, calc(2.18447vw * var(--type-scale, 1))) }
-  .root :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.242719vw; height: 0.242719vw; position: absolute; overflow: hidden }
   .root { position: relative; isolation: isolate; min-height: 100svh; font-weight: var(--weight-400, 400) }
   .root > main, .root > footer { position: relative; z-index: 1 }
   .root > main { --ed-gutter: 5.3vw }
   :global(html[lang='ar']) .root > main { --ed-gutter: 6vw }
   .root > main:global(.practice-page) { --ed-gutter: 7vw }
   .root :global(.standard-footer .footer-word-mask) { pointer-events: auto }
-  .root :global(.standard-footer .footer-word-text) { font-size: 17.3572vw; line-height: 23.5111vw; letter-spacing: -0.520716vw; position: relative; left: -1.60265vw; --footer-ink-line-height: 15.6215vw; --footer-ink-scale-y: 1.442592299365; --footer-ink-offset-y: 0.74949vw; transform: none }
-  .root :global(.standard-footer .footer-word-text) { font-size: 17.7189vw; line-height: 24.001vw; letter-spacing: -0.531564vw; left: -1.63604vw; --footer-ink-line-height: 15.947vw; --footer-ink-offset-y: 0.76511vw }
+  .root :global(.standard-footer .footer-word-text) { transform: none }
   .navigation { --nav-hit-height: 10.6797vw; color: #dedbd2; z-index: 35; pointer-events: none; direction: ltr; background: linear-gradient(#090909df, #09090900); justify-content: space-between; align-items: center; gap: 4.85437vw; min-height: 22.8156vw; padding: 5.33981vw 4vw; display: flex; position: fixed; inset: 0 0 auto }
   .identity, .actions, .controls { pointer-events: auto; align-items: center; display: flex }
   .identity { gap: 4.85437vw }

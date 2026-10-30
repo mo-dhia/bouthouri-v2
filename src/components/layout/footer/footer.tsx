@@ -3,8 +3,18 @@ import "server-only";
 import { brand } from "@/config/brand";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
+import { markPaths, markPieces, markTransform } from "../header/identity-mark";
 import { getShellCopy, shellEmail, shellLinkedIn } from "../header/shell-copy";
 import FooterAnimateGate from "./footer-animate-gate";
+import {
+  footerLetters,
+  footerRipple,
+  footerViewBox,
+  letterTransform,
+  placeTransform,
+  restLetter,
+  wordFrame,
+} from "./footer-mark";
 import styles from "./footer.module.css";
 
 /** This is the single footer, inserted inside the journey's original .systems-story. */
@@ -18,6 +28,7 @@ export default function Footer({
   variant?: "home" | "standard";
 }) {
   const labels = getShellCopy(locale);
+  const rest = wordFrame();
   return (
     <footer
       className={`home-footer global-footer ${variant === "standard" ? "standard-footer" : ""} ${styles.footer}`}
@@ -72,17 +83,64 @@ export default function Footer({
         data-footer-grab="true"
       >
         <div className="footer-word-text" data-footer-word="true" dir="ltr">
-          <span className={styles.ink} data-footer-ink="true">
-            {brand.wordmark}
-          </span>
+          {/* The word stays in the HTML for readers, search and copy without CSS. */}
+          <span className={styles.text}>{brand.wordmark}</span>
+          {/* The kit's bouthouri, as in the nav logo; its b is the live mark. */}
+          <svg
+            className={styles.svg}
+            viewBox={`${footerViewBox.x} ${footerViewBox.y} ${footerViewBox.width} ${footerViewBox.height}`}
+            fill="currentColor"
+            aria-hidden="true"
+            data-footer-svg="true"
+          >
+            <g data-footer-letters="true">
+              {footerLetters.map((letter, index) => (
+                <g
+                  key={index}
+                  data-footer-letter={letter.letter}
+                  transform={letterTransform(restLetter(index), letter.w)}
+                >
+                  {letter.paths.map((d, part) => (
+                    <path key={part} d={d} />
+                  ))}
+                </g>
+              ))}
+            </g>
+            <g fill="none" stroke="currentColor">
+              {footerRipple.delays.map((delay) => (
+                <circle
+                  key={delay}
+                  data-footer-ripple="true"
+                  r={footerRipple.radius}
+                  strokeWidth="2"
+                  opacity="0"
+                />
+              ))}
+            </g>
+            {/* Keyboard focus: the old word's underline, a pixel under the baseline. */}
+            <line
+              className={styles.focus}
+              x1="0"
+              x2={footerViewBox.width + 2 * footerViewBox.x}
+              y1="118"
+              y2="118"
+              stroke="#aaa69a"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+            <g data-footer-mark="true" transform={placeTransform(rest.place)}>
+              {markPaths.map((d, index) => (
+                <path
+                  key={index}
+                  d={d}
+                  data-footer-piece={markPieces[index]}
+                  transform={markTransform(rest.pose[markPieces[index]])}
+                />
+              ))}
+            </g>
+          </svg>
         </div>
       </div>
-      <span
-        className="footer-thought"
-        data-footer-thought="true"
-        aria-live="polite"
-        aria-atomic="true"
-      />
       <div className="footer-colophon" data-footer-reveal="true" dir="ltr">
         <div className="footer-socials">
           <a

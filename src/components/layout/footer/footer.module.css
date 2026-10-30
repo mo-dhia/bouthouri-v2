@@ -1,47 +1,47 @@
 /* Design profiles: desktop 1920, tablet 768, mobile 412 wide. Lengths scale with width; stages fill the physical viewport height. */
 @media (width > 1024px) {
-  @font-face { font-family: 'Bouthouri Wordmark'; src: url('/assets/fonts/bouthouri-wordmark.woff') format('woff'); font-weight: 400; font-style: normal; font-display: swap }
   .footer { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif }
-  .ink { vertical-align: top; line-height: var(--footer-ink-line-height, .9); transform-origin: 0 0; display: inline-block; transform: translateY(var(--footer-ink-offset-y, 0vw)) scaleY(var(--footer-ink-scale-y, 1)) }
-  .word { --font-latin: 'Bouthouri Wordmark', 'Questrial', Arial, sans-serif; user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none }
+  .word { user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none; -webkit-tap-highlight-color: transparent }
   .word[data-grabbable='true'] { cursor: grab }
   .word[data-held='true'] { cursor: grabbing }
-  .word[data-mode='logo'] { cursor: pointer }
+  .word[data-mode='mark'] { cursor: pointer }
   .word:focus-visible:not([data-held='true']) { outline: none }
-  .word:focus-visible:not([data-held='true']) :global(.footer-word-text), .word:focus-visible:not([data-held='true']) .ink { text-decoration: underline #aaa69a; text-decoration-thickness: 1px; text-underline-offset: .055em }
-  .word canvas { position: absolute; inset: 0; display: block; pointer-events: none; inline-size: 100%; block-size: 100% }
+  .svg { display: block; inline-size: 100%; block-size: auto; margin-inline: auto; overflow: visible }
+  .text { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.0520834vw; height: 0.0520834vw; position: absolute; overflow: hidden }
+  .focus { opacity: 0 }
+  .word:focus-visible:not([data-held='true']):is(:not([data-mode]), [data-mode='word']) .focus { opacity: 1 }
   @media (prefers-reduced-motion: reduce) {
     .word { touch-action: manipulation }
   }
   .footer[lang='ar'] { font-weight: var(--weight-400, 450) }
 }
 @media (600px < width <= 1024px) {
-  @font-face { font-family: 'Bouthouri Wordmark'; src: url('/assets/fonts/bouthouri-wordmark.woff') format('woff'); font-weight: 400; font-style: normal; font-display: swap }
   .footer { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif }
-  .ink { vertical-align: top; line-height: var(--footer-ink-line-height, .9); transform-origin: 0 0; display: inline-block; transform: translateY(var(--footer-ink-offset-y, 0vw)) scaleY(var(--footer-ink-scale-y, 1)) }
-  .word { --font-latin: 'Bouthouri Wordmark', 'Questrial', Arial, sans-serif; user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none }
+  .word { user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none; -webkit-tap-highlight-color: transparent }
   .word[data-grabbable='true'] { cursor: grab }
   .word[data-held='true'] { cursor: grabbing }
-  .word[data-mode='logo'] { cursor: pointer }
+  .word[data-mode='mark'] { cursor: pointer }
   .word:focus-visible:not([data-held='true']) { outline: none }
-  .word:focus-visible:not([data-held='true']) :global(.footer-word-text), .word:focus-visible:not([data-held='true']) .ink { text-decoration: underline #aaa69a; text-decoration-thickness: 1px; text-underline-offset: .055em }
-  .word canvas { position: absolute; inset: 0; display: block; pointer-events: none; inline-size: 100%; block-size: 100% }
+  .svg { display: block; inline-size: 100%; block-size: auto; margin-inline: auto; overflow: visible }
+  .text { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.130209vw; height: 0.130209vw; position: absolute; overflow: hidden }
+  .focus { opacity: 0 }
+  .word:focus-visible:not([data-held='true']):is(:not([data-mode]), [data-mode='word']) .focus { opacity: 1 }
   @media (prefers-reduced-motion: reduce) {
     .word { touch-action: manipulation }
   }
   .footer[lang='ar'] { font-weight: var(--weight-400, 450) }
 }
 @media (width <= 600px) {
-  @font-face { font-family: 'Bouthouri Wordmark'; src: url('/assets/fonts/bouthouri-wordmark.woff') format('woff'); font-weight: 400; font-style: normal; font-display: swap }
   .footer { --font-latin: 'Questrial', Arial, sans-serif; --font-arabic: 'Cairo', Arial, sans-serif }
-  .ink { vertical-align: top; line-height: var(--footer-ink-line-height, .9); transform-origin: 0 0; display: inline-block; transform: translateY(var(--footer-ink-offset-y, 0vw)) scaleY(var(--footer-ink-scale-y, 1)) }
-  .word { --font-latin: 'Bouthouri Wordmark', 'Questrial', Arial, sans-serif; user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none }
+  .word { user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none; -webkit-tap-highlight-color: transparent }
   .word[data-grabbable='true'] { cursor: grab }
   .word[data-held='true'] { cursor: grabbing }
-  .word[data-mode='logo'] { cursor: pointer }
+  .word[data-mode='mark'] { cursor: pointer }
   .word:focus-visible:not([data-held='true']) { outline: none }
-  .word:focus-visible:not([data-held='true']) :global(.footer-word-text), .word:focus-visible:not([data-held='true']) .ink { text-decoration: underline #aaa69a; text-decoration-thickness: 1px; text-underline-offset: .055em }
-  .word canvas { position: absolute; inset: 0; display: block; pointer-events: none; inline-size: 100%; block-size: 100% }
+  .svg { display: block; inline-size: 100%; block-size: auto; margin-inline: auto; overflow: visible }
+  .text { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.242719vw; height: 0.242719vw; position: absolute; overflow: hidden }
+  .focus { opacity: 0 }
+  .word:focus-visible:not([data-held='true']):is(:not([data-mode]), [data-mode='word']) .focus { opacity: 1 }
   @media (prefers-reduced-motion: reduce) {
     .word { touch-action: manipulation }
   }

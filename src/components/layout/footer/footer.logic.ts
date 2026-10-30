@@ -19,7 +19,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   if (!mask || !word) return () => {};
   let disposed = false;
   let clockTimer: ReturnType<typeof setTimeout> | undefined;
-  let material: import("./footer-material").FooterMaterial | undefined;
+  let material: import("./footer.animate").FooterMark | undefined;
   let loading = false;
   let visible = false;
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -51,7 +51,8 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   if (standard) window.addEventListener("resize", onStandardViewport, { passive: true });
   const originalWordStyle = word.getAttribute("style");
   const originalFooterStyle = root.getAttribute("style");
-  const context = document.createElement("canvas").getContext("2d");
+  const svg = word.querySelector<SVGSVGElement>("[data-footer-svg]");
+  const originalSvgStyle = svg?.getAttribute("style") ?? null;
   const measureStandardPosition = () => {
     if (!standard || disposed) return;
     footerTop = root.getBoundingClientRect().top + scrollY;
@@ -59,10 +60,9 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     updateStandard();
   };
   const measureWord = () => {
-    if (!context || disposed) return;
-    measureFooterWord(root, mask, word, context);
+    if (disposed) return;
+    measureFooterWord(root, mask, word);
     measureStandardPosition();
-    material?.measure();
   };
   const updateClock = () => {
     clearTimeout(clockTimer);
@@ -79,16 +79,16 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     }
     clockTimer = setTimeout(updateClock, 60000 - (Date.now() % 60000) + 20);
   };
-  // HOME's source material reveal remains zero in the unpinned reading layout.
-  // A standard footer has its own scroll reveal and retains reduced interaction.
+  // HOME's reading layout keeps the word still; a standard footer animates
+  // once its own scroll reveal shows the word. Reduced motion holds the word.
   const syncMaterial = () => material?.setActive(visible && !root.inert && (standard ? standardReveal > .001 : !reduced()));
   const ensureMaterial = () => {
     if (material || loading || disposed) return;
     loading = true;
-    void import("./footer-material")
-      .then(({ mountFooterMaterial }) => {
+    void import("./footer.animate")
+      .then(({ mountFooterMark }) => {
         if (!disposed) {
-          material = mountFooterMaterial(root, reduced);
+          material = mountFooterMark(root, reduced);
           syncMaterial();
         }
       })
@@ -107,7 +107,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   );
   observer.observe(mask);
   // A pinned footer has a viewport-sized box even while the story hides it.
-  // The parent clock supplies actual visibility; boot the material only near 663.
+  // The parent clock supplies actual visibility; boot the mark only near 663.
   const stage = root.closest<HTMLElement>("#top");
   const onJourney = (event: Event) => {
     const time = (event as CustomEvent<{ time: number }>).detail?.time;
@@ -142,7 +142,7 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   mask.addEventListener("focus", onIntent);
   const resize = new ResizeObserver((entries) => {
     // Upstream content and the physical scroll tail can move the footer while
-    // its word geometry stays unchanged. Preserve idle/wave history then.
+    // its word geometry stays unchanged; only the mask refits the word.
     if (entries.some((entry) => entry.target === mask)) measureWord();
     else measureStandardPosition();
   });
@@ -177,6 +177,10 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     if (standard) for (const [node, previous] of [[information, originalInformationStyle], [colophon, originalColophonStyle]] as const) { if (node) { if (previous == null) node.removeAttribute("style"); else node.setAttribute("style", previous); node.inert = false; } }
     if (originalWordStyle === null) word.removeAttribute("style");
     else word.setAttribute("style", originalWordStyle);
+    if (svg) {
+      if (originalSvgStyle === null) svg.removeAttribute("style");
+      else svg.setAttribute("style", originalSvgStyle);
+    }
     if (originalFooterStyle === null) root.removeAttribute("style");
     else root.setAttribute("style", originalFooterStyle);
   };

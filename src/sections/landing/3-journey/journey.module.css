@@ -423,20 +423,14 @@
     .journey :global([data-route-entering] [data-route-line]), .journey :global([data-route-entering] [data-route-support]) { will-change: auto }
   }
   .journey :global([data-route-focus]:focus) { outline: none }
-  .journey :global(.footer-word-text[data-material=ready]) { color: #0000 }
   .journey :global(.footer-word-mask) { -webkit-user-select: none; user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none }
   .journey :global(.footer-word-mask[data-grabbable=true]) { cursor: grab }
   .journey :global(.footer-word-mask[data-held=true]) { cursor: grabbing }
   .journey :global(.footer-word-mask:focus-visible) { outline: none }
-  .journey :global(.footer-word-mask:focus-visible:not([data-focus-origin=pointer]):not([data-held=true]):is(:not([data-mode]), [data-mode=word]) .footer-word-text) { text-underline-offset: .055em; -webkit-text-decoration: underline #aaa69a; text-decoration: underline #aaa69a; text-decoration-thickness: 1px }
-  .journey :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.0520834vw; height: 0.0520834vw; position: absolute; overflow: hidden }
-  .journey :global(.footer-material-layer) { z-index: 2; pointer-events: none; position: fixed; inset: 0 }
-  .journey :global(.footer-material-layer canvas) { pointer-events: none; display: block }
-  .journey :global(.footer-material-layer), .journey :global(.footer-material-layer *) { pointer-events: none !important }
   .journey :global(.global-footer) { pointer-events: none }
   .journey :global(.global-footer :is(.footer-information, .footer-colophon)) { pointer-events: auto }
   .journey :global(.global-footer:not(.standard-footer) .footer-information) { top: max(var(--footer-information-top), var(--footer-nav-top, 0vw)) }
-  .journey :global(.footer-word-mask[data-mode=logo][data-grabbable=true]) { cursor: pointer }
+  .journey :global(.footer-word-mask[data-mode=mark]) { cursor: pointer }
   :global(html[data-typography=questrial-cairo]) .journey { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
   :global(html[data-typography=questrial-cairo][lang=ar]) .journey { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
   :global(html[data-typography=questrial-cairo]) .journey { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
@@ -991,20 +985,14 @@
     .journey :global([data-route-entering] [data-route-line]), .journey :global([data-route-entering] [data-route-support]) { will-change: auto }
   }
   .journey :global([data-route-focus]:focus) { outline: none }
-  .journey :global(.footer-word-text[data-material=ready]) { color: #0000 }
   .journey :global(.footer-word-mask) { -webkit-user-select: none; user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none }
   .journey :global(.footer-word-mask[data-grabbable=true]) { cursor: grab }
   .journey :global(.footer-word-mask[data-held=true]) { cursor: grabbing }
   .journey :global(.footer-word-mask:focus-visible) { outline: none }
-  .journey :global(.footer-word-mask:focus-visible:not([data-focus-origin=pointer]):not([data-held=true]):is(:not([data-mode]), [data-mode=word]) .footer-word-text) { text-underline-offset: .055em; -webkit-text-decoration: underline #aaa69a; text-decoration: underline #aaa69a; text-decoration-thickness: 1px }
-  .journey :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.130209vw; height: 0.130209vw; position: absolute; overflow: hidden }
-  .journey :global(.footer-material-layer) { z-index: 2; pointer-events: none; position: fixed; inset: 0 }
-  .journey :global(.footer-material-layer canvas) { pointer-events: none; display: block }
-  .journey :global(.footer-material-layer), .journey :global(.footer-material-layer *) { pointer-events: none !important }
   .journey :global(.global-footer) { pointer-events: none }
   .journey :global(.global-footer :is(.footer-information, .footer-colophon)) { pointer-events: auto }
   .journey :global(.global-footer:not(.standard-footer) .footer-information) { top: max(var(--footer-information-top), var(--footer-nav-top, 0vw)) }
-  .journey :global(.footer-word-mask[data-mode=logo][data-grabbable=true]) { cursor: pointer }
+  .journey :global(.footer-word-mask[data-mode=mark]) { cursor: pointer }
   :global(html[data-typography=questrial-cairo]) .journey { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
   :global(html[data-typography=questrial-cairo][lang=ar]) .journey { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
   :global(html[data-typography=questrial-cairo]) .journey { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
@@ -1653,20 +1641,14 @@
     .journey :global([data-route-entering] [data-route-line]), .journey :global([data-route-entering] [data-route-support]) { will-change: auto }
   }
   .journey :global([data-route-focus]:focus) { outline: none }
-  .journey :global(.footer-word-text[data-material=ready]) { color: #0000 }
   .journey :global(.footer-word-mask) { -webkit-user-select: none; user-select: none; pointer-events: auto; touch-action: pan-y pinch-zoom; cursor: default; outline: none }
   .journey :global(.footer-word-mask[data-grabbable=true]) { cursor: grab }
   .journey :global(.footer-word-mask[data-held=true]) { cursor: grabbing }
   .journey :global(.footer-word-mask:focus-visible) { outline: none }
-  .journey :global(.footer-word-mask:focus-visible:not([data-focus-origin=pointer]):not([data-held=true]):is(:not([data-mode]), [data-mode=word]) .footer-word-text) { text-underline-offset: .055em; -webkit-text-decoration: underline #aaa69a; text-decoration: underline #aaa69a; text-decoration-thickness: 1px }
-  .journey :global(.footer-thought) { clip-path: inset(50%); white-space: nowrap; pointer-events: none; width: 0.242719vw; height: 0.242719vw; position: absolute; overflow: hidden }
-  .journey :global(.footer-material-layer) { z-index: 2; pointer-events: none; position: fixed; inset: 0 }
-  .journey :global(.footer-material-layer canvas) { pointer-events: none; display: block }
-  .journey :global(.footer-material-layer), .journey :global(.footer-material-layer *) { pointer-events: none !important }
   .journey :global(.global-footer) { pointer-events: none }
   .journey :global(.global-footer :is(.footer-information, .footer-colophon)) { pointer-events: auto }
   .journey :global(.global-footer:not(.standard-footer) .footer-information) { top: max(var(--footer-information-top), var(--footer-nav-top, 0vw)) }
-  .journey :global(.footer-word-mask[data-mode=logo][data-grabbable=true]) { cursor: pointer }
+  .journey :global(.footer-word-mask[data-mode=mark]) { cursor: pointer }
   :global(html[data-typography=questrial-cairo]) .journey { font-synthesis: none; --tracking-scale: .6; --heading-tracking: -.039em; --weight-250: 400; --weight-350: 400; --weight-400: 400; --weight-430: 400; --weight-440: 400; --weight-450: 400; --weight-470: 400; --weight-480: 400; --weight-500: 400; --weight-650: 400; --weight-760: 400 }
   :global(html[data-typography=questrial-cairo][lang=ar]) .journey { --tracking-scale: 1; --heading-tracking: 0em; --weight-250: 450; --weight-350: 450; --weight-400: 450; --weight-430: 450; --weight-440: 450; --weight-450: 450; --weight-470: 450; --weight-480: 450; --weight-500: 500; --weight-650: 500; --weight-760: 500 }
   :global(html[data-typography=questrial-cairo]) .journey { --type-scale: 1.025; --body-line-height: 1.6; --name-metric-tracking: -.03 }
