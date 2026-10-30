@@ -62,8 +62,9 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   root.queries.set("[data-signature-stroke]", strokes);
   const stage = elements["identity-stage"];
   // The ⴱ ghost, then each kit piece: its posed group, the clip that fills it and the clipped material.
-  const latent = new Surface();
+  const latent = new Surface(), ripples = [new Surface(), new Surface()];
   stage.queries.set("[data-identity-latent]", latent);
+  stage.queries.set("[data-identity-ripple]", ripples);
   const pieces = identityMark.markPieces.map((name) => {
     const piece = new Surface(), clip = new Surface(), material = new Surface();
     stage.queries.set(`[data-identity-piece="${name}"]`, piece);
@@ -165,7 +166,7 @@ function harness(initialWidth: number, physicalHeight: number, entry = false, lo
   }) as { mountHeroMotion: (root: Surface) => () => void };
   const dispose = mountHeroMotion(root);
   return {
-    root, elements, signature, navItems, navWindows, navMark, latent, pieces, choices, sounds, announced, landings, state, dispose,
+    root, elements, signature, navItems, navWindows, navMark, latent, ripples, pieces, choices, sounds, announced, landings, state, dispose,
     /** Resolves fonts and the portrait, then lets their readiness land. */
     async load() { load(); await new Promise((resolve) => setTimeout(resolve, 0)); },
     pose: () => world.readHeroWorldPose(root), bounds: () => magnetBounds(),
@@ -312,6 +313,13 @@ test("ⴱ fills bottom-up with the load, then reads ⴱ → b → ب with the ch
   for (const { clip } of h.pieces) expect(clip.attributes.get("height")).toBe("960.00");
   h.run(0.35);
   expect(posed(h.pieces, tifinagh)).toBe(true);
+  // The completed ⴱ sends the brand book's ripple from its ring, two rings apart.
+  for (const ripple of h.ripples) {
+    expect(Number(ripple.attributes.get("opacity"))).toBeGreaterThan(0);
+    expect(Number(ripple.attributes.get("r"))).toBeGreaterThan(100);
+    expect(ripple.attributes.get("cy")).toBe("0");
+  }
+  expect(Number(h.ripples[0].attributes.get("r"))).toBeGreaterThan(Number(h.ripples[1].attributes.get("r")));
   expect(h.elements["identity-loading"].dataset.entryStage).toBe("loaded");
   expect(h.elements["identity-choices"].style.visibility).toBe("hidden");
   // ⴱ → b, with the choices rising as it turns.
@@ -324,6 +332,9 @@ test("ⴱ fills bottom-up with the load, then reads ⴱ → b → ب with the ch
   expect(h.elements["identity-choices"].inert).toBe(false);
   h.run(1.3);
   expect(posed(h.pieces, identityMark.markLoopPose("B", 1))).toBe(true);
+  // Locking into b sends the next ripple, from its bowl.
+  expect(Number(h.ripples[0].attributes.get("opacity"))).toBeGreaterThan(0);
+  expect(h.ripples[0].attributes.get("cy")).toBe("50");
 
   // Hovering a choice tilts the pieces; leaving settles them again, by now on ب.
   h.choices[1].dispatchEvent(new Event("pointerenter"));
@@ -333,6 +344,7 @@ test("ⴱ fills bottom-up with the load, then reads ⴱ → b → ب with the ch
   h.run(3);
   expect(part("h1").material.attributes.get("transform")).toBe(settledMaterial("h1"));
   expect(posed(h.pieces, identityMark.markStatic.C())).toBe(true);
+  expect(h.ripples[0].attributes.get("cy")).toBe("0");
   // ب → ⴱ, and round again.
   h.run(3.3);
   expect(posed(h.pieces, tifinagh)).toBe(true);
@@ -354,6 +366,11 @@ test("ⴱ fills bottom-up with the load, then reads ⴱ → b → ب with the ch
   // Cleanup returns the server-rendered, empty ⴱ.
   expect(h.latent.attributes.get("opacity")).toBe(".055");
   expect(posed(h.pieces, tifinagh)).toBe(true);
+  for (const ripple of h.ripples) {
+    expect(ripple.attributes.get("opacity")).toBe("0");
+    expect(ripple.attributes.get("r")).toBe("100");
+    expect(ripple.attributes.has("cy")).toBe(false);
+  }
   for (const { clip, material } of h.pieces) {
     expect(clip.attributes.get("height")).toBe("0");
     expect(material.attributes.has("transform")).toBe(false);

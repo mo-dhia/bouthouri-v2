@@ -9,6 +9,7 @@ import {
   loaderViewBox,
   markPaths,
   markPieces,
+  markRipple,
   markStatic,
   markTransform,
 } from "@/components/layout/header/identity-mark";
@@ -80,6 +81,17 @@ export default function Hero({
                   </clipPath>
                 ))}
               </defs>
+              <g fill="none" stroke="currentColor">
+                {markRipple.delays.map((delay) => (
+                  <circle
+                    key={delay}
+                    data-identity-ripple="true"
+                    r={markRipple.radius}
+                    strokeWidth="2"
+                    opacity="0"
+                  />
+                ))}
+              </g>
               <g opacity=".055" data-identity-latent="true">
                 {markPieces.map((name, i) => (
                   <path

@@ -279,6 +279,9 @@ export const loaderBand: Record<(typeof markPieces)[number], { y: number; h: num
 };
 export const loaderReach = 480;
 export const loaderViewBox = "-160 -160 320 320";
+/* The brand book hero's ripple: each time the mark locks into a letter, two
+   rings leave the ring's edge (r 100 → 250) and fade over `life` seconds. */
+export const markRipple = { delays: [0, 0.14], life: 1.15, radius: 100, spread: 150 } as const;
 
 /** Brand-book favicon: the b in ink on a bone tile. */
 export const iconViewBox = "-190 -190 380 380";

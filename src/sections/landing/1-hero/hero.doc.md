@@ -268,7 +268,11 @@ bottom half, bar and top half each fill from their foot over a third of the
 load, drifting and squashed while latent, exactly as Gazzar's pieces. Loaded,
 ⴱ holds .5s, the ghost fades, and the mark reads the brand book's three
 scripts (plate 4.0) on a loop: ⴱ → b → ب → ⴱ (rests 1.3/1.4/1.6s, moves
-1.75/1.6/1.75s, standalone drop 50). The QUIET/SOUND choices rise at
+1.75/1.6/1.75s, standalone drop 50). Every lock into a letter, the completed
+ⴱ included, sends the brand book hero's ripple whether or not sound is on: two
+rings 140ms apart leave the ring's edge (r 100 → 250, ease-out cubic) and fade
+from .5 over 1.15s, centred on b's bowl for b. Rings already out finish in
+flight; none start there. The QUIET/SOUND choices rise at
 1.02→1.26s. Hovering SOUND tilts the pieces (target 1, QUIET −.35). The 320 ×
 320 stage keeps Gazzar's ink height: the 200-unit ⴱ stands where Gazzar's
 84-unit pieces were. QUIET mutes audio only.

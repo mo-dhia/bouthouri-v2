@@ -32,6 +32,7 @@ import {
   markLoopPose,
   markLoopSteps,
   markPieces,
+  markRipple,
   markStatic,
   markTransform,
   wordmarkMarkOffset,
@@ -99,6 +100,9 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     (name) => stage.querySelector<SVGGElement>(`[data-identity-material="${name}"]`)!,
   );
   const latent = stage.querySelector<SVGGElement>("[data-identity-latent]")!;
+  const ripples = Array.from(
+    stage.querySelectorAll<SVGCircleElement>("[data-identity-ripple]"),
+  );
   const choices = root.querySelector<HTMLElement>("[data-identity-choices]")!;
   const buttons = Array.from(
     root.querySelectorAll<HTMLButtonElement>("[data-identity-choice]"),
@@ -188,6 +192,9 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   // The loaded mark's loop clock: a step of `markLoopSteps`, seconds into it.
   let loopIndex = 0,
     loopTime = 0;
+  // When and where the mark last locked into a letter, on the entry clock.
+  let rippleAt = -Infinity,
+    rippleY = 0;
   // How full ⴱ was when entry began; a bypassed load finishes in flight.
   let fromFill = 0,
     landed = false;
@@ -354,13 +361,35 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       );
     });
   };
-  /** Advances the brand book's ⴱ → b → ب loop and returns its pose. */
+  /** The brand book's ripple, centred on the ring, or on b's bowl. */
+  const drawRipples = () => {
+    ripples.forEach((circle, i) => {
+      const p = (elapsed - rippleAt - markRipple.delays[i]) / markRipple.life;
+      if (p < 0 || p >= 1) {
+        circle.setAttribute("opacity", "0");
+        return;
+      }
+      circle.setAttribute("cy", String(rippleY));
+      circle.setAttribute("r", (markRipple.radius + markRipple.spread * (1 - (1 - p) ** 3)).toFixed(2));
+      circle.setAttribute("opacity", (0.5 * (1 - p)).toFixed(3));
+      circle.setAttribute("stroke-width", (2.2 * (1 - p) + 0.4).toFixed(2));
+    });
+  };
+  /**
+   * Advances the brand book's ⴱ → b → ب loop and returns its pose; each lock
+   * into a letter sends a ripple while the loader waits on a choice.
+   */
   const readLoop = (delta: number, drop: number) => {
     loopTime += delta;
     let guard = 0;
     while (loopTime * 1000 >= markLoopDurations[markLoopSteps[loopIndex]] && guard++ < 12) {
       loopTime -= markLoopDurations[markLoopSteps[loopIndex]] / 1000;
       loopIndex = (loopIndex + 1) % markLoopSteps.length;
+      const step = markLoopSteps[loopIndex];
+      if (phase === "ready" && step.length === 1) {
+        rippleAt = elapsed - loopTime;
+        rippleY = step === "B" ? drop : 0;
+      }
     }
     const step = markLoopSteps[loopIndex];
     return markLoopPose(step, Math.min(1, (loopTime * 1000) / markLoopDurations[step]), drop);
@@ -525,6 +554,9 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       );
       drawMark(tifinagh, visualProgress / 100, 1);
       if (visualProgress === 100) {
+        // The completed ⴱ locks like every letter after it.
+        rippleAt = elapsed;
+        rippleY = 0;
         setPhase("ready");
         status.textContent = status.dataset.readyLabel ?? "";
         bypass.hidden = true;
@@ -536,6 +568,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       readyTime += delta;
       const choice = smoother(1.02, 1.26, readyTime);
       drawMark(readLoop(delta, standaloneDrop), 1, 1 - smoother(0, loadedBeat, readyTime));
+      drawRipples();
       choices.style.visibility = readyTime >= 1.02 ? "visible" : "hidden";
       choices.inert = choice < 1;
       buttons.forEach(
@@ -556,6 +589,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       if (!landed) {
         const fill = fromFill + (1 - fromFill) * smoother(0, 0.4, t);
         drawMark(readLoop(delta, standaloneDrop * (1 - travel)), fill, 1 - fill);
+        drawRipples();
       }
       buttons.forEach(
         (button) =>
@@ -906,6 +940,12 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     linesRoot.replaceChildren();
     // Back to the server-rendered ⴱ: an unfilled ghost.
     latent.setAttribute("opacity", ".055");
+    ripples.forEach((circle) => {
+      circle.removeAttribute("cy");
+      circle.setAttribute("r", String(markRipple.radius));
+      circle.setAttribute("opacity", "0");
+      circle.setAttribute("stroke-width", "2");
+    });
     markPieces.forEach((name, i) => {
       pieces[i].setAttribute("transform", markTransform(tifinagh[name]));
       clips[i].setAttribute("y", "0");
