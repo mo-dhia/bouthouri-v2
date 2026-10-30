@@ -81,6 +81,15 @@
     "reel": "/assets/projects/lab/vocal-orb.mp4"
   },
   {
+    "name": "Previous Portfolio",
+    "kind": "website",
+    "category": "Website",
+    "isNew": false,
+    "href": "https://old.bouthouri.co/",
+    "poster": "/assets/projects/work/old-portfolio.jpg",
+    "reel": "/assets/projects/work/old-portfolio.mp4"
+  },
+  {
     "name": "ThreeJs Scene",
     "kind": "study",
     "category": "3D",

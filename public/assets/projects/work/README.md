@@ -11,15 +11,18 @@ Previews of websites designed and built by Med D. Bouthouri, listed in the previ
 | `cci` | [cci-demo.vercel.app](https://cci-demo.vercel.app/) | JPEG 960×720 | h264, 960×720, 8.067s |
 | `bored-kiwi` | [bored-kiwi.vercel.app](https://bored-kiwi.vercel.app/) | JPEG 960×720 | h264, 960×720, 8.233s |
 | `vawzen` | [vawzen.org](https://vawzen.org/) | JPEG 960×720 | h264, 960×720, 8.233s |
+| `old-portfolio` | [old.bouthouri.co](https://old.bouthouri.co/) | JPEG 960×720 | h264, 960×720, 9.233s |
 
 The previous portfolio linked ViBrand at vibrand.space, which no longer resolves; the Vercel deployment is used instead.
+
+The previous portfolio itself was added on 2026-10-30. It is labeled and linked as old.bouthouri.co, where it is planned to move once this site takes bouthouri.co. It was recorded from www.bouthouri.co/en/ in the dark color scheme, because old.bouthouri.co did not serve it yet.
 
 ## Capture
 
 - Headless Chrome for Testing 155 at 1440×900, DPR 1, no reduced motion, scrollbars hidden.
-- A warm visit first scrolls the page to load lazy assets into the HTTP cache. A fresh visit then settles for 4.5s.
-- A CDP screencast (JPEG q94) records 0.9s still, an eased wheel scroll over 6s, and a 0.7s tail.
-- Scroll distances, in CSS pixels: ViBrand 3000, Bored Kiwi 1300, CCI 2400, the others 2700.
+- A warm visit first scrolls the page to load lazy assets into the HTTP cache. A fresh visit then settles for 4.5s, or 8s for the previous portfolio so that its loader finishes.
+- A CDP screencast (JPEG q94) records 0.9s still, an eased wheel scroll over 6s (7s for the previous portfolio), and a 0.7s tail.
+- Scroll distances, in CSS pixels: ViBrand 3000, Bored Kiwi 1300, CCI 2400, the previous portfolio 4200, the others 2700.
 
 ## Composition
 
@@ -27,7 +30,7 @@ The previous portfolio linked ViBrand at vibrand.space, which no longer resolves
 - The domain sits above the frame, with the site kind and an index below it, set in the bundled Questrial.
 - A dashed track runs beside the frame. Its thumb follows the recorded scroll as a share of the page height.
 - Reels are 30fps. Each picks the latest screencast frame at every tick and crossfades over 0.6s back to its first frame, so it loops cleanly.
-- Encoding: libx264 high, yuv420p, faststart, no audio, CRF 23 (Vawzen 26).
+- Encoding: libx264 high, yuv420p, faststart, no audio, CRF 23 (Vawzen 26, the previous portfolio 25).
 - The poster is the reel's first frame as JPEG q86, because the grid starts each reel at zero under its poster.
 - The ground is already inked, so these media take no tonal filter.
 

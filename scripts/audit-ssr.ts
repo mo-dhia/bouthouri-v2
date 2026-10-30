@@ -65,10 +65,10 @@ for (const locale of ["en", "ar"]) {
     if (page === "contact") { assert.match(markup, /<form\b/); for (const name of ["name", "email", "message"]) assert.ok(markup.includes(`name="${name}"`), `${path}: SSR ${name}`); }
     if (page === "projects") {
       assert.match(markup, /data-projects-root/);
-      assert.equal((markup.match(/data-grid-item/g) || []).length, 16, `${path}: all sixteen cards are server content`);
+      assert.equal((markup.match(/data-grid-item/g) || []).length, 17, `${path}: all seventeen cards are server content`);
       assert.equal((markup.match(/data-reel="\/assets\/projects\/lab\//g) || []).length, 9, `${path}: deferred local study reels`);
-      assert.equal((markup.match(/data-reel="\/assets\/projects\/work\//g) || []).length, 7, `${path}: deferred local website reels`);
-      for (const site of ["https://xsustain.vercel.app/", "https://cci-demo.vercel.app/", "https://v-stores.vercel.app/", "https://vawzen.org/", "https://afrah-events.vercel.app/", "https://bored-kiwi.vercel.app/", "https://vibrand.vercel.app/"]) assert.ok(markup.includes(`href="${site}" target="_blank" rel="external noopener"`), `${path}: live website ${site}`);
+      assert.equal((markup.match(/data-reel="\/assets\/projects\/work\//g) || []).length, 8, `${path}: deferred local website reels`);
+      for (const site of ["https://xsustain.vercel.app/", "https://cci-demo.vercel.app/", "https://v-stores.vercel.app/", "https://vawzen.org/", "https://afrah-events.vercel.app/", "https://bored-kiwi.vercel.app/", "https://vibrand.vercel.app/", "https://old.bouthouri.co/"]) assert.ok(markup.includes(`href="${site}" target="_blank" rel="external noopener"`), `${path}: live website ${site}`);
       assert.match(visible, /Carter Ogunsola/, `${path}: reference experiment attribution`);
       assert.doesNotMatch(markup, /lab__mode|lenis/, `${path}: excluded source controls/runtime`);
     }
