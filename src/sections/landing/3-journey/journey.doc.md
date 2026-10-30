@@ -47,6 +47,20 @@ measured pen windows, horizontal composition and pointer/focus behavior ported
 to ordinary modules. `systems-geometry.js` contains cubic path/arc-length math;
 `systems-renderer.js` applies those paths and the typography/footer transitions.
 They have no GSAP, React Three Fiber, or original application runtime dependency.
+
+The rebrand keeps Gazzar's four pen windows (moments 308/345/381/413) and swaps
+the projects: Artefact Studio (a headset with a skyline in its visor), Vawzen
+(the agency's crown), Batiprix (an isometric house with a drafting dimension)
+and The Forecasting Machine (irregular evidence opening into a forecast fan).
+Each mark is one absolute `M/L/C/Q` path in the 320×220 stage, entering at
+`0 130` and leaving at `320 130`. RTL reverses the path instead of mirroring
+it. Its length belongs in `work-renderer.js`'s pen
+lengths. The JSON markup repeats the path, its quiet growth and the titles.
+`tests/work-projects.test.ts` keeps those copies in step. The fourth mark
+morphs into the systems cards through `systems-geometry.js`. Explore links
+open each project's live site in a new tab; `?work=` deep links use the
+project slugs.
+
 The work and systems renderers run those original functions in a reference-size
 SVG camera, normalizing measured DOM heights by `designScale(width)`. Their
 viewBoxes scale geometry and pen tips once; DOM font, mask, filter and transform

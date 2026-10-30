@@ -27,7 +27,7 @@ const mobile: HomeGeometry = { start: 932, distance: 22526, heroInput: 100 / 5.8
 const now = 1_800_000_000_000;
 const position: HomePosition = { section: "work", progress: 0.43 };
 const localeRecord = (overrides = {}) => JSON.stringify({ version: 1, from: "/en", to: "/ar", created: now, position, ...overrides });
-const workRecord = (overrides = {}) => JSON.stringify({ version: 1, home: "/en", slug: "wujhat", created: now, position, pending: true, ...overrides });
+const workRecord = (overrides = {}) => JSON.stringify({ version: 1, home: "/en", slug: "artefact", created: now, position, pending: true, ...overrides });
 const homeRecord = (overrides = {}) => JSON.stringify({ version: 1, home: "/en", created: now, position, ...overrides });
 const handoffRecord = (overrides = {}) => JSON.stringify({ version: 1, to: "/ar", created: now, ...overrides });
 const checkpoint = (overrides: Partial<HomeCheckpoint> = {}): HomeCheckpoint => ({ version: 1, id: "entry-1", path: "/en", created: now, position, scrollY: 14000, ...overrides });
@@ -66,7 +66,7 @@ describe("explicit shared-route HOME adapters", () => {
     getHomeRestoreIntent(b.win);
     b.storage.set(HOME_RETURN_KEY, homeRecord({ home: "/ar", position: semantic, created: Date.now() }));
     expect(prepareHomeRoutePush("/ar", b.win)).toBe(false);
-    expect(prepareHomeRoutePush("/en?work=wujhat", b.win)).toBe(false);
+    expect(prepareHomeRoutePush("/en?work=artefact", b.win)).toBe(false);
     b.runtime.location = new URL("https://local.test/ar");
     expect(getHomeRestoreIntent(b.win)).toMatchObject({ kind: "home-return", position: semantic });
     expect(b.storage.has(HOME_RETURN_KEY)).toBe(true);
@@ -88,12 +88,12 @@ describe("explicit shared-route HOME adapters", () => {
 });
 
 describe("HOME semantic score mapping", () => {
-  test("matches the measured Wujhat position instead of treating display progress as pin progress", () => {
-    const y = homeScrollTarget(homeWorkPosition("wujhat"), desktop)!;
+  test("matches the first project's measured position instead of treating display progress as pin progress", () => {
+    const y = homeScrollTarget(homeWorkPosition("artefact"), desktop)!;
     expect(y).toBeCloseTo(13672.13, 2);
     expect(homeScoreFromPosition(captureHomePosition(y, desktop)!)).toBeCloseTo(308, 8);
-    expect(homePinProgress(homeWorkPosition("wujhat"))).toBeCloseTo(0.532347859, 7);
-    expect(frameFromProgress(homePinProgress(homeWorkPosition("wujhat"))!).progress).toBeCloseTo(334 / 740, 9);
+    expect(homePinProgress(homeWorkPosition("artefact"))).toBeCloseTo(0.532347859, 7);
+    expect(frameFromProgress(homePinProgress(homeWorkPosition("artefact"))!).progress).toBeCloseTo(334 / 740, 9);
   });
 
   test("every band preserves its fraction through desktop to mobile and back", () => {
@@ -135,7 +135,7 @@ describe("HOME semantic score mapping", () => {
 
   test("captures the displayed shared score when scroll input is still interpolating", () => {
     const frame = frameFromProgress(progressFromStoryTime(130));
-    const result = captureHomePosition(homeScrollTarget(homeWorkPosition("wujhat"), desktop)!, desktop, frame)!;
+    const result = captureHomePosition(homeScrollTarget(homeWorkPosition("artefact"), desktop)!, desktop, frame)!;
     expect(result.section).toBe("curve");
     expect(homeScoreFromPosition(result)).toBeCloseTo(130, 8);
   });
@@ -173,7 +173,7 @@ describe("HOME handoff expiry and entry selection", () => {
     expect(resolveHomeRestoreIntent({ ...all, homeReturn: null })?.kind).toBe("work-return");
     expect(resolveHomeRestoreIntent({ ...all, homeReturn: null, workReturn: null })?.kind).toBe("locale");
     expect(resolveHomeRestoreIntent({ ...all, homeReturn: null, workReturn: null, localeReturn: null })?.kind).toBe("history");
-    expect(resolveHomeRestoreIntent({ ...all, href: "https://local.test/en?work=wujhat" })?.kind).toBe("home-return");
+    expect(resolveHomeRestoreIntent({ ...all, href: "https://local.test/en?work=artefact" })?.kind).toBe("home-return");
   });
 
   test("first-document fresh guard accepts only an exact destination handoff younger than thirty seconds", () => {
@@ -221,13 +221,13 @@ describe("HOME handoff expiry and entry selection", () => {
   test("reload freshness does not override an explicit locale, pending work, work query or native hash", () => {
     expect(resolveHomeRestoreIntent(context({ navigationType: "reload", href: "https://local.test/ar", localeReturn: localeRecord(), nativeScrollY: 5263 }))?.kind).toBe("locale");
     expect(resolveHomeRestoreIntent(context({ navigationType: "reload", workReturn: workRecord(), nativeScrollY: 5263 }))?.kind).toBe("work-return");
-    expect(resolveHomeRestoreIntent(context({ navigationType: "reload", href: "https://local.test/en?work=wujhat" }))?.kind).toBe("work-query");
+    expect(resolveHomeRestoreIntent(context({ navigationType: "reload", href: "https://local.test/en?work=artefact" }))?.kind).toBe("work-query");
     expect(resolveHomeRestoreIntent(context({ navigationType: "reload", href: "https://local.test/en#beyond", nativeScrollY: 100 }))?.kind).toBe("native");
   });
 
   test("locale semantics win over native pixels and query return supports each exact slug", () => {
     expect(resolveHomeRestoreIntent(context({ href: "https://local.test/ar", localeReturn: localeRecord(), nativeScrollY: 15000 }))?.kind).toBe("locale");
-    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/ar?work=wujhat", localeReturn: localeRecord(), nativeScrollY: 15000 }))?.kind).toBe("work-query");
+    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/ar?work=artefact", localeReturn: localeRecord(), nativeScrollY: 15000 }))?.kind).toBe("work-query");
     for (const slug of Object.keys(HOME_WORK_MOMENTS) as (keyof typeof HOME_WORK_MOMENTS)[]) {
       const result = resolveHomeRestoreIntent(context({ href: `https://local.test/en?work=${slug}` }));
       expect(result).toMatchObject({ kind: "work-query", slug, skipEntry: true });
@@ -237,16 +237,16 @@ describe("HOME handoff expiry and entry selection", () => {
   });
 
   test("a consumed work query restores the latest entry on reload instead of repeating its initial seek", () => {
-    const saved = checkpoint({ path: "/en?work=wujhat", workQuery: "wujhat", position: { section: "footer", progress: 0.7 } });
-    const result = resolveHomeRestoreIntent(context({ href: "https://local.test/en?work=wujhat", navigationType: "reload", historyState: { [HOME_HISTORY_STATE_KEY]: saved } }));
+    const saved = checkpoint({ path: "/en?work=artefact", workQuery: "artefact", position: { section: "footer", progress: 0.7 } });
+    const result = resolveHomeRestoreIntent(context({ href: "https://local.test/en?work=artefact", navigationType: "reload", historyState: { [HOME_HISTORY_STATE_KEY]: saved } }));
     expect(result?.kind).toBe("reload");
     expect(result?.position).toEqual(saved.position);
   });
 
   test("hash entries preserve native anchor behavior and no unsupported route is treated as HOME", () => {
     expect(resolveHomeRestoreIntent(context({ href: "https://local.test/en#beyond" }))?.kind).toBe("native");
-    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/en/projects/wujhat", workReturn: workRecord() }))).toBeNull();
-    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/en/projects?project=wujhat" }))).toBeNull();
+    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/en/projects/artefact", workReturn: workRecord() }))).toBeNull();
+    expect(resolveHomeRestoreIntent(context({ href: "https://local.test/en/projects?project=artefact" }))).toBeNull();
   });
 
   test("history lookup is per ID and URL, chooses a newer stored checkpoint and tolerates corrupted storage", () => {
@@ -300,7 +300,7 @@ describe("native link guards", () => {
     const link = { href: "/ar?audit=keep#top" };
     expect(homeLinkIntent(click, link, "https://local.test/en")).toEqual({ kind: "locale", from: "/en", to: "/ar" });
     expect(link.href).toBe("/ar?audit=keep#top");
-    expect(homeLinkIntent(click, { href: "/en/projects/tranche-finance" }, "https://local.test/en")).toEqual({ kind: "project", home: "/en", slug: "tranche-finance" });
+    expect(homeLinkIntent(click, { href: "/en/projects/vawzen" }, "https://local.test/en")).toEqual({ kind: "project", home: "/en", slug: "vawzen" });
   });
 
   test("modified, non-primary and previously-cancelled clicks leave no handoff", () => {
@@ -314,7 +314,7 @@ describe("native link guards", () => {
       { href: "/ar", target: "_blank" }, { href: "/ar", target: "case" }, { href: "/ar", download: true },
       { href: "/ar", inert: true }, { href: "https://www.thisisgazzar.com/ar" }, { href: "mailto:hello@example.com" },
       { href: "javascript:void(0)" }, { href: "/en" }, { href: "#beyond" }, { href: "/en/projects/unknown" },
-      { href: "/ar/projects/wujhat" }, { href: "http://[" },
+      { href: "/ar/projects/artefact" }, { href: "http://[" },
     ]) expect(homeLinkIntent(click, link, "https://local.test/en")).toBeNull();
     expect(homeLinkIntent(click, { href: "/ar", target: "_SELF" }, "https://local.test/en")?.kind).toBe("locale");
   });
@@ -585,7 +585,7 @@ describe("HOME browser lifecycle", () => {
 
   test("first document clears all stale return records, while direct work query and hash remain explicit URL intents", () => {
     for (const type of ["navigate", "reload"] as const) {
-      for (const suffix of ["", "?work=wujhat", "#beyond"]) {
+      for (const suffix of ["", "?work=artefact", "#beyond"]) {
         const b = browser(`https://local.test/ar${suffix}`);
         b.runtime.performance.getEntriesByType = () => [{ type }];
         b.storage.set(HOME_RETURN_KEY, homeRecord({ created: Date.now() }));
@@ -600,7 +600,7 @@ describe("HOME browser lifecycle", () => {
 
   test("matching hard locale handoff preserves mismatched HOME return until successful matching Back apply", () => {
     const b = browser("https://local.test/ar");
-    const raw = homeRecord({ created: Date.now(), position: homeWorkPosition("wujhat") });
+    const raw = homeRecord({ created: Date.now(), position: homeWorkPosition("artefact") });
     b.storage.set(HOME_RETURN_KEY, raw); b.setLocaleReturn(localeRecord({ created: Date.now() }));
     expect(getHomeRestoreIntent(b.win)?.kind).toBe("locale");
     expect(b.storage.has(HOME_HANDOFF_KEY)).toBe(false);
@@ -813,8 +813,8 @@ describe("HOME browser lifecycle", () => {
   test("pending HOME/query/hash intents wait for their locale owner and retain existing precedence", () => {
     for (const kind of ["home-return", "work-query", "native", "history"] as const) {
       const b = freshArabicHistory();
-      const saved = checkpoint({ ...b.english, path: kind === "work-query" || kind === "history" ? "/en?work=wujhat" : "/en",
-        ...(kind === "history" ? { workQuery: "wujhat" } : {}) });
+      const saved = checkpoint({ ...b.english, path: kind === "work-query" || kind === "history" ? "/en?work=artefact" : "/en",
+        ...(kind === "history" ? { workQuery: "artefact" } : {}) });
       const raw = homeRecord({ created: Date.now() });
       if (kind === "home-return") b.storage.set(HOME_RETURN_KEY, raw);
       b.select(saved, kind === "native" ? "#beyond" : ""); b.settle();
@@ -837,7 +837,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("replacement HOME reapplies an explicit intent at identical geometry while same-root remounts remain no-ops", () => {
-    const b = browser("https://local.test/en?work=wujhat");
+    const b = browser("https://local.test/en?work=artefact");
     b.mount(); b.settle();
     const restored = b.runtime.scrollY;
     b.runtime.scrollY = desktop.start + desktop.distance; b.capture();
@@ -1011,7 +1011,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("fresh reset integration leaves locale/history/work/query/hash boot positions alone", () => {
-    for (const href of ["https://local.test/en?work=wujhat", "https://local.test/en#beyond", "https://local.test/ar"]) {
+    for (const href of ["https://local.test/en?work=artefact", "https://local.test/en#beyond", "https://local.test/ar"]) {
       const b = browser(href);
       b.runtime.performance.getEntriesByType = () => [{ type: "reload" }]; b.runtime.scrollY = 5263;
       if (href.endsWith("/ar")) b.setLocaleReturn(localeRecord({ created: Date.now() }));
@@ -1028,7 +1028,7 @@ describe("HOME browser lifecycle", () => {
     const actual = { section: "work", progress: 0.61 } as const;
     b.runtime.scrollY = homeScrollTarget(actual, desktop)!;
     b.mount(); b.settle();
-    const href = "https://local.test/en/projects/wujhat", link = new LinkStub(href);
+    const href = "https://local.test/en/projects/artefact", link = new LinkStub(href);
     const event = (overrides = {}) => ({ type: "click", target: link, ...click, ...overrides,
       preventDefault: () => { throw new Error("Navigation must not cancel native clicks"); } }) as unknown as Event;
     b.document.dispatchEvent(event({ ctrlKey: true }));
@@ -1039,7 +1039,7 @@ describe("HOME browser lifecycle", () => {
     expect(b.storage.has(HOME_RETURN_KEY)).toBe(false);
     b.document.dispatchEvent(event());
     const saved = JSON.parse(b.storage.get(HOME_WORK_RETURN_KEY)!);
-    expect(saved.slug).toBe("wujhat");
+    expect(saved.slug).toBe("artefact");
     expect(saved.position.section).toBe("work");
     expect(saved.position.progress).toBeCloseTo(actual.progress, 8);
     expect(link.href).toBe(href);
@@ -1075,7 +1075,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("waits for fonts and the footer's actual scrollable extent", async () => {
-    const b = browser("https://local.test/en?work=8returns");
+    const b = browser("https://local.test/en?work=the-forecasting-machine");
     let fontReady!: () => void;
     Object.assign(b.document, { fonts: { ready: new Promise<void>((resolve) => { fontReady = resolve; }) } });
     b.document.documentElement.scrollHeight = b.document.body.scrollHeight = 1000;
@@ -1084,11 +1084,11 @@ describe("HOME browser lifecycle", () => {
     b.document.documentElement.scrollHeight = 50000;
     b.runtime.dispatchEvent(new Event(HOME_NAVIGATION_READY_EVENT)); b.settle();
     expect(b.details[0].frame?.time).toBeCloseTo(413, 8);
-    expect((b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint).workQuery).toBe("8returns");
+    expect((b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint).workQuery).toBe("the-forecasting-machine");
   });
 
   test("remount does not reapply; cleanup removes every listener, timer and pending frame", () => {
-    const b = browser("https://local.test/en?work=wujhat");
+    const b = browser("https://local.test/en?work=artefact");
     let events = 0;
     const event = () => { events++; };
     b.runtime.addEventListener(HOME_NAVIGATION_RESTORE_EVENT, event);
@@ -1107,7 +1107,7 @@ describe("HOME browser lifecycle", () => {
     expect(b.runtime.history.scrollRestoration).toBe("auto");
   });
 
-  test("locale-restored Wujhat312 reprojects desktop/mobile and reverse without replacing its intent", () => {
+  test("locale-restored first-project score 312 reprojects desktop/mobile and reverse without replacing its intent", () => {
     const b = browser("https://local.test/ar");
     const original: HomePosition = { section: "work", progress: 6 / 142 };
     const wide = { start: 1009, distance: journeyDistance(1009), heroInput: 100 / 6.8 };
@@ -1157,7 +1157,7 @@ describe("HOME browser lifecycle", () => {
 
   test("history, project return and consumed query reload also retain their own semantic anchors on resize", () => {
     for (const kind of ["history", "work-return", "reload"] as const) {
-      const b = browser(kind === "reload" ? "https://local.test/en?work=wujhat" : "https://local.test/en");
+      const b = browser(kind === "reload" ? "https://local.test/en?work=artefact" : "https://local.test/en");
       const original: HomePosition = { section: "work", progress: 6 / 142 };
       if (kind === "work-return") {
         b.runtime.performance.getEntriesByType = () => [{ type: "back_forward" }];
@@ -1165,9 +1165,9 @@ describe("HOME browser lifecycle", () => {
       } else {
         b.runtime.performance.getEntriesByType = () => [{ type: kind === "history" ? "back_forward" : "reload" }];
         b.runtime.history.state[HOME_HISTORY_STATE_KEY] = checkpoint({
-          created: Date.now(), position: original, path: kind === "reload" ? "/en?work=wujhat" : "/en",
+          created: Date.now(), position: original, path: kind === "reload" ? "/en?work=artefact" : "/en",
           scrollY: homeScrollTarget(original, desktop)!,
-          ...(kind === "reload" ? { workQuery: "wujhat" } : {}),
+          ...(kind === "reload" ? { workQuery: "artefact" } : {}),
         });
       }
       b.mount(); b.settle();
@@ -1209,7 +1209,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("same geometry, frame/data/style updates and repeated READY never seek a restored mount", () => {
-    const b = browser("https://local.test/en?work=wujhat");
+    const b = browser("https://local.test/en?work=artefact");
     b.mount(); b.settle();
     b.runtime.scrollY = desktop.start + desktop.distance; b.capture();
     for (let i = 0; i < 8; i++) {
@@ -1228,7 +1228,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("BFCache history visit restores saved pixels after a viewport change, matching source history policy", () => {
-    const b = browser("https://local.test/en?work=remoteplatz");
+    const b = browser("https://local.test/en?work=batiprix");
     b.mount(); b.settle();
     b.runtime.dispatchEvent(new Event("pagehide"));
     b.setGeometry(mobile); b.runtime.innerWidth = 392; b.runtime.innerHeight = 932;
@@ -1279,7 +1279,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("popstate selects the destination entry without overwriting its checkpoint with outgoing pixels", () => {
-    const b = browser("https://local.test/en?work=wujhat");
+    const b = browser("https://local.test/en?work=artefact");
     b.mount(); b.settle();
     const outgoingId = (b.runtime.history.state[HOME_HISTORY_STATE_KEY] as HomeCheckpoint).id;
     const destination = checkpoint({ id: "hero-entry", path: "/en", created: Date.now(), position: { section: "hero", progress: 0 }, scrollY: 0 });
@@ -1398,7 +1398,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("pagehide flushes denied-storage pixels/query consumption across a new Document and BFCache", () => {
-    for (const suffix of ["", "?work=wujhat"]) {
+    for (const suffix of ["", "?work=artefact"]) {
       const href = `https://local.test/en${suffix}`, b = browser(href);
       Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
       b.mount(); b.settle();
@@ -1408,7 +1408,7 @@ describe("HOME browser lifecycle", () => {
       b.runtime.dispatchEvent(Object.assign(new Event("pagehide"), { persisted: true }));
       expect(b.historyWrites).toHaveLength(writes + 1);
       expect(b.runtime.history.state[HOME_HISTORY_STATE_KEY]).toMatchObject({ id, scrollY: 22000 });
-      if (suffix) expect(b.runtime.history.state[HOME_HISTORY_STATE_KEY]).toHaveProperty("workQuery", "wujhat");
+      if (suffix) expect(b.runtime.history.state[HOME_HISTORY_STATE_KEY]).toHaveProperty("workQuery", "artefact");
       expect(b.timers.size).toBe(0); expect(b.frames.size).toBe(0);
       b.runtime.scrollY = 10; b.capture(); b.notifyLayout(); b.flushCaptures();
       expect(b.historyWrites).toHaveLength(writes + 1);
@@ -1523,7 +1523,7 @@ describe("HOME browser lifecycle", () => {
   });
 
   test("unavailable session storage does not block query or native navigation", () => {
-    const b = browser("https://local.test/en?work=wujhat");
+    const b = browser("https://local.test/en?work=artefact");
     Object.defineProperty(b.runtime, "sessionStorage", { get() { throw new Error("denied"); } });
     expect(getHomeRestoreIntent(b.win)?.kind).toBe("work-query");
     b.mount(); b.settle();

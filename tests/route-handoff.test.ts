@@ -14,7 +14,7 @@ describe("shared route classification and source clock", () => {
     expect(routeIntent("/en/vision/", "https://local.test/en/contact")?.href).toBe("/en/vision");
     expect(routeIntent("/ar", "https://local.test/en")?.hard).toBe(false);
     expect(routeIntent("/en", "https://local.test/en/contact")?.plainHomePush).toBe(true);
-    expect(routeIntent("/en?work=wujhat", "https://local.test/en/contact")?.plainHomePush).toBe(false);
+    expect(routeIntent("/en?work=artefact", "https://local.test/en/contact")?.plainHomePush).toBe(false);
     for (const target of ["/en/archive", "/en/vision#next", "/en/contact?different=1", "https://elsewhere.test/en/vision", "mailto:contact@bouthouri.co"]) expect(routeIntent(target, "https://local.test/en/contact")).toBeNull();
     expect(routeIntent("/en/vision", "https://local.test/en/contact", "_blank")).toBeNull();
     expect(routeIntent("/en/vision", "https://local.test/en/contact", "", true)).toBeNull();

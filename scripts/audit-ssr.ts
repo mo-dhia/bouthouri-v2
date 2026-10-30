@@ -29,8 +29,10 @@ for (const locale of ["en", "ar"]) {
   assert.ok(html.includes(brand.name), "Metadata/schema should identify the new owner");
   assert.match(markup, /<h1[^>]*id="hero-name"/);
   assert.match(markup, /id="beyond"/);
-  assert.match(markup, /id="work-wujhat-title"/);
-  assert.match(markup, /id="work-8returns-title"/);
+  assert.match(markup, /id="work-artefact-title"/);
+  assert.match(markup, /id="work-forecasting-title"/);
+  for (const site of [locale === "ar" ? "https://artefactstudio.org/ar" : "https://artefactstudio.org/", "https://vawzen.org/", "https://www.batiprix.com/", "https://theforecastingmachine.com/"])
+    assert.match(markup, new RegExp(`<a[^>]*work-explore[^>]*href="${site.replaceAll(".", "\\.")}" target="_blank" rel="external noopener"`), `${locale}: Explore opens ${site}`);
   assert.match(markup, /systems-human-copy/);
   assert.match(markup, /systems-ending/);
   assert.doesNotMatch(markup, /Create Next App|To get started|Deploy Now/);

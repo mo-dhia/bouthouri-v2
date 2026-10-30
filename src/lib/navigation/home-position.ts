@@ -33,10 +33,10 @@ export type HomeGeometry = {
 };
 
 export const HOME_WORK_MOMENTS = {
-  wujhat: 308,
-  "tranche-finance": 345,
-  remoteplatz: 381,
-  "8returns": 413,
+  artefact: 308,
+  vawzen: 345,
+  batiprix: 381,
+  "the-forecasting-machine": 413,
 } as const;
 export type HomeWorkSlug = keyof typeof HOME_WORK_MOMENTS;
 

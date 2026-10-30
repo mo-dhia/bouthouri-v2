@@ -50,8 +50,8 @@ function z(e) {
   }
   return U(i);
 }
-let V = z($.WORK_MARKS["8returns"].path),
-  K = z((0, $.directedWorkPath)($.WORK_MARKS["8returns"].path, -1)),
+let V = z($.WORK_MARKS.forecasting.path),
+  K = z((0, $.directedWorkPath)($.WORK_MARKS.forecasting.path, -1)),
   X = (V.length - 2) / 6,
   J = X + 4;
 function Q(e) {
