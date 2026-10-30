@@ -12,7 +12,7 @@ export default function Tour({ locale }: { locale: Locale }) {
     <div className={styles.stage} data-tour-stage>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img className={styles.poster} src={tourProject.poster} width='960' height='720' alt={copy.image} decoding='async' fetchPriority='high' />
-      <div className={styles.viewer} data-tour-mount />
+      <div className={styles.viewer} data-tour-mount inert aria-hidden='true' />
       <div className={styles.heading}><h1 id='tour-heading'>{copy.title}</h1><span>{copy.category}</span></div>
       <details className={styles.notes}>
         <summary>{copy.notes}</summary>

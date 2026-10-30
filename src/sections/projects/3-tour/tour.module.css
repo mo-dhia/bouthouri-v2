@@ -1,10 +1,10 @@
 @media (width > 1024px) {
   .root { position: relative; inline-size: 100%; block-size: 100svh; color: #dbd8d0 }
   .stage { position: absolute; overflow: hidden; border: 1px solid #d6d1c122; background: #090909; isolation: isolate; inset-block-start: 5.3125vw; inset-inline: 1.5625vw; inset-block-end: 3.02083vw; border-radius: 0.833333vw }
-  .poster { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; transition: opacity .3s }
-  .viewer { position: absolute; inset: 0; direction: ltr }
+  .poster { z-index: 1; pointer-events: none; position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; transition: opacity .3s }
+  .viewer { z-index: 0; position: absolute; inset: 0; direction: ltr }
   .viewer iframe { display: block; inline-size: 100%; block-size: 100%; border: 0 }
-  .root[data-tour-state='live'] .poster { opacity: 0; pointer-events: none }
+  .root[data-tour-presented] .poster { opacity: 0; pointer-events: none }
   .root[data-tour-parked] .viewer { visibility: hidden }
   .root[data-tour-parked] .poster { opacity: 1 }
   .heading { position: absolute; z-index: 2; display: flex; align-items: center; pointer-events: none; text-shadow: 0 0.0520833vw 0.416667vw #000; inset-block-start: 0.9375vw; inset-inline-start: 1.25vw; gap: 0.625vw }
@@ -19,17 +19,17 @@
   .panel p { margin: 0 0 1em }
   .panel a { color: #dbd8d0; text-underline-offset: .25em }
   .close { position: absolute; z-index: 3; inset-block-start: 0.416667vw; inset-inline-end: 0.416667vw }
-  .launch { position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0b0b0bd9; color: #dbd8d0; border: 1px solid #d6d1c166; font-family: inherit; cursor: pointer; backdrop-filter: blur(8px); inline-size: 9.375vw; min-block-size: 6.77083vw; padding: 1.04167vw; gap: 0.625vw; border-radius: 0.625vw; font-size: 0.729167vw }
+  .launch { z-index: 2; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0b0b0bd9; color: #dbd8d0; border: 1px solid #d6d1c166; font-family: inherit; cursor: pointer; backdrop-filter: blur(8px); inline-size: 9.375vw; min-block-size: 6.77083vw; padding: 1.04167vw; gap: 0.625vw; border-radius: 0.625vw; font-size: 0.729167vw }
   .root[data-locale='ar'] .launch { translate: 50% -50% }
   .launch svg { inline-size: 100%; overflow: visible }
   .launch:disabled { cursor: wait }
-  .root[data-tour-state='live'] .launch { display: none }
-  .status { position: absolute; inset-inline: 8%; inset-block-start: 65%; margin: 0; text-align: center; line-height: 1.6; background: #090909cc; padding: 0.416667vw; border-radius: 0.3125vw; font-size: 0.729167vw }
+  .root[data-tour-presented] .launch { display: none }
+  .status { z-index: 2; position: absolute; inset-inline: 8%; inset-block-start: 65%; margin: 0; text-align: center; line-height: 1.6; background: #090909cc; padding: 0.416667vw; border-radius: 0.3125vw; font-size: 0.729167vw }
   .status:empty { display: none }
   .bottom { position: absolute; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 1em; pointer-events: none; inset-block-end: 0.833333vw; inset-inline: 1.25vw }
   .bottom a { pointer-events: auto }
   .instructions { position: absolute; margin: 0; color: #aaa69b; text-align: center; line-height: 1.6; inset-inline: 2.8125vw; inset-block-end: 0.833333vw; font-size: 0.677083vw }
-  .noScript { position: absolute; inset-inline: 8%; inset-block-start: 70%; margin: 0; background: #090909cc; text-align: center; line-height: 1.6; font-size: 0.729167vw }
+  .noScript { z-index: 2; position: absolute; inset-inline: 8%; inset-block-start: 70%; margin: 0; background: #090909cc; text-align: center; line-height: 1.6; font-size: 0.729167vw }
   .close[hidden], .launch [hidden] { display: none }
   .launch:focus-visible, .close:focus-visible, .notes summary:focus-visible, .bottom a:focus-visible, .panel a:focus-visible { outline: 2px solid #dbd8d0; outline-offset: 0.104167vw }
   :global([data-editorial-page='projects']:has([data-tour-root])) { position: fixed; inset: 0; inline-size: 100%; min-block-size: 0; overflow: auto; overscroll-behavior: contain }
@@ -39,10 +39,10 @@
 @media (600px < width <= 1024px) {
   .root { position: relative; inline-size: 100%; block-size: 100svh; color: #dbd8d0 }
   .stage { position: absolute; overflow: hidden; border: 1px solid #d6d1c122; background: #090909; isolation: isolate; inset-block-start: 13.2812vw; inset-inline: 2.75391vw; inset-block-end: 10.4167vw; border-radius: 2.08333vw }
-  .poster { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; transition: opacity .3s }
-  .viewer { position: absolute; inset: 0; direction: ltr }
+  .poster { z-index: 1; pointer-events: none; position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; transition: opacity .3s }
+  .viewer { z-index: 0; position: absolute; inset: 0; direction: ltr }
   .viewer iframe { display: block; inline-size: 100%; block-size: 100%; border: 0 }
-  .root[data-tour-state='live'] .poster { opacity: 0; pointer-events: none }
+  .root[data-tour-presented] .poster { opacity: 0; pointer-events: none }
   .root[data-tour-parked] .viewer { visibility: hidden }
   .root[data-tour-parked] .poster { opacity: 1 }
   .heading { position: absolute; z-index: 2; display: flex; align-items: center; pointer-events: none; text-shadow: 0 0.130208vw 1.04167vw #000; inset-block-start: 2.34375vw; inset-inline-start: 2.34375vw; gap: 1.5625vw }
@@ -57,17 +57,17 @@
   .panel p { margin: 0 0 1em }
   .panel a { color: #dbd8d0; text-underline-offset: .25em }
   .close { position: absolute; z-index: 3; inset-block-start: 1.04167vw; inset-inline-end: 1.04167vw }
-  .launch { position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0b0b0bd9; color: #dbd8d0; border: 1px solid #d6d1c166; font-family: inherit; cursor: pointer; backdrop-filter: blur(8px); inline-size: 22.1354vw; min-block-size: 16.4062vw; padding: 2.60417vw; gap: 1.5625vw; border-radius: 1.5625vw; font-size: 1.82292vw }
+  .launch { z-index: 2; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0b0b0bd9; color: #dbd8d0; border: 1px solid #d6d1c166; font-family: inherit; cursor: pointer; backdrop-filter: blur(8px); inline-size: 22.1354vw; min-block-size: 16.4062vw; padding: 2.60417vw; gap: 1.5625vw; border-radius: 1.5625vw; font-size: 1.82292vw }
   .root[data-locale='ar'] .launch { translate: 50% -50% }
   .launch svg { inline-size: 100%; overflow: visible }
   .launch:disabled { cursor: wait }
-  .root[data-tour-state='live'] .launch { display: none }
-  .status { position: absolute; inset-inline: 8%; inset-block-start: 65%; margin: 0; text-align: center; line-height: 1.6; background: #090909cc; padding: 1.04167vw; border-radius: 0.78125vw; font-size: 1.82292vw }
+  .root[data-tour-presented] .launch { display: none }
+  .status { z-index: 2; position: absolute; inset-inline: 8%; inset-block-start: 65%; margin: 0; text-align: center; line-height: 1.6; background: #090909cc; padding: 1.04167vw; border-radius: 0.78125vw; font-size: 1.82292vw }
   .status:empty { display: none }
   .bottom { position: absolute; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 1em; pointer-events: none; inset-block-end: 2.08333vw; inset-inline: 2.34375vw }
   .bottom a { pointer-events: auto }
   .instructions { position: absolute; margin: 0; color: #aaa69b; text-align: center; line-height: 1.6; inset-inline: 5.09766vw; inset-block-end: 2.08333vw; font-size: 1.5625vw }
-  .noScript { position: absolute; inset-inline: 8%; inset-block-start: 70%; margin: 0; background: #090909cc; text-align: center; line-height: 1.6; font-size: 1.82292vw }
+  .noScript { z-index: 2; position: absolute; inset-inline: 8%; inset-block-start: 70%; margin: 0; background: #090909cc; text-align: center; line-height: 1.6; font-size: 1.82292vw }
   .close[hidden], .launch [hidden] { display: none }
   .launch:focus-visible, .close:focus-visible, .notes summary:focus-visible, .bottom a:focus-visible, .panel a:focus-visible { outline: 2px solid #dbd8d0; outline-offset: 0.260417vw }
   :global([data-editorial-page='projects']:has([data-tour-root])) { position: fixed; inset: 0; inline-size: 100%; min-block-size: 0; overflow: auto; overscroll-behavior: contain }
@@ -77,10 +77,10 @@
 @media (width <= 600px) {
   .root { position: relative; inline-size: 100%; block-size: 100svh; color: #dbd8d0 }
   .stage { position: absolute; overflow: hidden; border: 1px solid #d6d1c122; background: #090909; isolation: isolate; inset-block-start: 19.4175vw; inset-inline: 3.99676vw; inset-block-end: 24.2718vw; border-radius: 3.8835vw }
-  .poster { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; transition: opacity .3s }
-  .viewer { position: absolute; inset: 0; direction: ltr }
+  .poster { z-index: 1; pointer-events: none; position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; transition: opacity .3s }
+  .viewer { z-index: 0; position: absolute; inset: 0; direction: ltr }
   .viewer iframe { display: block; inline-size: 100%; block-size: 100%; border: 0 }
-  .root[data-tour-state='live'] .poster { opacity: 0; pointer-events: none }
+  .root[data-tour-presented] .poster { opacity: 0; pointer-events: none }
   .root[data-tour-parked] .viewer { visibility: hidden }
   .root[data-tour-parked] .poster { opacity: 1 }
   .heading { position: absolute; z-index: 2; display: flex; align-items: center; pointer-events: none; text-shadow: 0 0.242718vw 1.94175vw #000; inset-block-start: 4.36893vw; inset-inline-start: 2.91262vw; gap: 2.91262vw }
@@ -90,22 +90,22 @@
   .notes summary, .close, .bottom a { display: flex; align-items: center; justify-content: center; border: 1px solid #d6d1c133; background: #111110e6; color: inherit; font-family: inherit; text-decoration: none; line-height: 1.4; cursor: pointer; min-block-size: 8.73786vw; padding: 1.45631vw 2.91262vw; border-radius: 1.45631vw; font-size: 2.6699vw }
   .notes summary { list-style: none }
   .notes summary::-webkit-details-marker { display: none }
-  .panel { position: absolute; inset-inline-end: 0; overflow: auto; max-block-size: 55svh; background: #0f0f0ff5; border: 1px solid #d6d1c133; color: #c2beb1; line-height: 1.8; inset-block-start: 10.6796vw; inline-size: 80.0971vw; max-inline-size: calc(100vw - 11.877vw); padding: 3.8835vw; border-radius: 1.94175vw; font-size: 3.15534vw; position: fixed; inset-block-start: 30vw; inset-inline: 8vw; inline-size: auto; max-inline-size: none }
+  .panel { position: fixed; overflow: auto; max-block-size: 55svh; background: #0f0f0ff5; border: 1px solid #d6d1c133; color: #c2beb1; line-height: 1.8; padding: 3.8835vw; border-radius: 1.94175vw; font-size: 3.15534vw; inset-block-start: 30vw; inset-inline: 8vw; inline-size: auto; max-inline-size: none }
   .panel h2 { margin: 0 0 1em; color: #dbd8d0; font-weight: 400; line-height: 1.2; font-size: 4.12621vw }
   .panel p { margin: 0 0 1em }
   .panel a { color: #dbd8d0; text-underline-offset: .25em }
   .close { position: absolute; z-index: 3; inset-block-start: 1.94175vw; inset-inline-end: 1.94175vw }
-  .launch { position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0b0b0bd9; color: #dbd8d0; border: 1px solid #d6d1c166; font-family: inherit; cursor: pointer; backdrop-filter: blur(8px); inline-size: 36.4078vw; min-block-size: 28.6408vw; padding: 4.85437vw; gap: 2.91262vw; border-radius: 2.91262vw; font-size: 3.15534vw }
+  .launch { z-index: 2; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0b0b0bd9; color: #dbd8d0; border: 1px solid #d6d1c166; font-family: inherit; cursor: pointer; backdrop-filter: blur(8px); inline-size: 36.4078vw; min-block-size: 28.6408vw; padding: 4.85437vw; gap: 2.91262vw; border-radius: 2.91262vw; font-size: 3.15534vw }
   .root[data-locale='ar'] .launch { translate: 50% -50% }
   .launch svg { inline-size: 100%; overflow: visible }
   .launch:disabled { cursor: wait }
-  .root[data-tour-state='live'] .launch { display: none }
-  .status { position: absolute; inset-inline: 8%; inset-block-start: 65%; margin: 0; text-align: center; line-height: 1.6; background: #090909cc; padding: 1.94175vw; border-radius: 1.45631vw; font-size: 3.15534vw }
+  .root[data-tour-presented] .launch { display: none }
+  .status { z-index: 2; position: absolute; inset-inline: 8%; inset-block-start: 65%; margin: 0; text-align: center; line-height: 1.6; background: #090909cc; padding: 1.94175vw; border-radius: 1.45631vw; font-size: 3.15534vw }
   .status:empty { display: none }
   .bottom { position: absolute; z-index: 2; display: flex; justify-content: space-between; align-items: center; gap: 1em; pointer-events: none; inset-block-end: 3.8835vw; inset-inline: 2.91262vw }
   .bottom a { pointer-events: auto }
   .instructions { position: absolute; margin: 0; color: #aaa69b; text-align: center; line-height: 1.6; inset-inline: 6.90939vw; inset-block-end: 3.8835vw; font-size: 2.6699vw }
-  .noScript { position: absolute; inset-inline: 8%; inset-block-start: 70%; margin: 0; background: #090909cc; text-align: center; line-height: 1.6; font-size: 3.15534vw }
+  .noScript { z-index: 2; position: absolute; inset-inline: 8%; inset-block-start: 70%; margin: 0; background: #090909cc; text-align: center; line-height: 1.6; font-size: 3.15534vw }
   .close[hidden], .launch [hidden] { display: none }
   .launch:focus-visible, .close:focus-visible, .notes summary:focus-visible, .bottom a:focus-visible, .panel a:focus-visible { outline: 2px solid #dbd8d0; outline-offset: 0.485437vw }
   :global([data-editorial-page='projects']:has([data-tour-root])) { position: fixed; inset: 0; inline-size: 100%; min-block-size: 0; overflow: auto; overscroll-behavior: contain }

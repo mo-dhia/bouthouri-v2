@@ -18,7 +18,10 @@ Local integration changes:
   standalone page; preserve original localized hotspot and preload behavior.
 - `viewer/tour-navigation.css`: marker artwork scales with the host composition;
   projected positions still belong to Pano2VR.
-
+- `viewer/tour-lifecycle.js`: an instance adapter for the pinned player version,
+  owning real frame/recovery suspension, parked gyro gating, current-room image
+  error tracking and decoded-image readiness. `index.html` installs it before
+  parsing configuration. The generated player remains unchanged.
 
 ## Tile encoding
 

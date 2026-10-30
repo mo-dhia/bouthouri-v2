@@ -130,7 +130,7 @@ for (const path of ["/en/projects/not-a-study", "/en/services/vocal-orb", "/en/s
 for (const path of ["/fr", "/en/not-a-page"]) {
   assert.equal((await fetch(new URL(path, base))).status, 404, path);
 }
-for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/identity-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2", "/assets/projects/tour/360-tour.jpg", "/assets/projects/tour/360-tour.mp4", "/assets/projects/tour/cafe.jpg", "/assets/projects/tour/viewer/index.html", "/assets/projects/tour/viewer/pano.xml", "/assets/projects/tour/viewer/pano2vr_player.js", "/assets/projects/tour/viewer/artefact-lockup.svg"]) {
+for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/identity-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2", "/assets/projects/tour/360-tour.jpg", "/assets/projects/tour/360-tour.mp4", "/assets/projects/tour/cafe.jpg", "/assets/projects/tour/viewer/index.html", "/assets/projects/tour/viewer/pano.xml", "/assets/projects/tour/viewer/pano2vr_player.js", "/assets/projects/tour/viewer/tour-lifecycle.js", "/assets/projects/tour/viewer/artefact-lockup.svg"]) {
   assert.equal((await fetch(new URL(path, base))).status, 200, path);
 }
 await Promise.all([...assets].map(async (url) => {

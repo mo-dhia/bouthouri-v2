@@ -27,6 +27,26 @@ exploration. Fullscreen is observed in both documents. The original viewer owns
 its render loop; the host adds no animation loop. Generated skin controls gain
 localized accessible labels and Enter/Space activation.
 
+The 2026-10-30 adversarial review hardened this boundary. The iframe loads behind
+the poster and remains inert until readiness. Each room change owns a fresh
+readiness/watchdog cycle; already-presented rooms retain their source transition.
+Readiness requires successfully decoded base images, and current-room image errors
+return immediately to the retry poster. Old-room aborts/errors cannot fail a new
+room. Pending resource accounting is scoped to each room, so a previous room's
+delayed requests cannot hold a healthy current room. Polling and the remaining
+45-second loading budget pause while intentionally parked. The localized loading
+label also replaces the disabled entry label.
+
+`viewer/tour-lifecycle.js` adapts the pinned Pano2VR 6.1.14 instance without editing
+the generated distribution. It drains the frame and recovery loops when parked,
+restarts only drained owners on resume, and gates gyro events while preserving
+the selected gyro mode. Startup configuration disables autorotation before any
+image readiness; the host enables it only for an eligible ready room. The iframe
+document receives its locale, and capture-phase key handling preserves native
+Tab/Shift+Tab and hotspot Enter/Space. Arrow taps and native key repeats turn the
+camera, since this player tracks arrow codes without applying them to its view.
+Short stages clamp the control group upward only when it would overflow.
+
 The stage fills the live physical height with the existing header clearance.
 Desktop/tablet/mobile use the 1920/768/412 reference widths in exclusive CSS
 profiles. The host converts source control, watermark and hotspot artwork sizes
@@ -48,3 +68,4 @@ distribution is isolated from application CSS and initial bundles.
   by `650 / 768` without replacing the player. A blocked controller leaves the
   poster and all three links available. A lost context removes the live iframe.
 - Media provenance and checksums: `public/assets/projects/tour/README.md`.
+- Adversarial findings and post-repair evidence: `docs/projects-tour-review.md`.

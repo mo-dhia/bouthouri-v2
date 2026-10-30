@@ -38,6 +38,7 @@
 		</script>
 		<script type="text/javascript" src="skin.js">
 		</script>
+		<script src="tour-lifecycle.js"></script>
 		<script src="tour-navigation.js"></script>
 		<script src="webxr/three.min.js"></script>
 		<script src="webxr/webxr-polyfill.min.js"></script>
@@ -48,6 +49,7 @@
 	
 			// create the panorama player with the container
 			pano=new pano2vrPlayer("container");
+			tourLifecycle=createTourLifecycle(pano);
 			// add the skin object
 			skin=new pano2vrSkin(pano);
 			tourNavigation=createTourNavigation(pano,skin);

@@ -7,8 +7,8 @@ export const tourProject = {
   viewer: '/assets/projects/tour/viewer/index.html',
   source: 'https://artefactstudio.org/#vr',
   instructions: {
-    en: 'Explore Artefact Studio’s café in 360°. Drag to look around, zoom in, and select a hotspot to move between three viewpoints.',
-    ar: 'استكشف مقهى آرتيفاكت ستوديو بزاوية ٣٦٠°. اسحب للنظر حولك، وقرّب العرض، واختر نقطة تنقّل للانتقال بين ثلاثة مواضع.'
+    en: 'Explore Artefact Studio’s café in 360°. Drag or use the arrow keys to look around, zoom in, and select a hotspot to move between three viewpoints.',
+    ar: 'استكشف مقهى آرتيفاكت ستوديو بزاوية ٣٦٠°. اسحب أو استخدم مفاتيح الأسهم للنظر حولك، وقرّب العرض، واختر نقطة تنقّل للانتقال بين ثلاثة مواضع.'
   }
 };
 
