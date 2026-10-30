@@ -70,7 +70,7 @@ function harness({ denied = false, type = "navigate", initialHold = false, defer
     [main, inner, heading, shell].forEach(element => { element.ownerDocument = doc; });
     main.dataset.routePath = path; shell.dataset.shell = "true"; main.previousElementSibling = shell;
     main.selections.set("h1", heading);
-    main.selections.set(path.endsWith("vision") ? "[data-vision-root]" : path.endsWith("services") ? "#services-content" : path.endsWith("projects") ? "[data-projects-root], [data-experiment-root]" : "[data-contact-content]", inner);
+    main.selections.set(path.endsWith("vision") ? "[data-vision-root]" : path.endsWith("services") ? "#services-content" : path.includes("/projects") ? "[data-projects-root], [data-experiment-root], [data-tour-root]" : "[data-contact-content]", inner);
     const result = { main, inner, heading, shell, path }; owners.push(result); return result;
   };
   const first = owner("/en/vision");
@@ -144,6 +144,14 @@ test("Projects joins managed menu navigation with its own connected grid owner",
   expect(starts).toEqual([false]); expect(h.surface.dataset.phase).toBe('idle');
   expect(h.win.location.pathname).toBe('/en/projects'); expect(h.win.scrollY).toBe(0);
   expect(h.hard).toEqual([]); expect(h.frames.size + h.timers.size).toBe(0); h.stop();
+});
+
+test("the 360 tour releases route navigation from its poster before the viewer is requested", async () => {
+  const h = harness(); h.intent('/en/projects/360-tour');
+  expect(h.click('/en/projects/360-tour').defaultPrevented).toBe(true); await h.advance(320);
+  const tour = h.owner('/en/projects/360-tour'), starts: boolean[] = [];
+  h.install(tour); h.ready(tour, skip => { starts.push(skip); }); await h.advance(1000);
+  expect(starts).toEqual([false]); expect(h.surface.dataset.phase).toBe('idle');
 });
 
 test("mounted body capture waits for full cover, releases old menu before routing and ignores connected old page readiness", async () => {

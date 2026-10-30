@@ -1,5 +1,13 @@
 # Projects grid
 
+The separate **360° Tour** joined on 2026-10-30 as card 19. Its `kind: "tour"`
+keeps it distinct from external websites and Carter studies, opens the localized
+`/projects/360-tour` page in the same tab, and skips the study ink filter. Its
+muted panorama reel uses the same intent-owned decoder. The 36-slot repeated
+surface, geometry and Vocal Orb starting position are unchanged; the extra card
+means website/study alternation is no longer exact at every repetition boundary.
+See [tour ownership](../3-tour/tour.doc.md) and the media provenance there.
+
 The grid-only reference is `https://carterogunsola.com/lab`, inspected 2026-10-29.
 The source header, list/wheel mode switcher, light/dark theme and global live
 presence are excluded. The existing Bouthouri navigation and retained background

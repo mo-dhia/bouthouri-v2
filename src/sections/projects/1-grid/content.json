@@ -160,5 +160,14 @@
     "href": "https://artefactstudio.org/",
     "poster": "/assets/projects/work/artefact.jpg",
     "reel": "/assets/projects/work/artefact.mp4"
+  },
+  {
+    "name": "360° Tour",
+    "kind": "tour",
+    "category": "Virtual tour",
+    "isNew": true,
+    "href": "/projects/360-tour",
+    "poster": "/assets/projects/tour/360-tour.jpg",
+    "reel": "/assets/projects/tour/360-tour.mp4"
   }
 ]

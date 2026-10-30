@@ -65,9 +65,11 @@ for (const locale of ["en", "ar"]) {
     if (page === "contact") { assert.match(markup, /<form\b/); for (const name of ["name", "email", "message"]) assert.ok(markup.includes(`name="${name}"`), `${path}: SSR ${name}`); }
     if (page === "projects") {
       assert.match(markup, /data-projects-root/);
-      assert.equal((markup.match(/data-grid-item/g) || []).length, 18, `${path}: all eighteen cards are server content`);
+      assert.equal((markup.match(/data-grid-item/g) || []).length, 19, `${path}: all nineteen cards are server content`);
       assert.equal((markup.match(/data-reel="\/assets\/projects\/lab\//g) || []).length, 9, `${path}: deferred local study reels`);
       assert.equal((markup.match(/data-reel="\/assets\/projects\/work\//g) || []).length, 9, `${path}: deferred local website reels`);
+      assert.equal((markup.match(/data-reel="\/assets\/projects\/tour\//g) || []).length, 1, `${path}: deferred tour reel`);
+      assert.ok(markup.includes(`href="/${locale}/projects/360-tour"`), `${path}: internal 360 tour card`);
       for (const site of ["https://xsustain.vercel.app/", "https://cci-demo.vercel.app/", "https://v-stores.vercel.app/", "https://vawzen.org/", "https://afrah-events.vercel.app/", "https://bored-kiwi.vercel.app/", "https://vibrand.vercel.app/", "https://old.bouthouri.co/", "https://artefactstudio.org/"]) assert.ok(markup.includes(`href="${site}" target="_blank" rel="external noopener"`), `${path}: live website ${site}`);
       assert.match(visible, /Carter Ogunsola/, `${path}: reference experiment attribution`);
       assert.doesNotMatch(markup, /lab__mode|lenis/, `${path}: excluded source controls/runtime`);
@@ -101,15 +103,37 @@ for (const locale of ["en", "ar"]) for (const item of experiments) {
     if (url.origin === base.origin && url.pathname.startsWith("/_next/static/")) assets.add(url.href);
   }
 }
-for (const path of ["/en/projects/not-a-study", "/en/services/vocal-orb"]) assert.equal((await fetch(new URL(path, base))).status, 404, path);
+for (const locale of ["en", "ar"]) {
+  const path = `/${locale}/projects/360-tour`, response = await fetch(new URL(path, base));
+  assert.equal(response.status, 200, path);
+  const html = await response.text(), markup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  assert.match(markup, /<h1[^>]*id="tour-heading"/);
+  assert.match(markup, /data-tour-root/);
+  assert.ok(markup.includes(locale === "ar" ? "جولة ٣٦٠°" : "360° Tour"), `${path}: localized SSR title`);
+  assert.ok(markup.includes('src="/assets/projects/tour/cafe.jpg"'), `${path}: useful tour poster`);
+  assert.ok(markup.includes(`href="/${locale}/projects"`), `${path}: grid navigation`);
+  assert.ok(markup.includes(`href="/${locale === "en" ? "ar" : "en"}/projects/360-tour"`), `${path}: locale retains tour`);
+  assert.ok(markup.includes('href="https://artefactstudio.org/#vr"'), `${path}: original tour link`);
+  assert.match(markup, /data-tour-launch[^>]*disabled/);
+  assert.doesNotMatch(markup, /<iframe\b/, `${path}: no heavy viewer before intent`);
+  assert.match(html, new RegExp(`<link[^>]+rel="canonical"[^>]+href="[^"]*${path}"`));
+  assert.match(markup, /<html[^>]*dir="(?:rtl|ltr)"/);
+  for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+)"/g)) {
+    const url = new URL(match[1].replaceAll("&amp;", "&"), base);
+    if (url.origin === base.origin && url.pathname.startsWith("/_next/static/")) assets.add(url.href);
+  }
+}
+const sitemap = await (await fetch(new URL('/sitemap.xml', base))).text();
+for (const locale of ['en', 'ar']) assert.ok(sitemap.includes(`/${locale}/projects/360-tour`), 'Tour is discoverable in the sitemap');
+for (const path of ["/en/projects/not-a-study", "/en/services/vocal-orb", "/en/services/360-tour"]) assert.equal((await fetch(new URL(path, base))).status, 404, path);
 
 for (const path of ["/fr", "/en/not-a-page"]) {
   assert.equal((await fetch(new URL(path, base))).status, 404, path);
 }
-for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/identity-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2"]) {
+for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/hero-portrait-rebrand.webp", "/assets/images/identity-logo.svg", "/assets/fonts/questrial-regular.woff2", "/assets/fonts/cairo-variable.woff2", "/assets/projects/tour/360-tour.jpg", "/assets/projects/tour/360-tour.mp4", "/assets/projects/tour/cafe.jpg", "/assets/projects/tour/viewer/index.html", "/assets/projects/tour/viewer/pano.xml", "/assets/projects/tour/viewer/pano2vr_player.js", "/assets/projects/tour/viewer/artefact-lockup.svg"]) {
   assert.equal((await fetch(new URL(path, base))).status, 200, path);
 }
 await Promise.all([...assets].map(async (url) => {
   assert.equal((await fetch(url)).status, 200, url);
 }));
-process.stdout.write(`SSR audit passed: HOME, four editorial pages and nine experiment details in both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);
+process.stdout.write(`SSR audit passed: HOME, four editorial pages, nine experiment details and the 360 tour in both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);

@@ -4,7 +4,7 @@ import projects from './content.json';
 import GridGate from './grid-gate';
 import styles from './grid.module.css';
 
-const categories: Record<string, string> = { Website: 'موقع', Interaction: 'تفاعل', Canvas: 'كانفاس', '3D': '3D', UI: 'واجهات', Gallery: 'معرض', Transition: 'انتقال' };
+const categories: Record<string, string> = { Website: 'موقع', Interaction: 'تفاعل', Canvas: 'كانفاس', '3D': '3D', UI: 'واجهات', Gallery: 'معرض', Transition: 'انتقال', 'Virtual tour': 'جولة افتراضية' };
 export default function ProjectsGrid({ locale }: { locale: Locale }) {
   const arabic = locale === 'ar';
   return <section className={styles.root} data-projects-root data-locale={locale} aria-labelledby='projects-heading'>
@@ -15,17 +15,17 @@ export default function ProjectsGrid({ locale }: { locale: Locale }) {
       <div className={styles.plane} data-grid-plane>
         {projects.map((item, index) => {
           // Websites open the live client site; studies stay on their local detail route.
-          const website = item.kind === 'website';
+          const website = item.kind === 'website', tour = item.kind === 'tour', name = tour && arabic ? 'جولة ٣٦٠°' : item.name;
           return <a key={item.href} className={styles.item} data-grid-item data-reel={item.reel} href={website ? item.href : `/${locale}/projects/${item.href.split('/').at(-1)}`} target={website ? '_blank' : undefined} rel={website ? 'external noopener' : undefined}
-            aria-label={`${item.name} — ${website ? arabic ? 'موقع ويب، يُفتح في علامة تبويب جديدة' : 'website, opens in a new tab' : arabic ? 'دراسة تفاعلية' : 'interactive study'}`}>
+            aria-label={`${name} — ${website ? arabic ? 'موقع ويب، يُفتح في علامة تبويب جديدة' : 'website, opens in a new tab' : tour ? arabic ? 'جولة افتراضية' : 'virtual tour' : arabic ? 'دراسة تفاعلية' : 'interactive study'}`}>
             <span className={styles.card} data-grid-card>
               {/* Website posters are composed on the inked ground already; studies need the tonal filter. */}
-              <span className={styles.media} data-grid-media data-preview-ink={!website && item.name !== 'Vocal Orb' ? 'true' : undefined}>
+              <span className={styles.media} data-grid-media data-preview-ink={!website && !tour && item.name !== 'Vocal Orb' ? 'true' : undefined}>
                 {/* The source poster is the useful no-JS image, not a client placeholder. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={item.poster} width={960} height={720} alt='' loading={index === 8 ? 'eager' : 'lazy'} decoding='async' draggable={false} fetchPriority={index === 8 ? 'high' : 'auto'} />
               </span>
-              <span className={styles.caption} data-grid-caption><span className={styles.name}>{item.name}</span><span className={styles.tags}><span className={styles.chip}>{arabic ? categories[item.category] : item.category}</span>{item.isNew && <span className={`${styles.chip} ${styles.new}`}>{arabic ? 'جديد' : 'New'}</span>}</span></span>
+              <span className={styles.caption} data-grid-caption><span className={styles.name}>{name}</span><span className={styles.tags}><span className={styles.chip}>{arabic ? categories[item.category] : item.category}</span>{item.isNew && <span className={`${styles.chip} ${styles.new}`}>{arabic ? 'جديد' : 'New'}</span>}</span></span>
             </span>
           </a>;
         })}

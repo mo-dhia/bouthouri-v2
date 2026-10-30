@@ -8,7 +8,7 @@ export const ROUTE_ABORT_EVENT = "bouthouri-route-abort";
 export const ROUTE_TIMING = { cover: 300, reveal: 380, directMinimum: 160, assetTimeout: 4500, navigationTimeout: 8000 } as const;
 export type RoutePath = { path: string; locale: "en" | "ar"; page: "home" | "vision" | "services" | "contact" | "projects" };
 export function routePath(path: string): RoutePath | null {
-  const match = path.match(/^\/(en|ar)(?:\/(vision|services|contact|projects)(?:\/(live-cursors|dial|polka-dots|heart|threejs-test|dynamic-scrollbar|rotating-gallery|paste-up|vocal-orb))?)?\/?$/);
+  const match = path.match(/^\/(en|ar)(?:\/(vision|services|contact|projects)(?:\/(live-cursors|dial|polka-dots|heart|threejs-test|dynamic-scrollbar|rotating-gallery|paste-up|vocal-orb|360-tour))?)?\/?$/);
   if (match?.[3] && match[2] !== 'projects') return null;
   return match ? { path: path.replace(/\/$/, ""), locale: match[1] as RoutePath["locale"], page: (match[2] || "home") as RoutePath["page"] } : null;
 }

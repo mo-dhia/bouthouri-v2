@@ -5,6 +5,9 @@ import { parseRouteCheckpoint, parseRouteHandoff, readRoutePositions, routeDurat
 describe("shared route classification and source clock", () => {
   test("plain anchors and Links share implemented routes while native exceptions remain unclaimed", () => {
     expect(routeIntent("/en/projects", "https://local.test/en/contact")?.destination.page).toBe("projects");
+    expect(routeIntent("/en/projects/360-tour", "https://local.test/en/projects")?.destination.page).toBe("projects");
+    expect(routeIntent("/ar/projects/360-tour", "https://local.test/en/projects/360-tour")?.hard).toBe(true);
+    expect(routeIntent("/en/services/360-tour", "https://local.test/en/projects")).toBeNull();
     expect(routeIntent("/en/contact", "https://local.test/en/vision", "_SELF")?.hard).toBe(false);
     expect(routeIntent("/ar/services", "https://local.test/en/services")?.hard).toBe(true);
     expect(routeIntent("/ar/services", "https://local.test/en/services?campaign=1")?.href).toBe("/ar/services?campaign=1");
