@@ -2,11 +2,7 @@ import { kickScroll } from "@/lib/scrollInteraction/scrollTrigger";
 import scrollManager from "@/lib/scrollInteraction/scrollManager";
 import { uiStore } from "@/store/uiStore";
 import { designPixels, pixelsToVw, viewportDesign } from "@/lib/viewport-design";
-import {
-  playMarkSwish,
-  playMarkTock,
-  setAudioEnabled,
-} from "@/lib/audio/material-audio";
+import { playMarkTock, setAudioEnabled } from "@/lib/audio/material-audio";
 import {
   getHomeRestoreIntent,
   prepareHomeFreshEntry,
@@ -27,42 +23,31 @@ import type { PortraitController } from "./hero-portrait";
 import { createHeroScrollMagnet } from "./hero-scroll-magnet";
 import { portraitFallbackMask } from "./hero-portrait-mask";
 import {
-  markAtoB,
-  markBtoC,
-  markCtoA,
+  loaderOrder,
+  loaderPieceBox,
+  loaderRow,
+  loaderViewBox,
   markLandedEvent,
   markPieces,
   markStatic,
-  setMarkPose,
+  markTransform,
   wordmarkMarkOffset,
   wordmarkViewBox,
-  type MarkState,
-  type Pose,
 } from "@/components/layout/header/identity-mark";
 const easeInOut = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-type EntryStep = {
-  id: MarkState | "AB" | "BC" | "CA";
-  dur: number;
-  pose?: () => Pose;
-  move?: (t: number) => Pose;
-};
-/** The brand book's three scripts: ⴱ → b → ب → ⴱ, durations in seconds. */
-const entrySteps: readonly EntryStep[] = [
-  { id: "A", dur: 1.3, pose: markStatic.A },
-  { id: "AB", dur: 1.75, move: (t) => markAtoB(t) },
-  { id: "B", dur: 1.4, pose: markStatic.B },
-  { id: "BC", dur: 1.6, move: (t) => markBtoC(t) },
-  { id: "C", dur: 1.6, pose: markStatic.C },
-  { id: "CA", dur: 1.75, move: (t) => markCtoA(t) },
-];
-const markNotes: Record<MarkState, number> = { A: 196, B: 293.66, C: 246.94 };
 const [wordmarkX, wordmarkY, wordmarkW, wordmarkH] = wordmarkViewBox
   .split(" ")
   .map(Number);
-const stageUnits = 660;
-const svgNamespace = "http://www.w3.org/2000/svg";
+const stageUnits = Number(loaderViewBox.split(" ")[2]);
+/** The row assembles into the static b, which sits 50 units under the wordmark's. */
+const assembled = markStatic.B();
+const markLift = -50;
+/** Gazzar's drift amplitudes, scaled from its 84-unit pieces to the 200-unit stem. */
+const driftUnits = 200 / 84;
+/** The b's note, D4, as it locks onto the nav. */
+const landingNote = 293.66;
 
 /** Single RAF owner for entry, marquee, scroll departure, and the local portrait. */
 export function mountHeroMotion(root: HTMLElement): () => void {
@@ -99,14 +84,17 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const loading = root.querySelector<HTMLElement>("[data-identity-loading]")!;
   const stage = root.querySelector<HTMLElement>("[data-identity-stage]")!;
   const pieces = markPieces.map(
-    (piece) => stage.querySelector<SVGElement>(`[data-identity-piece="${piece}"]`)!,
+    (name) => stage.querySelector<SVGGElement>(`[data-identity-piece="${name}"]`)!,
   );
-  const ripples = stage.querySelector<SVGGElement>("[data-identity-ripples]")!;
-  const below = root.querySelector<HTMLElement>("[data-identity-below]")!;
-  const scripts = Array.from(
-    root.querySelectorAll<HTMLElement>("[data-identity-script]"),
+  const clips = markPieces.map(
+    (name) => stage.querySelector<SVGRectElement>(`[data-identity-clip="${name}"]`)!,
   );
-  const loadTrack = root.querySelector<HTMLElement>("[data-identity-track]")!;
+  const materials = markPieces.map(
+    (name) => stage.querySelector<SVGGElement>(`[data-identity-material="${name}"]`)!,
+  );
+  const latents = pieces.map(
+    (piece) => piece.querySelector<SVGPathElement>("[data-identity-latent]")!,
+  );
   const choices = root.querySelector<HTMLElement>("[data-identity-choices]")!;
   const buttons = Array.from(
     root.querySelectorAll<HTMLButtonElement>("[data-identity-choice]"),
@@ -150,8 +138,6 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     cue,
     loading,
     stage,
-    below,
-    loadTrack,
     choices,
     progress,
     ...strokes,
@@ -176,7 +162,9 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     readyTime = 0,
     assemblyTime = 0,
     readiness = 20,
-    visualProgress = 0;
+    visualProgress = 0,
+    choicesTilt = 0,
+    tiltTarget = 0;
   let resolve = 1,
     portrait: PortraitController | undefined;
   const portraitAbort = new AbortController();
@@ -193,14 +181,11 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   let previousWorld = -1;
   let previousPortraitMask: string | null | undefined;
   let lineElements: HTMLElement[] = [];
-  // The loader's mark clock; it settles forward onto A or B once entry starts.
-  let step = 0,
-    stepTime = 0,
-    drawnStep = -1,
-    settle: "A" | "B" | undefined,
+  // Where the row stood when entry began; the flight completes both.
+  let fromAssembly = 0,
+    fromFill = 0,
     landed = false;
   let flight: { x: number; y: number; scale: number } | undefined;
-  const rings: Array<{ at: number; cy: number; circle?: SVGCircleElement }> = [];
   let oldOverflow = "",
     oldGutter = "";
   const oldNextInert =
@@ -312,7 +297,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     measureFlight();
   };
   const measureFlight = () => {
-    if (loading.hidden || !settle || !navLogo) return;
+    if (loading.hidden || phase !== "assembling" || !navLogo) return;
     // Measure the untransformed stage, then put the in-flight transform back.
     const inline = stage.style.transform;
     stage.style.removeProperty("transform");
@@ -322,8 +307,6 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     const shift =
       (parseFloat(navLogoItem?.dataset.entryY ?? "0") * viewportWidth) / 100;
     const scale = Math.min(to.width / wordmarkW, to.height / wordmarkH);
-    // The stage draws the static b; the wordmark's b sits 50 units higher.
-    const lift = settle === "B" ? -50 : 0;
     flight = {
       x:
         to.left +
@@ -334,61 +317,47 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         to.top -
         shift +
         (to.height - wordmarkH * scale) / 2 +
-        (lift - wordmarkY) * scale -
+        (markLift - wordmarkY) * scale -
         (from.top + from.height / 2),
       scale: (scale * stageUnits) / (from.width || 1),
     };
   };
-  const stepLength = (index: number) => {
-    const entry = entrySteps[index];
-    if (!settle || entry.move) return entry.dur;
-    // Settling runs forward through moves only and holds on its target.
-    return entry.id === settle ? Infinity : 0;
-  };
-  const ripple = (cy: number) => {
-    rings.push({ at: elapsed, cy }, { at: elapsed + 0.14, cy });
-  };
-  const lockMark = (state: MarkState) => {
-    scripts.forEach((cell) => {
-      if (cell.dataset.identityScript === state) cell.dataset.active = "true";
-      else delete cell.dataset.active;
+  /**
+   * Gazzar's loader on the kit: each piece fills from the bottom over its
+   * third of the load, drifting while latent, then the row slides into b.
+   */
+  const fillRow = (assembly: number, fill: number) => {
+    const a = clamp(assembly);
+    markPieces.forEach((name, i) => {
+      const from = loaderRow[name],
+        to = assembled[name],
+        box = loaderPieceBox[name],
+        order = loaderOrder.indexOf(name),
+        f = smoother(order / 3, (order + 1) / 3, fill),
+        latent = 1 - f,
+        centre = box.y + box.h / 2;
+      pieces[i].setAttribute(
+        "transform",
+        markTransform({
+          x: from.x + (to.x - from.x) * a,
+          y: from.y + (to.y - from.y) * a,
+          a: from.a + (to.a - from.a) * a,
+          sy: 1,
+        }),
+      );
+      // A turned piece fills from its own top, the bottom on screen.
+      clips[i].setAttribute("y", (box.flip ? box.y : box.y + box.h * latent).toFixed(2));
+      clips[i].setAttribute("height", (box.h * f).toFixed(2));
+      latents[i].setAttribute("opacity", (0.055 * latent).toFixed(4));
+      const drift =
+        (latent * Math.sin(0.75 * elapsed + 1.7 * order) * 1.2 +
+          choicesTilt * Math.sin(1.3 * elapsed + order) * 0.55) *
+        driftUnits;
+      materials[i].setAttribute(
+        "transform",
+        `translate(0 ${(centre + drift).toFixed(2)}) scale(${(1 - 0.045 * latent).toFixed(4)} ${(0.7 + 0.3 * f).toFixed(4)}) translate(0 ${(-centre).toFixed(2)})`,
+      );
     });
-    if (phase !== "assembling") ripple(state === "B" ? 50 : 0);
-    playMarkTock(markNotes[state]);
-  };
-  const runMark = (delta: number) => {
-    stepTime += delta;
-    for (let guard = 0; stepTime >= stepLength(step) && guard < 12; guard++) {
-      stepTime -= stepLength(step);
-      const previous = entrySteps[step];
-      step = (step + 1) % entrySteps.length;
-      const current = entrySteps[step];
-      if (previous.move && stepLength(step) > 0) lockMark(current.id as MarkState);
-      if (current.move) playMarkSwish(current.dur);
-    }
-    const current = entrySteps[step];
-    if (current.move)
-      setMarkPose(pieces, current.move(Math.min(1, stepTime / current.dur)));
-    else if (drawnStep !== step) setMarkPose(pieces, current.pose!());
-    drawnStep = step;
-    for (let i = rings.length - 1; i >= 0; i--) {
-      const ring = rings[i];
-      if (elapsed < ring.at) continue;
-      const p = clamp((elapsed - ring.at) / 1.15);
-      if (!ring.circle) {
-        ring.circle = document.createElementNS(svgNamespace, "circle");
-        ring.circle.setAttribute("cx", "0");
-        ring.circle.setAttribute("cy", String(ring.cy));
-        ripples.append(ring.circle);
-      }
-      ring.circle.setAttribute("r", String(100 + 150 * (1 - Math.pow(1 - p, 3))));
-      ring.circle.setAttribute("opacity", (0.5 * (1 - p)).toFixed(3));
-      ring.circle.setAttribute("stroke-width", (2.2 * (1 - p) + 0.4).toFixed(2));
-      if (p === 1) {
-        ring.circle.remove();
-        rings.splice(i, 1);
-      }
-    }
   };
   const finish = () => {
     entered = true;
@@ -414,11 +383,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       path.style.strokeDashoffset = "0";
       path.style.opacity = "1";
     });
-    window.dispatchEvent(
-      new CustomEvent("identity-entry-complete", {
-        detail: { mark: settle ?? "B" },
-      }),
-    );
+    window.dispatchEvent(new Event("identity-entry-complete"));
     previousWorld = -1;
     wake();
   };
@@ -426,8 +391,8 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     void setAudioEnabled(sound);
     choices.inert = true;
     bypass.hidden = true;
-    const id = entrySteps[step].id;
-    settle = id === "AB" || id === "B" ? "B" : "A";
+    fromAssembly = phase === "ready" ? smoother(0.1, 0.82, readyTime) : 0;
+    fromFill = visualProgress / 100;
     assemblyTime = 0;
     setPhase("assembling");
     measureFlight();
@@ -443,6 +408,17 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     if (phase !== "loading") return;
     keyboardEntry = true;
     begin(false);
+  };
+  const hoverChoice = (event: Event) => {
+    tiltTarget =
+      (event.currentTarget as HTMLElement).dataset.identityChoice === "sound"
+        ? 1
+        : -0.35;
+    wake();
+  };
+  const leaveChoice = () => {
+    tiltTarget = 0;
+    wake();
   };
   const trap = (event: KeyboardEvent) => {
     if (event.key === "Escape" && (phase === "loading" || phase === "ready")) {
@@ -521,7 +497,7 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     const delta = lastFrame ? Math.min(0.05, (now - lastFrame) / 1000) : 1 / 60;
     lastFrame = now;
     elapsed += delta;
-    if (!landed && phase !== "complete") runMark(delta);
+    choicesTilt += (tiltTarget - choicesTilt) * (1 - Math.exp(-8 * delta));
     if (phase === "loading") {
       visualProgress = Math.min(
         readiness,
@@ -536,25 +512,27 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         "aria-valuenow",
         String(Math.floor(visualProgress)),
       );
-      loadTrack.style.transform = `scaleX(${visualProgress / 100})`;
+      fillRow(0, visualProgress / 100);
       if (visualProgress === 100) {
         setPhase("ready");
         status.textContent = status.dataset.readyLabel ?? "";
         bypass.hidden = true;
         readyTime = 0;
-      }
-      if (elapsed > 8) bypass.hidden = false;
+      } else if (elapsed > 8) bypass.hidden = false;
     }
     if (phase === "ready") {
       readyTime += delta;
-      const choice = smoother(0.1, 0.34, readyTime);
-      choices.style.visibility = readyTime >= 0.1 ? "visible" : "hidden";
+      const assembly = smoother(0.1, 0.82, readyTime),
+        choice = smoother(1.02, 1.26, readyTime);
+      fillRow(assembly, 1);
+      choices.style.visibility = readyTime >= 1.02 ? "visible" : "hidden";
       choices.inert = choice < 1;
       buttons.forEach(
         (button) =>
           (button.style.transform = `translateY(${115 * (1 - choice)}%)`),
       );
-      loading.dataset.entryStage = choice === 1 ? "choice" : "ready";
+      loading.dataset.entryStage =
+        choice === 1 ? "choice" : assembly === 1 ? "assembled" : "converging";
     }
     if (phase === "assembling") {
       assemblyTime += delta;
@@ -563,7 +541,12 @@ export function mountHeroMotion(root: HTMLElement): () => void {
       if (flight)
         stage.style.transform = `translate(-50%,-50%) translate3d(${pixelsToVw(flight.x * travel, viewportWidth)},${pixelsToVw(flight.y * travel, viewportWidth)},0) scale(${1 + (flight.scale - 1) * travel})`;
       stage.style.color = `color-mix(in srgb,#d9d5cb ${(1 - smoother(0.62, 1.1, t)) * 100}%,#777772)`;
-      below.style.opacity = String(1 - smoother(0, 0.3, t));
+      // A bypassed row finishes filling and assembles on the way.
+      if (!landed)
+        fillRow(
+          fromAssembly + (1 - fromAssembly) * smoother(0, 0.6, t),
+          fromFill + (1 - fromFill) * smoother(0, 0.4, t),
+        );
       buttons.forEach(
         (button) =>
           (button.style.transform = `translateY(${-115 * smoother(0, 0.24, t)}%)`),
@@ -608,16 +591,15 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         );
       });
       if (t >= 0.48) release();
-      // Hand the b to the live wordmark once the mark has arrived and settled.
-      if (!landed && travel === 1 && entrySteps[step].id === settle) {
+      // Hand the b to the live wordmark once it has arrived.
+      if (!landed && travel === 1) {
         landed = true;
         stage.style.visibility = "hidden";
         navMark?.style.removeProperty("visibility");
         choices.style.visibility = "hidden";
         loading.inert = true;
-        window.dispatchEvent(
-          new CustomEvent(markLandedEvent, { detail: { mark: settle } }),
-        );
+        playMarkTock(landingNote);
+        window.dispatchEvent(new Event(markLandedEvent));
       }
       if (t >= 2.5 && landed) finish();
     }
@@ -646,7 +628,12 @@ export function mountHeroMotion(root: HTMLElement): () => void {
         magnetMoving
       )
         wake();
-    } else wake();
+    } else if (
+      phase !== "ready" ||
+      readyTime < 1.3 ||
+      Math.abs(choicesTilt - tiltTarget) > 0.0001
+    )
+      wake();
     if (!frame) worldClock.sleep();
   };
   function wake() {
@@ -762,7 +749,13 @@ export function mountHeroMotion(root: HTMLElement): () => void {
   const unsubscribe = uiStore.subscribe(sync);
   root.dataset.enhanced = "true";
   pause.addEventListener("click", onPause);
-  buttons.forEach((button) => button.addEventListener("click", choose));
+  buttons.forEach((button) => {
+    button.addEventListener("click", choose);
+    button.addEventListener("pointerenter", hoverChoice);
+    button.addEventListener("pointerleave", leaveChoice);
+    button.addEventListener("focus", hoverChoice);
+    button.addEventListener("blur", leaveChoice);
+  });
   bypass.addEventListener("click", bypassEntry);
   loading.addEventListener("keydown", trap);
   document.addEventListener("visibilitychange", sync);
@@ -881,7 +874,13 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     pause.removeEventListener("click", onPause);
     bypass.removeEventListener("click", bypassEntry);
     loading.removeEventListener("keydown", trap);
-    buttons.forEach((button) => button.removeEventListener("click", choose));
+    buttons.forEach((button) => {
+      button.removeEventListener("click", choose);
+      button.removeEventListener("pointerenter", hoverChoice);
+      button.removeEventListener("pointerleave", leaveChoice);
+      button.removeEventListener("focus", hoverChoice);
+      button.removeEventListener("blur", leaveChoice);
+    });
     oldStyles.forEach((style, element) => {
       if (style === null) element.removeAttribute("style");
       else element.setAttribute("style", style);
@@ -896,12 +895,15 @@ export function mountHeroMotion(root: HTMLElement): () => void {
     loading.hidden = true;
     choices.inert = true;
     linesRoot.replaceChildren();
-    ripples.replaceChildren();
-    setMarkPose(pieces, markStatic.A());
-    scripts.forEach((cell, index) => {
-      if (index === 0) cell.dataset.active = "true";
-      else delete cell.dataset.active;
+    // Back to the server-rendered row: unfilled ghosts.
+    markPieces.forEach((name, i) => {
+      pieces[i].setAttribute("transform", markTransform(loaderRow[name]));
+      clips[i].setAttribute("y", "0");
+      clips[i].setAttribute("height", "0");
+      latents[i].setAttribute("opacity", ".055");
+      materials[i].removeAttribute("transform");
     });
+    loading.dataset.entryStage = "loading";
     if (uiStore.getState().entryPhase !== "complete")
       uiStore.getState().setEntryPhase("complete");
     window.dispatchEvent(

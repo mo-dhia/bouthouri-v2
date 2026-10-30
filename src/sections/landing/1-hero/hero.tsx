@@ -5,11 +5,12 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/routing";
 import { getShellCopy } from "@/components/layout/header/shell-copy";
 import {
+  loaderPieceBox,
+  loaderRow,
+  loaderViewBox,
   markPaths,
   markPieces,
-  markStatic,
   markTransform,
-  type MarkState,
 } from "@/components/layout/header/identity-mark";
 import KineticLink from "@/components/layout/header/kinetic-link";
 import HeroAnimateGate from "./hero-animate-gate";
@@ -33,21 +34,6 @@ const signature = [
     9.5,
   ],
 ] as const;
-
-const scripts: readonly MarkState[] = ["A", "B", "C"];
-
-/** The kit's three pieces at a resting pose, as in the brand book's plates. */
-function KitPieces({ state, live }: { state: MarkState; live?: boolean }) {
-  const pose = markStatic[state]();
-  return markPaths.map((d, i) => (
-    <path
-      key={i}
-      d={d}
-      data-identity-piece={live ? markPieces[i] : undefined}
-      transform={markTransform(pose[markPieces[i]])}
-    />
-  ));
-}
 
 export default function Hero({
   copy,
@@ -79,13 +65,39 @@ export default function Hero({
             data-identity-stage="true"
             aria-hidden="true"
           >
-            <svg viewBox="-330 -330 660 660" fill="currentColor">
-              <g
-                data-identity-ripples="true"
-                fill="none"
-                stroke="currentColor"
-              />
-              <KitPieces state="A" live />
+            <svg viewBox={loaderViewBox} fill="currentColor">
+              <defs>
+                {markPieces.map((name) => (
+                  <clipPath key={name} id={`identity-piece-${name}`}>
+                    <rect
+                      data-identity-clip={name}
+                      x={-loaderPieceBox[name].w / 2 - 4}
+                      y="0"
+                      width={loaderPieceBox[name].w + 8}
+                      height="0"
+                    />
+                  </clipPath>
+                ))}
+              </defs>
+              {markPieces.map((name, i) => (
+                <g
+                  key={name}
+                  data-identity-piece={name}
+                  transform={markTransform(loaderRow[name])}
+                >
+                  <path
+                    d={markPaths[i]}
+                    opacity=".055"
+                    data-identity-latent="true"
+                  />
+                  <g
+                    data-identity-material={name}
+                    clipPath={`url(#identity-piece-${name})`}
+                  >
+                    <path d={markPaths[i]} />
+                  </g>
+                </g>
+              ))}
             </svg>
           </div>
           <div
@@ -97,54 +109,33 @@ export default function Hero({
             aria-valuemax={100}
             aria-valuenow={0}
           />
-          <div className={entry.below} data-identity-below="true">
-            <div
-              className={entry.scripts}
-              data-identity-scripts="true"
-              aria-hidden="true"
-            >
-              {scripts.map((state, i) => (
-                <div
-                  key={state}
-                  data-identity-script={state}
-                  data-active={i === 0 ? "true" : undefined}
-                >
-                  <svg viewBox="-160 -160 320 320" fill="currentColor">
-                    <KitPieces state={state} />
-                  </svg>
-                  <span>{labels.scripts[i]}</span>
-                </div>
-              ))}
-              <span className={entry.track} data-identity-track="true" />
-            </div>
-            <div
-              className={entry.choices}
-              data-identity-choices="true"
-              role="group"
-              aria-label={labels.entryLabel}
-              inert
-            >
-              <span className={entry.choiceMask}>
-                <button
-                  type="button"
-                  data-entry-choice="quiet"
-                  data-identity-choice="quiet"
-                  aria-label={labels.enterQuiet}
-                >
-                  {labels.quiet}
-                </button>
-              </span>
-              <span className={entry.choiceMask}>
-                <button
-                  type="button"
-                  data-entry-choice="sound"
-                  data-identity-choice="sound"
-                  aria-label={labels.enterSound}
-                >
-                  {labels.sound}
-                </button>
-              </span>
-            </div>
+          <div
+            className={entry.choices}
+            data-identity-choices="true"
+            role="group"
+            aria-label={labels.entryLabel}
+            inert
+          >
+            <span className={entry.choiceMask}>
+              <button
+                type="button"
+                data-entry-choice="quiet"
+                data-identity-choice="quiet"
+                aria-label={labels.enterQuiet}
+              >
+                {labels.quiet}
+              </button>
+            </span>
+            <span className={entry.choiceMask}>
+              <button
+                type="button"
+                data-entry-choice="sound"
+                data-identity-choice="sound"
+                aria-label={labels.enterSound}
+              >
+                {labels.sound}
+              </button>
+            </span>
           </div>
           <span
             className={entry.srOnly}

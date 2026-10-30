@@ -231,8 +231,29 @@ export const wordmarkWidth = word.width + 20;
 export const wordmarkMarkOffset = 100;
 export const wordmarkRest = (): Pose => markAtoB(1, { drop: 0 });
 
-/** The entry's mark has landed on the nav b; detail `{ mark: "A" | "B" }`. */
+/** The entry's b has landed on the nav b, which takes over from there. */
 export const markLandedEvent = "identity-mark-landed";
+
+/* Loader: the kit laid out in a row, stem then the two halves as they sit in
+   b, one module apart. Each fills from the bottom as a third of the load,
+   then they slide together into b. `box` is the piece's own bounds and
+   `flip` marks a piece turned over, so its fill starts from its top. */
+export const loaderRow: Pose = {
+  h1: { x: -80, y: 50, a: 0, sy: 1 },
+  h2: { x: 160, y: -50, a: 180, sy: 1 },
+  bar: { x: -240, y: 0, a: 0, sy: 1 },
+};
+/** Fill order, left to right: stem, top half, bottom half. */
+export const loaderOrder = ["bar", "h1", "h2"] as const;
+export const loaderPieceBox: Record<
+  (typeof markPieces)[number],
+  { y: number; h: number; w: number; flip: boolean }
+> = {
+  h1: { y: -100, h: 100.9, w: 200, flip: false },
+  h2: { y: -100, h: 100.9, w: 200, flip: true },
+  bar: { y: -100, h: 200, w: 40, flip: false },
+};
+export const loaderViewBox = "-320 -160 640 320";
 
 /** Brand-book favicon: the b in ink on a bone tile. */
 export const iconViewBox = "-190 -190 380 380";

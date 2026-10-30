@@ -248,32 +248,6 @@ export function playMarkTock(frequency: number): void {
   click.start(at);
 }
 
-/** Brand-book move: band-passed air sweeping up and back over the move. */
-export function playMarkSwish(duration: number): void {
-  const audio = markAudio();
-  if (!audio || duration <= 0) return;
-  const at = audio.currentTime;
-  const length = Math.floor(audio.sampleRate * duration);
-  const buffer = audio.createBuffer(1, length, audio.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let index = 0; index < length; index++) data[index] = Math.random() * 2 - 1;
-  const source = audio.createBufferSource();
-  const filter = audio.createBiquadFilter();
-  const gain = audio.createGain();
-  source.buffer = buffer;
-  filter.type = "bandpass";
-  filter.Q.value = 1.4;
-  filter.frequency.setValueAtTime(260, at);
-  filter.frequency.exponentialRampToValueAtTime(1900, at + duration * 0.45);
-  filter.frequency.exponentialRampToValueAtTime(420, at + duration);
-  gain.gain.setValueAtTime(0.0001, at);
-  gain.gain.exponentialRampToValueAtTime(0.045, at + duration * 0.4);
-  gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
-  source.connect(filter).connect(gain).connect(audio.destination);
-  source.start(at);
-  source.stop(at + duration);
-}
-
 /** The portrait's low pulse shares the source's long-lived 72 Hz oscillator. */
 export function playMaterialImpulse(intensity = 1): void {
   if (
