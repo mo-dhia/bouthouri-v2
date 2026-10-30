@@ -1,0 +1,9 @@
+/* Match Pano2VR's authored 32px marker geometry inside the isolated iframe. */
+.tour-hotspot-anchor { position: absolute; width: 0; height: 0; pointer-events: none }
+.tour-hotspot { position: absolute; left: -16px; top: -16px; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 360px; background: transparent; cursor: pointer; pointer-events: auto; opacity: 0; transition: opacity var(--reveal-duration, 200ms) var(--reveal-ease, ease); appearance: none }
+.tour-hotspot[data-ready='true'] { opacity: 1 }
+html:not([data-tour-interactive='true']) .tour-hotspot { opacity: 0; visibility: hidden; pointer-events: none }
+.tour-hotspot img { display: block; width: 100%; height: 100%; pointer-events: none }
+.tour-hotspot:focus-visible { outline: 2px solid rgb(var(--color-paper-0, 255 255 255)); outline-offset: 2px }
+/* Native hotspot projection stays physical; only marker artwork scales. */
+.tour-hotspot { left: calc(-16 * var(--tour-unit, 1px)); top: calc(-16 * var(--tour-unit, 1px)); width: calc(32 * var(--tour-unit, 1px)); height: calc(32 * var(--tour-unit, 1px)) }

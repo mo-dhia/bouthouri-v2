@@ -1,0 +1,27 @@
+/* One watermark per assembled panorama, including when the viewer is fullscreen. */
+#container {
+  position: relative;
+}
+/* Pano2VR promotes this inner viewer root, not #container, to fullscreen. */
+#container > div:first-child {
+  /* Its panorama and controls are absolutely positioned. */
+  height: 100%;
+}
+#container > div:first-child::after {
+  content: "";
+  position: absolute;
+  left: clamp(12px, 2vw, 24px);
+  bottom: 14px;
+  z-index: 100;
+  width: clamp(48px, 5vw, 72px);
+  aspect-ratio: 111.414 / 35;
+  background:
+    url("artefact-lockup.svg") center / contain no-repeat;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 65%));
+}
+/* Host composition adapter: scale source controls once by the parent width. */
+.ggskin_container { width: calc(288 * var(--tour-unit, 1px) + 16vw) !important }
+.ggskin_container > .ggskin_svg { width: calc(44.8 * var(--tour-unit, 1px) + 1vw) !important; height: calc(44.8 * var(--tour-unit, 1px) + 1vw) !important }
+.ggskin_svg[role='button']:focus-visible { outline: 2px solid #fff; outline-offset: calc(2 * var(--tour-unit, 1px)) }
+#container > div:first-child::after { left: calc(var(--tour-brand-inset, 24) * var(--tour-unit, 1px)); bottom: calc(14 * var(--tour-unit, 1px)); width: calc(var(--tour-brand-width, 72) * var(--tour-unit, 1px)) }

@@ -15,6 +15,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated Pano2VR/WebXR distribution, retained from Artefact Studio.
+    "public/assets/projects/tour/viewer/pano2vr_player.js",
+    "public/assets/projects/tour/viewer/skin.js",
+    "public/assets/projects/tour/viewer/webxr/**",
   ]),
 ]);
 
