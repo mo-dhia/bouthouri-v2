@@ -166,16 +166,26 @@ test("a grab stretches after the pointer, Escape springs it back, and a full pul
   short.controller.setActive(true);
   short.pointer("pointerdown", x, -50); short.run(100);
   short.pointer("pointermove", x + 20, -50); short.run(800);
-  short.pointer("pointerup", x + 20, -50); short.pointer("pointerleave", x + 20, -50); short.run(1000);
+  short.pointer("pointerup", x + 20, -50); short.mask.dispatchEvent(new Event("click")); // The browser's click after the release.
+  short.pointer("pointerleave", x + 20, -50); short.run(1000);
   expect(short.mode).toBe("word"); expect(short.atRest()).toBe(true);
+  // A still press is no pull, even when the layout moves under it.
+  const still = harness();
+  still.controller.setActive(true);
+  still.pointer("pointerdown", x, -50); still.run(800);
+  still.svg.rect = { ...still.svg.rect, top: 400, bottom: 400 + mark.footerViewBox.height };
+  still.pointer("pointerup", x, -50); still.pointer("pointerleave", x, -50); still.run(1000);
+  expect(still.mode).toBe("word");
 });
 
 test("keys drive the loop: Enter feeds the word, Enter in the solo skips a held script", () => {
   const h = harness();
   h.controller.setActive(true);
-  const key = (name: string) => { const event = Object.assign(new Event("keydown", { cancelable: true }), { key: name }); h.mask.dispatchEvent(event); return event.defaultPrevented; };
+  const key = (name: string, repeat = false) => { const event = Object.assign(new Event("keydown", { cancelable: true }), { key: name, repeat }); h.mask.dispatchEvent(event); return event.defaultPrevented; };
   expect(key("Enter")).toBe(true);
   expect(h.mode).toBe("busy");
+  // A held Space repeats; it neither scrolls the page nor acts again.
+  expect(key(" ", true)).toBe(true); expect(h.mode).toBe("busy");
   h.run(mark.footerDurations.eat + mark.footerSoloSteps[0].dur + mark.footerSoloSteps[1].dur + 100);
   expect(h.mode).toBe("mark");
   expect(key(" ")).toBe(true);
@@ -183,6 +193,11 @@ test("keys drive the loop: Enter feeds the word, Enter in the solo skips a held 
   // The held ⴱ ended early, so the whole loop finishes sooner.
   h.run(soloLength - mark.footerSoloSteps[0].dur - mark.footerSoloSteps[1].dur - mark.footerSoloSteps[2].dur + 100);
   expect(h.mode).toBe("busy");
+  // Assistive technology clicks the button without a pointer.
+  const assisted = harness();
+  assisted.controller.setActive(true);
+  assisted.mask.dispatchEvent(new Event("click"));
+  expect(assisted.mode).toBe("busy");
 });
 
 test("reduced motion, a hidden tab, a route change and dispose leave no clock or DOM behind", () => {
@@ -209,4 +224,12 @@ test("reduced motion, a hidden tab, a route change and dispose leave no clock or
   expect(h.rafs.size + h.timers.size).toBe(0);
   h.controller.setActive(true); h.run(5000);
   expect(h.rafs.size + h.timers.size).toBe(0);
+  // Shown after a long hidden spell, the first hold is still 2.6 s.
+  const late = harness();
+  late.document.hidden = true; late.document.dispatchEvent(new Event("visibilitychange"));
+  late.run(100000);
+  late.controller.setActive(true);
+  late.document.hidden = false; late.document.dispatchEvent(new Event("visibilitychange"));
+  late.run(mark.footerDurations.first + 100);
+  expect(late.mode).toBe("busy");
 });

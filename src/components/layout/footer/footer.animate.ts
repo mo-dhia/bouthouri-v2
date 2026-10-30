@@ -21,7 +21,6 @@ import {
 } from "./footer-mark";
 
 export type FooterMark = {
-  reset(): void;
   setActive(active: boolean): void;
   dispose(): void;
 };
@@ -33,8 +32,9 @@ type Held = {
   index: number;
   touch: boolean;
   at: number;
-  startX: number;
-  startY: number;
+  /** Where the press began, in client pixels; the layout may move under a hold. */
+  downX: number;
+  downY: number;
   clientX: number;
   clientY: number;
   moved: number;
@@ -115,14 +115,15 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
     frameId = 0,
     last = 0,
     hoverAt = 0,
-    hiddenAt = 0,
-    paused = 0;
+    hiddenAt = document.hidden ? performance.now() : 0,
+    paused = 0,
+    pointedAt = -Infinity;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let held: Held | undefined;
   let hover: { x: number; y: number } | undefined;
 
   /** Clock that stops while the document is hidden. */
-  const clock = (now = performance.now()) => now - paused;
+  const clock = (now = performance.now()) => (hiddenAt || now) - paused;
 
   const setMode = () => {
     mask.dataset.mode = !active || phase === "word" ? "word" : phase === "solo" ? "mark" : "busy";
@@ -187,6 +188,8 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
     });
     return index;
   };
+  /** Client pixels per wordmark unit. */
+  const unit = () => toWord(0, 0).scale;
   /** Old pull threshold: a quarter of the glyph height, 24–64 px. */
   const threshold = (scale: number) => Math.max(24, Math.min(64, 0.24 * 300 * scale));
 
@@ -198,9 +201,9 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
     });
     if (!active || phase !== "word") return 0;
     if (held) {
-      const point = toWord(held.clientX, held.clientY),
-        dx = point.x - held.startX,
-        dy = point.y - held.startY,
+      const scale = unit(),
+        dx = (held.clientX - held.downX) / scale,
+        dy = (held.clientY - held.downY) / scale,
         length = Math.hypot(dx, dy);
       if (length > 0.01) {
         const reach = pullLimit * (1 - Math.exp(-length / pullLimit));
@@ -211,7 +214,7 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
           target.r = Math.max(-9, Math.min(9, dx * 0.06)) * share;
         });
       }
-      return 4 + 12 * Math.min(1, (length * point.scale) / threshold(point.scale));
+      return 4 + 12 * Math.min(1, (length * scale) / threshold(scale));
     }
     if (hover) {
       const point = toWord(hover.x, hover.y);
@@ -439,9 +442,8 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
       held.moved += step;
       held.clientX = event.clientX;
       held.clientY = event.clientY;
-      const point = toWord(event.clientX, event.clientY),
-        pull = Math.hypot(point.x - held.startX, point.y - held.startY) * point.scale;
-      setFooterFriction(Math.min(1, pull / threshold(point.scale)), Math.min(1, step / 24), event.clientX / innerWidth - 0.5);
+      const pull = Math.hypot(event.clientX - held.downX, event.clientY - held.downY);
+      setFooterFriction(Math.min(1, pull / threshold(unit())), Math.min(1, step / 24), event.clientX / innerWidth - 0.5);
     }
     if (fine(event)) {
       hover = { x: event.clientX, y: event.clientY };
@@ -457,6 +459,7 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
     request();
   };
   const onDown = (event: PointerEvent) => {
+    pointedAt = performance.now();
     if (!active || event.button !== 0 || held) return;
     if (phase === "solo") {
       event.preventDefault();
@@ -470,8 +473,8 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
       index: nearest(point.x),
       touch: event.pointerType === "touch",
       at: performance.now(),
-      startX: point.x,
-      startY: point.y,
+      downX: event.clientX,
+      downY: event.clientY,
       clientX: event.clientX,
       clientY: event.clientY,
       moved: 0,
@@ -497,11 +500,11 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
     else request();
   }
   const onUp = (event: PointerEvent) => {
+    pointedAt = performance.now();
     if (!held || event.pointerId !== held.id) return;
-    const point = toWord(event.clientX, event.clientY),
-      pull = Math.hypot(point.x - held.startX, point.y - held.startY) * point.scale,
+    const pull = Math.hypot(event.clientX - held.downX, event.clientY - held.downY),
       quick = performance.now() - held.at < 650 && held.moved < 10;
-    release(pull >= threshold(point.scale) || quick);
+    release(pull >= threshold(unit()) || quick);
   };
   const onCancel = (event: PointerEvent) => {
     if (held && event.pointerId === held.id) release(false);
@@ -513,16 +516,22 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
       return;
     }
     if (event.key !== "Enter" && event.key !== " ") return;
-    if (phase === "word" && activate()) event.preventDefault();
-    else if (phase === "solo") {
-      event.preventDefault();
-      next();
-    }
+    // A held key repeats; it must not scroll the page or replay the meal.
+    event.preventDefault();
+    if (event.repeat) return;
+    if (phase === "word") activate();
+    else if (phase === "solo") next();
+  };
+  /** Assistive technology activates the button with a bare click; a pointer's own click already acted on press and release. */
+  const onClick = () => {
+    if (!active || performance.now() - pointedAt < 500) return;
+    if (phase === "word") activate();
+    else if (phase === "solo") next();
   };
   const onBlur = () => release(false);
   const onVisibility = () => {
     if (document.hidden) {
-      hiddenAt = performance.now();
+      hiddenAt ||= performance.now();
       cancel();
       return;
     }
@@ -541,6 +550,7 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
   mask.addEventListener("pointercancel", onCancel);
   mask.addEventListener("lostpointercapture", onCancel);
   mask.addEventListener("keydown", onKey);
+  mask.addEventListener("click", onClick);
   mask.addEventListener("blur", onBlur);
   window.addEventListener("blur", onBlur);
   document.addEventListener("visibilitychange", onVisibility);
@@ -548,7 +558,6 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
   setMode();
 
   return {
-    reset,
     setActive,
     dispose() {
       if (disposed) return;
@@ -564,6 +573,7 @@ export function mountFooterMark(root: HTMLElement, reduced: () => boolean): Foot
       mask.removeEventListener("pointercancel", onCancel);
       mask.removeEventListener("lostpointercapture", onCancel);
       mask.removeEventListener("keydown", onKey);
+      mask.removeEventListener("click", onClick);
       mask.removeEventListener("blur", onBlur);
       window.removeEventListener("blur", onBlur);
       document.removeEventListener("visibilitychange", onVisibility);

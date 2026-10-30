@@ -46,9 +46,13 @@ toward the cursor and hold the loop. A cursor resting 1.6 s no longer holds it,
 so a parked mouse cannot freeze the footer. A press grabs the nearest letter
 (capture for mouse/pen); it stretches after the pointer (neighbours share 35%
 and 12%) while the b's jaw primes open. A release past the old threshold
-(quarter glyph, 24–64 px), a quick click/tap or Enter/Space feeds the word, and
+(quarter glyph, 24–64 px, measured in client pixels so a layout shift under a
+still press is no pull), a quick click/tap or Enter/Space feeds the word, and
 the eat starts from the primed jaw. Escape, blur, cancel or a short pull spring
-back. In the solo, a press, Enter or Space skips the held script. Pull friction
+back. In the solo, a press, Enter or Space skips the held script. A bare click
+(assistive technology) acts like Enter; a pointer's own click is ignored, and
+held keys never scroll the page or act twice. The focus underline stays for
+every phase. Pull friction
 feeds the shared audio graph; `gazzar:material-protection` packets keep
 source `footer`, influence .75 while hovering or held.
 
@@ -59,9 +63,10 @@ source `footer`, influence .75 while hovering or held.
 
 One RAF owns every write. Holds and locked scripts sleep on a single timer.
 A hidden document cancels both and pauses the clock. Reduced motion,
-`quietMode`, `homeSceneFailed`, HOME reading and an inert footer keep the
-controller inactive with the server word. Route start, the open menu and
-deactivation reset to the rest word. Dispose removes the mask `<defs>`,
+`quietMode`, `homeSceneFailed`, HOME reading, the open menu and an inert footer
+keep the controller inactive with the server word. Route start and deactivation
+reset to the rest word. The hidden clock is frozen, so activation while hidden
+still waits the full first hold once shown. Dispose removes the mask `<defs>`,
 listeners and data attributes. `footer.animate.test.ts` drives the real
 controller through the loop, hover hold and idle release, grab/Escape/pull,
 keys, reduced motion, hidden tab, route reset and dispose.
@@ -77,7 +82,8 @@ its own scroll reveal (`standard-footer-pose.ts`) and re-measures when
 preceding content resizes.
 
 `footer-geometry.ts` sizes the SVG to the mask width, scaling uniformly with
-width per `docs/viewport-design.md`. On HOME's pinned footer a short stage
+width per `docs/viewport-design.md`. The mask and, on HOME, the stage-sized root
+are observed, so a height-only resize refits. On HOME's pinned footer a short stage
 shrinks the word so its ink keeps a gap below the information. Only the ink
 must fit; the loop's headroom may overlap the gap. The word never goes below 40%,
 including when no room is left. Nav controls on the stage reserve clearance

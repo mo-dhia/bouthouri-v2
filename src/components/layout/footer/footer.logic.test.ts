@@ -56,7 +56,7 @@ function harness(variant = "home") {
   const subscribers = new Set<() => void>();
   const state = { quietMode: false, homeSceneFailed: false, menuOpen: false };
   let intersect: (entries: { isIntersecting: boolean }[]) => void = () => {};
-  let active = false, mounts = 0, disposals = 0, resets = 0, wordMeasures = 0;
+  let active = false, mounts = 0, disposals = 0, wordMeasures = 0;
   let resizeCallback: (entries: { target: Surface }[]) => void = () => {};
   const resizeTargets = new Set<Surface>();
   class ClockDate extends Date {
@@ -84,7 +84,7 @@ function harness(variant = "home") {
     "./footer-geometry": { measureFooterWord() { wordMeasures++; } },
     "./footer.animate": { mountFooterMark() {
       mounts++;
-      return { reset() { resets++; }, setActive(value: boolean) { active = value; }, dispose() { disposals++; } };
+      return { setActive(value: boolean) { active = value; }, dispose() { disposals++; } };
     } },
   };
   const mount = load("./footer.logic.ts", globals, dependencies).mountFooterInteractions as unknown as (root: Surface) => () => void;
@@ -111,7 +111,6 @@ function harness(variant = "home") {
     get active() { return active; },
     get mounts() { return mounts; },
     get disposals() { return disposals; },
-    get resets() { return resets; },
     get subscribers() { return subscribers.size; },
   };
 }
@@ -156,6 +155,9 @@ test("HOME reading disables mark eligibility while a standard reduced footer ret
     h.motion.matches = true; h.motion.dispatchEvent(new Event("change"));
     expect(h.active).toBe(variant === "standard");
     h.motion.matches = false; h.motion.dispatchEvent(new Event("change"));
+    // The open menu covers the footer; the word waits instead of eating behind it.
+    h.mode({ menuOpen: true }); expect(h.active).toBe(false);
+    h.mode({ menuOpen: false }); expect(h.active).toBe(true);
     h.mode({ homeSceneFailed: true }); expect(h.active).toBe(variant === "standard");
     dispose();
   }
@@ -173,12 +175,20 @@ test("the mark controller loads once, on intent or visibility, and dispose resto
   h.root.inert = true; h.frame(714); expect(h.active).toBe(false);
   h.root.inert = false; h.frame(714); expect(h.active).toBe(true);
   h.frame(400); expect(h.active).toBe(false); // The story hides the pinned footer.
-  h.mode({ menuOpen: true }); expect(h.resets).toBe(1);
   h.word.style.transform = "translate3d(0,4%,0)"; h.svg.setAttribute("style", "height: 8vw");
   dispose();
   expect(h.disposals).toBe(1);
   expect(h.word.getAttribute("style")).toBe("color: red"); expect(h.svg.getAttribute("style")).toBe("height: 10vw");
   expect(h.timers.size).toBe(0); expect(h.subscribers).toBe(0); expect(h.resizeTargets.size).toBe(0);
+});
+
+test("HOME refits the word when only the stage height changes", () => {
+  const h = harness(), dispose = h.mount();
+  expect(h.resizeTargets.has(h.root)).toBe(true);
+  const before = h.measurements.word;
+  h.layoutResize(h.root); // A shorter window: the mask keeps its width.
+  expect(h.measurements.word).toBe(before + 1);
+  dispose();
 });
 
 test("standalone standard footer completes at native max scroll without a tail even when the editorial shell import fails", async () => {

@@ -80,8 +80,10 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
     clockTimer = setTimeout(updateClock, 60000 - (Date.now() % 60000) + 20);
   };
   // HOME's reading layout keeps the word still; a standard footer animates
-  // once its own scroll reveal shows the word. Reduced motion holds the word.
-  const syncMaterial = () => material?.setActive(visible && !root.inert && (standard ? standardReveal > .001 : !reduced()));
+  // once its own scroll reveal shows the word. Reduced motion and the open
+  // menu hold the word.
+  const syncMaterial = () =>
+    material?.setActive(visible && !root.inert && !uiStore.getState().menuOpen && (standard ? standardReveal > .001 : !reduced()));
   const ensureMaterial = () => {
     if (material || loading || disposed) return;
     loading = true;
@@ -131,7 +133,6 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
       previousReduced = next;
       updateClock();
     }
-    if (uiStore.getState().menuOpen) material?.reset();
     updateStandard();
     syncMaterial();
   };
@@ -142,11 +143,14 @@ export function mountFooterInteractions(root: HTMLElement): () => void {
   mask.addEventListener("focus", onIntent);
   const resize = new ResizeObserver((entries) => {
     // Upstream content and the physical scroll tail can move the footer while
-    // its word geometry stays unchanged; only the mask refits the word.
-    if (entries.some((entry) => entry.target === mask)) measureWord();
+    // its word geometry stays unchanged; only the mask and HOME's stage-sized
+    // root refit the word.
+    if (entries.some((entry) => entry.target === mask || entry.target === root)) measureWord();
     else measureStandardPosition();
   });
   resize.observe(mask);
+  // HOME's word shrinks with the stage height, which the mask's width ignores.
+  if (!standard) resize.observe(root);
   // Standard footers move when preceding route content grows/shrinks. Their
   // mask can retain identical dimensions, so observe the layout owner too.
   if (standard && root.parentElement) {
