@@ -41,11 +41,13 @@ use data-nav-layer: the utilities ancestor’s data-nav-context is its current p
 and can also equal persistent.
 
 The logo is the brand book's kit wordmark; its b is the live mark
-(`identity-live.ts`). One clock loops ⴱ → b → ⴱ (rests 1.1/3.4s, moves
-1.75/1.65s) on RAF during moves and a timer during rests, paused while hidden
-or off screen. Hover/focus skips the current rest. It holds on b during the
-entry and for reduced motion or quiet reading, and resumes from whichever state
-the entry lands on (`identity-mark-landed`). Nav labels
+(`identity-live.ts`). One clock reads the three scripts, ب → ⴱ → b, then
+pauses on b and repeats (rests ب 1.1s, ⴱ 1.1s, b 3.4s; moves 1.75/1.75/1.6s)
+on RAF during moves and a timer during rests, paused while hidden or off
+screen. ⴱ and ب sit centred on the x-height; b keeps its bowl there. Hover/focus
+skips the current rest. It holds on b during the entry and for reduced motion
+or quiet reading, and starts the b pause when the entry's b lands
+(`identity-mark-landed`). Nav labels
 have an inline baseline marker and the source's measured ink-centering correction.
 Conversation links retain the rollover; background marquee cue is editorial.
 

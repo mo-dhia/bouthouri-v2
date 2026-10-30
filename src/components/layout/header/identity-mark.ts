@@ -121,11 +121,13 @@ export const markBtoA: Move = (t, o = {}) => {
 };
 
 /* B -> C: the top half sweeps round and folds onto the bottom half,
-   the stem lies down and contracts into the dot of ب. */
+   the stem lies down and contracts into the dot of ب. `drop` is the b's
+   bowl height it starts from, as in `markAtoB`. */
 export const markBtoC: Move = (t, o = {}) => {
   const phi0 = o.phi0 == null ? 180 : o.phi0,
-    r0 = o.r0 || 0;
-  const cy = lerp(50, -85, E.inOutCubic(seg(t, 0.18, 0.8)));
+    r0 = o.r0 || 0,
+    drop = o.drop == null ? 50 : o.drop;
+  const cy = lerp(drop, -85, E.inOutCubic(seg(t, 0.18, 0.8)));
   const fold = E.outBack(seg(t, 0.3, 0.85), 1.2);
   const shrink = E.inOutCubic(seg(t, 0, 0.3));
   const out = E.outCubic(seg(t, 0, 0.3));

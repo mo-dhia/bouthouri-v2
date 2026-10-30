@@ -1,7 +1,8 @@
 import { uiStore } from "@/store/uiStore";
 import {
   markAtoB,
-  markBtoA,
+  markBtoC,
+  markCtoA,
   markLandedEvent,
   markPieces,
   markStatic,
@@ -11,28 +12,34 @@ import {
 } from "./identity-mark";
 
 export type LiveStep = {
-  id: "A" | "AB" | "B" | "BA";
+  id: "C" | "CA" | "A" | "AB" | "B" | "BC";
   dur: number;
   pose?: () => Pose;
   move?: (t: number) => Pose;
 };
 
 const B0 = wordmarkRest();
-/** The brand book's live wordmark loop: ⴱ → b and back, bowl on the x-height. */
+/**
+ * The live wordmark reads the three scripts in order, ب → ⴱ → b, pauses on
+ * b and goes round again. The b keeps its bowl on the x-height (drop 0); ⴱ
+ * and ب sit centred on it, as in the brand book's plates.
+ */
 export const liveSteps: readonly LiveStep[] = [
+  { id: "C", dur: 1100, pose: markStatic.C },
+  { id: "CA", dur: 1750, move: (t) => markCtoA(t) },
   { id: "A", dur: 1100, pose: markStatic.A },
   { id: "AB", dur: 1750, move: (t) => markAtoB(t, { drop: 0 }) },
   { id: "B", dur: 3400, pose: () => B0 },
-  { id: "BA", dur: 1650, move: (t) => markBtoA(t, { drop: 0 }) },
+  { id: "BC", dur: 1600, move: (t) => markBtoC(t, { drop: 0 }) },
 ];
-const restB = 2;
+const restB = 4;
 
 const heldPhases = new Set(["loading", "ready", "assembling"]);
 
 /**
  * One clock drives every wordmark b under `root`. Moves run on animation
  * frames; rests wait on a timer. It holds on b during the entry and for reduced
- * motion, and resumes from whichever state the entry hands off.
+ * motion, and starts its pause when the entry lands the b.
  */
 export function mountLiveWordmark(root: HTMLElement): () => void {
   const marks = Array.from(root.querySelectorAll<SVGGElement>("[data-logo-mark]"))
@@ -122,10 +129,10 @@ export function mountLiveWordmark(root: HTMLElement): () => void {
     start = performance.now() - liveSteps[i].dur;
     restart();
   };
-  const onLanded = (event: Event) => {
-    const mark = (event as CustomEvent<{ mark?: string }>).detail?.mark;
+  // The entry lands its b here: the pause starts now, then ب.
+  const onLanded = () => {
     landed = true;
-    rest(mark === "A" ? 0 : restB);
+    rest(restB);
     sync();
     restart();
   };
