@@ -8,7 +8,7 @@ the reference's choreography has been reproduced.
 | --- | --- | --- |
 | `public/assets/images/hero-portrait.webp` | `https://www.thisisgazzar.com/images/hero-portrait.webp` | Identity portrait, 1536 × 1024 |
 | `public/assets/images/identity-logo.svg` | Inline SVG in the identity hero's home link at `https://www.thisisgazzar.com/en` | Original three-piece logo, 280 × 140 viewBox |
-| `public/icon.svg` | Generated from `src/components/layout/header/identity-mark.ts` (2026-10-29) | BOUTHOURI assembled B; keeps the original icon's tile, colors and 1/9 corner ratio |
+| `public/icon.svg` | Generated from `src/components/layout/header/identity-mark.ts` (2026-10-30) | Brand-book favicon: the static kit b in ink `#0B0B0A` on a bone `#D9D5CB` tile, 380 units with radius 70 (`brand-book/bouthouri-mark.html`, 7.0) |
 | `public/assets/fonts/questrial-regular.woff2` | `https://www.thisisgazzar.com/_next/static/immutable/media/Questrial_Regular-s.p.3x3y0nhc6wbcr.woff2` | English typography |
 | `public/assets/fonts/cairo-variable.woff2` | `https://www.thisisgazzar.com/_next/static/immutable/media/Cairo_Variable-s.p.2nkn5kw540dey.woff2` | Arabic typography |
 | `public/assets/images/glasses-fallback.png` | `https://www.thisisgazzar.com/images/glasses-fallback.png` | Original WebGL-failure poster |
