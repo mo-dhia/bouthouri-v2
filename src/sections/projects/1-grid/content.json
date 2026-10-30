@@ -151,5 +151,14 @@
     "href": "https://carterogunsola.com/lab/paste-up",
     "poster": "/assets/projects/lab/paste-up.jpg",
     "reel": "/assets/projects/lab/paste-up.mp4"
+  },
+  {
+    "name": "Artefact Studio",
+    "kind": "website",
+    "category": "Website",
+    "isNew": true,
+    "href": "https://artefactstudio.org/",
+    "poster": "/assets/projects/work/artefact.jpg",
+    "reel": "/assets/projects/work/artefact.mp4"
   }
 ]

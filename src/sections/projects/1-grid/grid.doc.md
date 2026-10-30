@@ -5,17 +5,17 @@ The source header, list/wheel mode switcher, light/dark theme and global live
 presence are excluded. The existing Bouthouri navigation and retained background
 own the shell. The source's nine experiment posters/reels and ordinary external
 experiment links are currently retained with visible attribution. They are
-reference studies, not presented as Bouthouri-authored client work. Eight
+reference studies, not presented as Bouthouri-authored client work. Nine
 Bouthouri-built websites are interleaved with them; see "Website cards" below.
 
 ## Ownership and rendering
 
-`grid.tsx` renders the complete seventeen-card content, local poster images, links,
+`grid.tsx` renders the complete eighteen-card content, local poster images, links,
 heading and instructions on the server. `grid-gate.tsx` renders nothing and
 imports the controller after mount. Without that optional chunk, the ordinary
 responsive card grid remains readable and navigable. The controller clones only
 the visual repetitions to make the 6×6 virtual surface. Clones are excluded from
-the accessibility tree and tab order; the original seventeen links remain keyboard
+the accessibility tree and tab order; the original eighteen links remain keyboard
 targets. No React state, GSAP, Lenis or Three dependency is used by the grid.
 
 `grid-geometry.ts` owns reference layout, wrapping, bowed perspective and
@@ -165,8 +165,8 @@ The user asked for the seven websites from the previous portfolio
 (`/Users/ghost/Documents/dev/Finished/bouthouri`, live at bouthouri.co) to join
 this grid. `content.json` marks every item `kind: "study"` or `"website"`.
 Websites alternate with studies so the opening view mixes both; Vocal Orb stays
-at index eight, the source's initial target. With seventeen originals in 36
-slots, the repetition seam falls inside the visible surface at some pans.
+at index eight, the source's initial target. With eighteen originals in 36
+slots, each row of six repeats every three rows.
 
 Website cards link to the live site with `target="_blank"` and
 `rel="external noopener"`. The route surface ignores external links, so they
@@ -183,3 +183,10 @@ after Vocal Orb, which keeps the alternation. The user plans to serve this site
 at bouthouri.co and move the previous one to old.bouthouri.co, so the card
 links there. Its media was recorded from www.bouthouri.co in the dark scheme,
 where the previous portfolio still lives.
+
+Artefact Studio (artefactstudio.org) joined on 2026-10-30 as the ninth website,
+appended after Paste-Up. That makes eighteen originals, three full rows of six,
+so every row alternates website and study, including across its horizontal wrap.
+It is flagged New: the live deployment was about two weeks old. The site draws
+its scrollbar as a DOM overlay; it was hidden during capture, like native
+scrollbars on the other sites, because the dashed track already shows the scroll.
