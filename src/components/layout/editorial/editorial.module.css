@@ -72,6 +72,13 @@
   .controls :global([data-sound-control]) { color: #aaa9a2 }
   .controls svg { width: 1.35417vw; height: 1.35417vw }
   .navigation :global([data-menu-control]) { min-width: 3.33334vw }
+  .role > small { font-size: calc(0.364584vw * var(--type-scale, 1)); color: #716f66; letter-spacing: calc(.08em * var(--tracking-scale, 1)); margin-top: 0.208334vw; line-height: 1.8; white-space: nowrap; display: block }
+  .back { font-size: calc(0.520834vw * var(--type-scale, 1)); color: #aaa79e; letter-spacing: calc(.02em * var(--tracking-scale, 1)); white-space: nowrap; pointer-events: auto; align-items: center; gap: 1.14584vw; min-height: 2.29167vw; transition: color .35s; display: flex; position: relative }
+  .back > i { transform-origin: 100%; background: #8d8b80; width: 1.25vw; height: 0.0520834vw; transition: transform .35s; display: block }
+  .back:is(:hover, :focus-visible) { color: #ede9df }
+  .back:is(:hover, :focus-visible) > i { transform: scaleX(.4) }
+  :global(html[lang='ar']) .back { font-family: var(--font-arabic), sans-serif; font-size: calc(0.625vw * var(--type-scale, 1)); letter-spacing: 0; direction: rtl }
+  :global(html[lang='ar']) .back > i { transform-origin: 0 }
   :global(html[lang='ar']) .role { text-align: right; letter-spacing: 0; font-size: calc(0.572917vw * var(--type-scale, 1)); direction: rtl }
 }
 @media (600px < width <= 1024px) {
@@ -152,6 +159,8 @@
   .controls, .role { display: none }
   .navigation { min-height: 10.1563vw; padding: 2.08334vw 6vw }
   .navigation :global([data-menu-control]) { min-width: 8.33334vw; min-height: 5.72917vw }
+  .role > small { font-size: calc(0.911459vw * var(--type-scale, 1)); color: #716f66; letter-spacing: calc(.08em * var(--tracking-scale, 1)); margin-top: 0.520834vw; line-height: 1.8; white-space: nowrap; display: block }
+  .back { display: none }
 }
 @media (width <= 600px) {
   .root :global(.home-footer) { --footer-information-top: 35%; --footer-word-rest: 8%; --footer-word-gap: max(5.82525vw, min(4svh, 11.6505vw)); --footer-word-bottom: min(var(--footer-word-rest), calc(100% - var(--footer-information-top) - var(--footer-information-height, 24.2719vw) - var(--footer-word-height, 25vw) + var(--footer-ink-top, 0vw) - var(--footer-word-gap))); z-index: 3; visibility: hidden; pointer-events: auto; position: absolute; inset: 0 }
@@ -259,4 +268,6 @@
   .controls, .role { display: none }
   .navigation { min-height: 18.9321vw; padding: 3.8835vw 6vw }
   .navigation :global([data-menu-control]) { min-width: 15.534vw; min-height: 10.6797vw }
+  .role > small { font-size: calc(1.69903vw * var(--type-scale, 1)); color: #716f66; letter-spacing: calc(.08em * var(--tracking-scale, 1)); margin-top: 0.970874vw; line-height: 1.8; white-space: nowrap; display: block }
+  .back { display: none }
 }
