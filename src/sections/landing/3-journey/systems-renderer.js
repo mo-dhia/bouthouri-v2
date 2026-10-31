@@ -76,15 +76,25 @@ export function createSystemsRenderer(root, getPen) {
         exit: smooth(c, d, time),
       })),
     );
+  // Frames are built on first use: a paint reads two of the 315, and their
+  // cost grows with the forecasting mark's segment count.
+  const frameAt = (index) =>
+    (frames[index] ??= systemPaths(
+      index + 400,
+      width,
+      height,
+      stageHeight,
+      pen,
+    ).map((points) => ({ points, lengths: arcLengths(points) })));
   const render = () => {
-    if (!pen || !frames.length) return;
+    if (!pen) return;
     const time = Math.max(400, Math.min(714, score));
-    const frame = Math.max(0, Math.min(frames.length - 1, time - 400));
+    const frame = Math.max(0, Math.min(314, time - 400));
     const index = Math.floor(frame),
-      next = Math.min(frames.length - 1, index + 1),
+      next = Math.min(314, index + 1),
       fraction = frame - index;
-    const sampled = frames[index].map((value, pathIndex) => {
-      const other = frames[next][pathIndex];
+    const sampled = frameAt(index).map((value, pathIndex) => {
+      const other = frameAt(next)[pathIndex];
       const lengths = value.lengths.map((v, i) =>
         mix(v, other.lengths[i], fraction),
       );
@@ -291,12 +301,7 @@ export function createSystemsRenderer(root, getPen) {
     height = h;
     stageHeight = stage;
     pen = newPen;
-    frames = Array.from({ length: 315 }, (_, i) =>
-      systemPaths(i + 400, width, height, stageHeight, pen).map((points) => ({
-        points,
-        lengths: arcLengths(points),
-      })),
-    );
+    frames = [];
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     render();
   };
