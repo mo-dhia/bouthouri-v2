@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import experiments from "../src/sections/projects/2-experiment/experiments.json";
 import { brand } from "../src/config/brand";
+const caseSlugs = ["artefact", "vawzen", "batiprix", "the-forecasting-machine"];
 
 const base = new URL(process.argv[2] || "http://localhost:3000");
 const root = await fetch(base, { redirect: "manual" });
@@ -31,8 +32,8 @@ for (const locale of ["en", "ar"]) {
   assert.match(markup, /id="beyond"/);
   assert.match(markup, /id="work-artefact-title"/);
   assert.match(markup, /id="work-forecasting-title"/);
-  for (const site of [locale === "ar" ? "https://artefactstudio.org/ar" : "https://artefactstudio.org/", "https://vawzen.org/", "https://www.batiprix.com/", "https://theforecastingmachine.com/"])
-    assert.match(markup, new RegExp(`<a[^>]*work-explore[^>]*href="${site.replaceAll(".", "\\.")}" target="_blank" rel="external noopener"`), `${locale}: Explore opens ${site}`);
+  for (const slug of caseSlugs)
+    assert.match(markup, new RegExp(`<a[^>]*work-explore[^>]*href="/${locale}/projects/${slug}"`), `${locale}: Explore opens the ${slug} case`);
   assert.match(markup, /systems-human-copy/);
   assert.match(markup, /systems-ending/);
   assert.doesNotMatch(markup, /Create Next App|To get started|Deploy Now/);
@@ -125,8 +126,29 @@ for (const locale of ["en", "ar"]) {
     if (url.origin === base.origin && url.pathname.startsWith("/_next/static/")) assets.add(url.href);
   }
 }
+for (const locale of ["en", "ar"]) for (const [index, slug] of caseSlugs.entries()) {
+  const path = `/${locale}/projects/${slug}`, response = await fetch(new URL(path, base));
+  assert.equal(response.status, 200, path);
+  const html = await response.text(), markup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  assert.match(markup, new RegExp(`data-case-root[^>]*data-case-slug="${slug}"|data-case-slug="${slug}"[^>]*data-case-root`), `${path}: case root`);
+  assert.match(markup, /<h1[^>]*class="case-hero-title"[^>]*aria-label="[^"]+"/, `${path}: SSR project title`);
+  assert.match(markup, /id="case-story"/, `${path}: SSR story`);
+  assert.equal(markup.match(/data-reading-step/g)?.length, 3, `${path}: three SSR reading steps`);
+  assert.ok(markup.includes(`href="/${locale}?work=${slug}"`), `${path}: returns to its moment on HOME`);
+  assert.ok(markup.includes(`href="/${locale}/projects/${caseSlugs[index + 1] ?? caseSlugs[index - 1]}"`), `${path}: neighbouring case`);
+  assert.ok(markup.includes(`href="/${locale === "en" ? "ar" : "en"}/projects/${slug}"`), `${path}: locale retains case`);
+  assert.match(markup, /class="case-external-link" href="https:\/\/[^"]+" target="_blank" rel="noopener noreferrer"/, `${path}: live website`);
+  if (slug === "artefact") assert.ok(markup.includes(`href="/${locale}/projects/360-tour"`), `${path}: walks into the café tour`);
+  assert.match(html, new RegExp(`<link[^>]+rel="canonical"[^>]+href="[^"]*${path}"`));
+  assert.match(markup, /<html[^>]*dir="(?:rtl|ltr)"/);
+  for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+)"/g)) {
+    const url = new URL(match[1].replaceAll("&amp;", "&"), base);
+    if (url.origin === base.origin && url.pathname.startsWith("/_next/static/")) assets.add(url.href);
+  }
+}
 const sitemap = await (await fetch(new URL('/sitemap.xml', base))).text();
 for (const locale of ['en', 'ar']) assert.ok(sitemap.includes(`/${locale}/projects/360-tour`), 'Tour is discoverable in the sitemap');
+for (const locale of ['en', 'ar']) for (const slug of caseSlugs) assert.ok(sitemap.includes(`/${locale}/projects/${slug}`), `The ${slug} case is discoverable in the sitemap`);
 for (const path of ["/en/projects/not-a-study", "/en/services/vocal-orb", "/en/services/360-tour"]) assert.equal((await fetch(new URL(path, base))).status, 404, path);
 
 for (const path of ["/fr", "/en/not-a-page"]) {
@@ -138,4 +160,4 @@ for (const path of ["/robots.txt", "/sitemap.xml", "/icon.svg", "/assets/images/
 await Promise.all([...assets].map(async (url) => {
   assert.equal((await fetch(url)).status, 200, url);
 }));
-process.stdout.write(`SSR audit passed: HOME, four editorial pages, nine experiment details and the 360 tour in both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);
+process.stdout.write(`SSR audit passed: HOME, four editorial pages, four case studies, nine experiment details and the 360 tour in both locales, RTL, metadata, redirects, 404s, and ${assets.size} static assets.\n`);
