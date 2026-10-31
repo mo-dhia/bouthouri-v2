@@ -13,7 +13,7 @@ export default function RouteSurfaceGate() {
   const initialTimer = useRef<number | null>(null);
   useLayoutEffect(() => {
     const main = [...document.querySelectorAll<HTMLElement>("main[data-route-path]")].find(element => element.dataset.routePath === location.pathname.replace(/\/$/, ""));
-    const owner = main?.querySelector<HTMLElement>("[data-vision-root], #services-content, [data-contact-content], [data-experiment-root], [data-tour-root]");
+    const owner = main?.querySelector<HTMLElement>("[data-vision-root], #services-content, [data-contact-content], [data-experiment-root], [data-tour-root], [data-case-root]");
     const entries = routeEntries();
     if (main?.dataset.routePath && owner && !entries.started(owner) && !location.hash) {
       const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;

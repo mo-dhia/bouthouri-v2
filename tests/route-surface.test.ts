@@ -70,7 +70,7 @@ function harness({ denied = false, type = "navigate", initialHold = false, defer
     [main, inner, heading, shell].forEach(element => { element.ownerDocument = doc; });
     main.dataset.routePath = path; shell.dataset.shell = "true"; main.previousElementSibling = shell;
     main.selections.set("h1", heading);
-    main.selections.set(path.endsWith("vision") ? "[data-vision-root]" : path.endsWith("services") ? "#services-content" : path.includes("/projects") ? "[data-projects-root], [data-experiment-root], [data-tour-root]" : "[data-contact-content]", inner);
+    main.selections.set(path.endsWith("vision") ? "[data-vision-root]" : path.endsWith("services") ? "#services-content" : path.includes("/projects") ? "[data-projects-root], [data-experiment-root], [data-tour-root], [data-case-root]" : "[data-contact-content]", inner);
     const result = { main, inner, heading, shell, path }; owners.push(result); return result;
   };
   const first = owner("/en/vision");
