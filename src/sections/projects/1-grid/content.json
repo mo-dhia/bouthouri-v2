@@ -136,10 +136,10 @@
   },
   {
     "name": "Vawzen",
-    "kind": "website",
-    "category": "Website",
+    "kind": "case",
+    "category": "Case study",
     "isNew": false,
-    "href": "https://vawzen.org/",
+    "href": "/projects/vawzen",
     "poster": "/assets/projects/work/vawzen.jpg",
     "reel": "/assets/projects/work/vawzen.mp4"
   },
@@ -154,10 +154,10 @@
   },
   {
     "name": "Artefact Studio",
-    "kind": "website",
-    "category": "Website",
+    "kind": "case",
+    "category": "Case study",
     "isNew": true,
-    "href": "https://artefactstudio.org/",
+    "href": "/projects/artefact",
     "poster": "/assets/projects/work/artefact.jpg",
     "reel": "/assets/projects/work/artefact.mp4"
   },
@@ -169,5 +169,23 @@
     "href": "/projects/360-tour",
     "poster": "/assets/projects/tour/360-tour.jpg",
     "reel": "/assets/projects/tour/360-tour.mp4"
+  },
+  {
+    "name": "Batiprix",
+    "kind": "case",
+    "category": "Case study",
+    "isNew": false,
+    "href": "/projects/batiprix",
+    "poster": "/assets/projects/work/batiprix.jpg",
+    "reel": "/assets/projects/work/batiprix.mp4"
+  },
+  {
+    "name": "The Forecasting Machine",
+    "kind": "case",
+    "category": "Case study",
+    "isNew": true,
+    "href": "/projects/the-forecasting-machine",
+    "poster": "/assets/projects/work/the-forecasting-machine.jpg",
+    "reel": "/assets/projects/work/the-forecasting-machine.mp4"
   }
 ]

@@ -13,17 +13,18 @@ The source header, list/wheel mode switcher, light/dark theme and global live
 presence are excluded. The existing Bouthouri navigation and retained background
 own the shell. The source's nine experiment posters/reels and ordinary external
 experiment links are currently retained with visible attribution. They are
-reference studies, not presented as Bouthouri-authored client work. Nine
-Bouthouri-built websites are interleaved with them; see "Website cards" below.
+reference studies, not presented as Bouthouri-authored client work.
+Bouthouri-built websites and case studies are interleaved with them; see
+"Website cards" and "Case study cards" below.
 
 ## Ownership and rendering
 
-`grid.tsx` renders the complete eighteen-card content, local poster images, links,
+`grid.tsx` renders the complete twenty-one-card content, local poster images, links,
 heading and instructions on the server. `grid-gate.tsx` renders nothing and
 imports the controller after mount. Without that optional chunk, the ordinary
 responsive card grid remains readable and navigable. The controller clones only
 the visual repetitions to make the 6×6 virtual surface. Clones are excluded from
-the accessibility tree and tab order; the original eighteen links remain keyboard
+the accessibility tree and tab order; the original twenty-one links remain keyboard
 targets. No React state, GSAP, Lenis or Three dependency is used by the grid.
 
 `grid-geometry.ts` owns reference layout, wrapping, bowed perspective and
@@ -198,3 +199,16 @@ so every row alternates website and study, including across its horizontal wrap.
 It is flagged New: the live deployment was about two weeks old. The site draws
 its scrollbar as a DOM overlay; it was hidden during capture, like native
 scrollbars on the other sites, because the dashed track already shows the scroll.
+
+## Case study cards (2026-10-31)
+
+Artefact Studio, Vawzen, Batiprix and The Forecasting Machine now have case
+pages (see `../4-case/case.doc.md`). Their cards use `kind: "case"`: like the
+tour, each opens `/[locale]/projects/<slug>` in the same tab through the route
+surface. The chip reads Case study, the accessible name says case study rather
+than opening a new tab, and the composed posters skip the study ink filter.
+Artefact and Vawzen keep their media and positions. Batiprix and The Forecasting
+Machine are appended after the tour as cards 20 and 21, with media captured from
+their live sites in the same template. With twenty-one originals in the 36
+slots, cards 1–15 appear twice per surface and 16–21 once; Vocal Orb stays the
+initial target.

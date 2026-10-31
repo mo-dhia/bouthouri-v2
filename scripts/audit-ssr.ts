@@ -68,12 +68,13 @@ for (const locale of ["en", "ar"]) {
     if (page === "contact") { assert.match(markup, /<form\b/); for (const name of ["name", "email", "message"]) assert.ok(markup.includes(`name="${name}"`), `${path}: SSR ${name}`); }
     if (page === "projects") {
       assert.match(markup, /data-projects-root/);
-      assert.equal((markup.match(/data-grid-item/g) || []).length, 19, `${path}: all nineteen cards are server content`);
+      assert.equal((markup.match(/data-grid-item/g) || []).length, 21, `${path}: all twenty-one cards are server content`);
       assert.equal((markup.match(/data-reel="\/assets\/projects\/lab\//g) || []).length, 9, `${path}: deferred local study reels`);
-      assert.equal((markup.match(/data-reel="\/assets\/projects\/work\//g) || []).length, 9, `${path}: deferred local website reels`);
+      assert.equal((markup.match(/data-reel="\/assets\/projects\/work\//g) || []).length, 11, `${path}: deferred local website and case reels`);
       assert.equal((markup.match(/data-reel="\/assets\/projects\/tour\//g) || []).length, 1, `${path}: deferred tour reel`);
       assert.ok(markup.includes(`href="/${locale}/projects/360-tour"`), `${path}: internal 360 tour card`);
-      for (const site of ["https://xsustain.vercel.app/", "https://cci-demo.vercel.app/", "https://v-stores.vercel.app/", "https://vawzen.org/", "https://afrah-events.vercel.app/", "https://bored-kiwi.vercel.app/", "https://vibrand.vercel.app/", "https://old.bouthouri.co/", "https://artefactstudio.org/"]) assert.ok(markup.includes(`href="${site}" target="_blank" rel="external noopener"`), `${path}: live website ${site}`);
+      for (const slug of ["artefact", "vawzen", "batiprix", "the-forecasting-machine"]) assert.match(markup, new RegExp(`data-grid-item[^>]*href="/${locale}/projects/${slug}" aria-label="[^"]*${locale === "ar" ? "دراسة حالة" : "case study"}"`), `${path}: same-tab case card ${slug}`);
+      for (const site of ["https://xsustain.vercel.app/", "https://cci-demo.vercel.app/", "https://v-stores.vercel.app/", "https://afrah-events.vercel.app/", "https://bored-kiwi.vercel.app/", "https://vibrand.vercel.app/", "https://old.bouthouri.co/"]) assert.ok(markup.includes(`href="${site}" target="_blank" rel="external noopener"`), `${path}: live website ${site}`);
       assert.match(visible, /Carter Ogunsola/, `${path}: reference experiment attribution`);
       assert.doesNotMatch(markup, /lab__mode|lenis/, `${path}: excluded source controls/runtime`);
     }
