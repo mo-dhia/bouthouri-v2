@@ -53,7 +53,11 @@ that import fails, the route entry falls back and the server content stands.
   inside their `[data-drawing-window]`.
 - Progression: progress is anchored to the measured reading steps, driving
   `data-reading-step`, `--reading-progress`, `aria-current` on the index, and
-  the concept's route, cursor, finance path and cone.
+  the concept's route, cursor, finance path and cone. On mobile and short
+  viewports the concept is not sticky: it scrolls away before the steps reach
+  the reading line, as in the original. There it plays across its own passage
+  instead, from the whole drawing entering the viewport to its top meeting the
+  navigation clearance (at least 40% of the viewport), so the walk is seen.
 - Frames: the loop sleeps when settled, hidden, menu-covered or reduced.
   Scrolling enters through `scrollManager` without its RAF.
 

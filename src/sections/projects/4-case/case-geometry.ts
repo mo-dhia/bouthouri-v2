@@ -89,6 +89,12 @@ export function anchoredProgress(position: number, anchors: number[]) {
   return 1;
 }
 
+/** An unstuck concept scrolls away before its steps arrive, so it plays across its own passage: from the whole drawing entering the viewport to its top meeting the navigation clearance. */
+export function passageProgress(top: number, height: number, scroll: number, viewport: number, clearance: number) {
+  const end = top - clearance, start = Math.min(top + height - viewport, end - .4 * viewport);
+  return clamp01((scroll - start) / (end - start));
+}
+
 export function caseReading(progress: number, reduced = false) {
   const a = reduced ? 1 : clamp01(progress);
   return { progress: a, step: Math.min(2, Math.floor(2 * a + .5)), route: .08 + .92 * a };

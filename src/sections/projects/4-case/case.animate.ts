@@ -4,7 +4,7 @@ import { pageEntryPath, routeEntries, skipPageEntry } from '@/lib/navigation/rou
 import { uiStore } from '@/store/uiStore';
 import { createMaskedReveal, type MaskedReveal } from '@/sections/vision/masked-reveal';
 import { range } from '@/sections/vision/2-perspective/system-geometry';
-import { anchoredProgress, caseReading, coneTransform, financePath, storyReveal } from './case-geometry';
+import { anchoredProgress, caseReading, coneTransform, financePath, passageProgress, storyReveal } from './case-geometry';
 
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 /** Artefact's mark drifts sideways, The Forecasting Machine's breathes vertically; the others rest on the pointer. */
@@ -19,6 +19,7 @@ export function mountCase(root: HTMLElement) {
   const markPath = hero.querySelector<SVGPathElement>('[data-case-mark-path]'), tail = hero.querySelector<SVGPathElement>('.case-mark-tail'), depth = hero.querySelector<HTMLElement>('.case-mark-depth');
   const sway = SWAY[[...hero.classList].find(name => name.startsWith('case-identity-'))?.slice(14) ?? ''] ?? { x: 0, y: 0 };
   const progression = story.querySelector<HTMLElement>('.case-progression'), steps = [...story.querySelectorAll<HTMLElement>('[data-reading-step]')];
+  const panel = story.querySelector<HTMLElement>('.case-concept-sticky'), drawing = panel?.querySelector<HTMLElement>('.case-concept');
   const links = [...story.querySelectorAll<HTMLAnchorElement>('[data-reading-link]')], route = story.querySelector<SVGPathElement>('[data-concept-route]'), cursor = story.querySelector<SVGPathElement>('[data-route-cursor]');
   const finance = story.querySelector<SVGPathElement>('[data-concept-finance]'), financeLabels = [...story.querySelectorAll<HTMLElement>('[data-finance-label]')], parts = [...story.querySelectorAll<SVGPathElement>('[data-concept-part]')];
   const turn = Number(cursor?.dataset.cursorTurn ?? 0), nav = root.closest('[data-editorial-page]')?.querySelector<HTMLElement>('.editorial-nav');
@@ -30,6 +31,7 @@ export function mountCase(root: HTMLElement) {
   const savedInline = [...root.querySelectorAll<HTMLElement | SVGElement>('*')].map(element => ({ element, style: element.getAttribute('style'), transform: element.getAttribute('transform'), d: element.getAttribute('d') }));
   let disposed = false, frame = 0, previousTime = 0, measureDirty = true, scrollDirty = true, reduced = motion.matches || uiStore.getState().quietMode, fontsReady = !document.fonts;
   let scale = 1, viewport = 1080, heroTop = 0, heroHeight = 1, anchors: number[] = [], routeLength = 0, presented = false;
+  let passage: { top: number; height: number; clearance: number } | null = null;
   let entryStarted = false, entryDone = false, entrySeconds = 0, ambient = 0, pointerX = 0, pointerY = 0, targetX = 0, targetY = 0;
   const arrival = routeEntries(root.ownerDocument ?? document).register(root, pageEntryPath(root, 'projects'), {
     start(skip) { entryStarted = true; if (skip || skipPageEntry(reduced, window)) { entryDone = true; entrySeconds = 3; } heroEntry(0); wake(); },
@@ -51,13 +53,16 @@ export function mountCase(root: HTMLElement) {
     const stage = referenceStage(innerWidth, innerHeight); scale = stage.scale; viewport = innerHeight;
     root.dataset.motion = reduced ? 'reading' : 'true';
     depths.forEach(item => item.element.style.removeProperty('transform'));
-    if (nav) story.style.setProperty('--case-nav-clearance', pixelsToVw(Math.round(nav.getBoundingClientRect().height + 32 * scale), innerWidth));
+    const clearance = nav ? Math.round(nav.getBoundingClientRect().height + 32 * scale) : 0;
+    if (nav) story.style.setProperty('--case-nav-clearance', pixelsToVw(clearance, innerWidth));
     heroMasks.forEach(mask => mask.measure()); reveals.forEach(item => item.reveal.measure());
     const y = scrollY, box = (element: Element) => { const rect = element.getBoundingClientRect(); return { top: rect.top + y, height: Math.max(1, rect.height) }; };
     reveals.forEach(item => Object.assign(item, box(item.element))); depths.forEach(item => Object.assign(item, box(item.element)));
     draws.forEach(item => Object.assign(item, box(item.element.closest('[data-drawing-window]') ?? item.element)));
     ({ top: heroTop, height: heroHeight } = box(hero));
     anchors = steps.map(step => step.getBoundingClientRect().top + y + Math.min(.3 * step.offsetHeight, 125 * scale));
+    // Mobile and short viewports unstick the concept, so the steps would only move it once it has scrolled away.
+    passage = panel && drawing && getComputedStyle(panel).position !== 'sticky' ? { ...box(drawing), clearance } : null;
     routeLength = route?.getTotalLength() ?? 0;
     story.dataset.storyReady = 'true'; scrollDirty = true; measureDirty = false;
     if (fontsReady) arrival.ready(reduced);
@@ -67,7 +72,7 @@ export function mountCase(root: HTMLElement) {
     depths.forEach(item => { item.element.style.transform = reduced ? 'none' : `translate3d(0,${pixelsToVw((clamp01((y + viewport - item.top) / (viewport + item.height)) - .5) * item.amount * scale, innerWidth)},0)`; });
     draws.forEach(item => { item.element.style.strokeDashoffset = String(1 - storyReveal(item.top, item.height, y, viewport, scale, reduced)); });
     if (!progression) return;
-    const reading = caseReading(anchoredProgress(y + .32 * viewport, anchors), reduced);
+    const reading = caseReading(passage ? passageProgress(passage.top, passage.height, y, viewport, passage.clearance) : anchoredProgress(y + .32 * viewport, anchors), reduced);
     progression.dataset.readingStep = String(reading.step); progression.style.setProperty('--reading-progress', String(reading.progress));
     links.forEach((link, index) => index === reading.step ? link.setAttribute('aria-current', 'step') : link.removeAttribute('aria-current'));
     finance?.setAttribute('d', financePath(reading.progress));

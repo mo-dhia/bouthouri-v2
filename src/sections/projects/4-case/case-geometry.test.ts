@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { CASE_CONCEPTS, CONE_ORIGIN, TOUR_STUDY, TWIST_STUDY, anchoredProgress, caseReading, coneTransform, financePath, financeStates, marketY, storyReveal } from './case-geometry';
+import { CASE_CONCEPTS, CONE_ORIGIN, TOUR_STUDY, TWIST_STUDY, anchoredProgress, caseReading, coneTransform, financePath, financeStates, marketY, passageProgress, storyReveal } from './case-geometry';
 
 const numbers = (d: string) => (d.match(/-?\d*\.?\d+/g) ?? []).map(Number);
 
@@ -36,6 +36,18 @@ test('reading follows the measured anchors and settles on the last step', () => 
   expect(anchoredProgress(1200, anchors)).toBe(1);
   expect([0, .24, .26, .74, .76, 1].map(value => caseReading(value).step)).toEqual([0, 0, 1, 1, 2, 2]);
   expect(caseReading(.2, true)).toEqual({ progress: 1, step: 2, route: 1 });
+});
+
+test('an unstuck concept plays while the whole drawing is on screen', () => {
+  // A 260px drawing at 3000px in a 915px viewport under a 110px navigation clearance.
+  const at = (scroll: number) => passageProgress(3000, 260, scroll, 915, 110);
+  expect(at(3000 + 260 - 915)).toBe(0);
+  expect(at(3000 - 110)).toBe(1);
+  expect(at(3000 - 500)).toBeCloseTo((3000 - 500 - 2345) / 545, 6);
+  // A drawing too tall for the space still gets 40% of the viewport to play.
+  const tall = (scroll: number) => passageProgress(3000, 900, scroll, 915, 110);
+  expect(tall(3000 - 110 - 366)).toBe(0);
+  expect(tall(3000 - 110)).toBe(1);
 });
 
 test('story reveals open from the lower viewport and finish past its middle', () => {
