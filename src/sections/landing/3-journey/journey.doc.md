@@ -49,15 +49,26 @@ to ordinary modules. `systems-geometry.js` contains cubic path/arc-length math;
 They have no GSAP, React Three Fiber, or original application runtime dependency.
 
 The rebrand keeps Gazzar's four pen windows (moments 308/345/381/413) and swaps
-the projects: Artefact Studio (a headset with a skyline in its visor), Vawzen
-(the agency's crown), Batiprix (an isometric house with a drafting dimension)
-and The Forecasting Machine (irregular evidence opening into a forecast fan).
+the projects: Artefact Studio (a VR headset whose strap line becomes the ground
+of a skyline inside the cushioned visor), Vawzen (a browser with growth bars
+and a phone overlapping it like Gazzar's transparent tiles, then a "like" heart),
+Batiprix (the isometric house, then a euro sign hung from its eave) and The
+Forecasting Machine (a systems-style card where a seasonal trend fans into a
+forecast band clipped by the card edge, the median leaving it).
 Each mark is one absolute `M/L/C/Q` path in the 320×220 stage, entering at
 `0 130` and leaving at `320 130`. RTL reverses the path instead of mirroring
 it. Its length belongs in `work-renderer.js`'s pen
 lengths. The JSON markup repeats the path, its quiet growth and the titles.
 `tests/work-projects.test.ts` keeps those copies in step. The fourth mark
-morphs into the systems cards through `systems-geometry.js`. Explore links
+morphs into the systems cards through `systems-geometry.js`, by segment index
+against a card resampled to the mark's segment count plus four. The forecasting
+path therefore draws its frame in the card's own order (down the left edge,
+bottom, right edge up, top, left edge down) before the chart, and splits frame
+edges with collinear points so each side lands on the card's matching side; the
+chart folds into the card's left edge. Redrawing it without that registration
+tangles the takeover. `systems-renderer.js` builds each of its 315 frames on
+first use and drops them on resize, so the longer path costs no resize work.
+Explore links
 open each project's live site in a new tab; `?work=` deep links use the
 project slugs.
 

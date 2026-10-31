@@ -5,7 +5,7 @@ import { referencePixelsToVw } from "@/lib/viewport-design";
 import { journeyGeometry } from "./journey-geometry";
 let l = (e) => Math.max(0, Math.min(1, e)),
   c = [
-    1165.3478317209444, 908.0867198035749, 1216.3426685460572, 801.3538420795223,
+    1591.8055972791317, 1585.0641457575541, 1236.8840652582346, 1421.8800715145276,
   ];
 function u(e, t, r, n, o, i = 1) {
   if (10 !== e.length || e.some((e) => !Number.isFinite(e) || e <= 0))
