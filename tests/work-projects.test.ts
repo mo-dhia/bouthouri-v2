@@ -93,10 +93,11 @@ describe("work projects", () => {
       numbers(((quiet.children[0]) as Node).props.d).forEach((value, k) => expect(Math.abs(value - grown[k])).toBeLessThan(0.006));
 
       const link = (meta.children as Node[])[1];
-      expect(link.props.href).toMatch(/^https:\/\//);
-      expect(link.props).toMatchObject({ target: "_blank", rel: "external noopener", "data-case-slug": project.slug });
-      // External, so the name says it opens a new tab, as on the Projects grid.
-      expect(link.props["aria-label"]).toBe(`${locale === "ar" ? "استكشف المشروع" : "EXPLORE PROJECT"}: ${copy.name}${locale === "ar" ? "، يُفتح في علامة تبويب جديدة" : ", opens in a new tab"}`);
+      // Explore opens the project's case page in place, as on the original.
+      expect(link.props).toEqual({ ...link.props, href: `/${locale}/projects/${project.slug}`, "data-case-slug": project.slug });
+      expect(link.props.target).toBeUndefined();
+      expect(link.props.rel).toBeUndefined();
+      expect(link.props["aria-label"]).toBe(`${locale === "ar" ? "استكشف المشروع" : "EXPLORE PROJECT"}: ${copy.name}`);
     });
   });
 });

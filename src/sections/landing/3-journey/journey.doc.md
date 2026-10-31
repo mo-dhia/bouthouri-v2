@@ -69,8 +69,9 @@ chart folds into the card's left edge. Redrawing it without that registration
 tangles the takeover. `systems-renderer.js` builds each of its 315 frames on
 first use and drops them on resize, so the longer path costs no resize work.
 Explore links
-open each project's live site in a new tab; `?work=` deep links use the
-project slugs.
+open each project's case page (`/{locale}/projects/{slug}`) in place, as the
+original's did; the case page's back link returns through `?work=`, which uses
+the same slugs. See `src/sections/projects/4-case/case.doc.md`.
 
 The work and systems renderers run those original functions in a reference-size
 SVG camera, normalizing measured DOM heights by `designScale(width)`. Their

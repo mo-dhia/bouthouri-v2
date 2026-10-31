@@ -1245,12 +1245,10 @@
                           "tag": "a",
                           "props": {
                             "className": "case-entry kinetic-action kinetic-editorial work-explore",
-                            "aria-label": "استكشف المشروع: Artefact Studio، يُفتح في علامة تبويب جديدة",
+                            "aria-label": "استكشف المشروع: Artefact Studio",
                             "data-material-sound": "true",
                             "data-case-slug": "artefact",
-                            "href": "https://artefactstudio.org/ar",
-                            "target": "_blank",
-                            "rel": "external noopener"
+                            "href": "/ar/projects/artefact"
                           },
                           "children": [
                             {
@@ -1409,12 +1407,10 @@
                           "tag": "a",
                           "props": {
                             "className": "case-entry kinetic-action kinetic-editorial work-explore",
-                            "aria-label": "استكشف المشروع: Vawzen، يُفتح في علامة تبويب جديدة",
+                            "aria-label": "استكشف المشروع: Vawzen",
                             "data-material-sound": "true",
                             "data-case-slug": "vawzen",
-                            "href": "https://vawzen.org/",
-                            "target": "_blank",
-                            "rel": "external noopener"
+                            "href": "/ar/projects/vawzen"
                           },
                           "children": [
                             {
@@ -1573,12 +1569,10 @@
                           "tag": "a",
                           "props": {
                             "className": "case-entry kinetic-action kinetic-editorial work-explore",
-                            "aria-label": "استكشف المشروع: Batiprix، يُفتح في علامة تبويب جديدة",
+                            "aria-label": "استكشف المشروع: Batiprix",
                             "data-material-sound": "true",
                             "data-case-slug": "batiprix",
-                            "href": "https://www.batiprix.com/",
-                            "target": "_blank",
-                            "rel": "external noopener"
+                            "href": "/ar/projects/batiprix"
                           },
                           "children": [
                             {
@@ -1746,12 +1740,10 @@
                           "tag": "a",
                           "props": {
                             "className": "case-entry kinetic-action kinetic-editorial work-explore",
-                            "aria-label": "استكشف المشروع: The Forecasting Machine، يُفتح في علامة تبويب جديدة",
+                            "aria-label": "استكشف المشروع: The Forecasting Machine",
                             "data-material-sound": "true",
                             "data-case-slug": "the-forecasting-machine",
-                            "href": "https://theforecastingmachine.com/",
-                            "target": "_blank",
-                            "rel": "external noopener"
+                            "href": "/ar/projects/the-forecasting-machine"
                           },
                           "children": [
                             {
